@@ -1,0 +1,88 @@
+# =============================================================================
+# Snakemake configuration for the DWI pipeline (mirrors the bash version)
+# =============================================================================
+# Override on the CLI with --config key=value or --configfile other.yaml.
+# Default results_root is *separate* from the bash pipeline's dwi_test/ to
+# avoid colliding with whatever the legacy scripts are running.
+# =============================================================================
+
+# --- IO ---
+bids_dir: /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids
+results_root: /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test_smk
+
+# --- Containers (Apptainer .sif) ---
+containers:
+  qsiprep:    /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsiprep.sif
+  qsirecon:   /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif
+  fastsurfer: /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/fastsurfer_latest.sif
+  # Dedicated full FreeSurfer 7.4.1 image, pulled via
+  # dwi_pipeline/containers/pull_freesurfer_sif.sbatch. We do NOT reuse the
+  # fastsurfer SIF here because it ships a trimmed FreeSurfer that is missing
+  # /opt/freesurfer/average/RB_all_withskull_2020_01_02.gca (skull-strip atlas).
+  freesurfer: /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/freesurfer_7.4.1.sif
+
+# --- FreeSurfer license + TemplateFlow cache ---
+fs_license:        /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt
+templateflow_home: /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/templateflow
+
+# --- Subjects ---
+# Either a list here (e.g. [ "001", "007" ]) or path to a TSV (one ID per line,
+# header optional; lines starting with # are ignored). TSV wins if both set.
+subjects: [ "001", "007" ]
+subjects_tsv: config/subjects.tsv
+
+# --- Stage toggles ---
+run_recon: true              # Step 2
+run_dk_connectome: true      # Step 4
+run_qsirecon: true           # Step 3 (rarely turned off)
+
+# --- QSIPrep ---
+qsiprep:
+  output_resolution: 2
+  # SDC strategy mirrors bash subject.sh:
+  #   fmap present in BIDS -> measured fmaps (no flag)
+  #   no fmap + use_syn_sdc=true -> --use-syn-sdc warn
+  #   fmap_retry=true -> --ignore fieldmaps --use-syn-sdc warn
+  use_syn_sdc: false
+  fmap_retry: false
+  skip_bids_validation: true
+
+# --- Recon (Step 2) ---
+recon:
+  tool: freesurfer            # freesurfer | fastsurfer
+  fastsurfer_device: cpu      # cpu | cuda (FastSurfer only)
+
+# --- QSIRecon (Step 3) ---
+qsirecon:
+  spec: mrtrix_singleshell_ss3t_ACT-hsvs
+  # QSIRecon's MRtrix specs include a connectivity-estimation node that
+  # REQUIRES atlases; without any, qsirecon aborts with
+  #   "Connectivity estimation requires atlases. Please set --atlases ..."
+  # Recognised built-in atlas names (shipped inside qsirecon.sif):
+  #   AAL116, AICHA384Ext, Brainnetome246Ext, Gordon333Ext,
+  #   4S156Parcels, 4S256Parcels, ... 4S1056Parcels
+  # Default = 4S156Parcels (Schaefer-100 cortex + Tian/HCP 56 subcortex = 156).
+  atlases: [ 4S156Parcels ]   # add more: [ 4S156Parcels, AAL116, Gordon333Ext ]
+
+# --- DK connectome (Step 4) ---
+dk:
+  resample_to_dwi: true       # mri_vol2vol via from-orig_to-T1w LTA
+  tck2connectome_extra: []    # e.g. [ "-scale_invlength", "-scale_invnodevol" ]
+
+# --- Resources (per task; consumed by the Slurm executor) ---
+threads:
+  qsiprep:  8
+  recon:    8
+  qsirecon: 8
+  dk:       2
+
+resources:
+  qsiprep:  { mem_mb: 48000, runtime: 240,  slurm_partition: general }   # 4 h
+  recon:    { mem_mb: 32000, runtime: 720,  slurm_partition: general }   # 12 h
+  qsirecon: { mem_mb: 48000, runtime: 240,  slurm_partition: general }
+  dk:       { mem_mb: 16000, runtime: 30,   slurm_partition: general }
+
+# --- Slurm placement (Snakemake passes these through to sbatch) ---
+slurm:
+  # Comma-separated nodelist to exclude (broken Slurm prolog on smdodwork05).
+  exclude_nodes: smdodwork05

@@ -1,0 +1,51 @@
+# =============================================================================
+# Snakemake 8+ Slurm profile (uses snakemake-executor-plugin-slurm)
+# Install once:
+#     pip install snakemake snakemake-executor-plugin-slurm
+# Use:
+#     snakemake --profile profiles/slurm
+# =============================================================================
+
+executor: slurm
+jobs: 50                          # max simultaneous Slurm jobs
+latency-wait: 60                  # FS sync grace after a job finishes
+keep-going: true                  # don't abort the whole DAG on one subject failure
+rerun-incomplete: true
+printshellcmds: true
+use-conda: false
+use-singularity: false            # we invoke apptainer ourselves inside shell:
+
+# Snakemake will translate threads + resources.{mem_mb, runtime,
+# slurm_partition, slurm_account, slurm_extra} into sbatch flags. Per-rule
+# resources are set in config/config.yaml; the values below are the floor for
+# rules that don't set their own.
+default-resources:
+  - mem_mb=8000
+  - runtime=60
+  - slurm_partition=general
+  # Excludes the host with the broken Slurm prolog (smdodwork05). Override
+  # via --set-resources or by editing this profile.
+  - slurm_extra="'--exclude=smdodwork05'"
+
+# Per-rule overrides (defensive — the inline rule definitions already set
+# threads/resources via stage_threads/stage_resources in common.smk).
+set-threads:
+  qsiprep: 8
+  recon:   8
+  qsirecon: 8
+  dk:      2
+
+# Per-rule resource overrides via the CLI-equivalent `rulename:key=value` syntax.
+set-resources:
+  - qsiprep:mem_mb=48000
+  - qsiprep:runtime=240
+  - recon:mem_mb=32000
+  - recon:runtime=720
+  - qsirecon:mem_mb=48000
+  - qsirecon:runtime=240
+  - dk:mem_mb=16000
+  - dk:runtime=30
+
+# Resubmit a Slurm job once if it dies with a non-zero exit (transient I/O,
+# node reboot, etc.).
+restart-times: 1

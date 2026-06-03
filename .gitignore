@@ -1,0 +1,98 @@
+# =============================================================================
+# TrackTBI-Sub .gitignore
+#
+# Strategy: track CODE (scripts, snakefiles, configs, docs); ignore DATA
+# (BIDS inputs, derivatives, work dirs, caches, logs, container images).
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.env
+
+# --- Editors / OS ---
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# --- Slurm / pipeline logs (large, regenerated every run) ---
+/logs/
+*.out
+*.err
+slurm-*.out
+slurm-*.err
+
+# --- Snakemake state (per workflow) ---
+.snakemake/
+report.html
+dag.svg
+*.log
+
+# --- Container images (huge, distributed separately) ---
+*.sif
+*.img
+*.simg
+
+# --- TemplateFlow cache (downloaded on demand) ---
+/templateflow/
+
+# --- BIDS inputs / external datasets symlinked in for processing ---
+/TrackTBI/
+/CIDUR_BIDS/
+/Two_Time_Points/
+
+# --- Vendored upstream projects (not our code) ---
+/dwi_minimum_preprocessing-master/
+
+# =============================================================================
+# Pipeline outputs / intermediate results / work directories
+# (anything QSIPrep / QSIRecon / FreeSurfer / FastSurfer / DK writes)
+# =============================================================================
+
+# Top-level legacy run outputs (from earlier exploration)
+/dwi_phase1/
+/intermediate_results/
+/intermediate_results_recon/
+/intermediate_results_run1/
+/intermediate_results_run2/
+/intermediate_results_separate/
+/qsiprep_output/
+/qsiprep_run1_output/
+/qsiprep_run2_output/
+/qsiprep_separate_output/
+/qsiprep_merged_output/
+/qsirecon_output/
+/test_bids_fmap_no_sidecars/
+
+# Generic patterns for any future result dirs at any depth
+**/qsiprep_*_output/
+**/qsirecon_*_output/
+**/qsirecon_single_run_output/
+**/qsiprep_single_run_output/
+**/freesurfer/sub-*/
+**/dk_connectomes/sub-*/
+**/.flags/
+**/work/
+**/_work_qsiprep_*/
+**/_work_qsirecon_*/
+
+# Derived per-subject artefacts written alongside code (small but generated)
+/extracted_csv_samples/
+/online_extracts/
+qsiprep_qsirecon_subject_status.csv
+
+# Apptainer / build scratch
+**/apptainer_tmp/
+**/apptainer_cache/
+*.tar
+*.tar.gz
+
+# Backups
+backups/
+*.bak
