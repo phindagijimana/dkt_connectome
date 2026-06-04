@@ -15,6 +15,8 @@ BIDS_DIR          = Path(config["bids_dir"]).resolve()
 RESULTS_ROOT      = Path(config["results_root"]).resolve()
 TEMPLATEFLOW_HOME = Path(config["templateflow_home"]).resolve()
 FS_LICENSE        = Path(config["fs_license"]).resolve()
+# Optional override; default sits next to the FS license (host-side FS install).
+FS_LUT            = Path(config.get("fs_lut") or (FS_LICENSE.parent / "FreeSurferColorLUT.txt")).resolve()
 
 CONTAINERS = {k: Path(v).resolve() for k, v in config["containers"].items()}
 

@@ -23,6 +23,10 @@ containers:
 
 # --- FreeSurfer license + TemplateFlow cache ---
 fs_license:        /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt
+# FreeSurferColorLUT.txt — qsirecon.sif's trimmed FreeSurfer doesn't ship this
+# file, but labelconvert needs it in the DK step. Default to the LUT shipped
+# with the host-side FS install (next to the license).
+fs_lut:            /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/FreeSurferColorLUT.txt
 templateflow_home: /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/templateflow
 
 # --- Subjects ---
@@ -83,9 +87,12 @@ resources:
   # Partition switched general -> interactive (2026-06-03): general is
   # priority-starved for low-fairshare users; interactive has 250+ idle CPUs
   # and a 12 h cap that fits every stage with room to spare.
-  qsiprep:  { mem_mb: 24000, runtime: 480,  slurm_partition: interactive }   # 8 h
+  qsiprep:  { mem_mb: 24000, runtime: 700,  slurm_partition: interactive }   # ~11.7 h
   recon:    { mem_mb: 16000, runtime: 700,  slurm_partition: interactive }   # ~11.7 h
-  qsirecon: { mem_mb: 24000, runtime: 480,  slurm_partition: interactive }   # 8 h
+  # qsirecon: bumped 480 -> 700 because TBI011011's 2 sessions hit the 8 h cap
+  # at 8:00:07 (single-session sub-001/007 took ~4:39). 700 min still fits the
+  # interactive partition's 12 h wall.
+  qsirecon: { mem_mb: 24000, runtime: 700,  slurm_partition: interactive }   # ~11.7 h
   dk:       { mem_mb:  8000, runtime: 30,   slurm_partition: interactive }
 
 # --- Slurm placement (Snakemake passes these through to sbatch) ---

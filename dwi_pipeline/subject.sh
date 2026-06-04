@@ -37,9 +37,13 @@
 #   Post-step after QSIRecon. Uses FreeSurfer aparc+aseg.mgz + QSIRecon .tck.
 #   Space alignment: aparc+aseg lives in FreeSurfer conformed (orig.mgz) space;
 #   tractogram lives in QSIPrep DWI/T1w (ACPC) space. Before labelconvert,
-#   aparc+aseg is resampled onto the DWI grid with mri_vol2vol using QSIPrep's
-#   from-orig_to-T1w LTA + DWI reference image. Set DK_RESAMPLE_TO_DWI=0 to skip.
-#   Tools: mri_convert, mri_vol2vol, labelconvert, tck2connectome.
+#   aparc+aseg is resampled onto the DWI grid with antsApplyTransforms (-n
+#   GenericLabel) using QSIPrep's from-orig_to-T1w xfm + DWI reference image.
+#   Note: QSIPrep ships the transform in ITK text format (the `.lta`/`.txt`
+#   suffix is misleading), so the ITK-native ANTs resampler is the correct
+#   tool — FreeSurfer's mri_vol2vol can't read it. Set DK_RESAMPLE_TO_DWI=0
+#   to skip the resample (not recommended; connectome will be mis-aligned).
+#   Tools: mri_convert, antsApplyTransforms, labelconvert, tck2connectome.
 #   Writes dk_connectome.csv under dk_connectomes/sub-XXX/.
 #
 # Usage:
@@ -153,6 +157,10 @@ if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
 fi
 TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${TRACKTBI_ROOT}/templateflow}"
 FS_LICENSE="${FS_LICENSE:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt}"
+# FreeSurferColorLUT.txt — qsirecon.sif's trimmed FreeSurfer doesn't ship this
+# file, but labelconvert needs it in the DK step. Default to the LUT shipped
+# with the host-side FS install (next to the license).
+FS_LUT="${FS_LUT:-${FS_LICENSE%/*}/FreeSurferColorLUT.txt}"
 
 # --- Recon (Step 2) defaults ---
 RUN_RECON="${RUN_RECON:-1}"
@@ -523,7 +531,7 @@ run_dk_connectome() {
       dwiref_in_container="/qsiprep/${dwiref_rel}"
       lta_in_container="/qsiprep/${lta_rel}"
       nodes_input_in_container="/out/aparc+aseg_in_dwi.nii.gz"
-      space_note="resampled aparc+aseg onto DWI grid via mri_vol2vol (LTA: ${lta_rel##*/})"
+      space_note="resampled aparc+aseg onto DWI grid via antsApplyTransforms (xfm: ${lta_rel##*/})"
     else
       echo "DK warning: cannot find QSIPrep DWI reference and/or fsnative->T1w LTA;"
       echo "  dwiref=${dwiref:-<missing>}  lta=${lta:-<missing>}"
@@ -532,75 +540,103 @@ run_dk_connectome() {
     fi
   fi
 
-  # Fast-fail: DK post-step needs FreeSurfer + MRtrix commands inside container.
-  local need_cmds=(mri_convert labelconvert tck2connectome tckinfo mrinfo)
-  [[ "${DK_RESAMPLE_TO_DWI}" == "1" && -n "${lta}" ]] && need_cmds+=(mri_vol2vol)
-  for c in "${need_cmds[@]}"; do
+  # All DK work runs inside qsirecon.sif, which carries everything we need:
+  #   antsApplyTransforms (ANTs)     — ITK-native resample of aparc+aseg onto
+  #                                    the DWI/T1w grid using QSIPrep's xfm.
+  #                                    QSIPrep ships xfms in ITK text format
+  #                                    (`#Insight Transform File V1.0`) — the
+  #                                    `.lta`/`.txt` BIDS suffix is misleading
+  #                                    and confused our earlier attempts to
+  #                                    use FreeSurfer's mri_vol2vol (which
+  #                                    reads true LTA, not ITK).
+  #   mri_convert (trimmed FS)       — convert aparc+aseg.mgz -> NIfTI.
+  #   labelconvert + tck2connectome  — MRtrix3 connectome step.
+  #   mrinfo + tckinfo               — diagnostics for the space-alignment QC.
+  echo "Using tractogram: ${tracks}"
+  echo "Using aparc+aseg: ${aparc}"
+  [[ -n "${dwiref}" ]] && echo "Using DWI reference: ${dwiref}"
+  [[ -n "${lta}"    ]] && echo "Using fsnative->T1w xfm: ${lta}"
+  echo "Space handling: ${space_note}"
+
+  for c in mri_convert antsApplyTransforms labelconvert tck2connectome tckinfo mrinfo; do
     apptainer exec --cleanenv "${CONTAINER_QSIRECON}" bash -lc "command -v ${c}" >/dev/null 2>&1 || {
       echo "Missing required command in CONTAINER_QSIRECON (${CONTAINER_QSIRECON}): ${c}"
-      echo "Use an image with FreeSurfer + MRtrix (or set CONTAINER_QSIRECON accordingly)."
       exit 1
     }
   done
 
-  echo "Using tractogram: ${tracks}"
-  echo "Using aparc+aseg: ${aparc}"
-  [[ -n "${dwiref}" ]] && echo "Using DWI reference: ${dwiref}"
-  [[ -n "${lta}"    ]] && echo "Using fsnative->T1w LTA: ${lta}"
-  echo "Space handling: ${space_note}"
+  [[ -f "${FS_LUT}" ]] || {
+    echo "Missing FreeSurferColorLUT.txt at FS_LUT=${FS_LUT}"
+    echo "  qsirecon.sif's trimmed FreeSurfer doesn't ship this file; set FS_LUT to"
+    echo "  the host-side FreeSurfer LUT (e.g. /usr/local/freesurfer/FreeSurferColorLUT.txt)."
+    exit 1
+  }
 
-  # Build the bind-mount list. Mount QSIPrep r/o only when resampling.
   local -a binds=(
     -B "${fs_dir}":/fs_subject:ro
     -B "${QSIRECON_OUT}":/qsirecon:ro
     -B "${outdir}":/out
     -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro
+    -B "${FS_LUT}":/opt/freesurfer/FreeSurferColorLUT.txt:ro
   )
   [[ -n "${lta}" ]] && binds+=( -B "${QSIPREP_OUT}":/qsiprep:ro )
 
-  apptainer run --cleanenv --containall \
+  apptainer exec --cleanenv --containall \
     "${binds[@]}" \
     "${CONTAINER_QSIRECON}" \
     bash -lc "
       set -euo pipefail
       export FS_LICENSE=/opt/freesurfer/license.txt
-      export SUBJECTS_DIR=/fs_subject/..
 
       mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz
 
       if [[ -n '${lta_in_container}' && -n '${dwiref_in_container}' ]]; then
-        echo '[dk] Resampling aparc+aseg into DWI/T1w grid (nearest-neighbour)'
-        mri_vol2vol \
-          --mov /fs_subject/mri/aparc+aseg.mgz \
-          --targ '${dwiref_in_container}' \
-          --lta  '${lta_in_container}' \
-          --nearest \
-          --o /out/aparc+aseg_in_dwi.nii.gz
+        echo '[dk] Resampling aparc+aseg onto DWI grid via antsApplyTransforms (GenericLabel)'
+        # GenericLabel is the ANTs label-aware resampler: per-label nearest-
+        # neighbour vote, no float interpolation between distinct integer IDs.
+        antsApplyTransforms -d 3 \
+          -i /out/aparc+aseg.nii.gz \
+          -r '${dwiref_in_container}' \
+          -t '${lta_in_container}' \
+          -n GenericLabel \
+          -o /out/aparc+aseg_in_dwi.nii.gz
       fi
 
-      fs_lut=\${FREESURFER_HOME:-/opt/freesurfer}/FreeSurferColorLUT.txt
-      if [[ ! -f \"\$fs_lut\" ]]; then
-        fs_lut=/opt/freesurfer/FreeSurferColorLUT.txt
-      fi
-      mrtrix_lut=\${MRTRIX_HOME:-/opt/mrtrix3}/share/mrtrix3/labelconvert/fs_default.txt
-      if [[ ! -f \"\$mrtrix_lut\" ]]; then
-        mrtrix_lut=/usr/local/mrtrix3/share/mrtrix3/labelconvert/fs_default.txt
-      fi
+      # FreeSurferColorLUT.txt is bind-mounted in; MRtrix's fs_default.txt
+      # ships with mrtrix3-latest inside qsirecon.sif.
+      fs_lut=/opt/freesurfer/FreeSurferColorLUT.txt
+      mrtrix_lut=/opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt
 
-      labelconvert '${nodes_input_in_container}' \"\$fs_lut\" \"\$mrtrix_lut\" /out/dk_nodes.mif
+      labelconvert -force '${nodes_input_in_container}' \"\$fs_lut\" \"\$mrtrix_lut\" /out/dk_nodes.mif
+
+      # MRtrix3 3.0.4 doesn't read *.tck.gz directly (truly gzipped TCK is not
+      # the same as the internal block-compressed format). If the input is
+      # gzipped, stage an uncompressed copy under /out, then clean it up at the
+      # end (these can be 10-20 GB per subject — don't leave them lying around).
+      tck_in='${tracks_in_container}'
+      tck_use=\"\$tck_in\"
+      tck_staged=\"\"
+      if [[ \"\$tck_in\" == *.tck.gz ]]; then
+        tck_staged=/out/streamlines.tck
+        echo \"[dk] Decompressing \$tck_in -> \$tck_staged\"
+        gunzip -c \"\$tck_in\" > \"\$tck_staged\"
+        tck_use=\"\$tck_staged\"
+      fi
 
       echo '[dk] === space-alignment diagnostic ==='
       mrinfo /out/dk_nodes.mif      | tee /out/dk_nodes.mrinfo.txt   | sed -n '1,20p'
-      tckinfo '${tracks_in_container}' | tee /out/tracks.tckinfo.txt | sed -n '1,30p'
+      tckinfo \"\$tck_use\"         | tee /out/tracks.tckinfo.txt    | sed -n '1,30p'
       echo '[dk] =================================='
 
-      tck2connectome \
-        '${tracks_in_container}' \
+      tck2connectome -force \
+        \"\$tck_use\" \
         /out/dk_nodes.mif \
         /out/dk_connectome.csv \
         -symmetric \
         -zero_diagonal \
         -out_assignments /out/dk_assignments.csv
+
+      [[ -n \"\$tck_staged\" ]] && rm -f \"\$tck_staged\"
     "
 
   echo "DK connectome: ${outdir}/dk_connectome.csv"

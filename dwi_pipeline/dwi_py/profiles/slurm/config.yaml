@@ -42,13 +42,15 @@ set-threads:
   dk:      2
 
 # Per-rule resource overrides via the CLI-equivalent `rulename:key=value` syntax.
+# qsiprep + qsirecon runtimes bumped 480 -> 700 min for 2-session subjects
+# (TBI011011 hit the 480 min cap on qsirecon at 8:00:07 — see config.yaml).
 set-resources:
   - qsiprep:mem_mb=24000
-  - qsiprep:runtime=480
+  - qsiprep:runtime=700
   - recon:mem_mb=16000
   - recon:runtime=720
   - qsirecon:mem_mb=24000
-  - qsirecon:runtime=480
+  - qsirecon:runtime=700
   - dk:mem_mb=8000
   - dk:runtime=30
 
