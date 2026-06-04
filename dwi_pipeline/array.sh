@@ -17,10 +17,10 @@
 #SBATCH --job-name=dwi_act_arr
 #SBATCH --output=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs/dwi_act_%A_%a.out
 #SBATCH --error=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs/dwi_act_%A_%a.err
-#SBATCH --time=96:00:00
-#SBATCH --partition=general
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=48G
+#SBATCH --time=12:00:00
+#SBATCH --partition=interactive
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=24G
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=philbert_ndagijimana@urmc.rochester.edu
 #SBATCH --array=1-76%5
@@ -40,8 +40,8 @@ PIPELINE="${PIPELINE:-${DWI_ROOT}/subject.sh}"
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 
 # Threading inside each container (should match --cpus-per-task)
-export NTHREADS="${NTHREADS:-8}"
-export OMP_NTHREADS="${OMP_NTHREADS:-8}"
+export NTHREADS="${NTHREADS:-4}"
+export OMP_NTHREADS="${OMP_NTHREADS:-4}"
 
 mkdir -p "${TRACKTBI_ROOT}/logs"
 

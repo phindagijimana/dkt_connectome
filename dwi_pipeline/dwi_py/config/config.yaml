@@ -70,17 +70,23 @@ dk:
   tck2connectome_extra: []    # e.g. [ "-scale_invlength", "-scale_invnodevol" ]
 
 # --- Resources (per task; consumed by the Slurm executor) ---
+# Halved from 8 CPUs / 48 GB to ease scheduling on a busy `general` partition.
+# Each container then runs with NTHREADS=4 / OMP_NTHREADS=4 (set in qsiprep.smk
+# via stage_threads). Bump these back up if jobs become I/O bound.
 threads:
-  qsiprep:  8
-  recon:    8
-  qsirecon: 8
+  qsiprep:  4
+  recon:    4
+  qsirecon: 4
   dk:       2
 
 resources:
-  qsiprep:  { mem_mb: 48000, runtime: 240,  slurm_partition: general }   # 4 h
-  recon:    { mem_mb: 32000, runtime: 720,  slurm_partition: general }   # 12 h
-  qsirecon: { mem_mb: 48000, runtime: 240,  slurm_partition: general }
-  dk:       { mem_mb: 16000, runtime: 30,   slurm_partition: general }
+  # Partition switched general -> interactive (2026-06-03): general is
+  # priority-starved for low-fairshare users; interactive has 250+ idle CPUs
+  # and a 12 h cap that fits every stage with room to spare.
+  qsiprep:  { mem_mb: 24000, runtime: 480,  slurm_partition: interactive }   # 8 h
+  recon:    { mem_mb: 16000, runtime: 700,  slurm_partition: interactive }   # ~11.7 h
+  qsirecon: { mem_mb: 24000, runtime: 480,  slurm_partition: interactive }   # 8 h
+  dk:       { mem_mb:  8000, runtime: 30,   slurm_partition: interactive }
 
 # --- Slurm placement (Snakemake passes these through to sbatch) ---
 slurm:

@@ -21,12 +21,41 @@
 # before any shell logic runs, so they're resolved against the submit cwd —
 # a relative `logs/...` blows up with signal 53 if you sbatch from elsewhere
 # (this killed driver job 44570).
+#
+# -----------------------------------------------------------------------------
+# GOTCHA: restarting after a killed driver + `--rerun-incomplete`
+# -----------------------------------------------------------------------------
+# Snakemake tracks per-job "started but not yet finished" markers in
+# .snakemake/ . If a previous driver was scancel'd / OOM'd / wall-time-killed
+# WHILE one of its child rules was running (or had been queued through the
+# slurm executor and recorded as "started"), the next driver started with
+# --rerun-incomplete will:
+#
+#   1. Treat that rule's outputs (including `touch(.flags/<rule>.<sid>.done)`
+#      sentinels) as "possibly-incomplete".
+#   2. DELETE the sentinel.
+#   3. Re-run the rule from scratch.
+#
+# We hit this on 2026-06-03: driver 44778 was scancel'd while children were
+# pending. The next driver (44798) then wiped the qsiprep sentinel that had
+# been written 5 days earlier — even though qsiprep had legitimately finished
+# back then — and re-ran ~2 h of qsiprep needlessly.
+#
+# Workarounds when you KNOW the previous run finished cleanly:
+#   - Drop --rerun-incomplete from this script's exec line, OR
+#   - Run a one-shot `snakemake --touch --configfile ...` from a login shell
+#     before resubmitting the driver. That marks all up-to-date outputs as
+#     fresh so the next DAG build skips them.
+#   - As a last resort: `touch .flags/<rule>.<sid>.done` manually for each
+#     stage you know is complete (works because the rule's `output:` is
+#     literally that file).
 # =============================================================================
 #SBATCH --job-name=dwi_smk_driver
-#SBATCH --partition=general
+#SBATCH --partition=interactive
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=4G
-#SBATCH --time=2-00:00:00                  # 48 h cap for the orchestrator
+#SBATCH --time=12:00:00                    # interactive partition cap; driver
+                                           # restart resumes work via sentinels.
 #SBATCH --exclude=smdodwork05
 #SBATCH --output=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/dwi_py/logs/snakemake_driver.%j.out
 #SBATCH --error=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/dwi_py/logs/snakemake_driver.%j.err
@@ -68,10 +97,15 @@ echo "================================="
 # `--profile profiles/slurm` enables the slurm executor plugin and inherits
 # resource defaults defined in that profile. Any extra CLI args (-- ...) are
 # appended for one-off overrides (--forcerun, --until, --config k=v, ...).
+#
+# --rerun-incomplete is INTENTIONALLY off by default because it has bitten us
+# (see GOTCHA above). To opt in for a single submission, pass it explicitly:
+#     sbatch submit_snakemake.sh -- --rerun-incomplete
+# If you want it always on (e.g. you trust that every previous driver kill
+# left work in a recoverable state), append it to the exec line below.
 exec snakemake \
     --configfile config/config.yaml \
     --profile profiles/slurm \
     --keep-going \
-    --rerun-incomplete \
     --printshellcmds \
     "$@"

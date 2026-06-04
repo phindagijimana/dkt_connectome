@@ -22,28 +22,34 @@ use-singularity: false            # we invoke apptainer ourselves inside shell:
 default-resources:
   - mem_mb=8000
   - runtime=60
-  - slurm_partition=general
+  # Partition switched general -> interactive (2026-06-03) because `general`
+  # is priority-starved for low-fairshare users (estimated start was 7 days
+  # out even after halving resources). `interactive` has 250+ idle CPUs and
+  # a 12 h cap that fits every stage with room to spare.
+  - slurm_partition=interactive
   # Excludes the host with the broken Slurm prolog (smdodwork05). Override
   # via --set-resources or by editing this profile.
   - slurm_extra="'--exclude=smdodwork05'"
 
 # Per-rule overrides (defensive — the inline rule definitions already set
 # threads/resources via stage_threads/stage_resources in common.smk).
+# Halved from 8 CPUs / 48 GB on 2026-06-03 to ease scheduling on a busy
+# `general` partition. Bump back up if jobs become I/O-bound.
 set-threads:
-  qsiprep: 8
-  recon:   8
-  qsirecon: 8
+  qsiprep: 4
+  recon:   4
+  qsirecon: 4
   dk:      2
 
 # Per-rule resource overrides via the CLI-equivalent `rulename:key=value` syntax.
 set-resources:
-  - qsiprep:mem_mb=48000
-  - qsiprep:runtime=240
-  - recon:mem_mb=32000
+  - qsiprep:mem_mb=24000
+  - qsiprep:runtime=480
+  - recon:mem_mb=16000
   - recon:runtime=720
-  - qsirecon:mem_mb=48000
-  - qsirecon:runtime=240
-  - dk:mem_mb=16000
+  - qsirecon:mem_mb=24000
+  - qsirecon:runtime=480
+  - dk:mem_mb=8000
   - dk:runtime=30
 
 # Resubmit a Slurm job once if it dies with a non-zero exit (transient I/O,
