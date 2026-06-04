@@ -488,7 +488,15 @@ run_dk_connectome() {
     exit 1
   }
 
+  # QSIRecon's MRtrix specs save the tractogram gzipped (*.tck.gz). MRtrix3
+  # tools read it transparently, but `find -name '*.tck'` does NOT match
+  # *.tck.gz. Match both, prefer the uncompressed form when present so MRtrix
+  # avoids the gzip decompression on every read (matters for the multi-pass
+  # tckinfo + tck2connectome below).
   tracks="$(find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" -name '*.tck' 2>/dev/null | head -1)"
+  if [[ -z "${tracks}" ]]; then
+    tracks="$(find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" -name '*.tck.gz' 2>/dev/null | head -1)"
+  fi
   [[ -n "${tracks}" ]] || {
     echo "Missing QSIRecon tractogram (.tck) for sub-${SUBJECT} under ${QSIRECON_OUT}"
     exit 1

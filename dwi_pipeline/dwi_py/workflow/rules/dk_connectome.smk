@@ -47,9 +47,15 @@ rule dk_connectome:
         mkdir -p "$outdir"
 
         # ---- Discover inputs (paths vary by session/run) ----
+        # QSIRecon's MRtrix specs save the tractogram gzipped (*.tck.gz).
+        # MRtrix3 reads it transparently, but `-name '*.tck'` won't match,
+        # so we search for both, preferring uncompressed when present.
         tracks="$(find {params.qsirecon_out} -type f -path "*${{sid}}*" -name '*.tck' 2>/dev/null | head -1)"
         if [[ -z "$tracks" ]]; then
-            echo "DK: missing QSIRecon .tck for $sid under {params.qsirecon_out}" | tee -a {log} >&2
+            tracks="$(find {params.qsirecon_out} -type f -path "*${{sid}}*" -name '*.tck.gz' 2>/dev/null | head -1)"
+        fi
+        if [[ -z "$tracks" ]]; then
+            echo "DK: missing QSIRecon .tck/.tck.gz for $sid under {params.qsirecon_out}" | tee -a {log} >&2
             exit 1
         fi
         tracks_rel="${{tracks#{params.qsirecon_out}/}}"
