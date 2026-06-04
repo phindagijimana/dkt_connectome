@@ -1,0 +1,55 @@
+# =============================================================================
+# dk_connectome — .gitignore
+#
+# Strategy: track CODE (Snakefile, rules, configs, docs); ignore DATA
+# (BIDS inputs, derivatives, work dirs, caches, logs, container images).
+# =============================================================================
+
+# --- Python -------------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.env
+
+# --- Editors / OS -------------------------------------------------------------
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# --- Snakemake state (per-run, regenerated) -----------------------------------
+.snakemake/
+report.html
+dag.svg
+*.log
+
+# --- Slurm / driver logs (large, regenerated every run) -----------------------
+logs/
+*.out
+*.err
+slurm-*.out
+slurm-*.err
+
+# --- Pipeline outputs (large; live outside the repo or in results/) -----------
+results/
+derivatives/
+
+# --- Container images (huge, distributed separately) --------------------------
+*.sif
+*.img
+*.simg
+containers/*.sif
+
+# --- User-specific configs / subject lists (never commit private data) --------
+config/subjects.tsv
+config/*.local.yaml
+config/*.private.yaml
+config/myconfig*.yaml
+
+# --- Cached templates / atlases -----------------------------------------------
+templateflow/
+.cache/

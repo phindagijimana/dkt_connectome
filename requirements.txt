@@ -1,0 +1,11 @@
+# dk_connectome — Python runtime requirements
+#
+# Install with:
+#     pip install -r requirements.txt
+#
+# All heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs) happens
+# inside Apptainer/Singularity containers — see README.md for how to pull
+# them. This file only pins what the orchestrator itself needs.
+
+snakemake>=8.0
+snakemake-executor-plugin-slurm>=0.6

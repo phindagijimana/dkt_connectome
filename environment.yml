@@ -1,0 +1,19 @@
+# dk_connectome — conda/mamba environment
+#
+# Create with:
+#     mamba env create -f environment.yml
+#     conda activate dk_connectome
+#
+# All heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs) happens
+# inside Apptainer/Singularity containers — see README.md for how to pull
+# them. This env only ships what the orchestrator itself needs.
+name: dk_connectome
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.11
+  - pip
+  - pip:
+      - snakemake>=8.0
+      - snakemake-executor-plugin-slurm>=0.6

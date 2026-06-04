@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software in published work, please cite the upstream tools
+  that do the heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs);
+  this pipeline only orchestrates them. See README.md for citation guidance.
+title: "dk_connectome — A Snakemake workflow for Desikan-Killiany structural connectomes"
+authors:
+  - family-names: Ndagijimana
+    given-names: Phind
+type: software
+repository-code: "https://github.com/phindagijimana/dk_connectome"
+license: Apache-2.0
+keywords:
+  - diffusion-mri
+  - connectome
+  - snakemake
+  - qsiprep
+  - qsirecon
+  - freesurfer
+  - mrtrix3
+  - bids-app

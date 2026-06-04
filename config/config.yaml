@@ -1,0 +1,111 @@
+# =============================================================================
+# dk_connectome — Snakemake configuration
+# =============================================================================
+# Copy this file, edit the paths for your site, and pass it on the CLI:
+#     snakemake --configfile config/myconfig.yaml ...
+# or keep editing this default. Anything here can be overridden with
+# `--config key=value` on the command line.
+# =============================================================================
+
+# --- IO -----------------------------------------------------------------------
+# Path to your BIDS dataset root (contains sub-XXX/ folders).
+bids_dir: /path/to/bids
+# All pipeline outputs land here. Created if it doesn't exist.
+results_root: ./results
+
+# --- Containers (Apptainer / Singularity .sif files) -------------------------
+# We invoke the BIDS Apps as containers — see README for `apptainer pull`
+# commands and pinned digests.
+containers:
+  qsiprep:    /path/to/qsiprep.sif
+  qsirecon:   /path/to/qsirecon.sif
+  # FastSurfer is optional (only needed if recon.tool == "fastsurfer").
+  fastsurfer: /path/to/fastsurfer_latest.sif
+  # Dedicated full FreeSurfer image (recon-all). The FreeSurfer that ships
+  # inside fastsurfer / qsirecon is *trimmed* and is missing the skull-strip
+  # atlas — point this at a real freesurfer .sif (e.g. freesurfer/7.4.1).
+  freesurfer: /path/to/freesurfer_7.4.1.sif
+
+# --- FreeSurfer license + lookup table + TemplateFlow cache -------------------
+# Apply for a free FreeSurfer license at https://surfer.nmr.mgh.harvard.edu/registration.html
+fs_license:        /path/to/freesurfer/license.txt
+# FreeSurferColorLUT.txt — needed by labelconvert in the DK step. The trimmed
+# FreeSurfer in qsirecon.sif doesn't ship it, so we bind in the host copy.
+# Defaults to <fs_license parent>/FreeSurferColorLUT.txt if left blank.
+fs_lut:            /path/to/freesurfer/FreeSurferColorLUT.txt
+# QSIRecon downloads atlases on first use; reuse a shared cache to avoid hitting
+# the network on every node. Any writable directory works.
+templateflow_home: ~/.cache/templateflow
+
+# --- Subjects ----------------------------------------------------------------
+# Inline list, or path to a TSV (one ID per line; lines starting with # ignored).
+# TSV wins if both are set. Auto-generate the TSV with:
+#     python workflow/scripts/list_subjects.py /path/to/bids \
+#         --require-dwi --require-t1w > config/subjects.tsv
+subjects: []
+subjects_tsv: config/subjects.tsv
+
+# --- Stage toggles -----------------------------------------------------------
+run_recon: true              # Step 2: recon-all / FastSurfer
+run_qsirecon: true           # Step 3: tractography
+run_dk_connectome: true      # Step 4: DK connectome (requires recon)
+
+# --- QSIPrep (Step 1) --------------------------------------------------------
+qsiprep:
+  output_resolution: 2
+  # SDC decision tree:
+  #   fmap present in BIDS               -> use measured fieldmaps (no flag)
+  #   no fmap + use_syn_sdc=true         -> --use-syn-sdc warn
+  #   fmap_retry=true                    -> --ignore fieldmaps --use-syn-sdc warn
+  use_syn_sdc: false
+  fmap_retry: false
+  skip_bids_validation: true
+
+# --- Recon (Step 2) ----------------------------------------------------------
+recon:
+  tool: freesurfer            # freesurfer | fastsurfer
+  fastsurfer_device: cpu      # cpu | cuda (FastSurfer only)
+
+# --- QSIRecon (Step 3) -------------------------------------------------------
+qsirecon:
+  spec: mrtrix_singleshell_ss3t_ACT-hsvs
+  # QSIRecon's MRtrix specs include a connectivity-estimation node that
+  # REQUIRES at least one atlas; without any, qsirecon aborts with
+  #   "Connectivity estimation requires atlases. Please set --atlases ..."
+  # Recognised atlas keys (shipped inside qsirecon.sif via TemplateFlow):
+  #   AAL116, AICHA384Ext, Brainnetome246Ext, Gordon333Ext,
+  #   4S156Parcels, 4S256Parcels ... 4S1056Parcels
+  atlases: [ 4S156Parcels ]   # Schaefer-100 cortex + Tian/HCP 56 subcortex.
+
+# --- DK connectome (Step 4) --------------------------------------------------
+dk:
+  # Resample aparc+aseg.mgz onto the DWI/T1w grid via antsApplyTransforms
+  # (GenericLabel) using QSIPrep's from-orig_to-T1w xfm. Disable only for
+  # debugging — the connectome will be mis-aligned in FS conformed space.
+  resample_to_dwi: true
+  # Extra flags for mrtrix3 tck2connectome (e.g. weighting/normalisation):
+  #     [ "-scale_invlength", "-scale_invnodevol" ]
+  tck2connectome_extra: []
+
+# --- Resources (per task; consumed by the Slurm executor) --------------------
+# These are sensible defaults for ~2 mm DWI with ~10M streamlines. Tune for
+# your dataset and queue policy.
+threads:
+  qsiprep:  4
+  recon:    4
+  qsirecon: 4
+  dk:       2
+
+resources:
+  # `slurm_partition` only applies on Slurm. Set per-stage if your scheduler
+  # routes by partition; otherwise leave it out and Slurm uses its default.
+  qsiprep:  { mem_mb: 24000, runtime: 700 }   # ~11.7 h
+  recon:    { mem_mb: 16000, runtime: 700 }   # ~11.7 h
+  qsirecon: { mem_mb: 24000, runtime: 700 }   # multi-session subjects need this
+  dk:       { mem_mb:  8000, runtime: 30  }
+
+# --- Slurm placement (optional) ----------------------------------------------
+slurm:
+  # Comma-separated nodelist to exclude (e.g. for known-broken hosts).
+  # Leave blank to skip the exclusion entirely.
+  exclude_nodes: ""

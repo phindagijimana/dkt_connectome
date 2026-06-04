@@ -1,0 +1,53 @@
+# =============================================================================
+# Snakemake 8+ Slurm profile (uses snakemake-executor-plugin-slurm)
+# Install once:
+#     pip install 'snakemake>=8' snakemake-executor-plugin-slurm
+# Use:
+#     snakemake --profile profiles/slurm
+# =============================================================================
+
+executor: slurm
+jobs: 50                          # max simultaneous Slurm jobs
+latency-wait: 60                  # FS sync grace after a job finishes
+keep-going: true                  # don't abort the whole DAG on one subject failure
+rerun-incomplete: false           # see submit_snakemake.sh — opt in explicitly
+printshellcmds: true
+use-conda: false
+use-singularity: false            # we invoke apptainer ourselves inside shell:
+
+# Snakemake translates threads + resources.{mem_mb, runtime, slurm_partition,
+# slurm_account, slurm_extra} into sbatch flags. Per-rule resources live in
+# config/config.yaml; the values below are the floor for rules that don't set
+# their own.
+default-resources:
+  - mem_mb=8000
+  - runtime=60
+  # Set this to your cluster's default partition. Leave blank to let Slurm
+  # use the system default.
+  # - slurm_partition=general
+  # To exclude specific hosts globally, e.g. broken nodes:
+  # - slurm_extra="'--exclude=node01,node02'"
+
+# Per-rule overrides (defensive — the inline rule definitions already set
+# threads/resources via stage_threads/stage_resources in common.smk).
+set-threads:
+  qsiprep:  4
+  recon:    4
+  qsirecon: 4
+  dk:       2
+
+# Per-rule resource overrides via the CLI-equivalent `rulename:key=value` syntax.
+# Tune for your dataset; multi-session subjects often need >480 min on qsirecon.
+set-resources:
+  - qsiprep:mem_mb=24000
+  - qsiprep:runtime=700
+  - recon:mem_mb=16000
+  - recon:runtime=720
+  - qsirecon:mem_mb=24000
+  - qsirecon:runtime=700
+  - dk:mem_mb=8000
+  - dk:runtime=30
+
+# Resubmit a Slurm job once if it dies with a non-zero exit (transient I/O,
+# node reboot, etc.).
+restart-times: 1

@@ -1,0 +1,8 @@
+# One BIDS subject ID per line, without the "sub-" prefix.
+# Lines starting with "#" and blank lines are ignored.
+#
+# Auto-generate this file from a BIDS directory with:
+#     python workflow/scripts/list_subjects.py /path/to/bids \
+#         --require-dwi --require-t1w > config/subjects.tsv
+01
+02
