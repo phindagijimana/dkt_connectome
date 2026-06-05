@@ -1,0 +1,611 @@
+#!/usr/bin/env python3
+"""connectome — friendly CLI for the dk_connectome Snakemake pipeline.
+
+Subcommands:
+    install   Install orchestrator deps, pull containers, scaffold subjects/config
+    start     Submit the pipeline (auto-detect Slurm vs local)
+    stop      Cancel the running pipeline
+    check     Per-stage / per-subject progress + driver status
+    logs      Tail driver log, or a specific rule.subject log
+
+The CLI is pure-stdlib so it runs *before* `connectome install` (which is what
+pulls in Snakemake itself). It only orchestrates: every scientific step still
+runs inside its Apptainer/Singularity container via Snakemake.
+
+State is persisted to .connectome/state.json so that `stop`, `check`, and
+`logs` always know which run to talk about.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shlex
+import shutil
+import signal
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent
+STATE_DIR = REPO / ".connectome"
+STATE_FILE = STATE_DIR / "state.json"
+DEFAULT_CONFIG = REPO / "config" / "config.yaml"
+SUBJECTS_TSV = REPO / "config" / "subjects.tsv"
+LIST_SUBJECTS = REPO / "workflow" / "scripts" / "list_subjects.py"
+SUBMIT_SCRIPT = REPO / "submit_snakemake.sh"
+
+# Containers we know how to pull. fastsurfer is optional.
+CONTAINERS = [
+    ("qsiprep.sif",          "docker://pennlinc/qsiprep:1.0.0",        True),
+    ("qsirecon.sif",         "docker://pennlinc/qsirecon:1.2.1",       True),
+    ("freesurfer_7.4.1.sif", "docker://freesurfer/freesurfer:7.4.1",   True),
+    ("fastsurfer.sif",       "docker://deepmi/fastsurfer:latest",      False),
+]
+
+# Stage label -> (key in `threads:`, "kind"). "kind" tells `check` how to
+# decide whether the stage is done for a given subject:
+#   sentinel  : <results_root>/.flags/<stage>.sub-<sid>.done
+#   recon     : <results_root>/freesurfer/sub-<sid>/mri/aparc+aseg.mgz
+#   dk        : <results_root>/dk_connectomes/sub-<sid>/dk_connectome.csv
+STAGES = [
+    ("qsiprep",       "sentinel"),
+    ("recon",         "recon"),
+    ("qsirecon",      "sentinel"),
+    ("dk_connectome", "dk"),
+]
+
+
+# ---------------------------------------------------------------------------
+# Tiny YAML reader: enough for our flat config (and the one-level-deep
+# `containers:` block). Avoids a PyYAML hard dep before `install` runs.
+# ---------------------------------------------------------------------------
+def load_yaml(path: Path) -> dict:
+    """Best-effort YAML reader. Tries PyYAML, then falls back to a tiny parser.
+
+    The fallback only understands:
+      - top-level scalars:  key: value
+      - one-level nested scalars under `key:` (4 or 2 space indent)
+      - inline lists: key: [a, b, c]
+    That covers the keys this CLI actually consults.
+    """
+    try:
+        import yaml  # type: ignore
+        with open(path) as fh:
+            return yaml.safe_load(fh) or {}
+    except ImportError:
+        pass
+
+    out: dict = {}
+    cur_key = None
+    cur_indent = 0
+    with open(path) as fh:
+        for raw in fh:
+            line = raw.rstrip("\n")
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            indent = len(line) - len(line.lstrip(" "))
+            stripped = line.strip()
+            # Strip inline comments outside of quoted values
+            if "#" in stripped:
+                # only strip if # is preceded by whitespace
+                m = re.match(r"^(.*?)(\s+#.*)$", stripped)
+                if m:
+                    stripped = m.group(1).rstrip()
+            m = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)$", stripped)
+            if not m:
+                continue
+            key, val = m.group(1), m.group(2)
+            if indent == 0:
+                cur_key = None
+                if val == "":
+                    out[key] = {}
+                    cur_key = key
+                    cur_indent = 0
+                else:
+                    out[key] = _coerce(val)
+            elif cur_key is not None:
+                if not isinstance(out.get(cur_key), dict):
+                    out[cur_key] = {}
+                out[cur_key][key] = _coerce(val)
+    return out
+
+
+def _coerce(val: str):
+    v = val.strip()
+    if v.startswith("[") and v.endswith("]"):
+        body = v[1:-1].strip()
+        if not body:
+            return []
+        return [_coerce(x.strip()) for x in body.split(",")]
+    if v.startswith(('"', "'")) and v.endswith(('"', "'")):
+        return v[1:-1]
+    if v.lower() == "true":  return True
+    if v.lower() == "false": return False
+    if v.lower() in ("null", "~", ""): return None
+    try:
+        if "." in v:
+            return float(v)
+        return int(v)
+    except ValueError:
+        return v
+
+
+# ---------------------------------------------------------------------------
+# Small utilities
+# ---------------------------------------------------------------------------
+def have(cmd: str) -> bool:
+    return shutil.which(cmd) is not None
+
+
+def has_slurm() -> bool:
+    return have("sbatch") and have("squeue")
+
+
+def container_runtime() -> str | None:
+    if have("apptainer"):   return "apptainer"
+    if have("singularity"): return "singularity"
+    return None
+
+
+def run(cmd, **kw) -> subprocess.CompletedProcess:
+    print(f"  $ {' '.join(shlex.quote(str(c)) for c in cmd)}")
+    return subprocess.run(cmd, **kw)
+
+
+def section(title: str) -> None:
+    print(f"\n=== {title} ===")
+
+
+def save_state(state: dict) -> None:
+    STATE_DIR.mkdir(exist_ok=True)
+    STATE_FILE.write_text(json.dumps(state, indent=2))
+
+
+def load_state() -> dict | None:
+    if not STATE_FILE.exists():
+        return None
+    try:
+        return json.loads(STATE_FILE.read_text())
+    except json.JSONDecodeError:
+        return None
+
+
+def resolve_results_root(cfg: dict) -> Path:
+    rr = cfg.get("results_root") or "results"
+    p = Path(str(rr)).expanduser()
+    if not p.is_absolute():
+        p = (REPO / p).resolve()
+    return p
+
+
+def load_subjects(cfg: dict) -> list[str]:
+    tsv = cfg.get("subjects_tsv")
+    if tsv:
+        p = Path(str(tsv)).expanduser()
+        if not p.is_absolute():
+            p = (REPO / p).resolve()
+        if p.exists():
+            out = []
+            for line in p.read_text().splitlines():
+                s = line.strip()
+                if s and not s.startswith("#"):
+                    out.append(s.removeprefix("sub-"))
+            if out:
+                return sorted(set(out))
+    inline = cfg.get("subjects") or []
+    return sorted({str(s).removeprefix("sub-") for s in inline})
+
+
+# ---------------------------------------------------------------------------
+# install
+# ---------------------------------------------------------------------------
+def cmd_install(args: argparse.Namespace) -> int:
+    cfg_path = Path(args.config or DEFAULT_CONFIG)
+    cfg = load_yaml(cfg_path) if cfg_path.exists() else {}
+
+    section("1/5  Toolchain")
+    print(f"  python3      : {sys.executable}  (>= 3.8 required)")
+    rt = container_runtime()
+    if rt:
+        print(f"  container    : {rt} on PATH")
+    else:
+        print(f"  container    : MISSING — install apptainer or singularity before running the pipeline")
+    print(f"  slurm        : {'detected (sbatch + squeue on PATH)' if has_slurm() else 'not detected — `start` will fall back to local mode'}")
+
+    section("2/5  Python dependencies")
+    if args.no_deps:
+        print("  skipped (--no-deps)")
+    else:
+        pip_cmd = [sys.executable, "-m", "pip", "install", "--upgrade",
+                   "snakemake>=8.0", "snakemake-executor-plugin-slurm>=0.6"]
+        if args.user:
+            pip_cmd.insert(-2, "--user")
+        r = run(pip_cmd)
+        if r.returncode != 0:
+            print("  WARN: pip install failed; consider `--user` or activating a venv/conda env first.")
+
+    section("3/5  Containers")
+    containers_dir = Path(args.containers_dir or (REPO / "containers")).expanduser().resolve()
+    containers_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  target dir   : {containers_dir}")
+    if args.no_containers or not rt:
+        if args.no_containers:
+            print("  skipped (--no-containers)")
+        else:
+            print("  skipped (no apptainer/singularity)")
+    else:
+        for sif, uri, default in CONTAINERS:
+            target = containers_dir / sif
+            if target.exists() and not args.force_pull:
+                print(f"  {sif:<22} present, skipping")
+                continue
+            if not default and not args.with_fastsurfer:
+                print(f"  {sif:<22} skipped (pass --with-fastsurfer to pull it)")
+                continue
+            print(f"  pulling {sif} from {uri} …")
+            pull_cmd = [rt, "pull"]
+            if args.force_pull:
+                pull_cmd.append("--force")
+            pull_cmd += [str(target), uri]
+            r = run(pull_cmd)
+            if r.returncode != 0:
+                print(f"  WARN: pull failed for {sif}")
+
+    section("4/5  Subjects")
+    bids = args.bids or cfg.get("bids_dir")
+    if bids and Path(str(bids)).is_dir() and bids != "/path/to/bids":
+        bids_p = Path(str(bids)).expanduser().resolve()
+        print(f"  scanning     : {bids_p}")
+        r = subprocess.run(
+            [sys.executable, str(LIST_SUBJECTS), str(bids_p),
+             "--require-dwi", "--require-t1w"],
+            capture_output=True, text=True,
+        )
+        if r.returncode == 0:
+            SUBJECTS_TSV.write_text(r.stdout)
+            n = sum(1 for ln in r.stdout.splitlines() if ln.strip() and not ln.startswith("#"))
+            print(f"  wrote {n} subjects -> {SUBJECTS_TSV}")
+        else:
+            print(f"  WARN: list_subjects.py exited {r.returncode}: {r.stderr.strip()}")
+    else:
+        print(f"  skipped — no valid bids_dir.")
+        print(f"  Edit {cfg_path} (bids_dir:) or pass `--bids /path/to/BIDS`, then rerun:")
+        print(f"      ./connectome install --no-deps --no-containers")
+
+    section("5/5  Config completeness")
+    needs: list[str] = []
+    for k in ("bids_dir", "fs_license", "fs_lut"):
+        v = cfg.get(k)
+        if not v or str(v).startswith("/path/to"):
+            needs.append(k)
+    containers_cfg = cfg.get("containers") or {}
+    for k in ("qsiprep", "qsirecon", "freesurfer"):
+        v = containers_cfg.get(k)
+        if not v or str(v).startswith("/path/to"):
+            needs.append(f"containers.{k}")
+    if needs:
+        print(f"  {cfg_path}: still placeholder values for:")
+        for k in needs:
+            print(f"    - {k}")
+        print(f"  Open the file and replace each `/path/to/...` with a real path.")
+        print(f"  Hint: pulled .sif files are at {containers_dir}")
+    else:
+        print(f"  {cfg_path} looks complete.")
+
+    print("\nNext:")
+    print("  ./connectome start          # submit pipeline (Slurm if available, else local)")
+    print("  ./connectome check          # per-stage progress")
+    print("  ./connectome logs -f        # follow the driver log")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# start
+# ---------------------------------------------------------------------------
+def cmd_start(args: argparse.Namespace) -> int:
+    cfg_path = Path(args.config or DEFAULT_CONFIG).resolve()
+    if not cfg_path.exists():
+        print(f"ERROR: config not found: {cfg_path}", file=sys.stderr)
+        return 2
+    cfg = load_yaml(cfg_path)
+
+    # Pre-flight: subjects must resolve.
+    subjects = load_subjects(cfg)
+    if not subjects:
+        print("ERROR: no subjects discoverable.", file=sys.stderr)
+        print("  Populate config/subjects.tsv (or set `subjects:` in your config).", file=sys.stderr)
+        print("  Easiest: rerun `./connectome install --bids /path/to/BIDS --no-deps --no-containers`", file=sys.stderr)
+        return 2
+
+    mode = args.mode
+    if mode == "auto":
+        mode = "slurm" if has_slurm() else "local"
+
+    extra = list(args.extra or [])
+    # Strip a leading "--" separator if argparse REMAINDER captured one.
+    if extra and extra[0] == "--":
+        extra = extra[1:]
+
+    if mode == "slurm":
+        if not has_slurm():
+            print("ERROR: --mode slurm but sbatch/squeue not on PATH", file=sys.stderr)
+            return 2
+        cmd = ["sbatch", str(SUBMIT_SCRIPT), "--configfile", str(cfg_path), *extra]
+        print(f"[connectome] submitting Slurm driver ({len(subjects)} subjects)")
+        r = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO)
+        sys.stdout.write(r.stdout)
+        sys.stderr.write(r.stderr)
+        if r.returncode != 0:
+            return r.returncode
+        m = re.search(r"Submitted batch job (\d+)", r.stdout)
+        if not m:
+            print("ERROR: could not parse sbatch jobid", file=sys.stderr)
+            return 1
+        jid = m.group(1)
+        save_state({
+            "mode": "slurm", "job_id": jid, "configfile": str(cfg_path),
+            "started_at": int(time.time()), "n_subjects": len(subjects),
+        })
+        print(f"\n[connectome] driver job id : {jid}")
+        print(f"  ./connectome check         # progress")
+        print(f"  ./connectome logs -f       # follow driver log")
+        print(f"  ./connectome stop          # cancel")
+        return 0
+
+    # local
+    (REPO / "logs").mkdir(exist_ok=True)
+    log = REPO / "logs" / f"local-driver.{int(time.time())}.log"
+    cmd = ["snakemake", "--configfile", str(cfg_path),
+           "-j", str(args.jobs), "--printshellcmds", "--keep-going", *extra]
+    if not have("snakemake"):
+        print("ERROR: `snakemake` not on PATH — run `./connectome install` first", file=sys.stderr)
+        return 2
+    print(f"[connectome] starting local driver ({len(subjects)} subjects, -j {args.jobs})")
+    print(f"  log: {log}")
+    print(f"  $ {' '.join(shlex.quote(c) for c in cmd)}")
+    with open(log, "w") as fh:
+        p = subprocess.Popen(cmd, stdout=fh, stderr=subprocess.STDOUT,
+                             cwd=REPO, start_new_session=True)
+    save_state({
+        "mode": "local", "pid": p.pid, "log": str(log),
+        "configfile": str(cfg_path), "started_at": int(time.time()),
+        "n_subjects": len(subjects),
+    })
+    print(f"  pid: {p.pid}")
+    print(f"\n  ./connectome check         # progress")
+    print(f"  ./connectome logs -f       # follow local-driver log")
+    print(f"  ./connectome stop          # SIGTERM the driver process group")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# stop
+# ---------------------------------------------------------------------------
+def cmd_stop(args: argparse.Namespace) -> int:
+    st = load_state()
+    if not st:
+        print("no recorded run (.connectome/state.json missing); nothing to stop")
+        return 1
+
+    if st["mode"] == "slurm":
+        jid = st["job_id"]
+        print(f"[connectome] scancel driver job {jid}")
+        run(["scancel", str(jid)])
+        if args.all_children:
+            user = os.getenv("USER", "")
+            if user:
+                print(f"[connectome] also scancelling child rule jobs (name matches dk-/qsi*/recon/freesurfer)")
+                # Be precise: only cancel jobs whose name starts with one of our stage prefixes
+                squeue = subprocess.run(
+                    ["squeue", "-u", user, "-h", "-o", "%i %j"],
+                    capture_output=True, text=True,
+                )
+                kill = []
+                for ln in squeue.stdout.splitlines():
+                    parts = ln.split(maxsplit=1)
+                    if len(parts) < 2:
+                        continue
+                    jjid, jname = parts
+                    if jjid == jid:
+                        continue
+                    if any(jname.startswith(prefix) for prefix in
+                           ("qsiprep", "qsirecon", "recon", "dk_", "freesurfer", "fastsurfer")):
+                        kill.append(jjid)
+                if kill:
+                    run(["scancel", *kill])
+                else:
+                    print("  no matching child jobs found in squeue")
+    else:
+        pid = int(st["pid"])
+        print(f"[connectome] SIGTERM local driver pid {pid}")
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGTERM)
+        except ProcessLookupError:
+            print("  process already gone")
+        except PermissionError as e:
+            print(f"  ERROR: {e}")
+            return 1
+
+    STATE_FILE.unlink(missing_ok=True)
+    print("[connectome] state cleared (.connectome/state.json removed)")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# check
+# ---------------------------------------------------------------------------
+def _stage_done(results_root: Path, stage: str, kind: str, sid: str) -> bool:
+    if kind == "sentinel":
+        return (results_root / ".flags" / f"{stage}.sub-{sid}.done").exists()
+    if kind == "recon":
+        return (results_root / "freesurfer" / f"sub-{sid}" / "mri" / "aparc+aseg.mgz").exists()
+    if kind == "dk":
+        return (results_root / "dk_connectomes" / f"sub-{sid}" / "dk_connectome.csv").exists()
+    return False
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    cfg = load_yaml(DEFAULT_CONFIG) if DEFAULT_CONFIG.exists() else {}
+    results_root = resolve_results_root(cfg)
+    subjects = load_subjects(cfg)
+
+    print(f"[connectome] config        : {DEFAULT_CONFIG}")
+    print(f"             results_root  : {results_root}")
+    print(f"             subjects      : {len(subjects)}")
+
+    st = load_state()
+    if st:
+        when = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(st["started_at"]))
+        ident = f"job {st['job_id']}" if st["mode"] == "slurm" else f"pid {st['pid']}"
+        print(f"             last submit   : {st['mode']}/{ident} at {when}")
+        if st["mode"] == "slurm" and has_slurm():
+            r = subprocess.run(
+                ["squeue", "-j", str(st["job_id"]), "-h", "-o", "%T %M %R"],
+                capture_output=True, text=True,
+            )
+            row = r.stdout.strip()
+            print(f"             driver state  : {row if row else 'NOT IN QUEUE (finished or killed)'}")
+        elif st["mode"] == "local":
+            try:
+                os.kill(int(st["pid"]), 0)
+                alive = "alive"
+            except (ProcessLookupError, PermissionError):
+                alive = "exited"
+            print(f"             driver pid    : {alive}")
+
+    if st and st["mode"] == "slurm" and has_slurm():
+        user = os.getenv("USER", "")
+        r = subprocess.run(
+            ["squeue", "-u", user, "-h", "-o", "%i %j %T %M %R"],
+            capture_output=True, text=True,
+        )
+        rows = [ln for ln in r.stdout.splitlines()
+                if any(s in ln for s in ("qsiprep", "qsirecon", "recon", "dk_", "freesurfer", "fastsurfer"))
+                and not ln.startswith(str(st["job_id"]) + " ")]
+        if rows:
+            print(f"\n  Active child Slurm jobs ({len(rows)}):")
+            print(f"    {'JOBID':<10} {'NAME':<28} {'STATE':<10} {'TIME':<10} {'NODES/REASON'}")
+            for ln in rows[:20]:
+                parts = ln.split(maxsplit=4)
+                while len(parts) < 5: parts.append("")
+                print(f"    {parts[0]:<10} {parts[1][:28]:<28} {parts[2]:<10} {parts[3]:<10} {parts[4]}")
+            if len(rows) > 20:
+                print(f"    … {len(rows) - 20} more")
+
+    print(f"\n  Stage progress (per-subject artifact present?):")
+    print(f"    {'stage':<16} {'done':>5} / {'total':<5}  remaining")
+    for stage, kind in STAGES:
+        done = [s for s in subjects if _stage_done(results_root, stage, kind, s)]
+        todo = [s for s in subjects if s not in done]
+        sample = ", ".join(todo[:6]) + (f", … +{len(todo)-6}" if len(todo) > 6 else "")
+        print(f"    {stage:<16} {len(done):>5} / {len(subjects):<5}  {sample}")
+
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# logs
+# ---------------------------------------------------------------------------
+def cmd_logs(args: argparse.Namespace) -> int:
+    if args.rule and args.subject:
+        cfg = load_yaml(DEFAULT_CONFIG) if DEFAULT_CONFIG.exists() else {}
+        results_root = resolve_results_root(cfg)
+        candidates = [
+            results_root / "logs" / f"{args.rule}.sub-{args.subject}.log",
+            results_root / "logs" / f"{args.rule}.{args.subject}.log",
+            REPO / "logs" / f"{args.rule}.sub-{args.subject}.log",
+        ]
+        log = next((c for c in candidates if c.exists()), None)
+        if not log:
+            print(f"no log found for rule={args.rule} subject={args.subject}", file=sys.stderr)
+            print(f"  tried: " + "  ".join(str(c) for c in candidates), file=sys.stderr)
+            return 1
+    else:
+        st = load_state()
+        candidates = sorted((REPO / "logs").glob("snakemake_driver.*.out"),
+                            key=lambda p: p.stat().st_mtime, reverse=True)
+        candidates += sorted((REPO / "logs").glob("local-driver.*.log"),
+                             key=lambda p: p.stat().st_mtime, reverse=True)
+        if st and st["mode"] == "local" and "log" in st and Path(st["log"]).exists():
+            candidates.insert(0, Path(st["log"]))
+        if st and st["mode"] == "slurm":
+            specific = REPO / "logs" / f"snakemake_driver.{st['job_id']}.out"
+            if specific.exists():
+                candidates.insert(0, specific)
+        if not candidates:
+            print("no driver logs in logs/ — has the pipeline been started?", file=sys.stderr)
+            return 1
+        log = candidates[0]
+
+    print(f"[connectome] tailing {log}", file=sys.stderr)
+    cmd = ["tail", f"-n{args.tail}"]
+    if args.follow:
+        cmd.append("-f")
+    cmd.append(str(log))
+    try:
+        return subprocess.call(cmd)
+    except KeyboardInterrupt:
+        return 130
+
+
+# ---------------------------------------------------------------------------
+# main
+# ---------------------------------------------------------------------------
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        prog="connectome",
+        description="Friendly CLI for the dk_connectome Snakemake pipeline.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="See USER_GUIDE.md for detailed configuration and rationale.",
+    )
+    sub = ap.add_subparsers(dest="cmd", required=True, metavar="{install,start,stop,check,logs}")
+
+    pi = sub.add_parser("install",
+        help="install Python deps, pull containers, generate subjects.tsv")
+    pi.add_argument("--config", help="path to config.yaml (default config/config.yaml)")
+    pi.add_argument("--bids", help="override bids_dir; if a real directory, autogenerates subjects.tsv")
+    pi.add_argument("--containers-dir", help="where to put .sif files (default ./containers)")
+    pi.add_argument("--no-deps", action="store_true", help="skip pip install of snakemake")
+    pi.add_argument("--no-containers", action="store_true", help="skip apptainer pull")
+    pi.add_argument("--with-fastsurfer", action="store_true", help="also pull fastsurfer.sif")
+    pi.add_argument("--force-pull", action="store_true", help="re-pull containers even if present")
+    pi.add_argument("--user", action="store_true", help="pass --user to pip (no venv/conda env active)")
+    pi.set_defaults(func=cmd_install)
+
+    ps = sub.add_parser("start", help="submit the pipeline (auto-detect Slurm vs local)")
+    ps.add_argument("--config", help="path to config.yaml")
+    ps.add_argument("--mode", choices=["auto", "slurm", "local"], default="auto",
+                    help="execution backend (default: auto)")
+    ps.add_argument("--jobs", type=int, default=4, help="local parallel jobs (ignored in slurm mode)")
+    ps.add_argument("extra", nargs=argparse.REMAINDER,
+                    help="extra args passed verbatim to snakemake (prefix with --)")
+    ps.set_defaults(func=cmd_start)
+
+    pc = sub.add_parser("stop", help="cancel the running pipeline")
+    pc.add_argument("--all-children", action="store_true",
+                    help="also scancel matching child rule jobs (slurm mode only)")
+    pc.set_defaults(func=cmd_stop)
+
+    pk = sub.add_parser("check", help="show pipeline progress per stage")
+    pk.set_defaults(func=cmd_check)
+
+    pl = sub.add_parser("logs", help="tail driver or per-rule logs")
+    pl.add_argument("-f", "--follow", action="store_true", help="follow new lines (like tail -f)")
+    pl.add_argument("-n", "--tail", type=int, default=80, help="show last N lines (default 80)")
+    pl.add_argument("--rule", help="rule name (qsiprep/recon/qsirecon/dk_connectome)")
+    pl.add_argument("--subject", help="subject id, without the sub- prefix")
+    pl.set_defaults(func=cmd_logs)
+
+    args = ap.parse_args()
+    try:
+        return int(args.func(args) or 0)
+    except KeyboardInterrupt:
+        return 130
+
+
+if __name__ == "__main__":
+    sys.exit(main())
