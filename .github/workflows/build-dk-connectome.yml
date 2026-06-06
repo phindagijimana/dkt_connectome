@@ -1,15 +1,30 @@
 # =============================================================================
-# Build and publish the dk-connectome image to GitHub Container Registry.
+# Build and publish the dk-connectome image to:
+#   1. GitHub Container Registry   ghcr.io/<owner>/dk-connectome      (always)
+#   2. Docker Hub                  docker.io/<DOCKERHUB_USERNAME>/dk-connectome
+#                                  (only if DOCKERHUB_USERNAME + DOCKERHUB_TOKEN
+#                                   secrets are configured on the repo)
 #
 # Triggers
 #   - manual: workflow_dispatch (any branch)
-#   - any push to main (publishes :main + :sha-XXXX tags so dev users can pull)
-#   - any tag matching v* (publishes :<tag> + :latest)
+#   - any push to main (publishes :main + :sha-XXXX tags)
+#   - any tag matching v* (publishes :<tag> + :latest on both registries)
 #
-# The image goes to ghcr.io/<owner>/dk-connectome (in lower case). After the
-# first successful push, make the package public from
+# To enable the Docker Hub mirror:
+#   1. Create a Docker Hub access token at
+#        https://hub.docker.com/settings/security
+#      (Account Settings -> Security -> New Access Token; "Read & Write" scope).
+#   2. Add two repository secrets at
+#        https://github.com/<owner>/dk_connectome/settings/secrets/actions
+#        DOCKERHUB_USERNAME  = your Docker Hub login (e.g. phindagijimana321)
+#        DOCKERHUB_TOKEN     = the access token from step 1
+#   3. Trigger this workflow (push to main, push a tag v*, or run it
+#      manually). The "Log in to Docker Hub" step skips when the secrets
+#      are missing, so unconfigured forks still get clean GHCR-only builds.
+#
+# After the first successful push, set the GHCR package to public at
 #   https://github.com/users/<owner>/packages/container/dk-connectome/settings
-# so users do not need a token to apptainer pull it.
+# (Docker Hub repos default to public unless you change the visibility).
 # =============================================================================
 name: build-dk-connectome
 
@@ -28,8 +43,9 @@ permissions:
   packages: write
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/dk-connectome
+  GHCR_REGISTRY: ghcr.io
+  GHCR_IMAGE:    ${{ github.repository_owner }}/dk-connectome
+  DOCKERHUB_IMAGE: dk-connectome
 
 jobs:
   build-and-push:
@@ -44,21 +60,48 @@ jobs:
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Lowercase image name
+      # Skipped automatically when secrets aren't set — forks without
+      # Docker Hub credentials still get a clean GHCR-only build.
+      - name: Log in to Docker Hub
+        id: dh_login
+        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Lowercase GHCR image name
         id: lower
-        run: echo "image=${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
+        run: echo "ghcr_image=${GHCR_IMAGE,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Compose registry image list
+        id: images
+        run: |
+          {
+            echo "ghcr.io/${{ steps.lower.outputs.ghcr_image }}"
+            if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]]; then
+              echo "docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${DOCKERHUB_IMAGE}"
+            fi
+          } > /tmp/images.txt
+          {
+            echo "list<<EOF"
+            cat /tmp/images.txt
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Extract metadata (tags + labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ steps.lower.outputs.image }}
-          # On tags v1.2.3 -> {1.2.3, 1.2, latest}
-          # On main push  -> {main, sha-<short>}
+          # Multi-registry: the metadata action expands tags for each image
+          # in the list, so a single build/push step fan-outs to both
+          # registries with identical tags.
+          images: ${{ steps.images.outputs.list }}
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -77,3 +120,17 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          {
+            echo "## Pushed images"
+            echo
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+            if [[ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]]; then
+              echo
+              echo "_Docker Hub mirror is disabled — add \`DOCKERHUB_USERNAME\` + \`DOCKERHUB_TOKEN\` secrets to enable._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
