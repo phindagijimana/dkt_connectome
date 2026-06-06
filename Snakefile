@@ -83,7 +83,8 @@ onstart:
           f"{'...' if len(SUBJECTS) > 5 else ''})")
     print_plugin_banner()
     print(f"  recon tool   : {config['recon']['tool']}")
-    print(f"  recon spec   : {config['qsirecon']['spec']}")
+    print(f"  qsirecon spec: {QSIRECON_SPEC}"
+          f"{'  (multi-shell)' if cfg_bool_from(config.get('qsirecon', {}).get('multi_shell')) else '  (single-shell)'}")
 
 
 onsuccess:

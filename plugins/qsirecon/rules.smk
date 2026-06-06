@@ -32,7 +32,11 @@ rule qsirecon:
         fs_license   = str(FS_LICENSE),
         tflow        = str(TEMPLATEFLOW_HOME),
         container    = str(CONTAINERS["qsirecon"]),
-        spec         = config["qsirecon"]["spec"],
+        # QSIRECON_SPEC (defined in plugins/_common/common.smk) honours the
+        # `qsirecon.multi_shell` toggle: true swaps the single-shell SS3T+ACT
+        # default for the multi-shell MSMT+ACT one. An explicit `qsirecon.spec`
+        # in config wins over both.
+        spec         = QSIRECON_SPEC,
         atlases      = " ".join(config["qsirecon"].get("atlases", []) or []),
         output_res   = config["qsiprep"]["output_resolution"],
     shell:

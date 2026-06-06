@@ -89,6 +89,46 @@ RUN_DK_CONNECTOME  = cfg_bool("run_dk_connectome", True)
 
 
 # ---------------------------------------------------------------------------
+# QSIRecon spec resolution
+# ---------------------------------------------------------------------------
+# The pipeline is single-shell by default. Setting `qsirecon.multi_shell: true`
+# (or passing `--multi-shell` via the CLI, which becomes
+# `--config qsirecon='{"multi_shell":true}'`) swaps in a multi-shell-aware spec
+# automatically — but only if the user hasn't explicitly overridden `spec`.
+_DEFAULT_SS_SPEC = "mrtrix_singleshell_ss3t_ACT-hsvs"
+_DEFAULT_MS_SPEC = "mrtrix_multishell_msmt_ACT-hsvs"
+
+
+def effective_qsirecon_spec() -> str:
+    """Return the qsirecon spec to use, honouring multi_shell when no explicit override."""
+    qcfg = config.get("qsirecon", {}) or {}
+    spec = qcfg.get("spec")
+    multi_shell = cfg_bool_from(qcfg.get("multi_shell"), default=False)
+    # An explicitly-set spec wins (even if multi_shell=true, the user knows
+    # best). Only swap defaults when spec is the single-shell default OR unset.
+    if not spec or spec == _DEFAULT_SS_SPEC:
+        return _DEFAULT_MS_SPEC if multi_shell else _DEFAULT_SS_SPEC
+    return spec
+
+
+def cfg_bool_from(v, default: bool = False) -> bool:
+    """Same coercion as cfg_bool but on an arbitrary value (not config key)."""
+    if v is None:
+        return default
+    if isinstance(v, bool):
+        return v
+    if isinstance(v, (int, float)):
+        return bool(v)
+    if isinstance(v, str):
+        return v.strip().lower() in ("1", "true", "yes", "on", "y", "t")
+    return bool(v)
+
+
+# Resolve once at parse time so every rule + onstart sees the same value.
+QSIRECON_SPEC = effective_qsirecon_spec()
+
+
+# ---------------------------------------------------------------------------
 # BIDS helpers (mirror subject.sh)
 # ---------------------------------------------------------------------------
 def has_fmap(subject: str) -> bool:

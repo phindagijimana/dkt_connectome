@@ -72,6 +72,16 @@ recon:
 
 # --- QSIRecon (Step 3) -------------------------------------------------------
 qsirecon:
+  # Default is single-shell (most DWI datasets). Set multi_shell: true (or pass
+  # `--multi-shell` on the CLI) to swap the default spec to the multi-shell
+  # equivalent. An explicitly-set `spec:` always wins over multi_shell.
+  multi_shell: false
+  # Spec name. Leave at the default (mrtrix_singleshell_ss3t_ACT-hsvs) and let
+  # multi_shell control the choice, OR override with any qsirecon spec, e.g.:
+  #   mrtrix_singleshell_ss3t_ACT-fast       (no FreeSurfer needed)
+  #   mrtrix_multishell_msmt_ACT-hsvs        (multi-shell + ACT + HSVS)
+  #   mrtrix_multishell_msmt_pyafq_tractometry
+  # See `apptainer exec qsirecon.sif qsirecon --help` for the full list.
   spec: mrtrix_singleshell_ss3t_ACT-hsvs
   # QSIRecon's MRtrix specs include a connectivity-estimation node that
   # REQUIRES at least one atlas; without any, qsirecon aborts with
