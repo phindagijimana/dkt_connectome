@@ -1,0 +1,61 @@
+# =============================================================================
+# Internal plugin — shared infrastructure for all stage plugins.
+# =============================================================================
+# Always loaded first by the loader, regardless of which stage plugins are
+# enabled. Exposes BIDS_DIR, RESULTS_ROOT, CONTAINERS, FS_LICENSE, FS_LUT,
+# SUBJECTS, has_fmap(), find_t1ws(), stage_threads(), stage_resources(),
+# {qsiprep,qsirecon}_flag(), recon_target(), dk_target(), etc.
+#
+# Loaded from plugins/_common/common.smk by the loader in Snakefile.
+# =============================================================================
+
+name: _common
+version: 1.0.0
+kind: internal                 # not a stage; provides shared helpers
+description: Shared paths, subject discovery, and config helpers.
+
+# This plugin defines no rules; only Python helpers + path constants.
+rules: common.smk
+
+# Config keys consumed (validated up-front by the loader if `required: true`).
+config_schema:
+  - key: bids_dir
+    required: true
+    type: path
+    description: BIDS dataset root.
+
+  - key: results_root
+    required: true
+    type: path
+    description: Where all pipeline outputs go.
+
+  - key: containers
+    required: true
+    type: mapping
+    description: Apptainer .sif paths keyed by stage name.
+
+  - key: fs_license
+    required: true
+    type: path
+    description: FreeSurfer license file.
+
+  - key: templateflow_home
+    required: true
+    type: path
+    description: TemplateFlow cache (writable; reused across runs).
+
+  - key: subjects
+    required: false
+    type: list
+    default: []
+    description: Inline subject ID list (without sub- prefix).
+
+  - key: subjects_tsv
+    required: false
+    type: path
+    description: One-ID-per-line file; takes precedence over inline `subjects`.
+
+  - key: fs_lut
+    required: false
+    type: path
+    description: FreeSurferColorLUT.txt; defaults to <fs_license parent>/FreeSurferColorLUT.txt.

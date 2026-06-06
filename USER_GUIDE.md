@@ -44,12 +44,18 @@ Per subject, four stages run in dependency order. Stages can be toggled and
 individual subjects can be re-run independently — Snakemake skips any stage
 whose outputs already exist and whose inputs are not newer.
 
-| Stage | Tool | Container | Typical wall time (single-shell ~64 dir, 1 session) |
-|---|---|---|---|
-| 1 — `qsiprep` | QSIPrep | `qsiprep.sif` | 1.5 – 4 h |
-| 2 — `recon` | recon-all *or* FastSurfer | `freesurfer.sif` / `fastsurfer.sif` | 4 – 10 h (recon-all) · ~1 h (FastSurfer CPU) |
-| 3 — `qsirecon` | QSIRecon (SS3T CSD + ACT + HSVS) | `qsirecon.sif` | 3 – 5 h |
-| 4 — `dk_connectome` | ANTs + FreeSurfer + MRtrix3 | `qsirecon.sif` | ~3 min |
+| Stage | Tool | Container (size) | Source | Typical wall time (single-shell ~64 dir, 1 session) |
+|---|---|---|---|---|
+| 1 — `qsiprep` | QSIPrep | `pennlinc/qsiprep:1.0.0` (~3.5 GB) | upstream | 1.5 – 4 h |
+| 2 — `recon` | recon-all *or* FastSurfer | `freesurfer/freesurfer:7.4.1` (~6 GB) / `deepmi/fastsurfer` (~5 GB) | upstream | 4 – 10 h (recon-all) · ~1 h (FastSurfer CPU) |
+| 3 — `qsirecon` | QSIRecon (SS3T CSD + ACT + HSVS) | `pennlinc/qsirecon:1.2.1` (~5 GB) | upstream | 3 – 5 h |
+| 4 — `dk_connectome` | ANTs + MRtrix3 (+ FS color LUT) | `ghcr.io/phindagijimana/dk-connectome:0.1.0` (~900 MB) | **this repo** | ~3 min |
+
+The dk-connectome image is built from the recipes in [`containers/`](containers/)
+(`Dockerfile.dk_connectome` + `Apptainer.dk_connectome.def`) and published to
+`ghcr.io` on each tagged release. It bundles only the minimal toolset the DK
+step needs (MRtrix3 + ANTs + the FreeSurfer color LUT data file) and does not
+require a FreeSurfer license to use.
 
 ---
 
@@ -109,11 +115,30 @@ If you prefer pulling by hand or pinning specific digests:
 
 ```bash
 mkdir -p containers && cd containers
+
+# Upstream (large; you only need the one you'll use for recon)
 apptainer pull qsiprep.sif          docker://pennlinc/qsiprep:1.0.0
 apptainer pull qsirecon.sif         docker://pennlinc/qsirecon:1.2.1
 apptainer pull freesurfer_7.4.1.sif docker://freesurfer/freesurfer:7.4.1
-apptainer pull fastsurfer.sif       docker://deepmi/fastsurfer:latest      # optional
+apptainer pull fastsurfer.sif       docker://deepmi/fastsurfer:latest        # optional
+
+# Step 4 — built from this repo, published on ghcr.io
+apptainer pull dk-connectome.sif    docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
 ```
+
+If `ghcr.io` is unreachable (air-gapped cluster, blocked egress, or you want
+to pin to your own commit), build the dk-connectome image locally:
+
+```bash
+apptainer build containers/dk-connectome.sif containers/Apptainer.dk_connectome.def
+# or via Docker, then convert:
+docker build -t dk-connectome:local -f containers/Dockerfile.dk_connectome containers/
+apptainer build containers/dk-connectome.sif docker-daemon://dk-connectome:local
+```
+
+`./connectome install` does the pull first, then auto-falls-back to
+`apptainer build` from `Apptainer.dk_connectome.def` if the pull failed
+(use `--no-local-build` to disable that fallback).
 
 Pin the digests you actually used in published runs:
 
@@ -124,9 +149,14 @@ apptainer inspect --json containers/qsiprep.sif | jq .data.attributes
 ### FreeSurfer license & color LUT
 
 Get the license at <https://surfer.nmr.mgh.harvard.edu/registration.html> (free).
-The DK step also needs `FreeSurferColorLUT.txt`, which ships with any FreeSurfer
-install — copy or symlink it next to your `license.txt`, then point both `fs_license`
-and `fs_lut` in `config/config.yaml` at them.
+It's required by `qsiprep`, `qsirecon`, and the `recon` step (`recon-all`).
+
+The DK step (Step 4) does **not** require a FreeSurfer license:
+`FreeSurferColorLUT.txt` is baked into `dk-connectome.sif` at build time from
+FreeSurfer's open-source GitHub source distribution. You can still override it
+by pointing `fs_lut:` in `config/config.yaml` at a host-side copy (e.g. to pin
+to a specific FreeSurfer release); if the file exists it gets bind-mounted in
+over the baked-in one.
 
 ---
 
@@ -138,9 +168,10 @@ Everything lives in `config/config.yaml`. Top-level keys:
 |---|---|---|
 | `bids_dir` | *(required)* | path to BIDS dataset root |
 | `results_root` | `./results` | where all outputs land |
-| `containers.qsiprep` / `.qsirecon` / `.freesurfer` / `.fastsurfer` | *(required for whichever stages you run)* | absolute paths to `.sif` files |
-| `fs_license` | *(required)* | FreeSurfer license file |
-| `fs_lut` | `<fs_license parent>/FreeSurferColorLUT.txt` | LUT bind-mounted into the DK step |
+| `containers.qsiprep` / `.qsirecon` / `.freesurfer` / `.fastsurfer` | *(required for whichever stages you run)* | absolute paths to upstream `.sif` files |
+| `containers.dk_connectome` | *(required)* | absolute path to `dk-connectome.sif` (built from this repo or pulled from ghcr.io) |
+| `fs_license` | *(required for qsiprep / recon / qsirecon)* | FreeSurfer license file. **Not** required by the DK step. |
+| `fs_lut` | *(optional; baked into dk-connectome.sif)* | host-side `FreeSurferColorLUT.txt`. Bind-mounted over the baked-in one only if set and present. |
 | `templateflow_home` | `~/.cache/templateflow` | QSIRecon atlas cache (reuse across runs!) |
 | `subjects` | `[]` | inline subject ID list (no `sub-` prefix) |
 | `subjects_tsv` | `config/subjects.tsv` | one ID per line, `#` comments; **wins over `subjects`** |
@@ -313,6 +344,35 @@ actually live in the same coordinate frame:
 Compare the voxel grid, transform, and bounding box if a downstream tool
 complains.
 
+### Why a dedicated `dk-connectome.sif`
+
+Step 4 used to ride inside `qsirecon.sif` because that image happened to ship
+ANTs + MRtrix3 + a trimmed FreeSurfer. That's a 5 GB image to run what is, in
+practice, a single `antsApplyTransforms` + `tck2connectome` invocation. The
+trimmed FreeSurfer inside `qsirecon.sif` also missed `FreeSurferColorLUT.txt`,
+forcing the rule to bind-mount it from the host (and therefore making every
+user fish out a copy from their FreeSurfer install).
+
+The dedicated `dk-connectome.sif` is built from
+[`containers/Dockerfile.dk_connectome`](containers/Dockerfile.dk_connectome)
+(or the equivalent [`Apptainer.dk_connectome.def`](containers/Apptainer.dk_connectome.def))
+and contains only:
+
+* **MRtrix3 3.0.4** — `mrconvert` (reads MGZ natively, replacing the FreeSurfer
+  `mri_convert` call), `labelconvert`, `tck2connectome`, `tckinfo`, `mrinfo`.
+* **ANTs 2.5.0** — `antsApplyTransforms` (single binary + libs).
+* **`FreeSurferColorLUT.txt`** — baked in at build time from FreeSurfer's open
+  GitHub source distribution (pinned to a specific upstream ref). No FreeSurfer
+  license is required to use this image — the LUT is a data table, not the
+  FreeSurfer toolchain.
+
+Net effect: **~900 MB instead of ~5 GB**, no host LUT shuffling, and the DK
+step is now a self-contained, independently versioned, citable container.
+
+The image is published to `ghcr.io/phindagijimana/dk-connectome:<version>` on
+every tagged release via
+[`.github/workflows/build-dk-connectome.yml`](.github/workflows/build-dk-connectome.yml).
+
 ---
 
 ## Slurm tuning
@@ -436,7 +496,8 @@ A [`CITATION.cff`](CITATION.cff) is provided if you want to cite this pipeline s
 | QSIRecon HSVS aborts with `mount source ... doesn't exist` | recon hasn't produced `freesurfer/sub-XXX/` — check that stage first (`./connectome check`) |
 | DK warning `dwiref/xfm not found; falling back to FS conformed space` | QSIPrep didn't write `*space-T1w_dwiref.nii.gz` for this subject; inspect QSIPrep outputs |
 | `recon-all` dies ~30 min in with `cannot find .../RB_all_withskull_2020_01_02.gca` | `containers.freesurfer` is pointing at a *trimmed* FreeSurfer (e.g. the one baked into a FastSurfer image); switch to the dedicated `freesurfer_7.4.1.sif` |
-| `DK: missing FreeSurferColorLUT.txt` | set `fs_lut:` in config to your host-side `FreeSurferColorLUT.txt` |
+| `DK: missing FreeSurferColorLUT.txt` | shouldn't happen with the dedicated `dk-connectome.sif` (LUT is baked in). If you pointed `containers.dk_connectome` at a different image, set `fs_lut:` in config to your host-side `FreeSurferColorLUT.txt`. |
+| `apptainer pull` of `dk-connectome.sif` fails (e.g. 404, network blocked) | the CI workflow may not have published yet, or ghcr.io is blocked. Build locally: `apptainer build containers/dk-connectome.sif containers/Apptainer.dk_connectome.def`. `./connectome install` does this automatically unless `--no-local-build` is set. |
 | `tckinfo: ... is not a valid track file` | MRtrix 3.0.4 can't read `.tck.gz` directly; the DK rule already handles this — make sure your local copy is up to date |
 | `LockException` on restart | a previous driver was killed while holding `.snakemake/locks/`; run `snakemake --unlock` from the repo root |
 | Need to wipe Snakemake metadata only (keep outputs) | `rm -rf .snakemake` (or `make clean`) |

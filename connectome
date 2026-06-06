@@ -38,13 +38,22 @@ SUBJECTS_TSV = REPO / "config" / "subjects.tsv"
 LIST_SUBJECTS = REPO / "workflow" / "scripts" / "list_subjects.py"
 SUBMIT_SCRIPT = REPO / "submit_snakemake.sh"
 
-# Containers we know how to pull. fastsurfer is optional.
+# Containers we know how to pull. Tuple: (filename, source URI, default-on).
+# The dk-connectome image is built from this repo
+# (containers/Dockerfile.dk_connectome + Apptainer.dk_connectome.def) and
+# published to ghcr.io on each tagged release.
 CONTAINERS = [
-    ("qsiprep.sif",          "docker://pennlinc/qsiprep:1.0.0",        True),
-    ("qsirecon.sif",         "docker://pennlinc/qsirecon:1.2.1",       True),
-    ("freesurfer_7.4.1.sif", "docker://freesurfer/freesurfer:7.4.1",   True),
-    ("fastsurfer.sif",       "docker://deepmi/fastsurfer:latest",      False),
+    ("qsiprep.sif",          "docker://pennlinc/qsiprep:1.0.0",                       True),
+    ("qsirecon.sif",         "docker://pennlinc/qsirecon:1.2.1",                      True),
+    ("freesurfer_7.4.1.sif", "docker://freesurfer/freesurfer:7.4.1",                  True),
+    ("dk-connectome.sif",    "docker://ghcr.io/phindagijimana/dk-connectome:0.1.0",   True),
+    ("fastsurfer.sif",       "docker://deepmi/fastsurfer:latest",                     False),
 ]
+
+# Local-build fallback for the dk-connectome image when the registry is
+# unreachable (air-gapped clusters, ghcr.io blocked, first-time use before
+# the CI workflow has published anything).
+DK_LOCAL_DEF = "containers/Apptainer.dk_connectome.def"
 
 # Stage label -> (key in `threads:`, "kind"). "kind" tells `check` how to
 # decide whether the stage is done for a given subject:
@@ -253,7 +262,21 @@ def cmd_install(args: argparse.Namespace) -> int:
             pull_cmd += [str(target), uri]
             r = run(pull_cmd)
             if r.returncode != 0:
-                print(f"  WARN: pull failed for {sif}")
+                # For the dk-connectome image, fall back to building from the
+                # in-repo recipe. This is the expected path before the CI
+                # workflow has published the first ghcr.io release, and the
+                # only path on air-gapped clusters.
+                def_path = REPO / DK_LOCAL_DEF
+                if sif == "dk-connectome.sif" and def_path.exists() and not args.no_local_build:
+                    print(f"  pull failed; building locally from {def_path.relative_to(REPO)} …")
+                    print(f"  (this needs ~10 min and internet for the apt/curl steps;")
+                    print(f"   pass --no-local-build to disable this fallback)")
+                    rb = run([rt, "build", str(target), str(def_path)])
+                    if rb.returncode != 0:
+                        print(f"  WARN: local build failed for {sif}; "
+                              f"see {target.parent} and retry with `{rt} build` manually")
+                else:
+                    print(f"  WARN: pull failed for {sif}")
 
     section("4/5  Subjects")
     bids = args.bids or cfg.get("bids_dir")
@@ -278,12 +301,13 @@ def cmd_install(args: argparse.Namespace) -> int:
 
     section("5/5  Config completeness")
     needs: list[str] = []
-    for k in ("bids_dir", "fs_license", "fs_lut"):
+    # fs_lut is OPTIONAL — baked into dk-connectome.sif. Don't flag it.
+    for k in ("bids_dir", "fs_license"):
         v = cfg.get(k)
         if not v or str(v).startswith("/path/to"):
             needs.append(k)
     containers_cfg = cfg.get("containers") or {}
-    for k in ("qsiprep", "qsirecon", "freesurfer"):
+    for k in ("qsiprep", "qsirecon", "freesurfer", "dk_connectome"):
         v = containers_cfg.get(k)
         if not v or str(v).startswith("/path/to"):
             needs.append(f"containers.{k}")
@@ -573,6 +597,8 @@ def main() -> int:
     pi.add_argument("--no-containers", action="store_true", help="skip apptainer pull")
     pi.add_argument("--with-fastsurfer", action="store_true", help="also pull fastsurfer.sif")
     pi.add_argument("--force-pull", action="store_true", help="re-pull containers even if present")
+    pi.add_argument("--no-local-build", action="store_true",
+                    help="don't fall back to apptainer build for dk-connectome.sif if pull fails")
     pi.add_argument("--user", action="store_true", help="pass --user to pip (no venv/conda env active)")
     pi.set_defaults(func=cmd_install)
 

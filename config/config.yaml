@@ -14,25 +14,29 @@ bids_dir: /path/to/bids
 results_root: ./results
 
 # --- Containers (Apptainer / Singularity .sif files) -------------------------
-# We invoke the BIDS Apps as containers — see README for `apptainer pull`
-# commands and pinned digests.
+# The pipeline is an orchestration of four containers — one per stage.
+# `./connectome install` pulls all four into ./containers/ by default.
 containers:
-  qsiprep:    /path/to/qsiprep.sif
-  qsirecon:   /path/to/qsirecon.sif
-  # FastSurfer is optional (only needed if recon.tool == "fastsurfer").
-  fastsurfer: /path/to/fastsurfer_latest.sif
+  qsiprep:        /path/to/qsiprep.sif           # docker://pennlinc/qsiprep:1.0.0
+  qsirecon:       /path/to/qsirecon.sif          # docker://pennlinc/qsirecon:1.2.1
   # Dedicated full FreeSurfer image (recon-all). The FreeSurfer that ships
   # inside fastsurfer / qsirecon is *trimmed* and is missing the skull-strip
   # atlas — point this at a real freesurfer .sif (e.g. freesurfer/7.4.1).
-  freesurfer: /path/to/freesurfer_7.4.1.sif
+  freesurfer:     /path/to/freesurfer_7.4.1.sif  # docker://freesurfer/freesurfer:7.4.1
+  # Optional: only needed if recon.tool == "fastsurfer".
+  fastsurfer:     /path/to/fastsurfer_latest.sif # docker://deepmi/fastsurfer:latest
+  # Step 4: the dedicated dk-connectome image built from this repo
+  # (MRtrix3 + ANTs + FreeSurferColorLUT; ~900 MB). Recipes live in
+  # containers/Dockerfile.dk_connectome and Apptainer.dk_connectome.def.
+  dk_connectome:  /path/to/dk-connectome.sif     # docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
 
 # --- FreeSurfer license + lookup table + TemplateFlow cache -------------------
 # Apply for a free FreeSurfer license at https://surfer.nmr.mgh.harvard.edu/registration.html
 fs_license:        /path/to/freesurfer/license.txt
-# FreeSurferColorLUT.txt — needed by labelconvert in the DK step. The trimmed
-# FreeSurfer in qsirecon.sif doesn't ship it, so we bind in the host copy.
-# Defaults to <fs_license parent>/FreeSurferColorLUT.txt if left blank.
-fs_lut:            /path/to/freesurfer/FreeSurferColorLUT.txt
+# FreeSurferColorLUT.txt is now BAKED INTO dk-connectome.sif, so this key is
+# optional. Set it only if you want to override the baked-in LUT with a host
+# copy (e.g. to pin to a specific FreeSurfer release).
+fs_lut:            ""
 # QSIRecon downloads atlases on first use; reuse a shared cache to avoid hitting
 # the network on every node. Any writable directory works.
 templateflow_home: ~/.cache/templateflow

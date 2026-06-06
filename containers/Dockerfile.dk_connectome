@@ -1,0 +1,91 @@
+# =============================================================================
+# dk-connectome -- Step 4 of the dk_connectome workflow, as its own image.
+# -----------------------------------------------------------------------------
+# What this image does
+#   Given (a) FreeSurfer's aparc+aseg.mgz in fsnative, (b) QSIPrep's
+#   from-fsnative_to-T1w ITK transform, (c) a DWI/T1w reference image, and
+#   (d) a streamlines file (.tck or .tck.gz), produce a Desikan-Killiany
+#   84x84 structural connectome plus per-streamline (i, j) assignments and
+#   space-alignment diagnostics.
+#
+# Why this image exists separately
+#   The other three stages (qsiprep, qsirecon, freesurfer / fastsurfer) are
+#   already-published, well-maintained third-party images. The DK rule used
+#   to ride inside qsirecon.sif simply because it had ANTs + MRtrix3 + a
+#   trimmed FreeSurfer; that container is ~5 GB. This image is the same
+#   minimal toolset (ANTs antsApplyTransforms + MRtrix3 + FreeSurfer color
+#   LUT), nothing more. Result: ~900 MB instead of 5 GB.
+#
+# What's inside
+#   * MRtrix3 3.0.4           mrconvert / labelconvert / tck2connectome /
+#                              tckinfo / mrinfo (also reads MGZ natively, so
+#                              no FreeSurfer binaries are needed)
+#   * ANTs 2.5.0              antsApplyTransforms (ITK-native, label-aware
+#                              resampling via -n GenericLabel)
+#   * FreeSurferColorLUT.txt  baked in from FreeSurfer's open-source GitHub
+#                              distribution; no FreeSurfer license required
+#                              to use this image (the LUT is a data table,
+#                              not the FreeSurfer toolchain)
+#
+# Build
+#   docker build -t ghcr.io/phindagijimana/dk-connectome:0.1.0 \
+#       -f containers/Dockerfile.dk_connectome containers/
+#
+# Convert to Apptainer / Singularity
+#   apptainer build dk-connectome.sif \
+#       docker-daemon://ghcr.io/phindagijimana/dk-connectome:0.1.0
+#
+# Or pull directly with Apptainer once published:
+#   apptainer pull dk-connectome.sif \
+#       docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
+# =============================================================================
+
+# ---- Stage 1: ANTs binaries ------------------------------------------------
+# antsx/ants:v2.5.0 puts the binaries + libs under /opt/ants. We copy that
+# whole tree into the final image rather than reinstalling from source.
+FROM antsx/ants:v2.5.0 AS ants_src
+
+# ---- Stage 2: final image, MRtrix3 base ------------------------------------
+FROM mrtrix3/mrtrix3:3.0.4
+
+LABEL org.opencontainers.image.title="dk-connectome"
+LABEL org.opencontainers.image.description="Desikan-Killiany structural connectome step (ANTs + MRtrix3) for the dk_connectome workflow."
+LABEL org.opencontainers.image.source="https://github.com/phindagijimana/dk_connectome"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+
+# ANTs binaries
+COPY --from=ants_src /opt/ants /opt/ants
+ENV PATH=/opt/ants/bin:${PATH} \
+    ANTSPATH=/opt/ants/bin/ \
+    LD_LIBRARY_PATH=/opt/ants/lib:${LD_LIBRARY_PATH:-}
+
+# FreeSurfer color LUT (data file only; pinned to a specific upstream commit
+# in the freesurfer/freesurfer GitHub source repo for reproducibility).
+# Pin BOTH the LUT and the URL so a future upstream rename won't break builds.
+ARG FS_LUT_REF=fs_v7.4.1
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates \
+ && mkdir -p /opt/freesurfer \
+ && curl -fsSL --retry 3 \
+        "https://raw.githubusercontent.com/freesurfer/freesurfer/${FS_LUT_REF}/distribution/FreeSurferColorLUT.txt" \
+        -o /opt/freesurfer/FreeSurferColorLUT.txt \
+ && test -s /opt/freesurfer/FreeSurferColorLUT.txt \
+ && apt-get purge -y curl ca-certificates \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+
+# Sanity check: every binary the dk_connectome rule consults must resolve,
+# and both the LUT (FS) and the LUT-conversion map (MRtrix3) must be present.
+RUN set -e; \
+    for c in mrconvert labelconvert tck2connectome tckinfo mrinfo antsApplyTransforms; do \
+        command -v "$c" >/dev/null || { echo "MISSING: $c"; exit 1; }; \
+    done; \
+    test -s /opt/freesurfer/FreeSurferColorLUT.txt; \
+    test -s /opt/mrtrix3/share/mrtrix3/labelconvert/fs_default.txt \
+        || test -s /opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt \
+        || { echo "MISSING: MRtrix3 fs_default.txt"; exit 1; }; \
+    echo "OK: all dk_connectome deps resolved"
+
+# The image is invoked as a non-interactive shell by Snakemake's
+# `apptainer exec ... bash -lc "..."`; no ENTRYPOINT needed.
+CMD ["bash"]

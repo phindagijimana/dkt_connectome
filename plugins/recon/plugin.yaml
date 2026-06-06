@@ -1,0 +1,44 @@
+# =============================================================================
+# Stage 2 plugin — Recon (FreeSurfer or FastSurfer)
+# =============================================================================
+# Anatomical surface reconstruction from BIDS T1w. Real output file is
+# mri/aparc+aseg.mgz (unambiguous, idempotent) — no sentinel needed.
+#
+# Tool selection via config.recon.tool: "freesurfer" (default) | "fastsurfer".
+# Container for the FreeSurfer path MUST be a *full* FreeSurfer SIF
+# (recon-all -all needs RB_all_withskull_2020_01_02.gca; the trimmed FS
+# baked into many FastSurfer images is missing this and dies ~30 min in).
+# =============================================================================
+
+name: recon
+version: 1.0.0
+description: Anatomical surface reconstruction (recon-all or FastSurfer).
+order: 2
+
+provides:
+  - recon_target               # mri/aparc+aseg.mgz path
+
+requires:
+  containers: [freesurfer]     # required when tool=freesurfer
+  config: [bids_dir, results_root, fs_license]
+
+optional:
+  containers: [fastsurfer]     # required only when tool=fastsurfer
+
+options:
+  tool:
+    default: freesurfer
+    choices: [freesurfer, fastsurfer]
+    description: Surface reconstruction backend.
+
+  fastsurfer_device:
+    default: cpu
+    choices: [cpu, cuda]
+    description: FastSurfer only — pass-through for --device.
+
+resources:
+  threads: 4
+  mem_mb: 16000
+  runtime_min: 700             # recon-all -all: 4-10 h depending on T1w quality
+
+rules: rules.smk

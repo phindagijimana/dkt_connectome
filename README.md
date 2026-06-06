@@ -5,9 +5,20 @@
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.0-brightgreen.svg)](https://snakemake.readthedocs.io)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![BIDS App](https://img.shields.io/badge/BIDS--App-compatible-blue.svg)](https://bids-apps.neuroimaging.io/)
+[![Container image](https://img.shields.io/badge/ghcr.io-dk--connectome-blue?logo=github)](https://github.com/phindagijimana/dk_connectome/pkgs/container/dk-connectome)
 
-Wraps QSIPrep + QSIRecon + FreeSurfer/FastSurfer + MRtrix3 into one Snakemake DAG.
-Every scientific step runs inside a pinned Apptainer/Singularity container.
+The workflow is an **orchestration of four containers**, one per stage:
+
+| stage | container | size | source |
+|---|---|---:|---|
+| 1. qsiprep | `pennlinc/qsiprep:1.0.0` | ~3.5 GB | upstream |
+| 2. recon | `freesurfer/freesurfer:7.4.1` (or `deepmi/fastsurfer:latest`) | ~6 GB | upstream |
+| 3. qsirecon | `pennlinc/qsirecon:1.2.1` | ~5 GB | upstream |
+| 4. dk_connectome | `ghcr.io/phindagijimana/dk-connectome:0.1.0` | ~900 MB | **this repo** ([`containers/`](containers/)) |
+
+Snakemake is just the glue. Every scientific step happens inside a pinned
+Apptainer/Singularity image, so the science is reproducible across sites
+without any per-machine compiler or library setup.
 
 ---
 

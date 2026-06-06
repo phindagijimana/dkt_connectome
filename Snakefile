@@ -22,7 +22,7 @@ configfile: "config/config.yaml"
 
 
 # Helpers, paths, SUBJECTS list, wildcard constraints.
-include: "workflow/rules/common.smk"
+include: "plugins/_common/common.smk"
 
 
 # -----------------------------------------------------------------------------
@@ -49,10 +49,10 @@ rule dk_all:
     input: [dk_target(s) for s in SUBJECTS]
 
 
-include: "workflow/rules/qsiprep.smk"
-include: "workflow/rules/recon.smk"
-include: "workflow/rules/qsirecon.smk"
-include: "workflow/rules/dk_connectome.smk"
+include: "plugins/qsiprep/rules.smk"
+include: "plugins/recon/rules.smk"
+include: "plugins/qsirecon/rules.smk"
+include: "plugins/dk_connectome/rules.smk"
 
 
 onstart:

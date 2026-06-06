@@ -1,0 +1,60 @@
+# =============================================================================
+# Stage 1 plugin — QSIPrep
+# =============================================================================
+# Wraps the QSIPrep BIDS App (https://qsiprep.readthedocs.io) inside Apptainer.
+# Output is a sentinel flag because QSIPrep writes a directory tree.
+#
+# SDC decision (per subject, evaluated when the rule fires):
+#   - qsiprep.fmap_retry: true  -> --ignore fieldmaps --use-syn-sdc warn
+#   - BIDS has fmap             -> measured fmaps (no flag)
+#   - no fmap + use_syn_sdc     -> --use-syn-sdc warn
+#   - no fmap, no opt-in        -> no SDC
+# =============================================================================
+
+name: qsiprep
+version: 1.0.0
+description: BIDS DWI preprocessing via QSIPrep (BIDS App).
+
+# Stage order in the canonical pipeline (lower = earlier).
+order: 1
+
+# What this plugin produces; downstream plugins reference these via
+# helpers in plugins/_common/common.smk (e.g. qsiprep_flag()).
+provides:
+  - qsiprep_flag
+
+# What this plugin needs to exist.
+requires:
+  containers: [qsiprep]        # keys under config.containers
+  config: [bids_dir, results_root, fs_license, templateflow_home]
+
+# Tunables exposed under config.qsiprep.*
+options:
+  output_resolution:
+    default: 2
+    description: Isotropic DWI output resolution in mm.
+
+  use_syn_sdc:
+    default: false
+    description: |
+      Opt-in to ANTs SyN-based distortion correction when no fieldmap is
+      present in BIDS. Off by default (recommended only for datasets
+      where fmaps are genuinely unavailable).
+
+  fmap_retry:
+    default: false
+    description: |
+      Ignore any measured fieldmaps and force --use-syn-sdc warn. Useful
+      for retrying subjects whose fmaps caused QSIPrep to crash.
+
+  skip_bids_validation:
+    default: true
+    description: Pass --skip-bids-validation to QSIPrep.
+
+# Default resource requests (overridable in config.threads / config.resources).
+resources:
+  threads: 4
+  mem_mb: 24000
+  runtime_min: 700             # ~11.7 h — multi-session subjects need this
+
+rules: rules.smk

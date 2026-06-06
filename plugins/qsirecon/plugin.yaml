@@ -1,0 +1,54 @@
+# =============================================================================
+# Stage 3 plugin — QSIRecon
+# =============================================================================
+# Tractography + connectivity estimation on QSIPrep derivatives, via the
+# QSIRecon BIDS App (https://qsirecon.readthedocs.io). Defaults to
+# single-shell SS3T CSD + ACT with HSVS 5TT (needs the FreeSurfer dir from
+# the recon plugin). Switch `spec` for multi-shell or non-ACT pipelines.
+# =============================================================================
+
+name: qsirecon
+version: 1.0.0
+description: QSIRecon tractography (SS3T CSD + ACT-HSVS by default).
+order: 3
+
+provides:
+  - qsirecon_flag
+
+requires:
+  containers: [qsirecon]
+  config: [results_root, fs_license, templateflow_home]
+  # qsirecon also expects qsiprep outputs at results_root/qsiprep_single_run_output/
+  # and (for *hsvs* specs) the freesurfer dir at results_root/freesurfer/.
+  plugins: [qsiprep]
+
+optional:
+  plugins: [recon]             # required only when spec contains 'hsvs'
+
+options:
+  spec:
+    default: mrtrix_singleshell_ss3t_ACT-hsvs
+    description: |
+      QSIRecon spec name. Common single-shell options:
+        mrtrix_singleshell_ss3t_ACT-hsvs   (single-shell + ACT + HSVS)
+        mrtrix_singleshell_ss3t_ACT-fast   (single-shell + ACT + FAST 5TT;
+                                            no FreeSurfer needed)
+      Common multi-shell options:
+        mrtrix_multishell_msmt_ACT-hsvs
+        mrtrix_multishell_msmt_pyafq_tractometry
+      Run `apptainer exec qsirecon.sif qsirecon --help` for the full list.
+
+  atlases:
+    default: [4S156Parcels]
+    description: |
+      QSIRecon connectivity-estimation atlases. At least one required —
+      QSIRecon aborts otherwise. Recognised keys (shipped inside qsirecon.sif):
+        AAL116, AICHA384Ext, Brainnetome246Ext, Gordon333Ext,
+        4S156Parcels, 4S256Parcels, ... 4S1056Parcels
+
+resources:
+  threads: 4
+  mem_mb: 24000
+  runtime_min: 700             # 2-session subjects need >480 min
+
+rules: rules.smk

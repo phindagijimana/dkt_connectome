@@ -1,0 +1,77 @@
+# =============================================================================
+# Apptainer / Singularity definition for dk-connectome.
+#
+# Build:
+#   apptainer build dk-connectome.sif containers/Apptainer.dk_connectome.def
+#
+# This recipe is functionally equivalent to containers/Dockerfile.dk_connectome
+# but is provided for sites that prefer to build .sif files directly without a
+# Docker daemon. Most users will simply:
+#
+#     apptainer pull dk-connectome.sif \
+#         docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
+# =============================================================================
+
+Bootstrap: docker
+From: mrtrix3/mrtrix3:3.0.4
+
+%labels
+    Maintainer  Phind Ndagijimana
+    Workflow    dk_connectome
+    Step        4_dk_connectome
+    Description Desikan-Killiany structural connectome step (ANTs + MRtrix3).
+
+%environment
+    export PATH=/opt/ants/bin:${PATH}
+    export ANTSPATH=/opt/ants/bin/
+    export LD_LIBRARY_PATH=/opt/ants/lib:${LD_LIBRARY_PATH:-}
+
+%post
+    set -eu
+
+    apt-get update
+    apt-get install -y --no-install-recommends curl ca-certificates xz-utils
+
+    # ---- ANTs --------------------------------------------------------------
+    # Pinned binary release from the official ANTsX GitHub Releases.
+    ANTS_VER=2.5.0
+    ANTS_URL="https://github.com/ANTsX/ANTs/releases/download/v${ANTS_VER}/ants-${ANTS_VER}-ubuntu-22.04-X64-gcc.zip"
+    mkdir -p /opt/ants
+    curl -fsSL --retry 3 -o /tmp/ants.zip "${ANTS_URL}"
+    apt-get install -y --no-install-recommends unzip
+    unzip -q /tmp/ants.zip -d /opt/
+    # Normalise the extraction path so /opt/ants/bin is canonical.
+    if [ -d /opt/ants-${ANTS_VER} ] && [ ! -d /opt/ants/bin ]; then
+        rm -rf /opt/ants
+        mv /opt/ants-${ANTS_VER} /opt/ants
+    fi
+    test -x /opt/ants/bin/antsApplyTransforms
+    rm -f /tmp/ants.zip
+
+    # ---- FreeSurfer color LUT (data file only) -----------------------------
+    # Pinned to a tagged upstream ref so rebuilds are reproducible.
+    FS_LUT_REF=fs_v7.4.1
+    mkdir -p /opt/freesurfer
+    curl -fsSL --retry 3 \
+        "https://raw.githubusercontent.com/freesurfer/freesurfer/${FS_LUT_REF}/distribution/FreeSurferColorLUT.txt" \
+        -o /opt/freesurfer/FreeSurferColorLUT.txt
+    test -s /opt/freesurfer/FreeSurferColorLUT.txt
+
+    # ---- Clean up the build chain ------------------------------------------
+    apt-get purge -y curl ca-certificates unzip xz-utils
+    apt-get autoremove -y
+    rm -rf /var/lib/apt/lists/*
+
+%test
+    set -e
+    for c in mrconvert labelconvert tck2connectome tckinfo mrinfo antsApplyTransforms; do
+        command -v "$c" >/dev/null || { echo "MISSING: $c"; exit 1; }
+    done
+    test -s /opt/freesurfer/FreeSurferColorLUT.txt
+    test -s /opt/mrtrix3/share/mrtrix3/labelconvert/fs_default.txt \
+        || test -s /opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt \
+        || { echo "MISSING: MRtrix3 fs_default.txt"; exit 1; }
+    echo "OK: all dk_connectome deps resolved"
+
+%runscript
+    exec bash "$@"

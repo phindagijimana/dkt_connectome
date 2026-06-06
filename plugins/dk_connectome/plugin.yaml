@@ -1,0 +1,57 @@
+# =============================================================================
+# Stage 4 plugin — DK connectome
+# =============================================================================
+# Build an 84x84 Desikan-Killiany structural connectome from QSIRecon's
+# tractogram and FreeSurfer's aparc+aseg parcellation. All work runs inside
+# qsirecon.sif:
+#
+#   mri_convert            mgz -> NIfTI
+#   antsApplyTransforms    resample aparc+aseg onto the DWI grid using
+#                          QSIPrep's ITK xfm (the .lta/.txt BIDS suffix is
+#                          misleading — it's actually ITK text format)
+#   labelconvert           DK 0..255 -> 0..N MRtrix indexing
+#   tck2connectome         the matrix itself
+#   mrinfo / tckinfo       space-alignment diagnostics
+# =============================================================================
+
+name: dk_connectome
+version: 1.0.0
+description: 84x84 Desikan-Killiany structural connectome from QSIRecon tractogram.
+order: 4
+
+provides:
+  - dk_target                  # dk_connectomes/sub-XXX/dk_connectome.csv
+
+requires:
+  containers: [qsirecon]       # reused for ANTs + MRtrix3 + trimmed FS
+  config: [results_root, fs_license]
+  plugins: [qsirecon, recon]
+
+options:
+  resample_to_dwi:
+    default: true
+    description: |
+      Resample aparc+aseg onto the DWI/T1w grid via antsApplyTransforms -n
+      GenericLabel before labelconvert. Disabling produces a connectome in FS
+      conformed space, which may be mis-aligned to the tractogram.
+
+  tck2connectome_extra:
+    default: []
+    description: |
+      Extra flags for MRtrix3 tck2connectome, e.g.
+        [-scale_invlength, -scale_invnodevol]
+
+  fs_lut:
+    default: null
+    description: |
+      Path to FreeSurferColorLUT.txt. Required because qsirecon.sif ships a
+      trimmed FreeSurfer that doesn't include this file. Defaults to
+      <fs_license parent>/FreeSurferColorLUT.txt; override here or in the
+      top-level config.
+
+resources:
+  threads: 2
+  mem_mb: 8000
+  runtime_min: 30
+
+rules: rules.smk
