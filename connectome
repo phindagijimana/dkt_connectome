@@ -330,6 +330,64 @@ def cmd_install(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 # start
 # ---------------------------------------------------------------------------
+def _build_config_overrides(args: argparse.Namespace) -> list[str]:
+    """Translate high-level CLI flags into Snakemake `--config key=value` args.
+
+    Nested keys are emitted as JSON sub-objects (e.g. qsiprep='{"use_syn_sdc":true}')
+    because Snakemake's `--config` parser walks that into a nested dict — exactly
+    what the plugin rules expect.
+    """
+    overrides: list[str] = []
+    qsiprep: dict = {}
+    qsirecon: dict = {}
+    recon: dict = {}
+
+    if args.subjects:
+        # `--subjects 01,02,sub-03` -> config['subjects'] = ['01','02','03']
+        ids = [s.strip().removeprefix("sub-") for s in args.subjects.split(",") if s.strip()]
+        overrides += ["subjects=" + json.dumps(ids)]
+        # Disable subjects_tsv so the inline list actually wins.
+        overrides += ['subjects_tsv=""']
+
+    if args.fastsurfer:
+        recon["tool"] = "fastsurfer"
+    if args.recon_tool:
+        recon["tool"] = args.recon_tool
+    if args.fastsurfer_device:
+        recon["fastsurfer_device"] = args.fastsurfer_device
+
+    if args.syn:
+        qsiprep["use_syn_sdc"] = True
+    if args.fmap_retry:
+        qsiprep["fmap_retry"] = True
+
+    if args.multi_shell:
+        qsirecon["multi_shell"] = True
+    if args.spec:
+        qsirecon["spec"] = args.spec
+    if args.atlas:
+        # `--atlas 4S156Parcels,AAL116` -> ['4S156Parcels','AAL116']
+        atlases = [a.strip() for a in args.atlas.split(",") if a.strip()]
+        qsirecon["atlases"] = atlases
+
+    if args.no_recon:
+        overrides.append("run_recon=false")
+    if args.no_qsirecon:
+        overrides.append("run_qsirecon=false")
+    if args.no_dk:
+        overrides.append("run_dk_connectome=false")
+
+    # Compact: only emit `--config key=value` for non-empty sub-dicts.
+    if qsiprep:
+        overrides.append("qsiprep=" + json.dumps(qsiprep))
+    if qsirecon:
+        overrides.append("qsirecon=" + json.dumps(qsirecon))
+    if recon:
+        overrides.append("recon=" + json.dumps(recon))
+
+    return overrides
+
+
 def cmd_start(args: argparse.Namespace) -> int:
     cfg_path = Path(args.config or DEFAULT_CONFIG).resolve()
     if not cfg_path.exists():
@@ -337,22 +395,40 @@ def cmd_start(args: argparse.Namespace) -> int:
         return 2
     cfg = load_yaml(cfg_path)
 
-    # Pre-flight: subjects must resolve.
-    subjects = load_subjects(cfg)
-    if not subjects:
-        print("ERROR: no subjects discoverable.", file=sys.stderr)
-        print("  Populate config/subjects.tsv (or set `subjects:` in your config).", file=sys.stderr)
-        print("  Easiest: rerun `./connectome install --bids /path/to/BIDS --no-deps --no-containers`", file=sys.stderr)
-        return 2
+    # Pre-flight: subjects must resolve. CLI --subjects bypasses this check
+    # because the override will populate config['subjects'] at snakemake time.
+    if not args.subjects:
+        subjects = load_subjects(cfg)
+        if not subjects:
+            print("ERROR: no subjects discoverable.", file=sys.stderr)
+            print("  Populate config/subjects.tsv (or set `subjects:` in your config,", file=sys.stderr)
+            print("  or pass `--subjects 01,02` on the CLI).", file=sys.stderr)
+            print("  Easiest: rerun `./connectome install --bids /path/to/BIDS --no-deps --no-containers`",
+                  file=sys.stderr)
+            return 2
+    else:
+        subjects = [s.strip().removeprefix("sub-") for s in args.subjects.split(",") if s.strip()]
 
     mode = args.mode
     if mode == "auto":
         mode = "slurm" if has_slurm() else "local"
 
+    # Compose: CLI-flag-derived --config overrides first, then any extras the
+    # user pasted after `--`. Extras win because snakemake re-applies them last.
+    overrides = _build_config_overrides(args)
+    config_args: list[str] = []
+    if overrides:
+        config_args = ["--config", *overrides]
+        print(f"[connectome] config overrides from CLI flags:")
+        for o in overrides:
+            print(f"    {o}")
+
     extra = list(args.extra or [])
     # Strip a leading "--" separator if argparse REMAINDER captured one.
     if extra and extra[0] == "--":
         extra = extra[1:]
+    # Merge: --config overrides + passthrough extras.
+    extra = config_args + extra
 
     if mode == "slurm":
         if not has_slurm():
@@ -602,11 +678,57 @@ def main() -> int:
     pi.add_argument("--user", action="store_true", help="pass --user to pip (no venv/conda env active)")
     pi.set_defaults(func=cmd_install)
 
-    ps = sub.add_parser("start", help="submit the pipeline (auto-detect Slurm vs local)")
+    ps = sub.add_parser("start", help="submit the pipeline (auto-detect Slurm vs local)",
+                        formatter_class=argparse.RawDescriptionHelpFormatter,
+                        epilog="""\
+Examples
+  ./connectome start
+  ./connectome start --subjects 01,02,07
+  ./connectome start --fastsurfer
+  ./connectome start --multi-shell --atlas 4S256Parcels,AAL116
+  ./connectome start --syn                              # SyN-SDC fallback
+  ./connectome start --no-dk                            # skip step 4
+  ./connectome start -- --forcerun recon                # raw snakemake pass-through
+""")
     ps.add_argument("--config", help="path to config.yaml")
     ps.add_argument("--mode", choices=["auto", "slurm", "local"], default="auto",
                     help="execution backend (default: auto)")
     ps.add_argument("--jobs", type=int, default=4, help="local parallel jobs (ignored in slurm mode)")
+
+    g_sel = ps.add_argument_group("subject selection")
+    g_sel.add_argument("--subjects", metavar="S1,S2,...",
+                       help="comma-separated subject IDs (with or without sub- prefix); "
+                            "overrides config.yaml's subjects + subjects_tsv for this run")
+
+    g_st = ps.add_argument_group("stage toggles")
+    g_st.add_argument("--no-recon", action="store_true", help="skip step 2 (run_recon=false)")
+    g_st.add_argument("--no-qsirecon", action="store_true", help="skip step 3 (run_qsirecon=false)")
+    g_st.add_argument("--no-dk", action="store_true", help="skip step 4 (run_dk_connectome=false)")
+
+    g_qp = ps.add_argument_group("qsiprep (step 1)")
+    g_qp.add_argument("--syn", action="store_true",
+                      help="opt in to SyN-SDC when no fieldmap present (qsiprep.use_syn_sdc=true)")
+    g_qp.add_argument("--fmap-retry", action="store_true",
+                      help="force --ignore fieldmaps --use-syn-sdc warn (qsiprep.fmap_retry=true)")
+
+    g_rc = ps.add_argument_group("recon (step 2)")
+    g_rc.add_argument("--fastsurfer", action="store_true",
+                      help="use FastSurfer instead of FreeSurfer (recon.tool=fastsurfer)")
+    g_rc.add_argument("--recon-tool", choices=["freesurfer", "fastsurfer"],
+                      help="explicit recon.tool override")
+    g_rc.add_argument("--fastsurfer-device", choices=["cpu", "cuda"],
+                      help="FastSurfer only: pass-through for --device")
+
+    g_qr = ps.add_argument_group("qsirecon (step 3)")
+    g_qr.add_argument("--multi-shell", action="store_true",
+                      help="swap default spec to mrtrix_multishell_msmt_ACT-hsvs "
+                           "(qsirecon.multi_shell=true). An explicit --spec wins.")
+    g_qr.add_argument("--spec", metavar="SPEC",
+                      help="explicit qsirecon spec name (any value other than the default wins over --multi-shell)")
+    g_qr.add_argument("--atlas", metavar="A1,A2,...",
+                      help="comma-separated atlas keys for qsirecon connectivity "
+                           "(e.g. 4S156Parcels,AAL116). Defaults to config.")
+
     ps.add_argument("extra", nargs=argparse.REMAINDER,
                     help="extra args passed verbatim to snakemake (prefix with --)")
     ps.set_defaults(func=cmd_start)
