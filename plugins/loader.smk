@@ -121,21 +121,42 @@ def _is_enabled(manifest: dict) -> bool:
 # ---------------------------------------------------------------------------
 # Dependency validation (container paths exist, required plugins are enabled)
 # ---------------------------------------------------------------------------
+# Strict validation is opt-in via env var. The default (lenient) path lets
+# `connectome install` succeed against a freshly-cloned repo whose
+# config.yaml still has `/path/to/...` container placeholders; the rule
+# itself will hard-fail at execution time if the image is genuinely missing.
+import os
+_STRICT = os.environ.get("DK_STRICT_VALIDATION", "").lower() in ("1", "true", "yes")
+
+
+def _problem(msg: str):
+    if _STRICT:
+        raise WorkflowError(msg)
+    # Snakemake's logger isn't always available at module import time;
+    # fall back to stderr.
+    try:
+        logger.warning(msg)
+    except Exception:
+        import sys
+        print(f"WARNING: {msg}", file=sys.stderr)
+
+
 def _validate_requires(manifest: dict, enabled_names: set[str]):
     req = manifest.get("requires", {}) or {}
 
-    # Required container .sif files.
+    # Required container .sif files. Lenient by default — see _STRICT note.
     for ckey in (req.get("containers") or []):
         path = (config.get("containers") or {}).get(ckey)
-        if not path or not Path(path).is_file():
-            raise WorkflowError(
-                f"Plugin `{manifest['name']}`: required container "
-                f"`containers.{ckey}` = {path!r} not found."
+        if not path or str(path).startswith("/path/to") or not Path(path).is_file():
+            _problem(
+                f"Plugin `{manifest['name']}`: container `containers.{ckey}` = "
+                f"{path!r} not found. The rule will fail at run time if the image "
+                f"is actually needed. Set DK_STRICT_VALIDATION=1 to make this fatal."
             )
 
-    # Required top-level config keys.
+    # Required top-level config keys. Always strict — missing config keys
+    # would cause harder-to-diagnose KeyError at rule evaluation time.
     for ck in (req.get("config") or []):
-        # dot-path lookup (e.g. "containers" or "qsiprep.use_syn_sdc")
         cur = config
         for part in ck.split("."):
             if not isinstance(cur, dict) or part not in cur:
@@ -147,7 +168,8 @@ def _validate_requires(manifest: dict, enabled_names: set[str]):
                 f"Plugin `{manifest['name']}`: required config key `{ck}` is missing/empty."
             )
 
-    # Required upstream plugins must also be enabled.
+    # Required upstream plugins must also be enabled. Always strict — DAG
+    # building would otherwise reach for outputs no rule will ever produce.
     for dep in (req.get("plugins") or []):
         if dep not in enabled_names:
             raise WorkflowError(
