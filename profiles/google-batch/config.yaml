@@ -1,0 +1,59 @@
+# =============================================================================
+# Snakemake 8+ Google Batch profile (snakemake-executor-plugin-googlebatch)
+# =============================================================================
+# Install once:
+#     pip install 'snakemake>=8' snakemake-executor-plugin-googlebatch
+# Use:
+#     snakemake --profile profiles/google-batch
+#
+# Prerequisites (one-time, see profiles/google-batch/README.md):
+#   * GCP project with Batch + Cloud Storage + Artifact Registry APIs enabled.
+#   * One Artifact Registry repo per container image (or pull from public sources).
+#   * One GCS bucket for the shared working directory.
+#   * A service account with batch.jobsEditor + storage.objectAdmin.
+#
+# Values below are placeholders — edit before first use.
+# =============================================================================
+
+executor: googlebatch
+jobs: 100
+latency-wait: 120
+keep-going: true
+rerun-incomplete: false
+printshellcmds: true
+use-conda: false
+use-singularity: false
+
+# Resolve from profile flags (CLI: --googlebatch-region, --googlebatch-project, ...)
+googlebatch-region: us-central1
+googlebatch-project: my-gcp-project                    # gcloud config get project
+googlebatch-machine-type: n2-standard-8                # default; per-rule overrides below
+googlebatch-network: default
+googlebatch-subnetwork: default
+
+default-resources:
+  - mem_mb=8000
+  - runtime=120
+  - disk_mb=50000
+
+set-threads:
+  qsiprep:  4
+  recon:    4
+  qsirecon: 4
+  dk:       2
+
+set-resources:
+  - qsiprep:mem_mb=24000
+  - qsiprep:runtime=720
+  - qsiprep:disk_mb=80000
+  - recon:mem_mb=16000
+  - recon:runtime=720
+  - recon:disk_mb=60000
+  - qsirecon:mem_mb=24000
+  - qsirecon:runtime=720
+  - qsirecon:disk_mb=80000
+  - dk:mem_mb=8000
+  - dk:runtime=60
+  - dk:disk_mb=30000
+
+restart-times: 2

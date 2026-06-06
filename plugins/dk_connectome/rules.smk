@@ -35,15 +35,31 @@ def _dk_inputs(wc):
 
 
 rule dk_connectome:
-    """Desikan-Killiany connectome from QSIRecon tractogram + FS parcellation."""
+    """Desikan-Killiany connectome from QSIRecon tractogram + FS parcellation.
+
+    Marked `cache: True` because tck2connectome is deterministic given
+    byte-identical inputs (parcellation + tractogram + LUT). Snakemake hashes
+    the inputs and reuses any prior cached output found under
+    $SNAKEMAKE_OUTPUT_CACHE / --cache-dir. Pass `--cache dk_connectome` on
+    the snakemake CLI to opt in (or use `./connectome start --cache-dir DIR`,
+    which sets both for you).
+
+    QSIPrep / Recon / QSIRecon are NOT marked cacheable: they use random
+    seeds or wall-clock-timestamped intermediates, so an identical input
+    hash does not guarantee identical output bytes.
+    """
     input:
         unpack(_dk_inputs),
     output:
         csv = str(DK_OUT / "sub-{sid}" / "dk_connectome.csv"),
     log:
         str(LOGS_DIR / "dk.sub-{sid}.log"),
+    benchmark:
+        stage_benchmark("dk")
+    cache: True
     threads: stage_threads("dk")
     resources: **stage_resources("dk")
+    retries: stage_retries("dk")
     params:
         qsiprep_out  = str(QSIPREP_OUT),
         qsirecon_out = str(QSIRECON_OUT),

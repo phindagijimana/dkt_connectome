@@ -37,8 +37,11 @@ rule recon:
         aparc = str(RECON_OUT / "sub-{sid}" / "mri" / "aparc+aseg.mgz"),
     log:
         str(LOGS_DIR / "recon.sub-{sid}.log"),
+    benchmark:
+        stage_benchmark("recon")
     threads: stage_threads("recon")
     resources: **stage_resources("recon")
+    retries: stage_retries("recon")
     params:
         tool          = config["recon"]["tool"],
         bids_dir      = str(BIDS_DIR),

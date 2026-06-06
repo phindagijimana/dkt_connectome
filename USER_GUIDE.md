@@ -19,8 +19,14 @@ For the quick start, see [README.md](README.md).
 10. [Slurm tuning](#slurm-tuning)
 11. [Manual Snakemake usage](#manual-snakemake-usage)
 12. [Re-running, selective targets, partial re-execution](#re-running-selective-targets-partial-re-execution)
-13. [Citing](#citing)
-14. [Troubleshooting](#troubleshooting)
+13. [Schema validation & retries](#schema-validation--retries)
+14. [Run reports & provenance (RO-Crate)](#run-reports--provenance-ro-crate)
+15. [Caching deterministic outputs](#caching-deterministic-outputs)
+16. [BIDS-App invocation](#bids-app-invocation)
+17. [Other executors (Kubernetes, AWS / Google Batch)](#other-executors-kubernetes-aws--google-batch)
+18. [Continuous integration](#continuous-integration)
+19. [Citing](#citing)
+20. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -468,6 +474,194 @@ Snakemake won't re-execute any job whose output is newer than its inputs.
 
 Everything after the `--` separator is appended verbatim to the underlying
 `snakemake` invocation.
+
+---
+
+## Schema validation & retries
+
+Two safety nets run on every workflow start, before any rule executes:
+
+* **JSON Schema validation** of `config.yaml` (`schemas/config.schema.json`)
+  and every `plugins/*/plugin.yaml` (`schemas/plugin.schema.json`). Catches
+  typos like `bids_drr:` or `recon: { tool: freedreamer }` with a precise
+  pointer (`config.yaml schema violation at recon/tool: 'freedreamer' is not
+  one of ['freesurfer', 'fastsurfer']`) — instead of the cryptic `KeyError`
+  you'd otherwise hit deep inside a rule.
+
+* **Per-rule retry budget**. Every rule has a `retries: N` directive
+  populated from `config.retries.<stage>` (defaults: `qsiprep=2`, `recon=2`,
+  `qsirecon=2`, `dk=1`). Transient I/O, templateflow timeouts, and node
+  flakes get re-queued automatically. Each attempt is logged to
+  `<results_root>/benchmarks/<stage>.sub-<sid>.tsv` so you can spot rules
+  that flake systematically and tune resources.
+
+Override per stage in `config/config.yaml`:
+
+```yaml
+retries:
+  qsiprep:  3       # bump if your filesystem is slow
+  recon:    1
+  qsirecon: 2
+  dk:       0       # disable retries for the (already fast) DK step
+```
+
+To make container-path checks *fatal* at workflow start (default is a warning
+so `./connectome install` works against a freshly-cloned repo with
+placeholder paths), export `DK_STRICT_VALIDATION=1`.
+
+---
+
+## Run reports & provenance (RO-Crate)
+
+Two artefacts capture *what happened* during a run, both reproducible
+weeks later:
+
+### 1. Snakemake HTML report
+
+```bash
+./connectome report                                # default path under results_root
+./connectome report --open                         # also xdg-open / open in browser
+./connectome report --output ~/runs/cohort-A.html
+```
+
+Wraps `snakemake --report`. Self-contained HTML — DAG, per-rule benchmarks
+(incl. retry attempts), per-job runtime stats, input/output checksums,
+resolved config. Useful for paper supplements, sharing with collaborators,
+or auditing a re-run.
+
+### 2. RO-Crate 1.1 manifest
+
+Every successful `./connectome start` writes:
+
+```
+<results_root>/ro-crate-metadata.json     # machine-readable JSON-LD
+<results_root>/ro-crate-preview.html      # human landing page
+```
+
+This is a [Workflow RO-Crate](https://www.researchobject.org/ro-crate/profiles)
+describing:
+
+* The workflow source (Snakefile + every `plugins/*/rules.smk` + schemas).
+* Container .sif paths + on-disk SHA-256 digests (so a reviewer can verify
+  byte-identical reproduction).
+* The resolved configuration snapshot.
+* Per-rule benchmark TSVs.
+* Per-subject outputs (DK CSV, recon-all `aparc+aseg.mgz`, QSIPrep /
+  QSIRecon sentinel flags).
+* The `CreateAction` ↔ wall-clock duration of the run.
+
+Submit the results directory to [WorkflowHub](https://workflowhub.eu)
+verbatim, or attach it to a paper as a single FAIR artefact. Generation
+is best-effort — if it fails it does not mask a successful pipeline run.
+
+---
+
+## Caching deterministic outputs
+
+The `dk_connectome` rule is marked `cache: True` because `tck2connectome`
+is deterministic given byte-identical inputs. Pass a cache directory and
+matching outputs are reused across runs (per subject, hash-keyed):
+
+```bash
+./connectome start --cache-dir /scratch/dk_cache
+```
+
+This sets `SNAKEMAKE_OUTPUT_CACHE` for the driver and appends `--cache
+dk_connectome` to the snakemake invocation. QSIPrep / Recon / QSIRecon are
+**not** cacheable — their use of random seeds and timestamped
+intermediates makes input-hash → output-hash unreliable.
+
+Typical use cases:
+
+* Re-running `dk_connectome` with different `tck2connectome_extra` flags on
+  the same QSIRecon tractograms.
+* Sharing a `/scratch/dk_cache` between project members working from a
+  common QSIPrep + QSIRecon set.
+
+---
+
+## BIDS-App invocation
+
+`./connectome bids` is a thin facade that exposes the workflow under the
+[BIDS-Apps CLI spec](https://bids-apps.neuroimaging.io/):
+
+```bash
+./connectome bids /data/BIDS /data/derivatives participant
+./connectome bids /data/BIDS /data/derivatives participant \
+    --participant-label 01 02 07
+./connectome bids /data/BIDS /data/derivatives participant \
+    --skip-recon --multi-shell --atlas 4S256Parcels
+```
+
+| BIDS-App flag        | dk_connectome equivalent              |
+|----------------------|---------------------------------------|
+| `bids_dir` (positional) | `config.bids_dir`                    |
+| `output_dir` (positional) | `config.results_root`              |
+| `analysis_level participant` | per-subject rules (the default)  |
+| `analysis_level group`       | no-op (per-subject pipeline)     |
+| `--participant-label`        | `config.subjects` for this run   |
+| `--n-cpus`                   | `--jobs` for local mode          |
+| `--mem-mb`                   | informational (per-stage values from `config.yaml`) |
+| `--skip-bids-validation`     | `qsiprep.skip_bids_validation=true` (already default) |
+| `--use-syn-sdc`              | `qsiprep.use_syn_sdc=true`       |
+| `--fastsurfer`               | `recon.tool=fastsurfer`          |
+| `--multi-shell`              | `qsirecon.multi_shell=true`      |
+| `--spec / --atlas`           | `qsirecon.spec` / `qsirecon.atlases` |
+| `--skip-recon / --skip-qsirecon / --skip-dk` | per-stage toggles    |
+
+This makes dk_connectome plug into Nipoppy, the BIDS-App validator,
+Dockstore's BIDS-App entrypoint, and any other harness that assumes a
+standard BIDS-App CLI.
+
+---
+
+## Other executors (Kubernetes, AWS / Google Batch)
+
+The Slurm profile (`profiles/slurm/`) is the default. Three other backends
+ship with profile templates:
+
+```bash
+./connectome start --mode local -- --profile profiles/k8s
+./connectome start --mode local -- --profile profiles/aws-batch
+./connectome start --mode local -- --profile profiles/google-batch
+```
+
+Each profile directory has a `config.yaml` (translates `threads:` /
+`resources:` into the backend's vocabulary) plus a `README.md` that walks
+through the one-time cluster/cloud setup (PVCs, IAM, S3/GCS buckets,
+registry mirroring). See [REGISTRY.md](REGISTRY.md) for the full matrix
+and registry submission flow.
+
+Required Snakemake executor plugins:
+
+| profile        | plugin                                         |
+|----------------|------------------------------------------------|
+| `slurm`        | `snakemake-executor-plugin-slurm`              |
+| `k8s`          | `snakemake-executor-plugin-kubernetes`         |
+| `aws-batch`    | `snakemake-executor-plugin-aws-batch`          |
+| `google-batch` | `snakemake-executor-plugin-googlebatch`        |
+
+`./connectome install` only installs the Slurm plugin by default; pull in
+others manually for non-Slurm runs.
+
+---
+
+## Continuous integration
+
+`.github/workflows/lint.yml` runs on every PR and push to `main`:
+
+1. `python -c ast.parse` on the `connectome` CLI.
+2. JSON-Schema sanity check on every file in `schemas/`.
+3. Every `plugins/*/plugin.yaml` validated against `plugin.schema.json`.
+4. `snakemake --lint` on the workflow with a stub config.
+5. `snakemake -n` (dry run) — DAG must build.
+6. **Schema negative test**: a deliberately bad config (e.g.
+   `recon.tool=freedreamer`) must be *rejected* — guards against accidental
+   schema relaxation.
+
+`.github/workflows/build-dk-connectome.yml` builds + publishes the
+`dk-connectome` image to `ghcr.io` on every push to `main` and on tagged
+releases.
 
 ---
 

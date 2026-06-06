@@ -1,0 +1,86 @@
+# =============================================================================
+# WorkflowHub registration metadata for dk_connectome
+# =============================================================================
+# WorkflowHub (https://workflowhub.eu) is the EU/ELIXIR workflow registry.
+# It accepts Workflow RO-Crate submissions and renders the metadata you
+# define here into the public landing page.
+#
+# Recommended publishing flow (one-time):
+#   1. `./connectome start` to completion -> emits ro-crate-metadata.json
+#      under <results_root>/.
+#   2. `zip -r dk_connectome-crate.zip <results_root>` and submit at
+#      https://workflowhub.eu/workflows/new
+#   3. Reference this file's metadata when filling in the upload form.
+#
+# This file is also discoverable by harvesters that crawl repo roots for
+# WorkflowHub metadata (e.g. EOSC-Life Workflow Registry, ELIXIR RIR).
+# =============================================================================
+
+name: dk_connectome
+description: |
+  Reproducible BIDS DWI processing pipeline. Wraps QSIPrep, FreeSurfer /
+  FastSurfer, QSIRecon, and an Apptainer container of MRtrix3 + ANTs to
+  build 84x84 Desikan-Killiany structural connectivity matrices. Designed
+  to run on a single workstation, an HPC Slurm cluster, or Kubernetes /
+  AWS Batch / Google Batch profiles.
+
+version: "0.1.0"
+license: MIT
+homepage: https://github.com/phindagijimana/dk_connectome
+repository: https://github.com/phindagijimana/dk_connectome.git
+issue_tracker: https://github.com/phindagijimana/dk_connectome/issues
+
+main_workflow_file: Snakefile
+workflow_language: Snakemake
+
+categories:
+  - Connectomics
+  - Diffusion MRI
+  - BIDS Apps
+
+tags:
+  - DWI
+  - tractography
+  - QSIPrep
+  - QSIRecon
+  - FreeSurfer
+  - MRtrix3
+  - ANTs
+  - structural-connectome
+  - Desikan-Killiany
+  - reproducibility
+  - Apptainer
+  - Snakemake
+  - BIDS
+
+authors:
+  - name: Phind Ndagijimana
+    affiliation: University of Rochester Medical Center
+    orcid: ""
+
+containers:
+  - name: qsiprep
+    source: docker://pennlinc/qsiprep:1.0.0
+  - name: qsirecon
+    source: docker://pennlinc/qsirecon:1.2.1
+  - name: freesurfer
+    source: docker://freesurfer/freesurfer:7.4.1
+  - name: dk_connectome
+    source: docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
+    description: |
+      In-house image bundling MRtrix3 (mrconvert, labelconvert, tck2connectome,
+      mrinfo, tckinfo) + ANTs (antsApplyTransforms) + FreeSurferColorLUT.txt.
+      Build recipe in containers/Dockerfile.dk_connectome and
+      containers/Apptainer.dk_connectome.def.
+
+executors:
+  - local
+  - slurm
+  - kubernetes
+  - aws-batch
+  - google-batch
+
+provenance:
+  ro_crate_path: ro-crate-metadata.json        # emitted by onsuccess handler
+
+cite_as: CITATION.cff

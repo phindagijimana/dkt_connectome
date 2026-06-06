@@ -31,8 +31,11 @@ rule qsiprep:
         flag = touch(str(FLAGS_DIR / "qsiprep.sub-{sid}.done")),
     log:
         str(LOGS_DIR / "qsiprep.sub-{sid}.log"),
+    benchmark:
+        stage_benchmark("qsiprep")
     threads: stage_threads("qsiprep")
     resources: **stage_resources("qsiprep")
+    retries: stage_retries("qsiprep")
     params:
         bids_dir      = str(BIDS_DIR),
         qsiprep_out   = str(QSIPREP_OUT),

@@ -1,0 +1,21 @@
+# Template PersistentVolumeClaim for the Kubernetes profile.
+# Apply with:
+#     kubectl apply -n dk-connectome -f pvc.example.yaml
+#
+# The Snakemake executor-plugin-kubernetes mounts a PVC named below at
+# /workdir in every pod, so all rules share intermediate state.
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dk-connectome-workdir
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 500Gi                # tune for cohort size (~50 GB per subject)
+  storageClassName: ""              # set to your cluster's RWX class
+                                    #   AWS EFS:        efs-sc
+                                    #   Azure Files:    azurefile-csi
+                                    #   GCP Filestore:  filestore-rwx
+                                    #   On-prem NFS:    nfs-csi

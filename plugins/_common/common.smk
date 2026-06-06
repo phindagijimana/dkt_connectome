@@ -6,6 +6,36 @@ relies on the constants and functions defined here.
 """
 
 from pathlib import Path
+import json as _json
+
+
+# ---------------------------------------------------------------------------
+# Config schema validation (runs once, before any path resolution)
+# ---------------------------------------------------------------------------
+# Catches typos like `bids_drr:` or `containers: {qsiprep: 42}` with a
+# precise JSON-pointer-style error message, well before the rule that
+# actually consumes the key fails with a cryptic KeyError. Degrades
+# gracefully if jsonschema isn't importable (e.g. snakemake fork).
+_CONFIG_SCHEMA_PATH = Path(workflow.basedir) / "schemas" / "config.schema.json"
+if _CONFIG_SCHEMA_PATH.is_file():
+    try:
+        import jsonschema as _jsonschema
+        _schema = _json.loads(_CONFIG_SCHEMA_PATH.read_text())
+        try:
+            _jsonschema.validate(instance=config, schema=_schema)
+        except _jsonschema.ValidationError as _e:
+            _loc = "/".join(str(p) for p in _e.absolute_path) or "(root)"
+            raise WorkflowError(
+                f"config.yaml schema violation at `{_loc}`: {_e.message}\n"
+                f"  see schemas/config.schema.json for the full contract."
+            )
+    except ImportError:
+        try:
+            logger.warning(
+                "jsonschema not importable; config schema validation skipped."
+            )
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------------------
@@ -28,9 +58,10 @@ LOGS_DIR     = RESULTS_ROOT / "logs"
 WORK_QSIPREP_DIR  = RESULTS_ROOT / "intermediate_results_qsiprep_single"
 WORK_QSIRECON_DIR = RESULTS_ROOT / "intermediate_results_qsirecon_single"
 FLAGS_DIR    = RESULTS_ROOT / ".flags"      # sentinel files for stages with dir-tree outputs
+BENCH_DIR    = RESULTS_ROOT / "benchmarks"  # per-rule TSV resource usage
 
 for d in (RESULTS_ROOT, TEMPLATEFLOW_HOME, QSIPREP_OUT, QSIRECON_OUT, RECON_OUT,
-          DK_OUT, LOGS_DIR, WORK_QSIPREP_DIR, WORK_QSIRECON_DIR, FLAGS_DIR):
+          DK_OUT, LOGS_DIR, WORK_QSIPREP_DIR, WORK_QSIRECON_DIR, FLAGS_DIR, BENCH_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
 
@@ -177,3 +208,25 @@ def stage_resources(stage: str) -> dict:
     base = {"mem_mb": 16000, "runtime": 120}
     base.update(config.get("resources", {}).get(stage, {}) or {})
     return base
+
+
+# Per-stage retry counts. BIDS Apps occasionally flake on transient I/O,
+# templateflow downloads, or node failures; a small retry budget avoids
+# losing hours of compute to recoverable errors. Overridable in config.yaml
+# via `retries.<stage>: N`.
+_DEFAULT_RETRIES = {"qsiprep": 2, "recon": 2, "qsirecon": 2, "dk": 1}
+
+
+def stage_retries(stage: str) -> int:
+    return int(config.get("retries", {}).get(stage, _DEFAULT_RETRIES.get(stage, 0)))
+
+
+def stage_benchmark(stage: str, sid_pattern: str = "{sid}") -> str:
+    """Path to the per-subject benchmark TSV for a given stage.
+
+    Snakemake writes one row per attempt (wall_clock, max_rss, cpu_time,
+    io_in, io_out, mean_load, cpu_usage). On `retries: N`, you get N rows
+    per failed-then-succeeded job, which is exactly the data you need to
+    spot resource-tuning problems.
+    """
+    return str(BENCH_DIR / f"{stage}.sub-{sid_pattern}.tsv")

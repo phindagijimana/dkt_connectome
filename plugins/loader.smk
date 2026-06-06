@@ -28,6 +28,7 @@ Why roll our own instead of `snakemake.module`?
 """
 
 from pathlib import Path
+import json
 import yaml
 
 
@@ -35,8 +36,59 @@ import yaml
 # Manifest loading + validation
 # ---------------------------------------------------------------------------
 PLUGINS_DIR = Path(workflow.basedir) / "plugins"
+SCHEMAS_DIR = Path(workflow.basedir) / "schemas"
 
 _INTERNAL_NAME = "_common"
+
+# Lazy-load + cache the plugin schema. jsonschema is a hard dep of Snakemake,
+# but we degrade gracefully if it isn't importable for whatever reason
+# (custom Snakemake fork, partial install, etc.) — the loader's existing
+# manual checks still catch the most common mistakes.
+_PLUGIN_SCHEMA = None
+_SCHEMA_VALIDATOR_OK = None  # True / False / None=unattempted
+
+
+def _load_plugin_schema():
+    global _PLUGIN_SCHEMA, _SCHEMA_VALIDATOR_OK
+    if _SCHEMA_VALIDATOR_OK is not None:
+        return _PLUGIN_SCHEMA
+    schema_path = SCHEMAS_DIR / "plugin.schema.json"
+    if not schema_path.is_file():
+        _SCHEMA_VALIDATOR_OK = False
+        return None
+    try:
+        import jsonschema  # noqa: F401
+    except ImportError:
+        try:
+            logger.warning(
+                "jsonschema not importable; plugin.yaml schema validation skipped "
+                "(loader's manual checks still apply)."
+            )
+        except Exception:
+            pass
+        _SCHEMA_VALIDATOR_OK = False
+        return None
+    try:
+        _PLUGIN_SCHEMA = json.loads(schema_path.read_text())
+    except json.JSONDecodeError as e:
+        raise WorkflowError(f"schemas/plugin.schema.json is not valid JSON: {e}")
+    _SCHEMA_VALIDATOR_OK = True
+    return _PLUGIN_SCHEMA
+
+
+def _validate_manifest_schema(data: dict, plugin_dir: Path) -> None:
+    schema = _load_plugin_schema()
+    if schema is None:
+        return
+    import jsonschema
+    try:
+        jsonschema.validate(instance=data, schema=schema)
+    except jsonschema.ValidationError as e:
+        loc = "/".join(str(p) for p in e.absolute_path) or "(root)"
+        raise WorkflowError(
+            f"Plugin {plugin_dir.name}: plugin.yaml schema violation at `{loc}`: "
+            f"{e.message}"
+        )
 
 
 def _read_manifest(plugin_dir: Path) -> dict:
@@ -48,6 +100,11 @@ def _read_manifest(plugin_dir: Path) -> dict:
         data = yaml.safe_load(mf.read_text()) or {}
     except yaml.YAMLError as e:
         raise WorkflowError(f"Plugin {plugin_dir.name}: invalid YAML: {e}")
+
+    # JSON Schema validation runs first — catches typos in field names,
+    # bad enum values, wrong types, etc. with a precise pointer into the
+    # YAML doc. Falls back to a no-op if jsonschema isn't available.
+    _validate_manifest_schema(data, plugin_dir)
 
     for key in ("name", "version"):
         if key not in data:
@@ -199,3 +256,4 @@ def print_plugin_banner():
     """One-line summary, printed from the Snakefile's onstart handler."""
     stage_names = [m["name"] for m in ENABLED_PLUGINS if m["kind"] == "stage"]
     print(f"  plugins      : {', '.join(stage_names)}")
+

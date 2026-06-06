@@ -1,0 +1,61 @@
+# =============================================================================
+# Snakemake 8+ AWS Batch profile (snakemake-executor-plugin-aws-batch)
+# =============================================================================
+# Install once:
+#     pip install 'snakemake>=8' snakemake-executor-plugin-aws-batch
+# Use:
+#     snakemake --profile profiles/aws-batch
+#
+# Prerequisites (one-time, all set in profiles/aws-batch/README.md):
+#   * AWS account with IAM permissions for Batch + S3 + ECR.
+#   * One Batch compute environment + job queue (Fargate or EC2 spot).
+#   * One ECR repository per container image (or use ghcr.io directly with
+#     pull-through cache; see README).
+#   * One S3 bucket for the shared working directory (overrides BIDS_DIR /
+#     RESULTS_ROOT to s3:// URIs).
+#
+# Values below are placeholders — edit before first use.
+# =============================================================================
+
+executor: aws-batch
+jobs: 100
+latency-wait: 120                                       # S3 metadata sync grace
+keep-going: true
+rerun-incomplete: false
+printshellcmds: true
+use-conda: false
+use-singularity: false                                  # AWS Batch runs OCI directly
+
+# Resolve from profile flags (CLI: --aws-batch-region, --aws-batch-job-queue, etc.)
+aws-batch-region: us-east-1
+aws-batch-job-queue: dk-connectome-queue
+aws-batch-job-definition: dk-connectome-jobdef          # one definition per image; auto-discovered by tag if omitted
+
+# S3-backed shared workdir. Override BIDS_DIR + results_root to s3:// URIs in
+# config/config.yaml (or via --config) so every job pulls/pushes via S3 streaming.
+default-resources:
+  - mem_mb=8000
+  - runtime=120
+  - disk_mb=50000
+
+set-threads:
+  qsiprep:  4
+  recon:    4
+  qsirecon: 4
+  dk:       2
+
+set-resources:
+  - qsiprep:mem_mb=24000
+  - qsiprep:runtime=720
+  - qsiprep:disk_mb=80000
+  - recon:mem_mb=16000
+  - recon:runtime=720
+  - recon:disk_mb=60000
+  - qsirecon:mem_mb=24000
+  - qsirecon:runtime=720
+  - qsirecon:disk_mb=80000
+  - dk:mem_mb=8000
+  - dk:runtime=60
+  - dk:disk_mb=30000
+
+restart-times: 2                                        # Spot interruptions justify >1

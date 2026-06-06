@@ -70,6 +70,9 @@ DK connectomes themselves are at `<results_root>/dk_connectomes/sub-XXX/dk_conne
 | `./connectome stop` | `scancel` the driver job (or `SIGTERM` the local driver). `--all-children` also cancels in-flight rule jobs. |
 | `./connectome check` | per-stage progress across all subjects + live `squeue` status of the driver and child jobs |
 | `./connectome logs` | tail the most recent driver log; `--rule qsiprep --subject 01` for a per-task log; `-f` to follow |
+| `./connectome report` | self-contained HTML run report (DAG, per-rule benchmarks, config snapshot). Wraps `snakemake --report`. |
+| `./connectome bids` | [BIDS-App](https://bids-apps.neuroimaging.io/)-compliant facade: `./connectome bids BIDS_DIR OUTPUT_DIR participant [opts]` |
+| `./connectome cwl`  | export the workflow as a CWL document (wraps `snakemake --export-cwl`) for Dockstore / Cromwell consumers |
 
 Run `./connectome <cmd> --help` for full flags. The CLI is pure-stdlib Python — it
 runs *before* `install` has fetched any deps.
@@ -77,12 +80,22 @@ runs *before* `install` has fetched any deps.
 ### Common variations
 
 ```bash
-./connectome install --with-fastsurfer            # also pull fastsurfer.sif
-./connectome install --no-deps --no-containers    # only refresh subjects.tsv and config audit
-./connectome start --mode local --jobs 8          # force local, override parallelism
-./connectome start --config config/myconfig.yaml  # use a non-default config
-./connectome start -- --forcerun recon            # extra snakemake flags after `--`
-./connectome logs --rule recon --subject 01       # specific rule.subject log
+./connectome install --with-fastsurfer                       # also pull fastsurfer.sif
+./connectome install --no-deps --no-containers               # only refresh subjects.tsv and config audit
+./connectome start --mode local --jobs 8                     # force local, override parallelism
+./connectome start --subjects 01,02,07                       # subset of subjects, this run only
+./connectome start --multi-shell --atlas 4S256Parcels        # swap default QSIRecon spec + atlas
+./connectome start --fastsurfer                              # FastSurfer instead of FreeSurfer
+./connectome start --syn                                     # SyN-based SDC fallback
+./connectome start --no-dk                                   # skip the DK connectome step
+./connectome start --cache-dir /scratch/dk_cache             # share dk_connectome outputs across runs
+./connectome start -- --profile profiles/k8s                 # Kubernetes (see REGISTRY.md)
+./connectome start -- --forcerun recon                       # extra snakemake flags after `--`
+./connectome bids /data/BIDS /data/derivs participant        # BIDS-App invocation
+./connectome bids /data/BIDS /data/derivs participant --participant-label 01 02
+./connectome report --open                                   # HTML run summary, opened in default browser
+./connectome cwl -o build/dk_connectome.cwl                  # CWL projection
+./connectome logs --rule recon --subject 01                  # specific rule.subject log
 ```
 
 ---
@@ -126,4 +139,18 @@ See [USER_GUIDE.md § Citing](USER_GUIDE.md#citing) for full references, or
   description, atlas choices, SDC options, Slurm tuning, troubleshooting,
   manual `snakemake` usage, and the rationale behind the design (in particular
   why DK resampling uses `antsApplyTransforms` instead of `mri_vol2vol`).
+* **[REGISTRY.md](REGISTRY.md)** — where the container images live, how the
+  workflow is indexed in Dockstore / WorkflowHub / BIDS-Apps, and the executor
+  profiles (`profiles/{slurm,k8s,aws-batch,google-batch}/`) for running on
+  HPC, Kubernetes, or cloud-native batch.
+* **[containers/](containers/)** — Docker + Apptainer recipes for the
+  in-house `dk-connectome` image (MRtrix3 + ANTs + FS color LUT, ~900 MB).
+* **`schemas/`** — JSON Schemas (`config.schema.json`, `plugin.schema.json`)
+  enforced at workflow start; catch config typos before the DAG is built.
+* **`.github/workflows/lint.yml`** — CI runs `snakemake --lint` + dry-run +
+  schema-negative tests on every PR.
+* **Provenance** — every successful `./connectome start` emits an RO-Crate
+  1.1 manifest (`<results_root>/ro-crate-metadata.json` + `ro-crate-preview.html`)
+  capturing workflow source, container digests, config snapshot, per-rule
+  benchmarks, and per-subject outputs.
 * **Issues / PRs** welcome. For substantial changes, please open an issue first.

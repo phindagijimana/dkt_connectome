@@ -22,8 +22,11 @@ rule qsirecon:
         flag = touch(str(FLAGS_DIR / "qsirecon.sub-{sid}.done")),
     log:
         str(LOGS_DIR / "qsirecon.sub-{sid}.log"),
+    benchmark:
+        stage_benchmark("qsirecon")
     threads: stage_threads("qsirecon")
     resources: **stage_resources("qsirecon")
+    retries: stage_retries("qsirecon")
     params:
         qsiprep_out  = str(QSIPREP_OUT),
         qsirecon_out = str(QSIRECON_OUT),

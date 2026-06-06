@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/phindagijimana/dk_connectome/schemas/plugin.schema.json",
+  "title": "dk_connectome plugin manifest",
+  "description": "Schema for plugins/<name>/plugin.yaml. Validated by plugins/loader.smk after YAML load.",
+  "type": "object",
+  "required": ["name", "version"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z_][a-z0-9_]*$",
+      "description": "Plugin identifier. Must match the parent directory name."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([+-][A-Za-z0-9._-]+)?$",
+      "description": "Semver of this plugin (independent of the workflow version)."
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["stage", "internal"],
+      "default": "stage",
+      "description": "`stage` = produces pipeline outputs; `internal` = shared helpers only."
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 999,
+      "default": 999,
+      "description": "Load order among stages (lower = earlier). Internal plugins always load first."
+    },
+    "description": { "type": "string" },
+    "rules": {
+      "type": "string",
+      "default": "rules.smk",
+      "description": "Rules file relative to the plugin directory."
+    },
+    "provides": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Symbolic outputs (helper-function names) this plugin makes available to downstream plugins."
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "containers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Keys under config.containers whose .sif files must exist."
+        },
+        "config": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Dotted config keys that must be set and non-empty."
+        },
+        "plugins": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Upstream plugin names that must also be enabled."
+        }
+      }
+    },
+    "optional": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "containers": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "config":     { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "plugins":    { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      },
+      "description": "Same shape as `requires`; loader emits an info note rather than an error."
+    },
+    "options": {
+      "type": "object",
+      "description": "Plugin-specific config knobs (documentation only; loader does not type-check values).",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "default":     {},
+          "description": { "type": "string" },
+          "choices":     { "type": "array" },
+          "type":        { "type": "string" }
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "threads":     { "type": "integer", "minimum": 1 },
+        "mem_mb":      { "type": "integer", "minimum": 0 },
+        "runtime_min": { "type": "integer", "minimum": 0 }
+      },
+      "description": "Default resource request; overridable via top-level config.threads / config.resources."
+    },
+    "config_schema": {
+      "type": "array",
+      "description": "Free-form config doc (internal plugin only). Loader does not enforce.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["key"],
+        "properties": {
+          "key":         { "type": "string" },
+          "required":    { "type": "boolean" },
+          "type":        { "type": "string" },
+          "default":     {},
+          "description": { "type": "string" }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "stage" } } },
+      "then": {
+        "required": ["order"],
+        "description": "Stages must declare a load order."
+      }
+    }
+  ]
+}

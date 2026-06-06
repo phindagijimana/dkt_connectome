@@ -1,0 +1,60 @@
+# =============================================================================
+# Snakemake 8+ Kubernetes profile (snakemake-executor-plugin-kubernetes)
+# =============================================================================
+# Install once:
+#     pip install 'snakemake>=8' snakemake-executor-plugin-kubernetes
+# Use:
+#     snakemake --profile profiles/k8s
+#
+# Prerequisites (one-time):
+#   * A reachable cluster (kubectl get nodes succeeds).
+#   * A namespace dedicated to dk_connectome runs (default below = `dk-connectome`).
+#   * A PersistentVolumeClaim mounted at /workdir in every job pod (see
+#     profiles/k8s/pvc.example.yaml).
+#   * Container images pushed to a registry the cluster can pull from:
+#       ghcr.io/phindagijimana/dk-connectome:<tag>     (built from this repo)
+#       pennlinc/qsiprep:1.0.0
+#       pennlinc/qsirecon:1.2.1
+#       freesurfer/freesurfer:7.4.1
+#     If your cluster pulls from a private registry, attach an
+#     imagePullSecrets entry to the service account this profile uses.
+#
+# See profiles/k8s/README.md for the rest of the cluster-side setup.
+# =============================================================================
+
+executor: kubernetes
+kubernetes-namespace: dk-connectome
+jobs: 100
+latency-wait: 90
+keep-going: true
+rerun-incomplete: false
+printshellcmds: true
+use-conda: false
+use-singularity: false           # k8s runs the OCI image directly; no apptainer
+
+default-resources:
+  - mem_mb=8000
+  - runtime=120
+  - disk_mb=20000                # ephemeral scratch budget per pod
+
+set-threads:
+  qsiprep:  4
+  recon:    4
+  qsirecon: 4
+  dk:       2
+
+set-resources:
+  - qsiprep:mem_mb=24000
+  - qsiprep:runtime=700
+  - qsiprep:disk_mb=80000
+  - recon:mem_mb=16000
+  - recon:runtime=720
+  - recon:disk_mb=60000
+  - qsirecon:mem_mb=24000
+  - qsirecon:runtime=700
+  - qsirecon:disk_mb=80000
+  - dk:mem_mb=8000
+  - dk:runtime=30
+  - dk:disk_mb=20000
+
+restart-times: 1

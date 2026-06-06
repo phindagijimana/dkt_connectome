@@ -430,13 +430,30 @@ def cmd_start(args: argparse.Namespace) -> int:
     # Merge: --config overrides + passthrough extras.
     extra = config_args + extra
 
+    # Output cache (Phase B1). Activates Snakemake's between-run cache for
+    # rules marked `cache: True` (currently: dk_connectome). The directory
+    # must exist and be writable by the worker; safest to point it at a
+    # shared scratch path so multiple subjects/runs share the cache.
+    cache_env: dict[str, str] = {}
+    if args.cache_dir:
+        cache_dir = Path(args.cache_dir).expanduser().resolve()
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_env["SNAKEMAKE_OUTPUT_CACHE"] = str(cache_dir)
+        extra += ["--cache", "dk_connectome"]
+        print(f"[connectome] output cache enabled: {cache_dir}")
+        print(f"             cached rules: dk_connectome")
+
     if mode == "slurm":
         if not has_slurm():
             print("ERROR: --mode slurm but sbatch/squeue not on PATH", file=sys.stderr)
             return 2
         cmd = ["sbatch", str(SUBMIT_SCRIPT), "--configfile", str(cfg_path), *extra]
         print(f"[connectome] submitting Slurm driver ({len(subjects)} subjects)")
-        r = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO)
+        # sbatch propagates the submitter's env to the driver job by default
+        # (--export=ALL is implicit), so SNAKEMAKE_OUTPUT_CACHE flows through.
+        sbatch_env = {**os.environ, **cache_env} if cache_env else None
+        r = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO,
+                           env=sbatch_env)
         sys.stdout.write(r.stdout)
         sys.stderr.write(r.stderr)
         if r.returncode != 0:
@@ -467,9 +484,10 @@ def cmd_start(args: argparse.Namespace) -> int:
     print(f"[connectome] starting local driver ({len(subjects)} subjects, -j {args.jobs})")
     print(f"  log: {log}")
     print(f"  $ {' '.join(shlex.quote(c) for c in cmd)}")
+    local_env = {**os.environ, **cache_env} if cache_env else None
     with open(log, "w") as fh:
         p = subprocess.Popen(cmd, stdout=fh, stderr=subprocess.STDOUT,
-                             cwd=REPO, start_new_session=True)
+                             cwd=REPO, start_new_session=True, env=local_env)
     save_state({
         "mode": "local", "pid": p.pid, "log": str(log),
         "configfile": str(cfg_path), "started_at": int(time.time()),
@@ -653,6 +671,218 @@ def cmd_logs(args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------------------
+# cwl — export the workflow as a CWL document (Snakemake --export-cwl)
+# ---------------------------------------------------------------------------
+# Common Workflow Language is the lingua-franca format that Dockstore,
+# Toil, Galaxy, Cromwell, and most NIH-funded reproducibility platforms
+# accept. Snakemake 8.x can export its DAG as a CWL CommandLineTool +
+# Workflow tuple via `snakemake --export-cwl <file>`; this subcommand
+# wraps that with the same config plumbing as `start` / `report`.
+def cmd_cwl(args: argparse.Namespace) -> int:
+    cfg_path = Path(args.config or DEFAULT_CONFIG).resolve()
+    if not cfg_path.exists():
+        print(f"ERROR: config not found: {cfg_path}", file=sys.stderr)
+        return 2
+    if not have("snakemake"):
+        print("ERROR: `snakemake` not on PATH — run `./connectome install` first",
+              file=sys.stderr)
+        return 2
+
+    cfg = load_yaml(cfg_path)
+    results_root = resolve_results_root(cfg)
+    out = Path(args.output).expanduser().resolve() if args.output \
+          else (results_root / "dk_connectome.cwl")
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        "snakemake",
+        "--configfile", str(cfg_path),
+        "--export-cwl", str(out),
+    ]
+    print(f"[connectome] exporting CWL workflow -> {out}")
+    print(f"  $ {' '.join(shlex.quote(c) for c in cmd)}")
+    r = subprocess.run(cmd, cwd=REPO)
+    if r.returncode != 0:
+        # Snakemake's --export-cwl is finicky about jobs without a `script:` /
+        # `notebook:` directive; print the user-visible nudge.
+        print("\n  Tip: --export-cwl works best when all rules use script:",
+              "notebook:, or wrapper: directives (not raw shell:). dk_connectome",
+              "wraps apptainer via shell, so a full CWL round-trip may emit",
+              "stub CommandLineTools. Consider the RO-Crate from `./connectome",
+              "report`/onsuccess for a fuller-fidelity provenance artefact.",
+              file=sys.stderr)
+        return r.returncode
+    if out.is_file():
+        size_kb = max(1, out.stat().st_size // 1024)
+        print(f"\n[connectome] CWL ready: {out} ({size_kb} KB)")
+        print(f"  validate with cwltool:    cwltool --validate {out}")
+        print(f"  upload to Dockstore:      gh repo edit (or push, then refresh on dockstore.org)")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# bids — BIDS-App-compliant facade over `start`
+# ---------------------------------------------------------------------------
+# https://bids-apps.neuroimaging.io/ specifies a standard CLI signature for
+# neuroimaging containers:
+#
+#     <entrypoint> <bids_dir> <output_dir> <analysis_level> [options]
+#
+# `analysis_level` is one of {participant, group}. The dk_connectome
+# pipeline is per-subject (each subject produces its own connectome
+# matrix), so participant-level is what we actually run; group-level
+# is a placeholder for future cohort-summary modes.
+#
+# Options that BIDS Apps universally recognise:
+#   --participant-label SUB [SUB ...]     subset of subjects
+#   --n-cpus N                            CPU budget
+#   --mem-mb N                            memory budget (informational only)
+#   --skip-bids-validation
+#
+# This subcommand is a thin shim that turns a BIDS-Apps invocation into
+# the equivalent `./connectome start ... --config bids_dir=... etc.` —
+# letting dk_connectome plug into Dockstore, BIDS-App registries, Nipoppy,
+# and the BIDS-Apps "validator" without any new runtime code paths.
+# ---------------------------------------------------------------------------
+def cmd_bids(args: argparse.Namespace) -> int:
+    if args.analysis_level not in ("participant", "group"):
+        print(f"ERROR: analysis_level must be 'participant' or 'group' (got: "
+              f"{args.analysis_level!r})", file=sys.stderr)
+        return 2
+
+    bids_dir   = Path(args.bids_dir).expanduser().resolve()
+    output_dir = Path(args.output_dir).expanduser().resolve()
+    if not bids_dir.is_dir():
+        print(f"ERROR: bids_dir is not a directory: {bids_dir}", file=sys.stderr)
+        return 2
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.analysis_level == "group":
+        print("[connectome bids] group-level analysis is a no-op for dk_connectome",
+              file=sys.stderr)
+        print("  (each subject's DK matrix is already self-contained under",
+              file=sys.stderr)
+        print(f"   {output_dir}/dk_connectomes/sub-XXX/dk_connectome.csv).",
+              file=sys.stderr)
+        return 0
+
+    # BIDS-Apps spec: --participant-label is space-separated; argparse
+    # nargs='+' gives us a list. Reuse cmd_start by forging an argparse
+    # Namespace with the equivalent flags.
+    ns = argparse.Namespace(
+        config       = args.config,
+        mode         = args.mode,
+        jobs         = args.n_cpus or 4,
+        cache_dir    = args.cache_dir,
+        subjects     = (",".join(args.participant_label)
+                        if args.participant_label else None),
+        no_recon     = args.skip_recon,
+        no_qsirecon  = args.skip_qsirecon,
+        no_dk        = args.skip_dk,
+        syn          = args.use_syn_sdc,
+        fmap_retry   = False,
+        fastsurfer   = args.fastsurfer,
+        recon_tool   = None,
+        fastsurfer_device = None,
+        multi_shell  = args.multi_shell,
+        spec         = args.spec,
+        atlas        = (",".join(args.atlas) if args.atlas else None),
+        extra        = [],
+    )
+
+    # bids_dir and results_root need to be threaded into config; emit them
+    # as raw --config overrides alongside the cmd_start-built ones.
+    forced = [
+        f"bids_dir={bids_dir}",
+        f"results_root={output_dir}",
+    ]
+    ns.extra = ["--", "--config", *forced]
+    print(f"[connectome bids] BIDS App facade")
+    print(f"             bids_dir       : {bids_dir}")
+    print(f"             output_dir     : {output_dir}")
+    print(f"             analysis_level : {args.analysis_level}")
+    if args.participant_label:
+        print(f"             participant(s) : {' '.join(args.participant_label)}")
+    return cmd_start(ns)
+
+
+# ---------------------------------------------------------------------------
+# report
+# ---------------------------------------------------------------------------
+def cmd_report(args: argparse.Namespace) -> int:
+    """Wrap `snakemake --report` to produce a self-contained HTML run report.
+
+    The report inlines the DAG, per-rule stats (incl. our benchmark TSVs and
+    any retry counts), input/output file metadata, and the resolved config —
+    useful for sharing a one-page run summary with collaborators, attaching
+    to a paper supplement, or auditing a re-run weeks later.
+    """
+    cfg_path = Path(args.config or DEFAULT_CONFIG).resolve()
+    if not cfg_path.exists():
+        print(f"ERROR: config not found: {cfg_path}", file=sys.stderr)
+        return 2
+    cfg = load_yaml(cfg_path)
+
+    results_root = resolve_results_root(cfg)
+    out = Path(args.output).expanduser().resolve() if args.output \
+          else (results_root / "dk_connectome_report.html")
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    if not have("snakemake"):
+        print("ERROR: `snakemake` not on PATH — run `./connectome install` first",
+              file=sys.stderr)
+        return 2
+
+    # --report uses the persisted DAG state in .snakemake/. Refuse early with
+    # a clear hint if there's no prior run state — the snakemake error
+    # message in this case is famously cryptic.
+    if not (REPO / ".snakemake").is_dir():
+        print("ERROR: no .snakemake/ metadata directory found in repo root.",
+              file=sys.stderr)
+        print("  `./connectome report` requires a prior `./connectome start`",
+              file=sys.stderr)
+        print("  (even a dry run is enough — try `snakemake -n --configfile "
+              f"{cfg_path.relative_to(REPO) if cfg_path.is_relative_to(REPO) else cfg_path}`).",
+              file=sys.stderr)
+        return 2
+
+    cmd = [
+        "snakemake",
+        "--configfile", str(cfg_path),
+        "--report",     str(out),
+    ]
+    extra = list(args.extra or [])
+    if extra and extra[0] == "--":
+        extra = extra[1:]
+    cmd += extra
+
+    print(f"[connectome] writing run report -> {out}")
+    print(f"  $ {' '.join(shlex.quote(c) for c in cmd)}")
+    r = subprocess.run(cmd, cwd=REPO)
+    if r.returncode != 0:
+        return r.returncode
+
+    if not out.exists():
+        print(f"ERROR: snakemake exited 0 but no report at {out}", file=sys.stderr)
+        return 1
+
+    size_kb = max(1, out.stat().st_size // 1024)
+    print(f"\n[connectome] report ready: {out} ({size_kb} KB)")
+    print(f"  open it locally:  xdg-open {out}     # or open {out} on macOS")
+    print(f"  serve over HTTP:  python3 -m http.server -d {out.parent} 8000")
+
+    if args.open:
+        opener = "xdg-open" if have("xdg-open") else ("open" if have("open") else None)
+        if opener:
+            subprocess.Popen([opener, str(out)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            print("  --open requested but no xdg-open/open on PATH; skipping",
+                  file=sys.stderr)
+    return 0
+
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 def main() -> int:
@@ -662,7 +892,8 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="See USER_GUIDE.md for detailed configuration and rationale.",
     )
-    sub = ap.add_subparsers(dest="cmd", required=True, metavar="{install,start,stop,check,logs}")
+    sub = ap.add_subparsers(dest="cmd", required=True,
+                            metavar="{install,start,stop,check,logs,report,bids,cwl}")
 
     pi = sub.add_parser("install",
         help="install Python deps, pull containers, generate subjects.tsv")
@@ -694,6 +925,10 @@ Examples
     ps.add_argument("--mode", choices=["auto", "slurm", "local"], default="auto",
                     help="execution backend (default: auto)")
     ps.add_argument("--jobs", type=int, default=4, help="local parallel jobs (ignored in slurm mode)")
+    ps.add_argument("--cache-dir", metavar="DIR",
+                    help="reuse outputs from this between-run cache for rules marked "
+                         "cache: True (currently dk_connectome). Sets SNAKEMAKE_OUTPUT_CACHE "
+                         "and passes `--cache dk_connectome` to snakemake.")
 
     g_sel = ps.add_argument_group("subject selection")
     g_sel.add_argument("--subjects", metavar="S1,S2,...",
@@ -747,6 +982,80 @@ Examples
     pl.add_argument("--rule", help="rule name (qsiprep/recon/qsirecon/dk_connectome)")
     pl.add_argument("--subject", help="subject id, without the sub- prefix")
     pl.set_defaults(func=cmd_logs)
+
+    pb = sub.add_parser("bids",
+        help="BIDS-App-compliant facade: ./connectome bids BIDS_DIR OUTPUT_DIR {participant,group}",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+BIDS-App spec
+  https://bids-apps.neuroimaging.io/
+
+Examples
+  ./connectome bids /data/BIDS /data/derivatives participant
+  ./connectome bids /data/BIDS /data/derivatives participant \\
+      --participant-label 01 02 07 --n-cpus 8
+  ./connectome bids /data/BIDS /data/derivatives participant \\
+      --skip-recon --multi-shell --atlas 4S256Parcels
+""")
+    pb.add_argument("bids_dir",       help="BIDS dataset root")
+    pb.add_argument("output_dir",     help="derivatives root (equiv. to results_root)")
+    pb.add_argument("analysis_level", choices=["participant", "group"],
+                    help="BIDS-App analysis level")
+    pb.add_argument("--participant-label", nargs="+", metavar="LBL",
+                    help="subject IDs (with or without sub- prefix); subset of bids_dir")
+    pb.add_argument("--n-cpus", "--n_cpus", type=int, default=None,
+                    help="CPU budget for local runs (ignored on Slurm)")
+    pb.add_argument("--mem-mb", "--mem_mb", type=int, default=None,
+                    help="memory budget (informational only; per-stage values come from config.yaml)")
+    pb.add_argument("--skip-bids-validation", action="store_true",
+                    help="pass --skip-bids-validation to QSIPrep (already default)")
+    pb.add_argument("--config", help="path to dk_connectome config.yaml")
+    pb.add_argument("--mode", choices=["auto", "slurm", "local"], default="auto",
+                    help="execution backend (default: auto-detect Slurm)")
+    pb.add_argument("--cache-dir", metavar="DIR",
+                    help="between-run output cache (see `start --cache-dir`)")
+    pb.add_argument("--skip-recon",    action="store_true",
+                    help="skip step 2 (FreeSurfer/FastSurfer); run_recon=false")
+    pb.add_argument("--skip-qsirecon", action="store_true",
+                    help="skip step 3 (QSIRecon); run_qsirecon=false")
+    pb.add_argument("--skip-dk",       action="store_true",
+                    help="skip step 4 (DK connectome); run_dk_connectome=false")
+    pb.add_argument("--use-syn-sdc",   action="store_true",
+                    help="qsiprep.use_syn_sdc=true (SyN-based SDC when no fmap)")
+    pb.add_argument("--fastsurfer",    action="store_true",
+                    help="use FastSurfer instead of FreeSurfer for step 2")
+    pb.add_argument("--multi-shell",   action="store_true",
+                    help="qsirecon.multi_shell=true (swap default spec)")
+    pb.add_argument("--spec",          metavar="SPEC",
+                    help="explicit qsirecon spec name")
+    pb.add_argument("--atlas",         nargs="+", metavar="A",
+                    help="atlas keys for qsirecon connectivity (e.g. 4S156Parcels AAL116)")
+    pb.set_defaults(func=cmd_bids)
+
+    pr = sub.add_parser("report",
+        help="generate a self-contained HTML run report (wraps snakemake --report)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+Examples
+  ./connectome report                                  # default path under results_root
+  ./connectome report --output ~/my_run_report.html
+  ./connectome report --open                           # also xdg-open it
+""")
+    pr.add_argument("--config", help="path to config.yaml")
+    pr.add_argument("--output", "-o",
+                    help="output HTML path (default <results_root>/dk_connectome_report.html)")
+    pr.add_argument("--open", action="store_true",
+                    help="open the report in the default browser when done")
+    pr.add_argument("extra", nargs=argparse.REMAINDER,
+                    help="extra args passed verbatim to snakemake (prefix with --)")
+    pr.set_defaults(func=cmd_report)
+
+    pw = sub.add_parser("cwl",
+        help="export the workflow as a CWL document (wraps snakemake --export-cwl)")
+    pw.add_argument("--config", help="path to config.yaml")
+    pw.add_argument("--output", "-o",
+                    help="output CWL path (default <results_root>/dk_connectome.cwl)")
+    pw.set_defaults(func=cmd_cwl)
 
     args = ap.parse_args()
     try:

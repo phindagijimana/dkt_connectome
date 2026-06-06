@@ -118,6 +118,18 @@ resources:
   qsirecon: { mem_mb: 24000, runtime: 700 }   # multi-session subjects need this
   dk:       { mem_mb:  8000, runtime: 30  }
 
+# --- Retries (per stage) -----------------------------------------------------
+# Snakemake will re-queue a failed job up to N times. Useful for transient I/O
+# errors, templateflow download glitches, or node hiccups. Each attempt is
+# logged as a separate row in results/benchmarks/<stage>.sub-<sid>.tsv, so you
+# can spot rules that flake systematically and tune resources accordingly.
+# Set 0 to disable retries for a stage.
+retries:
+  qsiprep:  2
+  recon:    2
+  qsirecon: 2
+  dk:       1
+
 # --- Slurm placement (optional) ----------------------------------------------
 slurm:
   # Comma-separated nodelist to exclude (e.g. for known-broken hosts).

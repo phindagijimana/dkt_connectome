@@ -91,6 +91,28 @@ onsuccess:
     print("Pipeline complete.")
     print(f"  See {RESULTS_ROOT} for outputs.")
 
+    # FAIR provenance: emit an RO-Crate 1.1 manifest describing this run
+    # (workflow source, container digests, config snapshot, per-rule
+    # benchmarks, per-subject outputs). Best-effort — a failure here must
+    # not mask a successful pipeline run, so we wrap in try/except.
+    try:
+        import subprocess, sys as _sys
+        from pathlib import Path as _Path
+        _script = _Path(workflow.basedir) / "workflow" / "scripts" / "write_ro_crate.py"
+        if _script.is_file():
+            subprocess.run(
+                [_sys.executable, str(_script),
+                 "--results-root", str(RESULTS_ROOT),
+                 "--repo-root",    workflow.basedir,
+                 "--config",       str(_Path(workflow.basedir) / "config" / "config.yaml"),
+                 "--subjects",     ",".join(SUBJECTS)],
+                check=False,
+            )
+        else:
+            print(f"  (skipped RO-Crate export: {_script} missing)")
+    except Exception as _e:
+        print(f"  WARN: RO-Crate export failed: {_e}")
+
 
 onerror:
     print("Pipeline failed; see per-rule logs under:")

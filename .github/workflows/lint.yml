@@ -1,0 +1,136 @@
+# Lint + dry-run gate for every PR / push to main.
+#
+# Runs:
+#   1. `python -c "compile(...)"` on the connectome CLI (catch syntax slips).
+#   2. JSON Schema sanity check on schemas/*.json + every plugins/*/plugin.yaml.
+#   3. `snakemake --lint` on the workflow with a stub config.
+#   4. `snakemake -n` (dry run) on the same stub to confirm DAG-build succeeds.
+#
+# We disable the recon / qsirecon / dk_connectome stages in the stub because
+# they need a real BIDS T1w + QSIPrep outputs to evaluate input functions.
+# The qsiprep stage is enough to exercise the loader, the common helpers,
+# the schema validator, and the per-rule directives we add in Phase A.
+
+name: lint
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install snakemake + jsonschema + pyyaml
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "snakemake>=8.0,<10" \
+            "jsonschema>=4" \
+            "pyyaml>=6" \
+            "snakemake-executor-plugin-slurm>=0.6"
+          snakemake --version
+          python -c "import jsonschema, yaml; print('jsonschema', jsonschema.__version__)"
+
+      - name: Compile-check the connectome CLI
+        run: |
+          python -c "import ast,sys; ast.parse(open('connectome').read()); print('connectome CLI parses')"
+
+      - name: Validate JSON Schemas themselves are well-formed
+        run: |
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          import jsonschema
+          for p in sorted(Path("schemas").glob("*.json")):
+              schema = json.loads(p.read_text())
+              jsonschema.Draft7Validator.check_schema(schema)
+              print(f"  ok: {p}")
+          PY
+
+      - name: Validate every plugin.yaml against schemas/plugin.schema.json
+        run: |
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          import yaml, jsonschema
+          schema = json.loads(Path("schemas/plugin.schema.json").read_text())
+          errs = 0
+          for mf in sorted(Path("plugins").glob("*/plugin.yaml")):
+              data = yaml.safe_load(mf.read_text()) or {}
+              try:
+                  jsonschema.validate(instance=data, schema=schema)
+                  print(f"  ok: {mf}")
+              except jsonschema.ValidationError as e:
+                  loc = "/".join(str(p) for p in e.absolute_path) or "(root)"
+                  print(f"  FAIL: {mf} @ {loc}: {e.message}", file=sys.stderr)
+                  errs += 1
+          sys.exit(1 if errs else 0)
+          PY
+
+      - name: Stub BIDS subject + stub config for snakemake checks
+        id: stub
+        run: |
+          mkdir -p /tmp/ci_bids/sub-CITEST/{anat,dwi}
+          touch /tmp/ci_bids/sub-CITEST/anat/sub-CITEST_T1w.nii.gz \
+                /tmp/ci_bids/sub-CITEST/dwi/sub-CITEST_dwi.nii.gz
+          echo "BIDS_STUB=/tmp/ci_bids"     >> "$GITHUB_ENV"
+          echo "RESULTS_STUB=/tmp/ci_out"   >> "$GITHUB_ENV"
+
+      - name: snakemake --lint
+        run: |
+          # Lint reports cosmetic suggestions for our containerised rules
+          # (we wrap apptainer in shell instead of using `container:`),
+          # so we don't fail the build on lint exit code — just surface it.
+          snakemake --lint \
+            --config bids_dir="$BIDS_STUB" results_root="$RESULTS_STUB" \
+                     subjects='["CITEST"]' subjects_tsv='' \
+                     run_recon=false run_qsirecon=false run_dk_connectome=false \
+            || echo "(snakemake --lint emitted advisories; not gating CI)"
+
+      - name: snakemake dry run (-n) — DAG must build
+        run: |
+          snakemake -n --quiet \
+            --config bids_dir="$BIDS_STUB" results_root="$RESULTS_STUB" \
+                     subjects='["CITEST"]' subjects_tsv='' \
+                     run_recon=false run_qsirecon=false run_dk_connectome=false
+
+      - name: Schema negatives — bad config must be rejected
+        run: |
+          set +e
+          out=$(snakemake -n --quiet \
+            --config bids_dir="$BIDS_STUB" results_root="$RESULTS_STUB" \
+                     subjects='["CITEST"]' subjects_tsv='' \
+                     run_recon=false run_qsirecon=false run_dk_connectome=false \
+                     recon='{"tool":"freedreamer"}' 2>&1)
+          rc=$?
+          echo "$out"
+          if [[ $rc -eq 0 ]]; then
+            echo "::error::Schema rejected an invalid recon.tool but snakemake exited 0"
+            exit 1
+          fi
+          echo "$out" | grep -q "freedreamer" || {
+            echo "::error::Schema error message didn't mention the bad value"
+            exit 1
+          }

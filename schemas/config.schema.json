@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/phindagijimana/dk_connectome/schemas/config.schema.json",
+  "title": "dk_connectome top-level config",
+  "description": "Validated once at workflow startup against the merged config (config/config.yaml plus any --config / --configfile overrides).",
+  "definitions": {
+    "bool": {
+      "description": "Boolean, OR one of the string spellings Snakemake's --config CLI accepts (it parses values as strings).",
+      "oneOf": [
+        { "type": "boolean" },
+        { "type": "string", "enum": ["true","false","yes","no","on","off","1","0","True","False","Yes","No","On","Off"] }
+      ]
+    },
+    "nonNegInt": {
+      "description": "Non-negative integer (or its stringified form — Snakemake's --config CLI stringifies scalars).",
+      "oneOf": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "string",  "pattern": "^[0-9]+$" }
+      ]
+    }
+  },
+  "type": "object",
+  "required": [
+    "bids_dir",
+    "results_root",
+    "containers",
+    "fs_license",
+    "templateflow_home"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "bids_dir":          { "type": "string", "minLength": 1, "description": "BIDS dataset root." },
+    "results_root":      { "type": "string", "minLength": 1, "description": "All pipeline outputs land here." },
+    "fs_license":        { "type": "string", "minLength": 1, "description": "Path to FreeSurfer license.txt." },
+    "fs_lut":            { "type": ["string", "null"], "description": "Optional FreeSurferColorLUT.txt; baked into dk-connectome.sif if blank." },
+    "templateflow_home": { "type": "string", "minLength": 1, "description": "TemplateFlow cache (writable, shared)." },
+
+    "subjects": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" } }
+      ],
+      "description": "Inline subject IDs (without sub- prefix). Ignored if subjects_tsv is set and non-empty."
+    },
+    "subjects_tsv": {
+      "type": ["string", "null"],
+      "description": "One subject ID per line; lines starting with # are ignored. Null/empty falls back to inline `subjects`."
+    },
+
+    "run_recon":         { "$ref": "#/definitions/bool", "default": true },
+    "run_qsirecon":      { "$ref": "#/definitions/bool", "default": true },
+    "run_dk_connectome": { "$ref": "#/definitions/bool", "default": true },
+
+    "containers": {
+      "type": "object",
+      "required": ["qsiprep", "qsirecon", "freesurfer", "dk_connectome"],
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "qsiprep":       { "type": "string", "minLength": 1 },
+        "qsirecon":      { "type": "string", "minLength": 1 },
+        "freesurfer":    { "type": "string", "minLength": 1 },
+        "fastsurfer":    { "type": "string" },
+        "dk_connectome": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "qsiprep": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "output_resolution":   { "type": "number", "exclusiveMinimum": 0 },
+        "use_syn_sdc":         { "$ref": "#/definitions/bool" },
+        "fmap_retry":          { "$ref": "#/definitions/bool" },
+        "skip_bids_validation":{ "$ref": "#/definitions/bool" }
+      }
+    },
+
+    "recon": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "tool":              { "type": "string", "enum": ["freesurfer", "fastsurfer"] },
+        "fastsurfer_device": { "type": "string", "enum": ["cpu", "cuda"] }
+      }
+    },
+
+    "qsirecon": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "multi_shell": { "$ref": "#/definitions/bool" },
+        "spec":        { "type": "string", "minLength": 1 },
+        "atlases":     { "type": "array",  "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+
+    "dk": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "resample_to_dwi":      { "$ref": "#/definitions/bool" },
+        "tck2connectome_extra": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "threads": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 1 }
+    },
+
+    "resources": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "mem_mb":  { "type": "integer", "minimum": 0 },
+          "runtime": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+
+    "retries": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/nonNegInt" }
+    },
+
+    "slurm": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "exclude_nodes": { "type": "string" }
+      }
+    }
+  }
+}
