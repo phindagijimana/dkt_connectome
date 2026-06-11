@@ -40,6 +40,14 @@
 #   SBATCH_DEPENDENCY=afterok:JOBID
 #                                # chain this submission after another Slurm job
 #                                # (e.g. PIPELINE_MODE=qsirecon SBATCH_DEPENDENCY=afterok:44600)
+#   SBATCH_PARTITION=interactive # override array.sh's #SBATCH --partition= line
+#   SBATCH_TIME=12:00:00         # override array.sh's #SBATCH --time= line
+#                                # (must fit the partition's MaxTime; default 12h
+#                                # is the interactive partition cap)
+#   SBATCH_CPUS=8                # override --cpus-per-task; needs to match
+#                                # NTHREADS to keep eddy/recon-all/QSIPrep happy
+#   SBATCH_MEM=32G               # override --mem
+#   SBATCH_JOB_NAME=dwi_test2    # override --job-name (and the output filenames)
 # =============================================================================
 
 set -euo pipefail
@@ -170,4 +178,17 @@ SBATCH_EXTRA=()
 # Optional job-chaining hook used when stages are submitted as separate arrays
 # (recon -> qsirecon -> dk), so downstream stages only fire after upstream OK.
 [[ -n "${SBATCH_DEPENDENCY:-}" ]] && SBATCH_EXTRA+=(--dependency="${SBATCH_DEPENDENCY}")
+# Optional one-shot overrides of the #SBATCH directives baked into array.sh.
+# Useful for picking a different partition (must allow the requested time),
+# bumping per-task CPUs/mem for a fresh recon-all subject, or routing output
+# files to a per-experiment log name.
+[[ -n "${SBATCH_PARTITION:-}" ]] && SBATCH_EXTRA+=(--partition="${SBATCH_PARTITION}")
+[[ -n "${SBATCH_TIME:-}"      ]] && SBATCH_EXTRA+=(--time="${SBATCH_TIME}")
+[[ -n "${SBATCH_CPUS:-}"      ]] && SBATCH_EXTRA+=(--cpus-per-task="${SBATCH_CPUS}")
+[[ -n "${SBATCH_MEM:-}"       ]] && SBATCH_EXTRA+=(--mem="${SBATCH_MEM}")
+if [[ -n "${SBATCH_JOB_NAME:-}" ]]; then
+  SBATCH_EXTRA+=(--job-name="${SBATCH_JOB_NAME}"
+                 --output="${TRACKTBI_ROOT}/logs/${SBATCH_JOB_NAME}_%A_%a.out"
+                 --error="${TRACKTBI_ROOT}/logs/${SBATCH_JOB_NAME}_%A_%a.err")
+fi
 exec sbatch --array="1-${N}%${ARRAY_CONCURRENCY}" --export=ALL "${SBATCH_EXTRA[@]}" "${ARRAY_SCRIPT}"
