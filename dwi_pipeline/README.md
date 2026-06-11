@@ -73,6 +73,8 @@ A `Singularity.freesurfer-7.4.1.def` + `build_freesurfer_sif.sbatch` are also in
 
 ## DK connectome (Step 4)
 
+Full pipeline reference with diagrams and commands: **[dk_connectome.md](dk_connectome.md)**.
+
 After QSIRecon, `mode=all` runs a **Desikan–Killiany** post-step by default (Step 2 produced the FreeSurfer outputs it needs). Disable with `--no-dk` / `RUN_DK_CONNECTOME=0`, or point at an external FreeSurfer tree via `FS_SUBJECTS_DIR=/path/freesurfer`:
 
 - **Input:** QSIRecon `.tck` tractogram + FreeSurfer `aparc+aseg.mgz` (`FS_SUBJECTS_DIR/sub-XXX/`)
