@@ -89,7 +89,7 @@ flowchart TB
   end
 
   subgraph S4["Step 4 — DK connectome"]
-    D["mri_convert → antsApplyTransforms<br/>→ labelconvert → tck2connectome<br/>(inside qsirecon.sif)"]
+    D["mri_label2vol → mri_convert<br/>→ antsApplyTransforms<br/>→ labelconvert → tck2connectome<br/>(freesurfer.sif + qsirecon.sif)"]
   end
 
   OUT["dk_connectome.csv"]
@@ -125,7 +125,14 @@ ultimately lives in **QSIPrep T1w space**.
                     │   ● 4S156 connectivity.mat           │
                     └────────────────▲────────────────────┘
                                      │
-              Step 4: antsApplyTransforms (-r dwiref, -n GenericLabel)
+         Step 4b: antsApplyTransforms (from-orig_to-T1w; -r dwiref)
+                                     │
+                    ┌────────────────┴────────────────────┐
+                    │   Native T1w (FreeSurfer rawavg)     │
+                    │   rawavg.mgz — matches BIDS T1 grid  │
+                    └────────────────▲────────────────────┘
+                                     │
+         Step 4a: mri_label2vol (--temp rawavg; --regheader aparc+aseg)
                                      │
                     ┌────────────────┴────────────────────┐
                     │   FreeSurfer conformed (label source)│
@@ -141,16 +148,19 @@ ultimately lives in **QSIPrep T1w space**.
 
 | Image | Grid (sub-001 example) | Space name | Used for |
 |-------|------------------------|------------|----------|
-| BIDS `*_T1w.nii.gz` | scanner-native | BIDS anat | Input to QSIPrep anat + recon-all |
+| BIDS `*_T1w.nii.gz` | 256×256×176, ~0.98 mm | BIDS anat | Input to QSIPrep anat + recon-all |
+| `mri/rawavg.mgz` | same as BIDS T1w | FS native | Intermediate label grid after Step 4a |
 | `*_desc-preproc_T1w.nii.gz` | 193×229×193, 1 mm, LPS | QSIPrep T1w | QSIRecon anat reference |
 | `*_space-T1w_dwiref.nii.gz` | 80×98×85, 2 mm, LPS | QSIPrep T1w DWI grid | Tractography grid; DK warp target |
 | `mri/aparc+aseg.mgz` | 256×256×256, 1 mm, LIA | FS conformed | Region labels (source) |
 | `aparc+aseg_in_dwi.nii.gz` | same as dwiref | QSIPrep T1w | Labels aligned for connectome |
 
-**Key rule:** FreeSurfer and QSIPrep each build their own T1 from the **same**
-raw BIDS scan. They use different voxel grids but the brain occupies the same
-physical coordinates. Step 4 explicitly warps FS labels into QSIPrep's grid
-before counting streamlines.
+**Key rule:** `aparc+aseg.mgz` is **not** in native T1w space — it lives on
+FreeSurfer's 256³ conformed grid (`orig.mgz`). QSIPrep's `from-orig_to-T1w`
+transform maps **native** T1w → QSIPrep T1w. Step 4 therefore uses a
+**two-hop** warp: `mri_label2vol` (conformed → native/rawavg), then
+`antsApplyTransforms` (native → QSIPrep T1w/DWI grid). See
+[FsAnat-to-NativeAnat](https://surfer.nmr.mgh.harvard.edu/fswiki/FsAnat-to-NativeAnat).
 
 ---
 
@@ -161,11 +171,16 @@ grid, then look up endpoint voxels.
 
 ```
   aparc+aseg.mgz          streamlines.tck.gz
-  [FS space]              [QSIPrep T1w mm coords]
+  [FS conformed]          [QSIPrep T1w mm coords]
        │                         │
-       │ mri_convert             │ (unchanged)
+       │ mri_label2vol           │ (unchanged)
+       │  --temp rawavg.mgz      │
        ▼                         │
-  aparc+aseg.nii.gz               │
+  aparc+aseg_in_rawavg.mgz       │
+       │                         │
+       │ mri_convert             │
+       ▼                         │
+  aparc+aseg_in_rawavg.nii.gz    │
        │                         │
        │ antsApplyTransforms     │
        │  -r dwiref.nii.gz       │
@@ -186,18 +201,27 @@ grid, then look up endpoint voxels.
 
 ```mermaid
 sequenceDiagram
-  participant FS as aparc+aseg.mgz<br/>(FS space)
+  participant FS as aparc+aseg.mgz<br/>(FS conformed 256³)
+  participant Nat as rawavg / aparc_in_rawavg<br/>(native T1 grid)
   participant T1w as QSIPrep dwiref<br/>(T1w 2mm grid)
   participant TCK as streamlines.tck.gz
   participant DK as dk_connectome.csv
 
-  FS->>FS: mri_convert → NIfTI
-  FS->>T1w: antsApplyTransforms GenericLabel
+  FS->>Nat: mri_label2vol (--temp rawavg.mgz)
+  Nat->>T1w: antsApplyTransforms (from-orig_to-T1w)
   Note over T1w: aparc+aseg_in_dwi.nii.gz
   T1w->>T1w: labelconvert → dk_nodes.mif
   TCK->>DK: tck2connectome(dk_nodes.mif)
   Note over DK: count endpoint pairs (i,j)
 ```
+
+**Why two warps?**
+
+`from-orig_to-T1w_mode-image_xfm.txt` maps **native/scanner T1w** into
+QSIPrep's `space-T1w`. `aparc+aseg.mgz` is on FreeSurfer's **conformed**
+256³ grid — different dimensions from both native T1w (256×256×176 for
+sub-001) and QSIPrep T1w (193×229×193). Applying the QSIPrep xfm directly
+to conformed labels skips the native frame the transform expects.
 
 **Why `antsApplyTransforms` instead of `mri_vol2vol`?**
 
@@ -398,9 +422,28 @@ ${RESULTS_ROOT}/qsirecon_single_run_output/
 **Purpose:** Build an **84-node Desikan–Killiany** matrix from the QSIRecon
 tractogram + FreeSurfer `aparc+aseg.mgz`.
 
-**Runs entirely inside `qsirecon.sif`** so MRtrix3 / ANTs versions match.
+**Containers:** Step 4a uses `freesurfer_7.4.1.sif` (`mri_label2vol` is not
+shipped in the trimmed FreeSurfer inside `qsirecon.sif`). Steps 4b–4f run in
+`qsirecon.sif` so MRtrix3 / ANTs versions match QSIRecon.
 
-### Container invocation (from `subject.sh::run_dk_connectome`)
+### Step 4a — FS conformed → native (`freesurfer.sif`)
+
+```bash
+apptainer exec --cleanenv --containall \
+  -B "${FS_SUBJECTS_DIR}/sub-${SUBJECT}":/fs_subject:ro \
+  -B "${DK_OUT}/sub-${SUBJECT}":/out \
+  -B "${FS_LICENSE}":/.fs_license.txt:ro \
+  "${CONTAINER_FREESURFER}" \
+  bash -lc "
+    export FS_LICENSE=/.fs_license.txt
+    mri_label2vol --seg /fs_subject/mri/aparc+aseg.mgz \
+      --temp /fs_subject/mri/rawavg.mgz \
+      --o /out/aparc+aseg_in_rawavg.mgz \
+      --regheader /fs_subject/mri/aparc+aseg.mgz
+  "
+```
+
+### Step 4b–4f — native → QSIPrep T1w + connectome (`qsirecon.sif`)
 
 ```bash
 apptainer exec --cleanenv --containall \
@@ -414,26 +457,27 @@ apptainer exec --cleanenv --containall \
   bash -lc ' ... see sub-commands below ... '
 ```
 
-### Sub-commands (in order)
+### Sub-commands inside `qsirecon.sif` (in order)
 
-**4a. Convert labels to NIfTI**
+**4b. Convert native labels to NIfTI (QC copy of conformed labels optional)**
 
 ```bash
-mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz
+mri_convert /out/aparc+aseg_in_rawavg.mgz /out/aparc+aseg_in_rawavg.nii.gz
+mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz   # QC only
 ```
 
-**4b. Warp parcellation onto QSIPrep DWI grid**
+**4c. Warp native parcellation onto QSIPrep DWI grid**
 
 ```bash
 antsApplyTransforms -d 3 \
-  -i /out/aparc+aseg.nii.gz \
+  -i /out/aparc+aseg_in_rawavg.nii.gz \
   -r /qsiprep/sub-XXX/ses-1/dwi/*_space-T1w_dwiref.nii.gz \
   -t /qsiprep/sub-XXX/ses-1/anat/*_from-orig_to-T1w_mode-image_xfm.txt \
   -n GenericLabel \
   -o /out/aparc+aseg_in_dwi.nii.gz
 ```
 
-**4c. Remap FreeSurfer IDs → DK nodes 1..84**
+**4d. Remap FreeSurfer IDs → DK nodes 1..84**
 
 ```bash
 labelconvert -force /out/aparc+aseg_in_dwi.nii.gz \
@@ -442,20 +486,20 @@ labelconvert -force /out/aparc+aseg_in_dwi.nii.gz \
   /out/dk_nodes.mif
 ```
 
-**4d. Decompress tractogram if gzipped (MRtrix 3.0.4)**
+**4e. Decompress tractogram if gzipped (MRtrix 3.0.4)**
 
 ```bash
 gunzip -c /qsirecon/.../streamlines.tck.gz > /out/streamlines.tck
 ```
 
-**4e. Space-alignment QC**
+**4f. Space-alignment QC**
 
 ```bash
 mrinfo  /out/dk_nodes.mif      | tee /out/dk_nodes.mrinfo.txt
 tckinfo /out/streamlines.tck   | tee /out/tracks.tckinfo.txt
 ```
 
-**4f. Build connectome**
+**4g. Build connectome**
 
 ```bash
 tck2connectome -force \
@@ -482,7 +526,8 @@ tck2connectome ... \
 ${RESULTS_ROOT}/dk_connectomes/sub-XXX/
   dk_connectome.csv           # 84×84 symmetric streamline counts
   dk_assignments.csv          # per-streamline (node_i, node_j)
-  aparc+aseg.nii.gz           # FS labels in conformed space
+  aparc+aseg.nii.gz           # FS labels in conformed space (QC)
+  aparc+aseg_in_rawavg.mgz    # FS labels in native/rawavg space
   aparc+aseg_in_dwi.nii.gz    # FS labels in QSIPrep T1w space
   dk_nodes.mif                # MRtrix label image (84 nodes)
   dk_nodes.mrinfo.txt         # grid / transform QC
@@ -655,8 +700,9 @@ node. Useful for QC overlays and custom weighting.
 ## FAQ
 
 **Is the DK parcellation aligned to QSIPrep space?**  
-Yes. `antsApplyTransforms` resamples `aparc+aseg` onto `dwiref` before
-`tck2connectome`.
+Yes. Step 4a maps `aparc+aseg` from FS conformed space to native (`rawavg.mgz`
+via `mri_label2vol`). Step 4c resamples that native label volume onto `dwiref`
+with `antsApplyTransforms` and `from-orig_to-T1w` before `tck2connectome`.
 
 **Is the tractography space the same as the DK connectome space?**  
 Yes. Both use QSIPrep **T1w** coordinates. The tractogram stores mm endpoints;

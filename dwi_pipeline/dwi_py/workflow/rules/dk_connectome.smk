@@ -1,22 +1,12 @@
 """
 dk_connectome.smk — Step 4: aparc+aseg + QSIRecon .tck(.gz) → DK connectome CSV.
 
-All DK work runs inside qsirecon.sif, which carries everything we need:
-  antsApplyTransforms (ANTs)     — ITK-native resample of aparc+aseg onto the
-                                   DWI/T1w grid using QSIPrep's xfm. QSIPrep
-                                   ships transforms in ITK text format
-                                   (`#Insight Transform File V1.0`) — the
-                                   `.lta`/`.txt` BIDS suffix is misleading and
-                                   confused earlier attempts to use
-                                   FreeSurfer's mri_vol2vol (which reads true
-                                   LTA, not ITK).
-  mri_convert (trimmed FS)       — convert aparc+aseg.mgz -> NIfTI.
-  labelconvert + tck2connectome  — MRtrix3 connectome step.
-  mrinfo + tckinfo               — diagnostics for the space-alignment QC.
+Space alignment is a two-hop warp:
+  1. mri_label2vol (full FreeSurfer container) — FS conformed -> native rawavg
+  2. antsApplyTransforms (qsirecon.sif) — native -> QSIPrep T1w/DWI grid
 
-Tractogram lookup: matches both *.tck and *.tck.gz (QSIRecon ships the latter).
-Space alignment: if dwiref/xfm can't be found, falls back to FS conformed space
-with a warning (connectome may be mis-aligned).
+qsirecon.sif ships a trimmed FreeSurfer with mri_convert but NOT mri_label2vol,
+so Step 4a uses containers.freesurfer and Step 4b+ use containers.qsirecon.
 """
 
 def _dk_inputs(wc):
@@ -44,6 +34,7 @@ rule dk_connectome:
         fs_license   = str(FS_LICENSE),
         fs_lut       = str(FS_LUT),
         container    = str(CONTAINERS["qsirecon"]),
+        c_freesurfer = str(CONTAINERS["freesurfer"]),
         resample     = "1" if config["dk"].get("resample_to_dwi", True) else "0",
         tck2c_extra  = " ".join(config["dk"].get("tck2connectome_extra", []) or []),
     shell:
@@ -89,7 +80,7 @@ rule dk_connectome:
                 dwiref_c="/qsiprep/${{dwiref#{params.qsiprep_out}/}}"
                 lta_c="/qsiprep/${{lta#{params.qsiprep_out}/}}"
                 nodes_input_c="/out/aparc+aseg_in_dwi.nii.gz"
-                space_note="resampled aparc+aseg onto DWI grid via antsApplyTransforms (xfm: $(basename "$lta"))"
+                space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (antsApplyTransforms; xfm: $(basename "$lta"))"
             else
                 echo "DK warning: dwiref/xfm not found in {params.qsiprep_out};" \
                      "falling back to FS conformed space (connectome may mis-align)" \
@@ -104,7 +95,34 @@ rule dk_connectome:
         [[ -n "$lta"    ]] && echo "  xfm     : $lta"    | tee -a {log} >&2
         echo "  space    : $space_note"                   | tee -a {log} >&2
 
-        # ---- Preflight: all tools live in qsirecon.sif ----
+        if [[ ! -f "$fs_subj/mri/rawavg.mgz" ]]; then
+            echo "DK: missing rawavg.mgz under $fs_subj/mri/ (recon-all should write it)" | tee -a {log} >&2
+            exit 1
+        fi
+
+        # ---- Step 4a: FS conformed -> native (full FreeSurfer container) ----
+        if [[ -n "$lta" && -n "$dwiref" ]]; then
+            apptainer exec --cleanenv "{params.c_freesurfer}" bash -lc "command -v mri_label2vol" >/dev/null 2>&1 || {{
+                echo "DK: missing mri_label2vol in containers.freesurfer ({params.c_freesurfer})" | tee -a {log} >&2
+                exit 1
+            }}
+            echo "[dk] Warping aparc+aseg FS conformed -> native (mri_label2vol / rawavg.mgz)" | tee -a {log} >&2
+            apptainer exec --cleanenv --containall \
+                -B "$fs_subj":/fs_subject:ro \
+                -B "$outdir":/out \
+                -B "{params.fs_license}":/.fs_license.txt:ro \
+                "{params.c_freesurfer}" \
+                bash -lc "
+                    set -euo pipefail
+                    export FS_LICENSE=/.fs_license.txt
+                    mri_label2vol --seg /fs_subject/mri/aparc+aseg.mgz \
+                      --temp /fs_subject/mri/rawavg.mgz \
+                      --o /out/aparc+aseg_in_rawavg.mgz \
+                      --regheader /fs_subject/mri/aparc+aseg.mgz
+                " &>> {log}
+        fi
+
+        # ---- Preflight: MRtrix/ANTs tools live in qsirecon.sif ----
         for c in mri_convert antsApplyTransforms labelconvert tck2connectome tckinfo mrinfo; do
             apptainer exec --cleanenv "{params.container}" bash -lc "command -v $c" >/dev/null 2>&1 || {{
                 echo "DK: missing $c in CONTAINER_QSIRECON ({params.container})" | tee -a {log} >&2
@@ -139,12 +157,13 @@ rule dk_connectome:
                 mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz
 
                 if [[ -n '${{lta_c}}' && -n '${{dwiref_c}}' ]]; then
-                    echo '[dk] Resampling aparc+aseg onto DWI grid via antsApplyTransforms (GenericLabel)'
+                    mri_convert /out/aparc+aseg_in_rawavg.mgz /out/aparc+aseg_in_rawavg.nii.gz
+                    echo '[dk] Resampling native aparc+aseg onto DWI grid via antsApplyTransforms (GenericLabel)'
                     # GenericLabel is the ANTs label-aware resampler: per-label
                     # nearest-neighbour vote, no float interpolation between
                     # distinct integer IDs.
                     antsApplyTransforms -d 3 \
-                        -i /out/aparc+aseg.nii.gz \
+                        -i /out/aparc+aseg_in_rawavg.nii.gz \
                         -r '${{dwiref_c}}' \
                         -t '${{lta_c}}' \
                         -n GenericLabel \
