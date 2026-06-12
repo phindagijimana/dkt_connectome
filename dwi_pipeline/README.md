@@ -77,21 +77,23 @@ Full pipeline reference with diagrams and commands: **[dk_connectome.md](dk_conn
 
 After QSIRecon, `mode=all` runs a **Desikan–Killiany** post-step by default (Step 2 produced the FreeSurfer outputs it needs). Disable with `--no-dk` / `RUN_DK_CONNECTOME=0`, or point at an external FreeSurfer tree via `FS_SUBJECTS_DIR=/path/freesurfer`:
 
-- **Input:** QSIRecon `.tck` tractogram + FreeSurfer `aparc+aseg.mgz` (`FS_SUBJECTS_DIR/sub-XXX/`)
-- **Tools:** `mri_convert`, `mri_vol2vol`, `labelconvert`, `tck2connectome`, `mrinfo`, `tckinfo` (must exist in `CONTAINER_QSIRECON`)
-- **Output:** `dk_connectomes/sub-XXX/dk_connectome.csv` (+ `dk_assignments.csv`, `dk_nodes.mrinfo.txt`, `tracks.tckinfo.txt`)
+- **Input:** QSIRecon `.tck` tractogram + FreeSurfer `aparc+aseg.mgz` + `rawavg.mgz`
+- **Tools:** `mri_label2vol` (full FS container), `mri_convert`, `antsApplyTransforms`, `labelconvert`, `tck2connectome`, `mrinfo`, `tckinfo`
+- **Output:** `dk_connectomes/sub-XXX/dk_connectome.csv` (+ `dk_assignments.csv`, `aparc+aseg_in_rawavg.mgz`, `dk_nodes.mrinfo.txt`, `tracks.tckinfo.txt`)
 
 ### Coordinate-space alignment (important)
 
-`aparc+aseg.mgz` lives in FreeSurfer **conformed (`orig.mgz`) space**; QSIRecon tractograms live in QSIPrep **DWI/T1w (ACPC) space**. Before `labelconvert`, the pipeline resamples `aparc+aseg` onto the DWI grid with `mri_vol2vol` using:
+`aparc+aseg.mgz` lives in FreeSurfer **conformed (`orig.mgz`) space** (256³);
+QSIRecon tractograms live in QSIPrep **DWI/T1w space**. QSIPrep's
+`from-orig_to-T1w` xfm maps **native** T1w → QSIPrep T1w, so the pipeline
+uses a two-hop warp before `labelconvert`:
 
-- target = QSIPrep `*space-T1w_dwiref.nii.gz` (or `space-T1w*desc-preproc_dwi.nii.gz` fallback)
-- transform = QSIPrep `*from-orig_to-T1w_mode-image_xfm.txt` (LTA; `fsnative` variant also accepted)
-- interpolation = nearest-neighbour
+1. **`mri_label2vol`** (full `freesurfer_7.4.1.sif`) — conformed → native using `--temp rawavg.mgz` ([FsAnat-to-NativeAnat](https://surfer.nmr.mgh.harvard.edu/fswiki/FsAnat-to-NativeAnat))
+2. **`antsApplyTransforms -n GenericLabel`** (`qsirecon.sif`) — native → QSIPrep T1w/DWI grid using `*from-orig_to-T1w_mode-image_xfm.txt` and `*space-T1w_dwiref.nii.gz`
 
 It also writes `mrinfo` of `dk_nodes.mif` and `tckinfo` of the tractogram into the output folder so you can confirm they share the same transform/voxel grid.
 
-Set `DK_RESAMPLE_TO_DWI=0` to skip the resample (only safe if `mrinfo`/`tckinfo` already agree). If the LTA or DWI ref cannot be found, the pipeline prints a warning and falls back to FS conformed space — the connectome may be mis-aligned.
+Set `DK_RESAMPLE_TO_DWI=0` to skip the resample (only safe if `mrinfo`/`tckinfo` already agree). If the xfm or DWI ref cannot be found, the pipeline prints a warning and falls back to FS conformed space — the connectome may be mis-aligned.
 
 This is separate from QSIRecon’s built-in `--atlases` (AAL, 4S, etc.).
 

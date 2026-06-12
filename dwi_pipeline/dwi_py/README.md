@@ -38,7 +38,7 @@ Toggles in `config/config.yaml`:
 | `recon.tool`        | `freesurfer` | `freesurfer` (recon-all) or `fastsurfer`           |
 | `qsiprep.use_syn_sdc` | `false` | opt-in SyN SDC when no fmap                           |
 | `qsiprep.fmap_retry`  | `false` | `--ignore fieldmaps --use-syn-sdc warn`               |
-| `dk.resample_to_dwi`  | `true`  | resample aparc+aseg to DWI grid (`mri_vol2vol`)       |
+| `dk.resample_to_dwi`  | `true`  | two-hop warp: mri_label2vol → antsApplyTransforms |
 
 ---
 
