@@ -66,16 +66,32 @@ rule dk_connectome:
         nodes_input_c="/out/aparc+aseg.nii.gz"
         space_note="WARNING: aparc+aseg used in FS conformed space (no resample)"
 
+        dk_ses=""
+        if [[ "$tracks" =~ /ses-([^/]+)/ ]]; then dk_ses="${{BASH_REMATCH[1]}}"; fi
+        dwiref_glob="*${{sid}}*"
+        [[ -n "$dk_ses" ]] && dwiref_glob="*${{sid}}*/ses-${{dk_ses}}/*"
+
         if [[ "{params.resample}" == "1" ]]; then
-            dwiref="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
+            dwiref="$(find {params.qsiprep_out} -type f -path "$dwiref_glob" \
                       -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
-            [[ -z "$dwiref" ]] && dwiref="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
+            [[ -z "$dwiref" ]] && dwiref="$(find {params.qsiprep_out} -type f -path "$dwiref_glob" \
                       -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
-            lta="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
+            [[ -z "$dwiref" && -n "$dk_ses" ]] && dwiref="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
+                      -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
+            lta="$(find {params.qsiprep_out} -type f -path "$dwiref_glob" \
                     \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
                     -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
+                    -o -name '*from-orig_to-T1w_mode-image_xfm.mat' \
                     -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \) 2>/dev/null | head -1)"
+                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \
+                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.mat' \) 2>/dev/null | head -1)"
+            [[ -z "$lta" && -n "$dk_ses" ]] && lta="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
+                    \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
+                    -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
+                    -o -name '*from-orig_to-T1w_mode-image_xfm.mat' \
+                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
+                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \
+                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.mat' \) 2>/dev/null | head -1)"
             if [[ -n "$dwiref" && -n "$lta" ]]; then
                 dwiref_c="/qsiprep/${{dwiref#{params.qsiprep_out}/}}"
                 lta_c="/qsiprep/${{lta#{params.qsiprep_out}/}}"
