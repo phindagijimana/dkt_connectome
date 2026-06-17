@@ -471,6 +471,27 @@ run_qsirecon() {
   rm -rf "${WORK_QSIRECON}" && echo "Cleanup: removed QSIRecon workdir sub-${SUBJECT}" || true
 }
 
+# BIDS session label from a path (e.g. "2WK" from ".../ses-2WK/dwi/...").
+_bids_ses_from_path() {
+  if [[ "$1" =~ /ses-([^/]+)/ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  fi
+}
+
+# QSIPrep native->T1w xfm for DK: ITK text (.txt/.lta) or binary (.mat).
+find_qsiprep_native_to_t1w_xfm() {
+  local qsiprep_out="$1" subject="$2" session="${3:-}"
+  local path_glob="*sub-${subject}*"
+  [[ -n "${session}" ]] && path_glob="*sub-${subject}*/ses-${session}/*"
+  find "${qsiprep_out}" -type f -path "${path_glob}" \
+    \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
+    -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
+    -o -name '*from-orig_to-T1w_mode-image_xfm.mat' \
+    -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
+    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \
+    -o -name '*from-fsnative_to-T1w_mode-image_xfm.mat' \) 2>/dev/null | head -1
+}
+
 # -----------------------------------------------------------------------------
 # run_dk_connectome — Build DK connectome from QSIRecon tractogram + FS aseg
 # -----------------------------------------------------------------------------
@@ -521,16 +542,25 @@ run_dk_connectome() {
 
   # Look for QSIPrep DWI-space reference image (in T1w/ACPC space) and the
   # native -> T1w transform; both are needed to put aparc+aseg on the DWI grid.
+  # Prefer the session that matches the tractogram (multi-session BIDS).
+  local dk_ses=""
+  dk_ses="$(_bids_ses_from_path "${tracks}")"
+  local dwiref_path_glob="*sub-${SUBJECT}*"
+  [[ -n "${dk_ses}" ]] && dwiref_path_glob="*sub-${SUBJECT}*/ses-${dk_ses}/*"
+
   if [[ "${DK_RESAMPLE_TO_DWI}" == "1" ]]; then
-    dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
+    dwiref="$(find "${QSIPREP_OUT}" -type f -path "${dwiref_path_glob}" \
                 -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
-    [[ -z "${dwiref}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
+    [[ -z "${dwiref}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "${dwiref_path_glob}" \
                 -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
-    lta="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
-            \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
-            -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
-            -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
-            -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \) 2>/dev/null | head -1)"
+    [[ -z "${dwiref}" && -n "${dk_ses}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
+                -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
+    [[ -z "${dwiref}" && -n "${dk_ses}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
+                -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
+
+    lta="$(find_qsiprep_native_to_t1w_xfm "${QSIPREP_OUT}" "${SUBJECT}" "${dk_ses}")"
+    [[ -z "${lta}" && -n "${dk_ses}" ]] && \
+      lta="$(find_qsiprep_native_to_t1w_xfm "${QSIPREP_OUT}" "${SUBJECT}" "")"
 
     if [[ -n "${dwiref}" && -n "${lta}" ]]; then
       dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
@@ -540,7 +570,7 @@ run_dk_connectome() {
       nodes_input_in_container="/out/aparc+aseg_in_dwi.nii.gz"
       space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (antsApplyTransforms; xfm: ${lta_rel##*/})"
     else
-      echo "DK warning: cannot find QSIPrep DWI reference and/or fsnative->T1w LTA;"
+      echo "DK warning: cannot find QSIPrep DWI reference and/or native->T1w xfm;"
       echo "  dwiref=${dwiref:-<missing>}  lta=${lta:-<missing>}"
       echo "  Falling back to FS conformed space — connectome may be mis-aligned."
       echo "  Set DK_RESAMPLE_TO_DWI=0 to silence this; or check QSIPrep outputs."
@@ -550,7 +580,7 @@ run_dk_connectome() {
   # Step 4a runs in freesurfer_7.4.1.sif (mri_label2vol: FS conformed -> native).
   # Step 4b+ run in qsirecon.sif:
   #   antsApplyTransforms (ANTs)     — native -> QSIPrep T1w/DWI grid using
-  #                                    QSIPrep's from-orig_to-T1w xfm (ITK text).
+  #                                    QSIPrep's from-orig_to-T1w xfm (.txt/.mat).
   #   mri_convert (trimmed FS)       — MGZ -> NIfTI for ANTs/MRtrix.
   #   labelconvert + tck2connectome  — MRtrix3 connectome step.
   #   mrinfo + tckinfo               — diagnostics for the space-alignment QC.
