@@ -96,3 +96,6 @@ qsiprep_qsirecon_subject_status.csv
 # Backups
 backups/
 *.bak
+
+# Atlas-only connectome wrapper (lives locally, not in dk_connectome repo)
+/dwi_connect_default/
