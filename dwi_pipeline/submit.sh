@@ -55,6 +55,8 @@ set +H
 
 QSIPREP_USE_SYN_SDC="${QSIPREP_USE_SYN_SDC:-0}"
 QSIPREP_FMAP_RETRY="${QSIPREP_FMAP_RETRY:-0}"
+QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
+DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
 RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"
 RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
@@ -78,6 +80,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-dk)
       RUN_DK_CONNECTOME=0
+      ;;
+    --bids-filter)
+      QSIPREP_BIDS_FILTER="$2"
+      shift 2
+      continue
+      ;;
+    --dwi-select)
+      DWI_SELECT_JSON="$2"
+      shift 2
+      continue
       ;;
     -h|--help)
       sed -n '14,42p' "$0"
@@ -118,6 +130,9 @@ EXCLUDE_NODES="${EXCLUDE_NODES:-smdodwork05}"
 
 [[ -d "${BIDS_DIR}" ]] || { echo "BIDS directory missing: ${BIDS_DIR}"; exit 1; }
 [[ -f "${ARRAY_SCRIPT}" ]] || { echo "Missing array script: ${ARRAY_SCRIPT}"; exit 1; }
+if [[ -n "${QSIPREP_BIDS_FILTER}" && -n "${DWI_SELECT_JSON}" ]]; then
+  echo "ERROR: use only one of --bids-filter or --dwi-select"; exit 1
+fi
 
 mkdir -p "${TRACKTBI_ROOT}/logs" "${RESULTS_ROOT}"
 
@@ -148,6 +163,20 @@ fi
 N=$(wc -l < "${SUBJECT_LIST_FILE}")
 [[ "${N}" -ge 1 ]] || { echo "Subject list is empty: ${SUBJECT_LIST_FILE}"; exit 1; }
 
+# Align FreeSurfer paths with this run when stale shell exports leak across submissions.
+RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
+_first_sub="$(head -1 "${SUBJECT_LIST_FILE}")"
+if [[ -n "${RECON_OUT:-}" && "${RECON_OUT}" != "${RESULTS_ROOT}/freesurfer" && ! -d "${RECON_OUT}/sub-${_first_sub}" ]]; then
+  echo "NOTE: RECON_OUT (${RECON_OUT}) missing sub-${_first_sub}; using ${RESULTS_ROOT}/freesurfer"
+  RECON_OUT="${RESULTS_ROOT}/freesurfer"
+fi
+if [[ -n "${FS_SUBJECTS_DIR:-}" && "${FS_SUBJECTS_DIR}" != "${RECON_OUT}" && -d "${FS_SUBJECTS_DIR}" && ! -d "${FS_SUBJECTS_DIR}/sub-${_first_sub}" ]]; then
+  echo "NOTE: FS_SUBJECTS_DIR (${FS_SUBJECTS_DIR}) missing sub-${_first_sub}; using ${RECON_OUT}"
+  FS_SUBJECTS_DIR="${RECON_OUT}"
+else
+  FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
+fi
+
 echo "dwi_pipeline submit"
 echo "  Subjects: ${N} from ${SUBJECT_LIST_FILE}"
 echo "  Array: 1-${N}%${ARRAY_CONCURRENCY}"
@@ -159,10 +188,13 @@ if [[ -n "${QSIRECON_ATLASES}" ]]; then
 fi
 echo "  QSIPREP SDC: fmap when in BIDS; SyN=$([[ ${QSIPREP_USE_SYN_SDC} == 1 ]] && echo on || echo off) if no fmap"
 [[ "${QSIPREP_FMAP_RETRY}" == "1" ]] && echo "  QSIPREP_FMAP_RETRY=1 (--ignore fieldmaps --use-syn-sdc warn)"
+[[ -n "${DWI_SELECT_JSON}" ]] && echo "  DWI_SELECT_JSON: ${DWI_SELECT_JSON}"
+[[ -n "${QSIPREP_BIDS_FILTER}" ]] && echo "  QSIPREP_BIDS_FILTER: ${QSIPREP_BIDS_FILTER}"
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
   echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  out=${RECON_OUT}"
 fi
-echo "  DK connectome: $([[ ${RUN_DK_CONNECTOME} == 1 && ${PIPELINE_MODE} == all ]] && echo on || echo off/skip)"
+echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
+echo "  DK connectome: $([[ ${RUN_DK_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == dk ) ]] && echo on || echo off/skip)"
 [[ -n "${EXCLUDE_NODES}" ]] && echo "  Exclude nodes: ${EXCLUDE_NODES}"
 
 # Passed through to array.sh -> subject.sh (sbatch --export=ALL)
@@ -170,7 +202,7 @@ echo "  DK connectome: $([[ ${RUN_DK_CONNECTOME} == 1 && ${PIPELINE_MODE} == all
 # copy of the script, so array.sh cannot derive them on the compute node.
 export DWI_ROOT TRACKTBI_ROOT
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
-export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY
+export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export RUN_RECON RECON_TOOL RECON_OUT RUN_DK_CONNECTOME FS_SUBJECTS_DIR
 
 SBATCH_EXTRA=()

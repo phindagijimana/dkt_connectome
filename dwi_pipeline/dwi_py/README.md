@@ -38,7 +38,7 @@ Toggles in `config/config.yaml`:
 | `recon.tool`        | `freesurfer` | `freesurfer` (recon-all) or `fastsurfer`           |
 | `qsiprep.use_syn_sdc` | `false` | opt-in SyN SDC when no fmap                           |
 | `qsiprep.fmap_retry`  | `false` | `--ignore fieldmaps --use-syn-sdc warn`               |
-| `dk.resample_to_dwi`  | `true`  | two-hop warp: mri_label2vol → antsApplyTransforms |
+| `dk.resample_to_dwi`  | `true`  | three-hop warp: mri_label2vol → antsRegistration → antsApplyTransforms (×2) |
 
 ---
 
@@ -217,9 +217,9 @@ What we **kept** identical to the bash version:
   opt-in);
 * the same Recon tool branching (recon-all by default, FastSurfer via
   `config['recon']['tool']`);
-* the same DK space-alignment fix (resample `aparc+aseg.mgz` to DWI grid via
-  `mri_vol2vol` and the `from-orig_to-T1w` LTA, then `mrinfo`/`tckinfo`
-  diagnostics).
+* the same DK space-alignment fix (resample `aparc+aseg.mgz` to the tractography
+  grid via `mri_label2vol`, empirical affine BIDS T1w → `desc-preproc_T1w`,
+  then `antsApplyTransforms` onto `dwiref`, with `mrinfo`/`tckinfo` diagnostics).
 
 ---
 
@@ -244,7 +244,7 @@ What we **kept** identical to the bash version:
 | `WorkflowError: No subjects found`                            | fill `config/subjects.tsv` or `config.subjects`                  |
 | `MissingInputException` on recon's aparc+aseg                 | set `run_recon: true` (or point `freesurfer/sub-XXX/` at an existing dir) |
 | QSIRecon HSVS aborts with `mount source ... doesn't exist`    | recon must have produced `freesurfer/sub-XXX/`; check that stage |
-| DK warning `dwiref/LTA not found; falling back to FS conformed` | QSIPrep didn't write `*space-T1w_dwiref.nii.gz` for this subject |
+| DK warning `dwiref/preproc T1w/BIDS T1w not found; falling back to FS conformed` | QSIPrep or BIDS missing `*space-T1w_dwiref.nii.gz`, `desc-preproc_T1w`, and/or session T1w |
 | `recon-all not found in CONTAINER_FREESURFER`                 | point `containers.freesurfer` at the dedicated `freesurfer_7.4.1.sif`; pull it with `sbatch ../containers/pull_freesurfer_sif.sbatch` |
 | `cannot find /opt/freesurfer/average/RB_all_withskull_2020_01_02.gca` (recon-all dies ~30 min in) | `containers.freesurfer` is pointing at the trimmed FreeSurfer inside `fastsurfer_latest.sif`; switch it to `freesurfer_7.4.1.sif` |
 | Job lands on `smdodwork05` and dies                           | already excluded by the profile; check `slurm_extra` is being honoured |

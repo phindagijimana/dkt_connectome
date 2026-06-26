@@ -1,9 +1,11 @@
 """
 dk_connectome.smk — Step 4: aparc+aseg + QSIRecon .tck(.gz) → DK connectome CSV.
 
-Space alignment is a two-hop warp:
+Space alignment is a three-hop warp:
   1. mri_label2vol (full FreeSurfer container) — FS conformed -> native rawavg
-  2. antsApplyTransforms (qsirecon.sif) — native -> QSIPrep T1w/DWI grid
+  2. antsRegistration Affine + antsApplyTransforms — BIDS T1w -> desc-preproc_T1w,
+     then warp native labels (QSIPrep .mat alone misaligns FS scanner-native headers)
+  3. antsApplyTransforms — QSIPrep T1w -> dwiref grid (resample)
 
 qsirecon.sif ships a trimmed FreeSurfer with mri_convert but NOT mri_label2vol,
 so Step 4a uses containers.freesurfer and Step 4b+ use containers.qsirecon.
@@ -29,6 +31,7 @@ rule dk_connectome:
     params:
         qsiprep_out  = str(QSIPREP_OUT),
         qsirecon_out = str(QSIRECON_OUT),
+        bids_dir     = str(BIDS_DIR),
         fs_dir       = str(RECON_OUT),
         dk_out       = str(DK_OUT),
         fs_license   = str(FS_LICENSE),
@@ -60,9 +63,10 @@ rule dk_connectome:
         tracks_rel="${{tracks#{params.qsirecon_out}/}}"
         tracks_c="/qsirecon/$tracks_rel"
 
-        # ---- Discover DWI ref + fsnative->T1w xfm for the resample step ----
-        dwiref=""; lta=""
-        dwiref_c=""; lta_c=""
+        # ---- Discover DWI ref + BIDS T1w for affine warp ----
+        dwiref=""; preproc_t1w=""; bids_t1w=""
+        dwiref_c=""; preproc_t1w_c=""; bids_t1w_c=""
+        dk_warp=0
         nodes_input_c="/out/aparc+aseg.nii.gz"
         space_note="WARNING: aparc+aseg used in FS conformed space (no resample)"
 
@@ -78,27 +82,24 @@ rule dk_connectome:
                       -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
             [[ -z "$dwiref" && -n "$dk_ses" ]] && dwiref="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
                       -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
-            lta="$(find {params.qsiprep_out} -type f -path "$dwiref_glob" \
-                    \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
-                    -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
-                    -o -name '*from-orig_to-T1w_mode-image_xfm.mat' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.mat' \) 2>/dev/null | head -1)"
-            [[ -z "$lta" && -n "$dk_ses" ]] && lta="$(find {params.qsiprep_out} -type f -path "*${{sid}}*" \
-                    \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
-                    -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
-                    -o -name '*from-orig_to-T1w_mode-image_xfm.mat' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \
-                    -o -name '*from-fsnative_to-T1w_mode-image_xfm.mat' \) 2>/dev/null | head -1)"
-            if [[ -n "$dwiref" && -n "$lta" ]]; then
+            preproc_t1w="$(find {params.qsiprep_out}/$sid/anat -type f \
+                -name "${{sid}}_desc-preproc_T1w.nii.gz" 2>/dev/null | head -1)"
+            if [[ -n "$dk_ses" && -d "{params.bids_dir}/$sid/ses-$dk_ses/anat" ]]; then
+                bids_t1w="$(find {params.bids_dir}/$sid/ses-$dk_ses/anat -type f \
+                    \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | head -1)"
+            fi
+            [[ -z "$bids_t1w" ]] && bids_t1w="$(find {params.bids_dir}/$sid -type f -path '*/anat/*' \
+                \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | head -1)"
+
+            if [[ -n "$dwiref" && -n "$preproc_t1w" && -n "$bids_t1w" ]]; then
                 dwiref_c="/qsiprep/${{dwiref#{params.qsiprep_out}/}}"
-                lta_c="/qsiprep/${{lta#{params.qsiprep_out}/}}"
+                preproc_t1w_c="/qsiprep/${{preproc_t1w#{params.qsiprep_out}/}}"
+                bids_t1w_c="/bids/${{bids_t1w#{params.bids_dir}/}}"
+                dk_warp=1
                 nodes_input_c="/out/aparc+aseg_in_dwi.nii.gz"
-                space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (antsApplyTransforms; xfm: $(basename "$lta"))"
+                space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
             else
-                echo "DK warning: dwiref/xfm not found in {params.qsiprep_out};" \
+                echo "DK warning: dwiref/preproc T1w/BIDS T1w not found;" \
                      "falling back to FS conformed space (connectome may mis-align)" \
                     | tee -a {log} >&2
             fi
@@ -107,8 +108,9 @@ rule dk_connectome:
         echo "=== DK connectome: $sid ===" | tee -a {log} >&2
         echo "  tracks   : $tracks"                       | tee -a {log} >&2
         echo "  aparc    : {input.aparc}"                 | tee -a {log} >&2
-        [[ -n "$dwiref" ]] && echo "  dwiref  : $dwiref" | tee -a {log} >&2
-        [[ -n "$lta"    ]] && echo "  xfm     : $lta"    | tee -a {log} >&2
+        [[ -n "$dwiref"     ]] && echo "  dwiref  : $dwiref"     | tee -a {log} >&2
+        [[ -n "$preproc_t1w" ]] && echo "  preproc : $preproc_t1w" | tee -a {log} >&2
+        [[ -n "$bids_t1w"    ]] && echo "  bids T1w: $bids_t1w"    | tee -a {log} >&2
         echo "  space    : $space_note"                   | tee -a {log} >&2
 
         if [[ ! -f "$fs_subj/mri/rawavg.mgz" ]]; then
@@ -117,7 +119,7 @@ rule dk_connectome:
         fi
 
         # ---- Step 4a: FS conformed -> native (full FreeSurfer container) ----
-        if [[ -n "$lta" && -n "$dwiref" ]]; then
+        if [[ "$dk_warp" == "1" ]]; then
             apptainer exec --cleanenv "{params.c_freesurfer}" bash -lc "command -v mri_label2vol" >/dev/null 2>&1 || {{
                 echo "DK: missing mri_label2vol in containers.freesurfer ({params.c_freesurfer})" | tee -a {log} >&2
                 exit 1
@@ -139,7 +141,7 @@ rule dk_connectome:
         fi
 
         # ---- Preflight: MRtrix/ANTs tools live in qsirecon.sif ----
-        for c in mri_convert antsApplyTransforms labelconvert tck2connectome tckinfo mrinfo; do
+        for c in mri_convert antsRegistration antsApplyTransforms labelconvert tck2connectome tckinfo mrinfo; do
             apptainer exec --cleanenv "{params.container}" bash -lc "command -v $c" >/dev/null 2>&1 || {{
                 echo "DK: missing $c in CONTAINER_QSIRECON ({params.container})" | tee -a {log} >&2
                 exit 1
@@ -161,7 +163,10 @@ rule dk_connectome:
             -B "{params.fs_license}":/opt/freesurfer/license.txt:ro
             -B "{params.fs_lut}":/opt/freesurfer/FreeSurferColorLUT.txt:ro
         )
-        [[ -n "$lta" ]] && binds+=( -B "{params.qsiprep_out}":/qsiprep:ro )
+        [[ "$dk_warp" == "1" ]] && binds+=(
+            -B "{params.qsiprep_out}":/qsiprep:ro
+            -B "{params.bids_dir}":/bids:ro
+        )
 
         apptainer exec --cleanenv --containall \
             "${{binds[@]}}" \
@@ -172,16 +177,30 @@ rule dk_connectome:
 
                 mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz
 
-                if [[ -n '${{lta_c}}' && -n '${{dwiref_c}}' ]]; then
+                if [[ '${{dk_warp}}' == '1' ]]; then
                     mri_convert /out/aparc+aseg_in_rawavg.mgz /out/aparc+aseg_in_rawavg.nii.gz
-                    echo '[dk] Resampling native aparc+aseg onto DWI grid via antsApplyTransforms (GenericLabel)'
-                    # GenericLabel is the ANTs label-aware resampler: per-label
-                    # nearest-neighbour vote, no float interpolation between
-                    # distinct integer IDs.
+                    echo '[dk] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w'
+                    antsRegistration --dimensionality 3 --float 0 \
+                      --output [/out/native_to_preproc_T1w_,/out/native_to_preproc_T1w_Warped.nii.gz] \
+                      --interpolation Linear \
+                      --winsorize-image-intensities [0.005,0.995] \
+                      --use-histogram-matching 1 \
+                      --transform Affine[0.1] \
+                      --metric MI['${{preproc_t1w_c}}','${{bids_t1w_c}}',1,32] \
+                      --convergence [500x250x100,1e-6,10] \
+                      --shrink-factors 4x2x1 \
+                      --smoothing-sigmas 2x1x0vox
+                    echo '[dk] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)'
                     antsApplyTransforms -d 3 \
                         -i /out/aparc+aseg_in_rawavg.nii.gz \
+                        -r '${{preproc_t1w_c}}' \
+                        -t /out/native_to_preproc_T1w_0GenericAffine.mat \
+                        -n GenericLabel \
+                        -o /out/aparc+aseg_in_t1w.nii.gz
+                    echo '[dk] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)'
+                    antsApplyTransforms -d 3 \
+                        -i /out/aparc+aseg_in_t1w.nii.gz \
                         -r '${{dwiref_c}}' \
-                        -t '${{lta_c}}' \
                         -n GenericLabel \
                         -o /out/aparc+aseg_in_dwi.nii.gz
                 fi

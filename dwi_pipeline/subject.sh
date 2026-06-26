@@ -36,15 +36,15 @@
 # Step 4 — DK connectome (container, default ON when Step 2 ran):
 #   Post-step after QSIRecon. Uses FreeSurfer aparc+aseg.mgz + QSIRecon .tck.
 #   Space alignment: aparc+aseg lives in FreeSurfer conformed (orig.mgz) space
-#   (256³); tractogram lives in QSIPrep DWI/T1w space. QSIPrep's
-#   from-orig_to-T1w xfm maps *native* T1w -> QSIPrep T1w, so we first warp
-#   aparc+aseg back to native space with mri_label2vol (--temp rawavg.mgz;
-#   see FsAnat-to-NativeAnat), then resample onto the DWI grid with
-#   antsApplyTransforms (-n GenericLabel). mri_label2vol lives in the full
-#   FreeSurfer container; antsApplyTransforms in qsirecon.sif. Set
-#   DK_RESAMPLE_TO_DWI=0 to skip the resample (not recommended).
-#   Tools: mri_label2vol, mri_convert, antsApplyTransforms, labelconvert,
-#   tck2connectome.
+#   (256³); tractogram lives in QSIPrep T1w (dwiref) space. Step 4a warps labels
+#   to native T1w (rawavg.mgz). Step 4b affine-registers BIDS T1w -> desc-preproc_T1w
+#   (QSIPrep's packaged from-T1wNative_to-T1wACPC .mat targets a reoriented
+#   T1wNative frame, not FS scanner-native rawavg), applies that warp to labels,
+#   then resamples onto dwiref (-n GenericLabel). mri_label2vol lives in the full
+#   FreeSurfer container; antsRegistration/antsApplyTransforms in qsirecon.sif.
+#   Set DK_RESAMPLE_TO_DWI=0 to skip the resample (not recommended).
+#   Tools: mri_label2vol, mri_convert, antsRegistration, antsApplyTransforms,
+#   labelconvert, tck2connectome.
 #   Writes dk_connectome.csv under dk_connectomes/sub-XXX/.
 #
 # Usage:
@@ -112,6 +112,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-dk)
       RUN_DK_CONNECTOME=0
+      ;;
+    --bids-filter)
+      QSIPREP_BIDS_FILTER="${2:?Need path after --bids-filter}"
+      shift 2
+      continue
+      ;;
+    --dwi-select)
+      DWI_SELECT_JSON="${2:?Need path after --dwi-select}"
+      shift 2
+      continue
       ;;
     -h|--help)
       sed -n '36,57p' "$0"
@@ -187,6 +197,13 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # or "" to opt out (only safe with specs that have no connectivity node — rare).
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
+QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
+DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
+BUILD_BIDS_FILTER="${TRACKTBI_ROOT}/dwi_pipeline/scripts/build_bids_filter.py"
+if [[ -n "${QSIPREP_BIDS_FILTER}" && -n "${DWI_SELECT_JSON}" ]]; then
+  echo "ERROR: use only one of --bids-filter or --dwi-select"
+  exit 1
+fi
 DK_RESAMPLE_TO_DWI="${DK_RESAMPLE_TO_DWI:-1}"
 
 # --- Output layout under RESULTS_ROOT ---
@@ -224,6 +241,26 @@ has_fmap() {
   find "${BIDS_DIR}/sub-${SUBJECT}" -type f \( -name '*.nii' -o -name '*.nii.gz' \) -path '*/fmap/*' 2>/dev/null | head -1 | grep -q .
 }
 
+prepare_qsiprep_bids_filter() {
+  QSIPREP_FILTER_HOST=""
+  QSIPREP_FILTER_CONTAINER=""
+  [[ -z "${QSIPREP_BIDS_FILTER}" && -z "${DWI_SELECT_JSON}" ]] && return 0
+  [[ -f "${BUILD_BIDS_FILTER}" ]] || { echo "Missing ${BUILD_BIDS_FILTER}"; exit 1; }
+  if [[ -n "${DWI_SELECT_JSON}" ]]; then
+    [[ -f "${DWI_SELECT_JSON}" ]] || { echo "Missing DWI_SELECT_JSON=${DWI_SELECT_JSON}"; exit 1; }
+    QSIPREP_FILTER_HOST="${WORK_QSIPREP}/bids_filter.json"
+    python3 "${BUILD_BIDS_FILTER}" --bids-dir "${BIDS_DIR}" --subject "${SUBJECT}" \
+      --select-json "${DWI_SELECT_JSON}" --output "${QSIPREP_FILTER_HOST}"
+    QSIPREP_FILTER_CONTAINER="/work/bids_filter.json"
+    echo "QSIPrep: dwi-select ${DWI_SELECT_JSON} -> ${QSIPREP_FILTER_HOST}"
+  else
+    [[ -f "${QSIPREP_BIDS_FILTER}" ]] || { echo "Missing QSIPREP_BIDS_FILTER=${QSIPREP_BIDS_FILTER}"; exit 1; }
+    QSIPREP_FILTER_HOST="${QSIPREP_BIDS_FILTER}"
+    QSIPREP_FILTER_CONTAINER="/bids_filter.json"
+    echo "QSIPrep: static bids filter ${QSIPREP_BIDS_FILTER}"
+  fi
+}
+
 # -----------------------------------------------------------------------------
 # run_qsiprep — QSIPrep in Apptainer: BIDS -> qsiprep_single_run_output/sub-XXX
 # -----------------------------------------------------------------------------
@@ -250,13 +287,21 @@ run_qsiprep() {
   rm -rf "${WORK_QSIPREP}"
   mkdir -p "${WORK_QSIPREP}"
 
-  # Mounts: BIDS read-only, outputs + work writable, license + TemplateFlow for registration
+  prepare_qsiprep_bids_filter
+  local -a filter_binds=()
+  if [[ -n "${QSIPREP_FILTER_CONTAINER}" ]]; then
+    [[ "${QSIPREP_FILTER_CONTAINER}" == "/bids_filter.json" ]] && \
+      filter_binds+=( -B "${QSIPREP_FILTER_HOST}":/bids_filter.json:ro )
+    xtra+=( --bids-filter-file "${QSIPREP_FILTER_CONTAINER}" )
+  fi
+
   apptainer run --cleanenv --containall \
     -B "${BIDS_DIR}":/bids_input:ro \
     -B "${QSIPREP_OUT}":/output \
     -B "${WORK_QSIPREP}":/work \
     -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro \
     -B "${TEMPLATEFLOW_HOME}":/templateflow \
+    "${filter_binds[@]}" \
     --env "TEMPLATEFLOW_HOME=/templateflow" \
     "${CONTAINER_QSIPREP}" \
     /bids_input /output participant \
@@ -478,18 +523,24 @@ _bids_ses_from_path() {
   fi
 }
 
-# QSIPrep native->T1w xfm for DK: ITK text (.txt/.lta) or binary (.mat).
-find_qsiprep_native_to_t1w_xfm() {
-  local qsiprep_out="$1" subject="$2" session="${3:-}"
-  local path_glob="*sub-${subject}*"
-  [[ -n "${session}" ]] && path_glob="*sub-${subject}*/ses-${session}/*"
-  find "${qsiprep_out}" -type f -path "${path_glob}" \
-    \( -name '*from-orig_to-T1w_mode-image_xfm.txt' \
-    -o -name '*from-orig_to-T1w_mode-image_xfm.lta' \
-    -o -name '*from-orig_to-T1w_mode-image_xfm.mat' \
-    -o -name '*from-fsnative_to-T1w_mode-image_xfm.txt' \
-    -o -name '*from-fsnative_to-T1w_mode-image_xfm.lta' \
-    -o -name '*from-fsnative_to-T1w_mode-image_xfm.mat' \) 2>/dev/null | head -1
+# QSIPrep subject-level desc-preproc T1w (QSIPrep T1w reference grid).
+find_qsiprep_preproc_t1w() {
+  local qsiprep_out="$1" subject="$2"
+  find "${qsiprep_out}/sub-${subject}/anat" -type f \
+    -name "*sub-${subject}_desc-preproc_T1w.nii.gz" 2>/dev/null | head -1
+}
+
+# BIDS T1w used for recon (prefer session matching the tractogram).
+find_bids_t1w() {
+  local subject="$1" session="${2:-}"
+  local root="${BIDS_DIR}/sub-${subject}"
+  if [[ -n "${session}" && -d "${root}/ses-${session}/anat" ]]; then
+    find "${root}/ses-${session}/anat" -type f \
+      \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | head -1
+    return
+  fi
+  find "${root}" -type f -path '*/anat/*' \
+    \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | head -1
 }
 
 # -----------------------------------------------------------------------------
@@ -506,7 +557,9 @@ run_dk_connectome() {
   local tracks_rel
   local tracks_in_container
   local dwiref="" dwiref_rel="" dwiref_in_container=""
-  local lta="" lta_rel="" lta_in_container=""
+  local preproc_t1w="" preproc_t1w_rel="" preproc_t1w_in_container=""
+  local bids_t1w="" bids_t1w_rel="" bids_t1w_in_container=""
+  local dk_warp=0
   local nodes_input_in_container="/out/aparc+aseg.nii.gz"
   local space_note="WARNING: aparc+aseg used in FS conformed space (not resampled to DWI)"
 
@@ -558,20 +611,22 @@ run_dk_connectome() {
     [[ -z "${dwiref}" && -n "${dk_ses}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
                 -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
 
-    lta="$(find_qsiprep_native_to_t1w_xfm "${QSIPREP_OUT}" "${SUBJECT}" "${dk_ses}")"
-    [[ -z "${lta}" && -n "${dk_ses}" ]] && \
-      lta="$(find_qsiprep_native_to_t1w_xfm "${QSIPREP_OUT}" "${SUBJECT}" "")"
+    preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}")"
+    bids_t1w="$(find_bids_t1w "${SUBJECT}" "${dk_ses}")"
 
-    if [[ -n "${dwiref}" && -n "${lta}" ]]; then
+    if [[ -n "${dwiref}" && -n "${preproc_t1w}" && -n "${bids_t1w}" ]]; then
       dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
-      lta_rel="${lta#${QSIPREP_OUT}/}"
+      preproc_t1w_rel="${preproc_t1w#${QSIPREP_OUT}/}"
+      bids_t1w_rel="${bids_t1w#${BIDS_DIR}/}"
       dwiref_in_container="/qsiprep/${dwiref_rel}"
-      lta_in_container="/qsiprep/${lta_rel}"
+      preproc_t1w_in_container="/qsiprep/${preproc_t1w_rel}"
+      bids_t1w_in_container="/bids/${bids_t1w_rel}"
+      dk_warp=1
       nodes_input_in_container="/out/aparc+aseg_in_dwi.nii.gz"
-      space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (antsApplyTransforms; xfm: ${lta_rel##*/})"
+      space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
     else
-      echo "DK warning: cannot find QSIPrep DWI reference and/or native->T1w xfm;"
-      echo "  dwiref=${dwiref:-<missing>}  lta=${lta:-<missing>}"
+      echo "DK warning: cannot find QSIPrep DWI reference, preproc T1w, and/or BIDS T1w;"
+      echo "  dwiref=${dwiref:-<missing>}  preproc_t1w=${preproc_t1w:-<missing>}  bids_t1w=${bids_t1w:-<missing>}"
       echo "  Falling back to FS conformed space — connectome may be mis-aligned."
       echo "  Set DK_RESAMPLE_TO_DWI=0 to silence this; or check QSIPrep outputs."
     fi
@@ -579,18 +634,21 @@ run_dk_connectome() {
 
   # Step 4a runs in freesurfer_7.4.1.sif (mri_label2vol: FS conformed -> native).
   # Step 4b+ run in qsirecon.sif:
-  #   antsApplyTransforms (ANTs)     — native -> QSIPrep T1w/DWI grid using
-  #                                    QSIPrep's from-orig_to-T1w xfm (.txt/.mat).
+  #   antsRegistration (Affine)        — BIDS T1w -> desc-preproc_T1w (empirical
+  #                                    native->QSIPrep T1w; QSIPrep .mat alone mis-
+  #                                    aligns FS rawavg/scanner-native headers).
+  #   antsApplyTransforms              — labels -> preproc T1w -> dwiref grid.
   #   mri_convert (trimmed FS)       — MGZ -> NIfTI for ANTs/MRtrix.
   #   labelconvert + tck2connectome  — MRtrix3 connectome step.
   #   mrinfo + tckinfo               — diagnostics for the space-alignment QC.
   echo "Using tractogram: ${tracks}"
   echo "Using aparc+aseg: ${aparc}"
   [[ -n "${dwiref}" ]] && echo "Using DWI reference: ${dwiref}"
-  [[ -n "${lta}"    ]] && echo "Using native->T1w xfm: ${lta}"
+  [[ -n "${preproc_t1w}" ]] && echo "Using QSIPrep T1w reference: ${preproc_t1w}"
+  [[ -n "${bids_t1w}"     ]] && echo "Using BIDS T1w (affine reg source): ${bids_t1w}"
   echo "Space handling: ${space_note}"
 
-  if [[ -n "${lta_in_container}" && -n "${dwiref_in_container}" ]]; then
+  if [[ "${dk_warp}" == "1" ]]; then
     apptainer exec --cleanenv "${CONTAINER_FREESURFER}" bash -lc "command -v mri_label2vol" >/dev/null 2>&1 || {
       echo "Missing mri_label2vol in CONTAINER_FREESURFER (${CONTAINER_FREESURFER})"
       exit 1
@@ -611,7 +669,7 @@ run_dk_connectome() {
       "
   fi
 
-  for c in mri_convert antsApplyTransforms labelconvert tck2connectome tckinfo mrinfo; do
+  for c in mri_convert antsRegistration antsApplyTransforms labelconvert tck2connectome tckinfo mrinfo; do
     apptainer exec --cleanenv "${CONTAINER_QSIRECON}" bash -lc "command -v ${c}" >/dev/null 2>&1 || {
       echo "Missing required command in CONTAINER_QSIRECON (${CONTAINER_QSIRECON}): ${c}"
       exit 1
@@ -632,7 +690,10 @@ run_dk_connectome() {
     -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro
     -B "${FS_LUT}":/opt/freesurfer/FreeSurferColorLUT.txt:ro
   )
-  [[ -n "${lta}" ]] && binds+=( -B "${QSIPREP_OUT}":/qsiprep:ro )
+  [[ "${dk_warp}" == "1" ]] && binds+=(
+    -B "${QSIPREP_OUT}":/qsiprep:ro
+    -B "${BIDS_DIR}":/bids:ro
+  )
 
   apptainer exec --cleanenv --containall \
     "${binds[@]}" \
@@ -643,15 +704,30 @@ run_dk_connectome() {
 
       mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz
 
-      if [[ -n '${lta_in_container}' && -n '${dwiref_in_container}' ]]; then
+      if [[ '${dk_warp}' == '1' ]]; then
         mri_convert /out/aparc+aseg_in_rawavg.mgz /out/aparc+aseg_in_rawavg.nii.gz
-        echo '[dk] Resampling native aparc+aseg onto DWI grid via antsApplyTransforms (GenericLabel)'
-        # GenericLabel is the ANTs label-aware resampler: per-label nearest-
-        # neighbour vote, no float interpolation between distinct integer IDs.
+        echo '[dk] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w'
+        antsRegistration --dimensionality 3 --float 0 \
+          --output [/out/native_to_preproc_T1w_,/out/native_to_preproc_T1w_Warped.nii.gz] \
+          --interpolation Linear \
+          --winsorize-image-intensities [0.005,0.995] \
+          --use-histogram-matching 1 \
+          --transform Affine[0.1] \
+          --metric MI['${preproc_t1w_in_container}','${bids_t1w_in_container}',1,32] \
+          --convergence [500x250x100,1e-6,10] \
+          --shrink-factors 4x2x1 \
+          --smoothing-sigmas 2x1x0vox
+        echo '[dk] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)'
         antsApplyTransforms -d 3 \
           -i /out/aparc+aseg_in_rawavg.nii.gz \
+          -r '${preproc_t1w_in_container}' \
+          -t /out/native_to_preproc_T1w_0GenericAffine.mat \
+          -n GenericLabel \
+          -o /out/aparc+aseg_in_t1w.nii.gz
+        echo '[dk] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)'
+        antsApplyTransforms -d 3 \
+          -i /out/aparc+aseg_in_t1w.nii.gz \
           -r '${dwiref_in_container}' \
-          -t '${lta_in_container}' \
           -n GenericLabel \
           -o /out/aparc+aseg_in_dwi.nii.gz
       fi
