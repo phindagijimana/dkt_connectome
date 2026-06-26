@@ -70,7 +70,7 @@ qsirecon:
 
 # --- DK connectome (Step 4) ---
 dk:
-  resample_to_dwi: true       # mri_vol2vol via from-orig_to-T1w LTA
+  resample_to_dwi: true       # mri_label2vol + affine BIDS T1w→desc-preproc_T1w + dwiref resample
   tck2connectome_extra: []    # e.g. [ "-scale_invlength", "-scale_invnodevol" ]
 
 # --- Resources (per task; consumed by the Slurm executor) ---
