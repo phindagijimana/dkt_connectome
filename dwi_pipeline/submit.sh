@@ -15,10 +15,12 @@
 # Usage:
 #   ./submit.sh                    # full pipeline, recon-all (slow, ~10 h/subject)
 #   ./submit.sh --fastsurfer       # full pipeline, FastSurfer (~1-2 h/subject CPU)
-#   ./submit.sh --no-recon         # skip Step 2; auto-degrades to ACT-fast + no DK
+#   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
 #   ./submit.sh --no-dk            # full QSIPrep+Recon+QSIRecon, no DK CSV
 #   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc warn
 #   ./submit.sh --fmap-retry       # ignore measured fmaps, SyN SDC
+#   ./submit.sh --dwi-shell 1000     # default: acq-b1000 + IntendedFor fmaps for QSIPrep
+#   ./submit.sh --no-dwi-filter      # legacy: no series filter
 #
 # Common overrides:
 #   ARRAY_CONCURRENCY=5          # Slurm %K throttle
@@ -36,6 +38,8 @@
 #   FS_SUBJECTS_DIR=/path        # point Steps 3+4 at an external FS tree
 #   SUBJECT_LIST_ONLY_DWI=0      # include all sub-* folders, not only those with DWI
 #   QSIPREP_USE_SYN_SDC=1        # same as --syn
+#   DWI_SHELL_B=1000             # b-value for default dwi-select config
+#   QSIPREP_NO_DWI_FILTER=1      # same as --no-dwi-filter
 #   EXCLUDE_NODES=smdodwork05    # comma-list passed to sbatch --exclude
 #   SBATCH_DEPENDENCY=afterok:JOBID
 #                                # chain this submission after another Slurm job
@@ -57,6 +61,8 @@ QSIPREP_USE_SYN_SDC="${QSIPREP_USE_SYN_SDC:-0}"
 QSIPREP_FMAP_RETRY="${QSIPREP_FMAP_RETRY:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
+DWI_SHELL_B="${DWI_SHELL_B:-1000}"
+QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
 RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"
 RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
@@ -91,12 +97,21 @@ while [[ $# -gt 0 ]]; do
       shift 2
       continue
       ;;
+    --dwi-shell)
+      DWI_SHELL_B="$2"
+      DWI_SELECT_JSON=""
+      shift 2
+      continue
+      ;;
+    --no-dwi-filter)
+      QSIPREP_NO_DWI_FILTER=1
+      ;;
     -h|--help)
-      sed -n '14,42p' "$0"
+      sed -n '14,48p' "$0"
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --fastsurfer, --no-recon, --no-dk)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-dk)"
       exit 1
       ;;
   esac
@@ -163,18 +178,15 @@ fi
 N=$(wc -l < "${SUBJECT_LIST_FILE}")
 [[ "${N}" -ge 1 ]] || { echo "Subject list is empty: ${SUBJECT_LIST_FILE}"; exit 1; }
 
-# Align FreeSurfer paths with this run when stale shell exports leak across submissions.
 RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
-_first_sub="$(head -1 "${SUBJECT_LIST_FILE}")"
-if [[ -n "${RECON_OUT:-}" && "${RECON_OUT}" != "${RESULTS_ROOT}/freesurfer" && ! -d "${RECON_OUT}/sub-${_first_sub}" ]]; then
-  echo "NOTE: RECON_OUT (${RECON_OUT}) missing sub-${_first_sub}; using ${RESULTS_ROOT}/freesurfer"
-  RECON_OUT="${RESULTS_ROOT}/freesurfer"
-fi
-if [[ -n "${FS_SUBJECTS_DIR:-}" && "${FS_SUBJECTS_DIR}" != "${RECON_OUT}" && -d "${FS_SUBJECTS_DIR}" && ! -d "${FS_SUBJECTS_DIR}/sub-${_first_sub}" ]]; then
-  echo "NOTE: FS_SUBJECTS_DIR (${FS_SUBJECTS_DIR}) missing sub-${_first_sub}; using ${RECON_OUT}"
-  FS_SUBJECTS_DIR="${RECON_OUT}"
-else
-  FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
+FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
+if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "dk" ]]; then
+  _first_sub="$(head -1 "${SUBJECT_LIST_FILE}")"
+  if [[ ! -d "${FS_SUBJECTS_DIR}/sub-${_first_sub}" ]]; then
+    echo "ERROR [submit/FS_SUBJECTS_DIR]: ${FS_SUBJECTS_DIR}/sub-${_first_sub} not found"
+    echo "  Run recon (PIPELINE_MODE=recon or all) before ${PIPELINE_MODE}."
+    exit 1
+  fi
 fi
 
 echo "dwi_pipeline submit"
@@ -186,9 +198,15 @@ echo "  QSIRECON_SPEC: ${QSIRECON_SPEC}"
 if [[ -n "${QSIRECON_ATLASES}" ]]; then
   echo "  QSIRECON_ATLASES: ${QSIRECON_ATLASES}"
 fi
-echo "  QSIPREP SDC: fmap when in BIDS; SyN=$([[ ${QSIPREP_USE_SYN_SDC} == 1 ]] && echo on || echo off) if no fmap"
+echo "  QSIPrep SDC: measured when dwi-select includes fmap; else requires --syn or --fmap-retry"
 [[ "${QSIPREP_FMAP_RETRY}" == "1" ]] && echo "  QSIPREP_FMAP_RETRY=1 (--ignore fieldmaps --use-syn-sdc warn)"
-[[ -n "${DWI_SELECT_JSON}" ]] && echo "  DWI_SELECT_JSON: ${DWI_SELECT_JSON}"
+if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
+  echo "  dwi-select: off (--no-dwi-filter)"
+elif [[ -n "${DWI_SELECT_JSON}" ]]; then
+  echo "  DWI_SELECT_JSON: ${DWI_SELECT_JSON}"
+else
+  echo "  dwi-select: dwi_select_b${DWI_SHELL_B}.json (default)"
+fi
 [[ -n "${QSIPREP_BIDS_FILTER}" ]] && echo "  QSIPREP_BIDS_FILTER: ${QSIPREP_BIDS_FILTER}"
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
   echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  out=${RECON_OUT}"
@@ -203,6 +221,7 @@ echo "  DK connectome: $([[ ${RUN_DK_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == a
 export DWI_ROOT TRACKTBI_ROOT
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_BIDS_FILTER DWI_SELECT_JSON
+export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
 export RUN_RECON RECON_TOOL RECON_OUT RUN_DK_CONNECTOME FS_SUBJECTS_DIR
 
 SBATCH_EXTRA=()

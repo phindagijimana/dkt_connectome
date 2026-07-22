@@ -39,6 +39,13 @@ dag.svg
 *.img
 *.simg
 
+# --- dk_connectome build scratch (staged ANTs/MRtrix/FS binaries) ---
+dwi_pipeline/containers/dk_connectome/build_ctx/
+dwi_pipeline/containers/dk_connectome/build_ctx_lean/
+dwi_pipeline/containers/dk_connectome/.apptainer_tmp/
+dwi_pipeline/containers/dk_connectome/.fs_min_test/
+dwi_pipeline/containers/dk_connectome/.fs_min_out/
+
 # --- TemplateFlow cache (downloaded on demand) ---
 /templateflow/
 

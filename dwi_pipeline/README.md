@@ -1,126 +1,172 @@
-# DWI pipeline (ACT / connectome)
+# dwi_pipeline — QSIPrep → Recon → QSIRecon → DK connectome
 
-Per subject, the default `all` mode runs four stages:
+Full **anatomically constrained tractography** pipeline with a post-hoc **Desikan–Killiany (DK)** connectome step.
 
-1. **QSIPrep** — DWI preprocessing (denoise, SDC, motion/eddy, T1w coregistration)
-2. **Recon** — anatomical surface reconstruction producing a FreeSurfer subjects dir
-   - Default: `recon-all -all` (FreeSurfer 7.4.1, ~6–10 h CPU)
-   - Opt-in faster mode: `--fastsurfer` (~1–2 h CPU, ~20 min GPU)
-3. **QSIRecon** — `mrtrix_singleshell_ss3t_ACT-hsvs` (SS3T CSD + ACT tractography, HSVS 5TT)
-4. **DK connectome** — `aparc+aseg.mgz` → DWI grid → MRtrix labels → `dk_connectome.csv`
+For **atlas-only** connectomes (4S156 in QSIRecon, no DK), use [`dwi_connect_default/`](../dwi_connect_default/) → `RESULTS_ROOT=.../dwi_test_default`.
 
-If you skip Step 2 (`--no-recon`) the pipeline auto-degrades QSIRecon to `mrtrix_singleshell_ss3t_ACT-fast` and turns DK off, because both rely on FreeSurfer outputs.
+For **TrackTBI + DK**, use `RESULTS_ROOT=.../dwi_test_TBI` (see [`CIDUR_BIDS/dwi_test_TBI/README.md`](../CIDUR_BIDS/dwi_test_TBI/README.md)).
 
-Each `.sh` file has a header and inline comments explaining what each block does.
+---
 
-## Flow
+## Stages
 
-```
-submit.sh  →  writes subjects.txt, sbatch array.sh (1-N%5)
-array.sh   →  one Slurm task per line in subjects.txt; forwards CLI flags
-subject.sh →  QSIPrep → Recon (FreeSurfer | FastSurfer) → QSIRecon → DK connectome
-```
+| Step | Script mode | Tool | Output |
+|------|-------------|------|--------|
+| 1 | `qsiprep` | QSIPrep | Preprocessed DWI, `dwiref`, transforms |
+| 2 | `recon` | FreeSurfer / FastSurfer | `aparc+aseg.mgz`, surfaces |
+| 3 | `qsirecon` | QSIRecon (SS3T + ACT-HSVS) | Tractogram (~10M streamlines), optional 4S156 atlas connectome |
+| 4 | `dk` | `dk_connectome.sif` (FreeSurfer + ANTs + MRtrix3) | `dk_connectome.csv` (84×84) |
 
-## Scripts
+`bash subject.sh all SUBJECT` runs steps 1–4 sequentially.
 
-| File | Role |
-|------|------|
-| `submit.sh` | Build subject list, parse CLI flags, submit Slurm array |
-| `array.sh` | Slurm array job (one subject per task) |
-| `subject.sh` | QSIPrep + Recon + QSIRecon + DK for one subject |
+---
 
-Default subject list: `subjects.txt` (written by `submit.sh`).
-
-## Run
+## Quick start
 
 ```bash
 cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
-./dwi_pipeline/submit.sh                  # full pipeline, recon-all (slow but standard)
-./dwi_pipeline/submit.sh --fastsurfer     # full pipeline, FastSurfer (much faster)
-./dwi_pipeline/submit.sh --no-recon       # skip recon, downgrade to ACT-fast (no DK)
+
+# TrackTBI example (full DK pipeline)
+export RESULTS_ROOT=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test_TBI
+export BIDS_DIR=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI/phase2_test_bids
+
+bash dwi_pipeline/subject.sh all TBI011204
 ```
 
-## QSIPrep SDC (susceptibility distortion correction)
-
-| BIDS `fmap/` | Default | With `--syn` |
-|--------------|---------|----------------|
-| present | measured fmaps (TOPUP) | measured fmaps (unchanged) |
-| absent | no SyN (`--use-syn-sdc` omitted) | `--use-syn-sdc warn` |
-
-`--fmap-retry` ignores measured fmaps and forces SyN (broken-fmap recovery).
-
-## Recon (Step 2)
-
-Anatomical surface reconstruction on each subject's T1w, writing a FreeSurfer-style subjects directory at `${RESULTS_ROOT}/freesurfer/sub-XXX/` (override with `RECON_OUT`).
-
-- **Default tool — FreeSurfer `recon-all -all`** inside a dedicated full-FreeSurfer 7.4.1 SIF (`freesurfer_7.4.1.sif`), pulled from `docker://freesurfer/freesurfer:7.4.1` via `containers/pull_freesurfer_sif.sbatch`. Slow but the canonical reference. Override with `CONTAINER_FREESURFER`.
-  - **Do NOT use** the FastSurfer SIF for `recon-all -all`: it ships a *trimmed* FreeSurfer that is missing `/opt/freesurfer/average/RB_all_withskull_2020_01_02.gca`, which crashes Talairach skull-strip ~30 min in (job 44563 hit exactly this). `subject.sh` now preflights the atlas file and fails fast if you point it at the wrong container.
-- **Opt-in — FastSurfer** via `--fastsurfer` (or `RECON_TOOL=fastsurfer`). Same FS subjects-dir layout, much faster. Set `RECON_FASTSURFER_DEVICE=cuda` for GPU. Uses `CONTAINER_FASTSURFER` (the FastSurfer SIF).
-- **Idempotent** — skips automatically when `${RECON_OUT}/sub-XXX/mri/aparc+aseg.mgz` already exists. Delete the subject directory to force a rerun.
-- Tools preflighted: `recon-all` + the skull-strip atlas (for FreeSurfer), or `/fastsurfer/run_fastsurfer.sh` (for FastSurfer).
-
-### Building the FreeSurfer container
-
-One-shot, takes ~15–30 min on a compute node (login `/tmp` is `noexec` and the squashfs writer needs lots of RAM):
+Slurm array:
 
 ```bash
-sbatch dwi_pipeline/containers/pull_freesurfer_sif.sbatch
-# watch:  tail -f logs/pull_fs_<jobid>.out
-# result: /mnt/nfs/.../others/containers/freesurfer_7.4.1.sif (+ .source.txt audit record)
+export RESULTS_ROOT=.../dwi_test_TBI
+export BIDS_DIR=.../phase2_test_bids
+export SUBJECT_LIST_FILE=dwi_pipeline/subjects_tbi011204_test.txt
+./dwi_pipeline/submit.sh
 ```
 
-A `Singularity.freesurfer-7.4.1.def` + `build_freesurfer_sif.sbatch` are also in `containers/` for fully-local reproducible builds (no Docker Hub round-trip), used only if Docker Hub is unreachable.
+---
 
-## DK connectome (Step 4)
+## Defaults
 
-Full pipeline reference (steps, spaces, commands, outputs): **[DWI_Connectivity_Pipeline_Documentation.md](DWI_Connectivity_Pipeline_Documentation.md)** (also available as `.docx` in the same directory).
+| Setting | Default |
+|---------|---------|
+| `BIDS_DIR` | `.../CIDUR_BIDS/data_bids` |
+| `RESULTS_ROOT` | `.../CIDUR_BIDS/dwi_test` |
+| `QSIRECON_SPEC` | `mrtrix_singleshell_ss3t_ACT-hsvs` |
+| `QSIRECON_ATLASES` | `4S156Parcels` |
+| `RECON_TOOL` | `freesurfer` (`recon-all -all`) |
+| `RUN_DK_CONNECTOME` | `1` |
+| dwi-select | **ON** — `config/dwi_select_b1000.json` (b=1000 + IntendedFor fmaps) |
 
-After QSIRecon, `mode=all` runs a **Desikan–Killiany** post-step by default (Step 2 produced the FreeSurfer outputs it needs). Disable with `--no-dk` / `RUN_DK_CONNECTOME=0`, or point at an external FreeSurfer tree via `FS_SUBJECTS_DIR=/path/freesurfer`:
+---
 
-- **Input:** QSIRecon `.tck` tractogram + FreeSurfer `aparc+aseg.mgz` + `rawavg.mgz` + BIDS T1w + QSIPrep `desc-preproc_T1w` + `dwiref`
-- **Tools:** `mri_label2vol` (full FS container), `mri_convert`, `antsRegistration`, `antsApplyTransforms`, `labelconvert`, `tck2connectome`, `mrinfo`, `tckinfo`
-- **Output:** `dk_connectomes/sub-XXX/dk_connectome.csv` (+ `dk_assignments.csv`, `aparc+aseg_in_dwi.nii.gz`, `aparc+aseg_in_t1w.nii.gz`, `native_to_preproc_T1w_0GenericAffine.mat`, `dk_nodes.mrinfo.txt`, `tracks.tckinfo.txt`)
+## CLI flags (`subject.sh` / `submit.sh`)
 
-### Coordinate-space alignment (important)
+| Flag | Effect |
+|------|--------|
+| `--dwi-shell N` | Use `dwi_select_bN.json` (default 1000) |
+| `--no-dwi-filter` | Process all DWI/fmaps (legacy) |
+| `--dwi-select PATH` | Explicit dwi-select JSON |
+| `--syn` | SyN SDC when no fmap in filter |
+| `--fmap-retry` | Ignore fieldmaps, SyN SDC |
+| `--fastsurfer` | FastSurfer instead of recon-all |
+| `--no-recon` | Skip Step 2 (requires ACT-fast spec or existing FS dir) |
+| `--no-dk` | Skip Step 4 |
 
-`aparc+aseg.mgz` lives in FreeSurfer **conformed (`orig.mgz`) space** (256³);
-QSIRecon tractograms live in QSIPrep **DWI/T1w (`dwiref`) space**. The pipeline
-uses a **three-hop warp** before `labelconvert`:
+---
 
-1. **`mri_label2vol`** (full `freesurfer_7.4.1.sif`) — conformed → native using `--temp rawavg.mgz` ([FsAnat-to-NativeAnat](https://surfer.nmr.mgh.harvard.edu/fswiki/FsAnat-to-NativeAnat))
-2. **`antsRegistration` (Affine)** (`qsirecon.sif`) — empirical **BIDS T1w → `desc-preproc_T1w`** (saved as `native_to_preproc_T1w_0GenericAffine.mat`). QSIPrep's packaged `from-orig_to-T1w` / `from-T1wNative_to-T1wACPC` transforms target a reoriented T1wNative frame, not FS/BIDS scanner-native headers — using them alone mis-aligns labels by ~20+ mm.
-3. **`antsApplyTransforms -n GenericLabel`** (×2) — native labels → QSIPrep T1w (`aparc+aseg_in_t1w.nii.gz`), then QSIPrep T1w → `dwiref` grid (`aparc+aseg_in_dwi.nii.gz`)
+## Strict fail-fast behavior
 
-It also writes `mrinfo` of `dk_nodes.mif` and `tckinfo` of the tractogram into the output folder so you can confirm they share the same transform/voxel grid.
+The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and exit non-zero.
 
-Set `DK_RESAMPLE_TO_DWI=0` to skip the resample (not recommended). If `dwiref`, BIDS T1w, or `desc-preproc_T1w` cannot be found, the pipeline prints a warning and falls back to FS conformed space — the connectome may be mis-aligned.
+| Area | Behavior |
+|------|----------|
+| **FreeSurfer container** | Requires `freesurfer_7.4.1.sif`; **no** fallback to FastSurfer's trimmed FS |
+| **SDC** | Measured when fmap in dwi-select filter; else **must** pass `--syn` or `--fmap-retry` |
+| **Recon** | If `aparc+aseg.mgz` exists, **fail** unless `RECON_SKIP_IF_EXISTS=1` |
+| **DK inputs** | Exactly one tractogram, dwiref, desc-preproc T1w, BIDS T1w (session-coherent) |
+| **DK space** | `DK_RESAMPLE_TO_DWI=1` required; no FS-conformed-space shortcut |
+| **dwi-select** | No `same_session` fmap fallback; `on_no_match: error` |
+| **QSIRecon + `--no-recon`** | Fails if HSVS spec and no FreeSurfer subjects dir |
 
-This is separate from QSIRecon’s built-in `--atlases` (AAL, 4S, etc.).
+---
 
-## Overrides
+## Containers and paths
+
+| Variable | Default path |
+|----------|--------------|
+| `CONTAINER_QSIPREP` | `.../others/containers/qsiprep.sif` |
+| `CONTAINER_QSIRECON` | `.../others/containers/qsirecon.sif` |
+| `CONTAINER_DK_CONNECTOME` | `.../others/containers/dk_connectome.sif` |
+| `CONTAINER_FREESURFER` | `.../others/containers/freesurfer_7.4.1.sif` |
+| `CONTAINER_FASTSURFER` | `.../others/containers/fastsurfer_latest.sif` |
+| `FS_LICENSE` | `.../others/data_mining/freesurfer/license.txt` |
+| `TEMPLATEFLOW_HOME` | `TrackTBI-Sub/templateflow` |
+
+Pull FreeSurfer SIF: `sbatch dwi_pipeline/containers/pull_freesurfer_sif.sbatch`
+
+Build DK connectome SIF (Step 4, ~150 MB legacy-staged image):
 
 ```bash
-# Full pipeline with FastSurfer instead of recon-all
-./dwi_pipeline/submit.sh --fastsurfer
-
-# Atlas-based connectomes baked in by QSIRecon (in addition to DK)
-QSIRECON_ATLASES="Schaefer100 AAL116" ./dwi_pipeline/submit.sh
-
-# GE / no-fmap subjects: synthetic SDC
-./dwi_pipeline/submit.sh --syn
-
-# Single subject end-to-end
-bash dwi_pipeline/subject.sh all 010 --syn --fastsurfer
-
-# Just rerun Step 2 for one subject
-bash dwi_pipeline/subject.sh recon 010 --fastsurfer
-
-# Reuse external FreeSurfer outputs and skip Step 2
-RUN_RECON=0 FS_SUBJECTS_DIR=/path/freesurfer ./dwi_pipeline/submit.sh
-
-# DK only (Steps 1–3 already done elsewhere)
-PIPELINE_MODE=dk FS_SUBJECTS_DIR=/path/freesurfer ./dwi_pipeline/submit.sh
-
-# GPU FastSurfer
-RECON_FASTSURFER_DEVICE=cuda ./dwi_pipeline/submit.sh --fastsurfer
+bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh
+# Stages minimal FS + ANTs/MRtrix from qsirecon.sif; see containers/dk_connectome/README.md
 ```
+
+Legacy dual-container Step 4 (pre-containerization): `DK_LEGACY_DUAL_CONTAINER=1`.
+
+---
+
+## Output layout
+
+Under `${RESULTS_ROOT}/`:
+
+```
+qsiprep_single_run_output/
+freesurfer/sub-XXX/
+qsirecon_single_run_output/
+dk_connectomes/sub-XXX/
+intermediate_results_qsiprep_single/
+logs/
+```
+
+---
+
+## BIDS preparation (run before pipeline)
+
+1. Fix PE / TRT / `IntendedFor` sidecars — [`bids.md`](../bids.md), [`fmaps.md`](../fmaps.md)
+2. Run repair: `./dwi_pipeline/scripts/run_bids_repair.sh BIDS_DIR SUBJECT`
+3. Verify dwi-select filter (dry-run in `bids.md` §9)
+4. Submit pipeline
+
+Repair is **not** invoked automatically by `submit.sh`.
+
+---
+
+## Result folder guide
+
+| Folder | Pipeline | DK |
+|--------|----------|-----|
+| `dwi_test_default` | Atlas connectome (`dwi_connect_default`, `RUN_DK=0`) | off |
+| `dwi_test_TBI` | Full TrackTBI DK pipeline | on |
+| `dwi_test2` | CIDUR reference cohort (NAS: `Gugger_Lab/NIR/dwi_test2`) | on |
+
+---
+
+## Scripts
+
+| Path | Purpose |
+|------|---------|
+| `subject.sh` | One subject, one or more stages |
+| `submit.sh` | Build subject list + Slurm array |
+| `array.sh` | Slurm array worker (do not run directly) |
+| `scripts/build_bids_filter.py` | dwi-select → QSIPrep filter JSON |
+| `scripts/repair_bids_sidecars.py` | BIDS sidecar repair |
+| `scripts/run_bids_repair.sh` | Repair wrapper |
+| `containers/dk_connectome/` | Step 4 container (Dockerfile, build script, entrypoint) |
+| `config/dwi_select_b1000.json` | Default b1000 + IntendedFor fmaps |
+
+---
+
+## Further reading
+
+- [`DWI_Connectivity_Pipeline_Documentation.md`](../DWI_Connectivity_Pipeline_Documentation.md) — step-by-step technical reference (DK warp chain, QC)
+- [`bids.md`](../bids.md) — phase-encoding metadata and dwi-select
+- [`fmaps.md`](../fmaps.md) — SDC behavior

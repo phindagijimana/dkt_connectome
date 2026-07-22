@@ -1,6 +1,0 @@
-.snakemake/
-*.log
-report.html
-dag.svg
-__pycache__/
-*.pyc

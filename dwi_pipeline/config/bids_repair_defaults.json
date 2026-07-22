@@ -1,0 +1,13 @@
+{
+  "phase_encoding_direction": "j-",
+  "dwi_acquisition": "b1000",
+  "target_shell_b": 1000,
+  "shell_tolerance": 100,
+  "b0_tolerance": 50,
+  "exclude_fmap_acquisitions": ["rs"],
+  "subjects": {
+    "TBI011204": {
+      "total_readout_time": 0.0522511
+    }
+  }
+}

@@ -115,12 +115,11 @@ def build_from_select(bids_dir: Path, subject: str, cfg: dict) -> dict:
     exclude_acq = set(cfg.get("exclude_acquisitions") or [])
     exclude_fmap_acq = set(cfg.get("exclude_fmap_acquisitions") or [])
     include_fmaps = bool(cfg.get("include_fmaps", True))
-    fmap_fallback = cfg.get("fmap_fallback", "intended_for")
-    on_no_match = cfg.get("on_no_match", "error")
+    dwi_acq = cfg.get("dwi_acquisition")
+    allow_multiple_dwi = bool(cfg.get("allow_multiple_dwi", False))
 
     kept_dwi: list[Path] = []
     kept_rel: set[str] = set()
-    kept_sessions: set[str] = set()
 
     for bval in sorted(subj_root.rglob("*.bval")):
         if "/dwi/" not in bval.as_posix():
@@ -135,22 +134,32 @@ def build_from_select(bids_dir: Path, subject: str, cfg: dict) -> dict:
             continue
         if ent.get("acquisition") in exclude_acq:
             continue
+        if dwi_acq and ent.get("acquisition") != dwi_acq:
+            continue
         nonzero = read_nonzero_shells(bval, b0_max)
         if shell_matches(nonzero, target, tolerance, allow_multi, match_mode):
             kept_dwi.append(dwi)
             kept_rel.add(rel_subject_path(dwi, subj_root))
-            if "session" in ent:
-                kept_sessions.add(ent["session"])
             print(
                 f"[dwi-select] sub-{subject}: keep DWI {dwi.name} (nonzero b={nonzero})",
                 file=sys.stderr,
             )
 
     if not kept_dwi:
-        msg = f"[dwi-select] sub-{subject}: no DWI matched target_shell_b={target}"
-        if on_no_match == "error":
-            raise SystemExit(msg)
-        print(f"WARNING: {msg}", file=sys.stderr)
+        raise SystemExit(f"[dwi-select] sub-{subject}: no DWI matched target_shell_b={target}")
+
+    if not allow_multiple_dwi and len(kept_dwi) > 1:
+        names = ", ".join(p.name for p in kept_dwi)
+        raise SystemExit(
+            f"[dwi-select] sub-{subject}: expected exactly one DWI, matched {len(kept_dwi)}: {names}"
+        )
+
+    dwi_sessions = {parse_entities(p.name)[0].get("session") for p in kept_dwi}
+    dwi_sessions.discard(None)
+    if len(dwi_sessions) > 1:
+        raise SystemExit(
+            f"[dwi-select] sub-{subject}: DWI matches span multiple sessions: {sorted(dwi_sessions)}"
+        )
 
     kept_fmap_json: list[Path] = []
     if include_fmaps:
@@ -158,20 +167,13 @@ def build_from_select(bids_dir: Path, subject: str, cfg: dict) -> dict:
             if not fmap_allowed(jpath, exclude_fmap_acq):
                 continue
             meta = json.loads(jpath.read_text())
-            ent, _ = parse_entities(jpath.name)
-            via_intended = intended_for_matches(meta.get("IntendedFor"), kept_rel)
-            via_session = (
-                fmap_fallback == "same_session"
-                and not meta.get("IntendedFor")
-                and ent.get("session") in kept_sessions
+            if not intended_for_matches(meta.get("IntendedFor"), kept_rel):
+                continue
+            kept_fmap_json.append(jpath)
+            print(
+                f"[dwi-select] sub-{subject}: keep fmap {jpath.name} (IntendedFor)",
+                file=sys.stderr,
             )
-            if via_intended or via_session:
-                kept_fmap_json.append(jpath)
-                reason = "IntendedFor" if via_intended else "same_session fallback"
-                print(
-                    f"[dwi-select] sub-{subject}: keep fmap {jpath.name} ({reason})",
-                    file=sys.stderr,
-                )
 
     out: dict = {}
     if kept_dwi:
