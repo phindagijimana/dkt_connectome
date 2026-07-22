@@ -16,22 +16,20 @@
 #   produce a FreeSurfer-style subjects directory (aparc+aseg.mgz, surfaces,
 #   labels, etc.) at RECON_OUT/sub-XXX/.
 #     RECON_TOOL=freesurfer (default): runs recon-all -all (~6-10 h CPU)
-#       inside CONTAINER_FREESURFER. Defaults to the dedicated full FreeSurfer
+#       inside CONTAINER_FREESURFER. Requires the dedicated full FreeSurfer
 #       7.4.1 SIF at ../others/containers/freesurfer_7.4.1.sif (pulled via
-#       containers/pull_freesurfer_sif.sbatch). Falls back to FastSurfer's SIF
-#       only if the dedicated image is missing — that image ships a *trimmed*
-#       FreeSurfer and is missing skull-strip atlases, so prefer the dedicated
-#       image for production runs.
+#       containers/pull_freesurfer_sif.sbatch). Pipeline fails if missing.
 #     RECON_TOOL=fastsurfer (CLI flag --fastsurfer): runs FastSurfer inside
 #       CONTAINER_FASTSURFER (~1-2 h CPU, ~20 min GPU). Produces aparc+aseg.mgz
 #       via recon-surf.
-#   Skips automatically if RECON_OUT/sub-XXX/mri/aparc+aseg.mgz already exists.
+#   Skips Step 2 only when RECON_SKIP_IF_EXISTS=1 and aparc+aseg.mgz exists;
+#   otherwise fails if aparc already present (strict rerun policy).
 #
 # Step 3 — QSIRecon (container):
 #   Reads QSIPrep derivatives. Default recon spec mrtrix_singleshell_ss3t_ACT-hsvs:
 #   MRtrix SS3T CSD + ACT tractography with HSVS 5TT (uses FreeSurfer subject dir
-#   produced by Step 2). Switch to mrtrix_singleshell_ss3t_ACT-fast via
-#   QSIRECON_SPEC if you skip Step 2 (FAST 5TT, no FreeSurfer needed).
+#   produced by Step 2). With --no-recon, you must set QSIRECON_SPEC to ACT-fast
+#   or provide an existing FS subjects dir — no automatic spec switch.
 #
 # Step 4 — DK connectome (container, default ON when Step 2 ran):
 #   Post-step after QSIRecon. Uses FreeSurfer aparc+aseg.mgz + QSIRecon .tck.
@@ -40,17 +38,16 @@
 #   to native T1w (rawavg.mgz). Step 4b affine-registers BIDS T1w -> desc-preproc_T1w
 #   (QSIPrep's packaged from-T1wNative_to-T1wACPC .mat targets a reoriented
 #   T1wNative frame, not FS scanner-native rawavg), applies that warp to labels,
-#   then resamples onto dwiref (-n GenericLabel). mri_label2vol lives in the full
-#   FreeSurfer container; antsRegistration/antsApplyTransforms in qsirecon.sif.
-#   Set DK_RESAMPLE_TO_DWI=0 to skip the resample (not recommended).
-#   Tools: mri_label2vol, mri_convert, antsRegistration, antsApplyTransforms,
-#   labelconvert, tck2connectome.
+#   then resamples onto dwiref (-n GenericLabel).
+#   Runs in CONTAINER_DK_CONNECTOME (dk_connectome.sif: FreeSurfer + ANTs + MRtrix3).
+#   Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh
+#   Legacy dual-container path: DK_LEGACY_DUAL_CONTAINER=1 (freesurfer + qsirecon).
 #   Writes dk_connectome.csv under dk_connectomes/sub-XXX/.
 #
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
 #   bash subject.sh all 014 --fastsurfer     # use FastSurfer in Step 2
-#   bash subject.sh all 014 --no-recon       # skip Step 2 (forces ACT-fast spec)
+#   bash subject.sh all 014 --no-recon       # skip Step 2 (set ACT-fast or FS dir)
 #   bash subject.sh all 014 --no-dk          # skip Step 4
 #   bash subject.sh qsiprep 014              # preprocessing only
 #   bash subject.sh recon 014                # Step 2 only (recon-all by default)
@@ -59,34 +56,62 @@
 #   bash subject.sh dk 014                   # Step 4 only (needs FS dir + .tck)
 #   bash subject.sh all 014 --syn            # no BIDS fmap -> --use-syn-sdc warn
 #   bash subject.sh all 014 --fmap-retry     # ignore measured fmaps, SyN SDC
+#   bash subject.sh all 014 --dwi-shell 1000 # default: acq-b1000 DWI + IntendedFor fmaps
+#   bash subject.sh all 014 --no-dwi-filter  # process all DWI/fmaps (legacy behavior)
+#   bash subject.sh all 014 --dwi-select /path/dwi_select_b3000.json
 #
-# SDC defaults (QSIPrep):
-#   BIDS fmap present  -> measured fmaps / TOPUP (no --use-syn-sdc)
-#   No BIDS fmap       -> no SyN (omit --use-syn-sdc) unless --syn or QSIPREP_USE_SYN_SDC=1
+# DWI series selection (QSIPrep, default ON):
+#   Keeps one b-shell DWI (default b=1000, acq-b1000) and fmaps whose IntendedFor
+#   points at that DWI. Excludes acq-rs fmaps. Override with --dwi-shell / --dwi-select
+#   or disable with --no-dwi-filter / QSIPREP_NO_DWI_FILTER=1.
+#
+# SDC (QSIPrep) — strict: measured fmaps when dwi-select includes fmap; else require --syn or --fmap-retry.
 #
 # Outputs under RESULTS_ROOT (default: .../CIDUR_BIDS/dwi_test):
 #   qsiprep_single_run_output/   freesurfer/   qsirecon_single_run_output/   dk_connectomes/
 #
 # Environment (optional overrides):
 #   RESULTS_ROOT, BIDS_DIR, NTHREADS, OMP_NTHREADS, OUTPUT_RES
-#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_FASTSURFER, CONTAINER_FREESURFER
+#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_DK_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER
 #   FS_LICENSE, TEMPLATEFLOW_HOME
 #   RUN_RECON=0|1          Step 2 in mode=all (default 1)
 #   RECON_TOOL             freesurfer (default) or fastsurfer
 #   RECON_OUT              FreeSurfer subjects dir (default: RESULTS_ROOT/freesurfer)
 #   FS_SUBJECTS_DIR        same as RECON_OUT unless overridden (used by Steps 3 + 4)
 #   RECON_FASTSURFER_DEVICE  cpu (default) or cuda for FastSurfer GPU runs
-#   QSIRECON_SPEC          default: mrtrix_singleshell_ss3t_ACT-hsvs (auto-switches
-#                          to ACT-fast when --no-recon and no FS subjects dir exists)
+#   QSIRECON_SPEC          default: mrtrix_singleshell_ss3t_ACT-hsvs (with --no-recon,
+#                          set ACT-fast explicitly or provide FS subjects dir)
 #   QSIRECON_ATLASES       optional QSIRecon --atlases (Schaefer100, AAL116, ...)
 #   RUN_DK_CONNECTOME=0|1  DK in mode=all (default 1 when Step 2 ran)
 #   DK_RESAMPLE_TO_DWI=0|1 Resample aparc+aseg onto DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
 #   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc warn (same as --fmap-retry)
+#   DWI_SHELL_B=1000         b-value for default dwi-select (config/dwi_select_b<SHELL>.json)
+#   DWI_SELECT_JSON=         explicit dwi-select config (overrides DWI_SHELL_B path)
+#   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
+#   RECON_SESSION=2WK         override session for recon T1w (default: from dwi-select filter)
 # =============================================================================
 
 set -euo pipefail
 set +H
+
+_pipeline_fail() {
+  local label="$1" msg="$2"
+  shift 2
+  echo "ERROR [${label}]: ${msg}" >&2
+  while (($#)); do echo "  $1" >&2; shift; done
+  exit 1
+}
+
+_strict_find_one() {
+  local label="$1"
+  shift
+  local -a matches=()
+  mapfile -t matches < <("$@" 2>/dev/null | LC_ALL=C sort -u)
+  ((${#matches[@]})) || _pipeline_fail "${label}" "no file found for sub-${SUBJECT}"
+  ((${#matches[@]} == 1)) || _pipeline_fail "${label}" "expected exactly 1 match, found ${#matches[@]}" "${matches[@]}"
+  echo "${matches[0]}"
+}
 
 # --- CLI: mode, subject ID, optional flags ---
 PIPELINE_MODE="${1:?Need mode: all, qsiprep, recon, qsirecon, or dk}"
@@ -123,12 +148,21 @@ while [[ $# -gt 0 ]]; do
       shift 2
       continue
       ;;
+    --dwi-shell)
+      DWI_SHELL_B="${2:?Need b-value after --dwi-shell}"
+      DWI_SELECT_JSON=""
+      shift 2
+      continue
+      ;;
+    --no-dwi-filter)
+      QSIPREP_NO_DWI_FILTER=1
+      ;;
     -h|--help)
-      sed -n '36,57p' "$0"
+      sed -n '50,95p' "$0"
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --fastsurfer, --no-recon, --no-dk)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-dk)"
       exit 1
       ;;
   esac
@@ -148,24 +182,19 @@ CONTAINER_QSIPREP="${CONTAINER_QSIPREP:-/mnt/nfs/home/urmc-sh.rochester.edu/pnda
 CONTAINER_QSIRECON="${CONTAINER_QSIRECON:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif}"
 CONTAINER_FASTSURFER="${CONTAINER_FASTSURFER:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/fastsurfer_latest.sif}"
 # Dedicated full FreeSurfer 7.4.1 image (pulled via
-# dwi_pipeline/containers/pull_freesurfer_sif.sbatch). Fall back to FastSurfer's
-# trimmed FreeSurfer only if the dedicated SIF is not yet on disk; that fallback
-# will fail at recon-all's skull-strip step because RB_all_withskull_2020_01_02.gca
-# is missing from the FastSurfer image.
+# dwi_pipeline/containers/pull_freesurfer_sif.sbatch). Pipeline fails if missing.
 _FS_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/freesurfer_7.4.1.sif"
 if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
   if [[ -f "${_FS_SIF_DEFAULT}" ]]; then
     CONTAINER_FREESURFER="${_FS_SIF_DEFAULT}"
   else
-    echo "WARNING: dedicated FreeSurfer SIF not found at ${_FS_SIF_DEFAULT}"
-    echo "         Falling back to ${CONTAINER_FASTSURFER}, but recon-all -all will"
-    echo "         fail at the skull-strip step because that image's FreeSurfer is"
-    echo "         missing /opt/freesurfer/average/RB_all_withskull_2020_01_02.gca."
-    echo "         Build the dedicated image first:"
-    echo "           sbatch dwi_pipeline/containers/pull_freesurfer_sif.sbatch"
-    CONTAINER_FREESURFER="${CONTAINER_FASTSURFER}"
+    _pipeline_fail "FreeSurfer" "dedicated FreeSurfer SIF not found at ${_FS_SIF_DEFAULT}" \
+      "Build it: sbatch dwi_pipeline/containers/pull_freesurfer_sif.sbatch" \
+      "Or set CONTAINER_FREESURFER to a full FreeSurfer 7.4.1 image path."
   fi
 fi
+_DK_CONNECTOME_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dk_connectome.sif"
+CONTAINER_DK_CONNECTOME="${CONTAINER_DK_CONNECTOME:-${_DK_CONNECTOME_SIF_DEFAULT}}"
 TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${TRACKTBI_ROOT}/templateflow}"
 FS_LICENSE="${FS_LICENSE:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt}"
 # FreeSurferColorLUT.txt — qsirecon.sif's trimmed FreeSurfer doesn't ship this
@@ -197,12 +226,39 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # or "" to opt out (only safe with specs that have no connectivity node — rare).
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
+RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
+DWI_SHELL_B="${DWI_SHELL_B:-1000}"
+QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
 BUILD_BIDS_FILTER="${TRACKTBI_ROOT}/dwi_pipeline/scripts/build_bids_filter.py"
+MAKE_DWI_SELECT_CONFIG="${TRACKTBI_ROOT}/dwi_pipeline/scripts/make_dwi_select_config.py"
+
+resolve_dwi_select_config() {
+  if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
+    DWI_SELECT_JSON=""
+    return 0
+  fi
+  [[ -n "${QSIPREP_BIDS_FILTER}" ]] && return 0
+  if [[ -z "${DWI_SELECT_JSON}" ]]; then
+    DWI_SELECT_JSON="${TRACKTBI_ROOT}/dwi_pipeline/config/dwi_select_b${DWI_SHELL_B}.json"
+  fi
+  if [[ ! -f "${DWI_SELECT_JSON}" ]]; then
+    _pipeline_fail "dwi-select" "missing config ${DWI_SELECT_JSON}" \
+      "Create it: python3 ${MAKE_DWI_SELECT_CONFIG} --target-shell-b ${DWI_SHELL_B}"
+  fi
+}
+
+resolve_dwi_select_config
+
 if [[ -n "${QSIPREP_BIDS_FILTER}" && -n "${DWI_SELECT_JSON}" ]]; then
-  echo "ERROR: use only one of --bids-filter or --dwi-select"
+  echo "ERROR: use only one of --bids-filter or --dwi-select/--dwi-shell"
   exit 1
+fi
+if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
+  echo "dwi-select: disabled (QSIPREP_NO_DWI_FILTER=1 / --no-dwi-filter)"
+elif [[ -n "${DWI_SELECT_JSON}" ]]; then
+  echo "dwi-select: ${DWI_SELECT_JSON} (target shell b=${DWI_SHELL_B})"
 fi
 DK_RESAMPLE_TO_DWI="${DK_RESAMPLE_TO_DWI:-1}"
 
@@ -217,6 +273,7 @@ INTER_QSI="${RESULTS_ROOT}/intermediate_results_qsirecon_single"
 # Per-subject nipype work dirs (removed after each stage to avoid stale cache)
 WORK_QSIPREP="${INTER_QSP}/_work_qsiprep_${SUBJECT}"
 WORK_QSIRECON="${INTER_QSI}/_work_qsirecon_${SUBJECT}"
+BIDS_FILTER_CACHE="${INTER_QSP}/bids_filter_sub-${SUBJECT}.json"
 
 # --- Preflight: BIDS subject, containers, license ---
 [[ -d "${BIDS_DIR}" ]] || { echo "BIDS not found: ${BIDS_DIR}"; exit 1; }
@@ -232,33 +289,104 @@ if [[ "${PIPELINE_MODE}" == "all" && "${RUN_RECON}" == "1" ]] || [[ "${PIPELINE_
     *) echo "Invalid RECON_TOOL=${RECON_TOOL} (use freesurfer or fastsurfer)"; exit 1 ;;
   esac
 fi
+if [[ "${PIPELINE_MODE}" == "dk" ]] || { [[ "${PIPELINE_MODE}" == "all" ]] && [[ "${RUN_DK_CONNECTOME}" == "1" ]]; }; then
+  if [[ "${DK_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
+    [[ -f "${CONTAINER_DK_CONNECTOME}" ]] || {
+      echo "Missing CONTAINER_DK_CONNECTOME: ${CONTAINER_DK_CONNECTOME}"
+      echo "  Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh"
+      exit 1
+    }
+  fi
+fi
 
 mkdir -p "${TEMPLATEFLOW_HOME}" "${QSIPREP_OUT}" "${QSIRECON_OUT}" "${RECON_OUT}" "${INTER_QSP}" "${INTER_QSI}" "${RESULTS_ROOT}/logs"
 echo "RESULTS_ROOT=${RESULTS_ROOT} (ACT connectome pipeline)"
 
-# True if this subject has any NIfTI under fmap/ in BIDS (drives SDC choice)
-has_fmap() {
-  find "${BIDS_DIR}/sub-${SUBJECT}" -type f \( -name '*.nii' -o -name '*.nii.gz' \) -path '*/fmap/*' 2>/dev/null | head -1 | grep -q .
+_bids_filter_includes_fmap() {
+  local filter_file="$1"
+  [[ -f "${filter_file}" ]] || return 1
+  python3 -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open(sys.argv[1])) else 1)" "${filter_file}"
+}
+
+_ensure_bids_filter_built() {
+  [[ -f "${BIDS_FILTER_CACHE}" ]] && return 0
+  [[ -n "${DWI_SELECT_JSON}" || -n "${QSIPREP_BIDS_FILTER}" ]] || \
+    _pipeline_fail "dwi-select" "no bids filter available" \
+      "Enable dwi-select (default) or pass --bids-filter / set QSIPREP_BIDS_FILTER"
+  prepare_qsiprep_bids_filter
+  [[ -f "${BIDS_FILTER_CACHE}" ]] || _pipeline_fail "dwi-select" "filter was not written to ${BIDS_FILTER_CACHE}"
+}
+
+_resolve_target_session() {
+  if [[ -n "${RECON_SESSION:-}" ]]; then
+    echo "${RECON_SESSION}"
+    return 0
+  fi
+  _ensure_bids_filter_built
+  local ses=""
+  ses="$(python3 - "${BIDS_FILTER_CACHE}" <<'PY'
+import json, sys
+path = sys.argv[1]
+d = json.load(open(path))
+dwi = d.get("dwi") or {}
+ses = dwi.get("session")
+if ses is None:
+    print("ERROR: dwi filter has no session entity", file=sys.stderr)
+    sys.exit(1)
+if isinstance(ses, list):
+    if len(ses) != 1:
+        print(f"ERROR: ambiguous sessions in dwi filter: {ses}", file=sys.stderr)
+        sys.exit(1)
+    print(ses[0])
+else:
+    print(ses)
+PY
+)" || _pipeline_fail "session" "could not read target session from ${BIDS_FILTER_CACHE}" \
+    "Set RECON_SESSION or ensure dwi-select matches one session-level DWI."
+  echo "${ses}"
 }
 
 prepare_qsiprep_bids_filter() {
   QSIPREP_FILTER_HOST=""
   QSIPREP_FILTER_CONTAINER=""
   [[ -z "${QSIPREP_BIDS_FILTER}" && -z "${DWI_SELECT_JSON}" ]] && return 0
-  [[ -f "${BUILD_BIDS_FILTER}" ]] || { echo "Missing ${BUILD_BIDS_FILTER}"; exit 1; }
+  [[ -f "${BUILD_BIDS_FILTER}" ]] || _pipeline_fail "dwi-select" "missing ${BUILD_BIDS_FILTER}"
   if [[ -n "${DWI_SELECT_JSON}" ]]; then
-    [[ -f "${DWI_SELECT_JSON}" ]] || { echo "Missing DWI_SELECT_JSON=${DWI_SELECT_JSON}"; exit 1; }
-    QSIPREP_FILTER_HOST="${WORK_QSIPREP}/bids_filter.json"
+    [[ -f "${DWI_SELECT_JSON}" ]] || _pipeline_fail "dwi-select" "missing DWI_SELECT_JSON=${DWI_SELECT_JSON}"
     python3 "${BUILD_BIDS_FILTER}" --bids-dir "${BIDS_DIR}" --subject "${SUBJECT}" \
-      --select-json "${DWI_SELECT_JSON}" --output "${QSIPREP_FILTER_HOST}"
+      --select-json "${DWI_SELECT_JSON}" --output "${BIDS_FILTER_CACHE}"
+    QSIPREP_FILTER_HOST="${BIDS_FILTER_CACHE}"
     QSIPREP_FILTER_CONTAINER="/work/bids_filter.json"
-    echo "QSIPrep: dwi-select ${DWI_SELECT_JSON} -> ${QSIPREP_FILTER_HOST}"
+    echo "QSIPrep: dwi-select ${DWI_SELECT_JSON} -> ${BIDS_FILTER_CACHE}"
   else
-    [[ -f "${QSIPREP_BIDS_FILTER}" ]] || { echo "Missing QSIPREP_BIDS_FILTER=${QSIPREP_BIDS_FILTER}"; exit 1; }
+    [[ -f "${QSIPREP_BIDS_FILTER}" ]] || _pipeline_fail "bids-filter" "missing QSIPREP_BIDS_FILTER=${QSIPREP_BIDS_FILTER}"
     QSIPREP_FILTER_HOST="${QSIPREP_BIDS_FILTER}"
     QSIPREP_FILTER_CONTAINER="/bids_filter.json"
     echo "QSIPrep: static bids filter ${QSIPREP_BIDS_FILTER}"
   fi
+}
+
+_configure_qsiprep_sdc() {
+  local filter_file="$1"
+  local -n _out=$2
+
+  if [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]]; then
+    _out+=(--ignore fieldmaps --use-syn-sdc warn)
+    echo "QSIPrep: sub-${SUBJECT}: explicit --fmap-retry -> SyN SDC"
+    return 0
+  fi
+  if [[ -n "${filter_file}" ]] && _bids_filter_includes_fmap "${filter_file}"; then
+    echo "QSIPrep: sub-${SUBJECT}: dwi-select includes fmap -> measured SDC"
+    return 0
+  fi
+  if [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]]; then
+    _out+=(--use-syn-sdc warn)
+    echo "QSIPrep: sub-${SUBJECT}: explicit --syn -> SyN SDC"
+    return 0
+  fi
+  _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${SUBJECT}" \
+    "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
+    "Or pass --syn (QSIPREP_USE_SYN_SDC=1) or --fmap-retry (QSIPREP_FMAP_RETRY=1)."
 }
 
 # -----------------------------------------------------------------------------
@@ -267,29 +395,18 @@ prepare_qsiprep_bids_filter() {
 run_qsiprep() {
   local -a xtra=()
 
-  # Susceptibility distortion correction (SDC):
-  #   measured fmaps when BIDS has fmap/; no SyN by default when it does not;
-  #   opt-in SyN via --syn or QSIPREP_USE_SYN_SDC=1.
-  if [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]]; then
-    xtra+=(--ignore fieldmaps)
-    xtra+=(--use-syn-sdc warn)
-    echo "QSIPrep: sub-${SUBJECT}: fmap retry -> --ignore fieldmaps --use-syn-sdc warn"
-  elif has_fmap; then
-    echo "QSIPrep: sub-${SUBJECT}: fmap present -> measured fmaps (no --use-syn-sdc)"
-  elif [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]]; then
-    xtra+=(--use-syn-sdc warn)
-    echo "QSIPrep: sub-${SUBJECT}: no fmap, SyN enabled -> --use-syn-sdc warn"
-  else
-    echo "QSIPrep: sub-${SUBJECT}: no fmap, SyN off (default; pass --syn to enable)"
-  fi
-
   echo "=== QSIPrep (ACT pipeline): sub-${SUBJECT} ==="
   rm -rf "${WORK_QSIPREP}"
   mkdir -p "${WORK_QSIPREP}"
 
   prepare_qsiprep_bids_filter
+  _configure_qsiprep_sdc "${QSIPREP_FILTER_HOST}" xtra
+
   local -a filter_binds=()
   if [[ -n "${QSIPREP_FILTER_CONTAINER}" ]]; then
+    if [[ "${QSIPREP_FILTER_CONTAINER}" == "/work/bids_filter.json" ]]; then
+      cp -f "${QSIPREP_FILTER_HOST}" "${WORK_QSIPREP}/bids_filter.json"
+    fi
     [[ "${QSIPREP_FILTER_CONTAINER}" == "/bids_filter.json" ]] && \
       filter_binds+=( -B "${QSIPREP_FILTER_HOST}":/bids_filter.json:ro )
     xtra+=( --bids-filter-file "${QSIPREP_FILTER_CONTAINER}" )
@@ -331,8 +448,12 @@ run_recon() {
   echo "=== Recon (${RECON_TOOL}): ${sid} -> ${RECON_OUT} ==="
 
   if [[ -f "${aparc}" ]]; then
-    echo "Recon: ${aparc} already exists — skipping (delete ${sd_subj} to force rerun)"
-    return 0
+    if [[ "${RECON_SKIP_IF_EXISTS}" == "1" ]]; then
+      echo "Recon: ${aparc} exists — skipping (RECON_SKIP_IF_EXISTS=1)"
+      return 0
+    fi
+    _pipeline_fail "recon" "aparc+aseg.mgz already exists at ${aparc}" \
+      "Delete ${sd_subj} to force rerun, or set RECON_SKIP_IF_EXISTS=1 to skip Step 2."
   fi
   if [[ -d "${sd_subj}" ]]; then
     echo "Recon: partial subjects dir at ${sd_subj} but no aparc+aseg.mgz."
@@ -340,26 +461,28 @@ run_recon() {
     exit 1
   fi
 
-  # Find BIDS T1w(s) under sub-XXX/.../anat/
-  local -a t1ws=()
-  mapfile -t t1ws < <(find "${BIDS_DIR}/sub-${SUBJECT}" -type f -path '*/anat/*' \
-                         \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | sort)
-  (( ${#t1ws[@]} > 0 )) || { echo "Recon: no T1w found under ${BIDS_DIR}/sub-${SUBJECT}/.../anat/"; exit 1; }
-  echo "Recon: ${#t1ws[@]} T1w input(s):"
-  for t in "${t1ws[@]}"; do echo "  - $t"; done
+  local target_ses
+  target_ses="$(_resolve_target_session)" || exit 1
+  echo "Recon: target session ses-${target_ses} (from dwi-select filter or RECON_SESSION)"
 
+  local t1w
+  t1w="$(_strict_find_one "recon/T1w" \
+    find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
+      \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \))"
+
+  echo "Recon: T1w input: ${t1w}"
   mkdir -p "${RECON_OUT}"
 
   case "${RECON_TOOL}" in
     freesurfer)
-      _run_recon_freesurfer "${t1ws[@]}"
+      _run_recon_freesurfer "${t1w}"
       ;;
     fastsurfer)
-      _run_recon_fastsurfer "${t1ws[0]}"
-      (( ${#t1ws[@]} > 1 )) && echo "Recon: FastSurfer used only the first T1w; recon-all averages multiple runs"
+      _run_recon_fastsurfer "${t1w}"
       ;;
     *)
-      echo "Invalid RECON_TOOL=${RECON_TOOL}"; exit 1 ;;
+      _pipeline_fail "recon" "invalid RECON_TOOL=${RECON_TOOL} (use freesurfer or fastsurfer)"
+      ;;
   esac
 
   [[ -f "${aparc}" ]] || {
@@ -385,8 +508,7 @@ _detect_fs_home_in_container() {
   ' 2>/dev/null | tail -1
 }
 
-# Internal: FreeSurfer recon-all inside CONTAINER_FREESURFER (dedicated full
-# FreeSurfer SIF by default; fastsurfer_latest.sif as a fallback for prototyping).
+# Internal: FreeSurfer recon-all inside CONTAINER_FREESURFER (dedicated full FreeSurfer SIF required).
 _run_recon_freesurfer() {
   # Layout-agnostic preflight: detect FREESURFER_HOME inside the chosen image
   # so we work with both /opt/freesurfer (NeuroDocker/FastSurfer) and
@@ -482,8 +604,8 @@ run_qsirecon() {
     if [[ "${QSIRECON_SPEC}" == *hsvs* ]]; then
       echo "ERROR: QSIRECON_SPEC=${QSIRECON_SPEC} needs a FreeSurfer subjects dir,"
       echo "       but FS_SUBJECTS_DIR=${FS_SUBJECTS_DIR} does not exist."
-      echo "       Either pre-run FreeSurfer/FastSurfer and set FS_SUBJECTS_DIR,"
-      echo "       or switch to QSIRECON_SPEC=mrtrix_singleshell_ss3t_ACT-fast."
+      echo "       Pre-run recon (Step 2) or set FS_SUBJECTS_DIR to an existing subjects tree."
+      echo "       For no-recon runs, set QSIRECON_SPEC=mrtrix_singleshell_ss3t_ACT-fast before submit."
       exit 1
     fi
     echo "QSIRecon: no FreeSurfer subjects dir at ${FS_SUBJECTS_DIR} (OK for FAST spec)"
@@ -523,129 +645,37 @@ _bids_ses_from_path() {
   fi
 }
 
-# QSIPrep subject-level desc-preproc T1w (QSIPrep T1w reference grid).
+# QSIPrep desc-preproc T1w: exactly one file under session anat/ or subject anat/.
 find_qsiprep_preproc_t1w() {
-  local qsiprep_out="$1" subject="$2"
-  find "${qsiprep_out}/sub-${subject}/anat" -type f \
-    -name "*sub-${subject}_desc-preproc_T1w.nii.gz" 2>/dev/null | head -1
+  local qsiprep_out="$1" subject="$2" session="$3"
+  _strict_find_one "DK/QSIPrep desc-preproc T1w" \
+    find "${qsiprep_out}/sub-${subject}" \( \
+      -path "*/ses-${session}/anat/*sub-${subject}_desc-preproc_T1w.nii.gz" -o \
+      -path "*/anat/*sub-${subject}_desc-preproc_T1w.nii.gz" \
+    \) -type f
 }
 
-# BIDS T1w used for recon (prefer session matching the tractogram).
+# BIDS T1w for the target session (exactly one match required).
 find_bids_t1w() {
-  local subject="$1" session="${2:-}"
-  local root="${BIDS_DIR}/sub-${subject}"
-  if [[ -n "${session}" && -d "${root}/ses-${session}/anat" ]]; then
-    find "${root}/ses-${session}/anat" -type f \
-      \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | head -1
-    return
-  fi
-  find "${root}" -type f -path '*/anat/*' \
-    \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \) 2>/dev/null | head -1
+  local subject="$1" session="$2"
+  [[ -n "${session}" ]] || _pipeline_fail "DK/BIDS T1w" "session is required"
+  _strict_find_one "DK/BIDS T1w" \
+    find "${BIDS_DIR}/sub-${subject}/ses-${session}/anat" -type f \
+      \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \)
 }
 
 # -----------------------------------------------------------------------------
-# run_dk_connectome — Build DK connectome from QSIRecon tractogram + FS aseg
+# _run_dk_connectome_dual_container — Legacy Step 4 (freesurfer.sif + qsirecon.sif)
 # -----------------------------------------------------------------------------
-run_dk_connectome() {
-  echo "=== DK connectome: sub-${SUBJECT} ==="
+_run_dk_connectome_dual_container() {
+  local fs_dir="$1" aparc="$2" rawavg="$3" outdir="$4"
+  local tracks="$5" tracks_in_container="$6"
+  local dwiref_in_container="$7" preproc_t1w_in_container="$8" bids_t1w_in_container="$9"
+  local dk_warp="${10}" space_note="${11}"
+  local nodes_input_in_container="/out/aparc+aseg_in_dwi.nii.gz"
 
-  local fs_dir="${FS_SUBJECTS_DIR}/sub-${SUBJECT}"
-  local aparc="${fs_dir}/mri/aparc+aseg.mgz"
-  local rawavg="${fs_dir}/mri/rawavg.mgz"
-  local outdir="${DK_OUT}/sub-${SUBJECT}"
-  local tracks
-  local tracks_rel
-  local tracks_in_container
-  local dwiref="" dwiref_rel="" dwiref_in_container=""
-  local preproc_t1w="" preproc_t1w_rel="" preproc_t1w_in_container=""
-  local bids_t1w="" bids_t1w_rel="" bids_t1w_in_container=""
-  local dk_warp=0
-  local nodes_input_in_container="/out/aparc+aseg.nii.gz"
-  local space_note="WARNING: aparc+aseg used in FS conformed space (not resampled to DWI)"
-
-  mkdir -p "${outdir}"
-
-  [[ -d "${fs_dir}" ]] || { echo "Missing FreeSurfer subject dir: ${fs_dir}"; exit 1; }
-  [[ -f "${aparc}" ]] || {
-    echo "Missing aparc+aseg.mgz: ${aparc}"
-    echo "Set FS_SUBJECTS_DIR to a directory containing sub-${SUBJECT}/mri/aparc+aseg.mgz."
-    exit 1
-  }
-  [[ -f "${rawavg}" ]] || {
-    echo "Missing rawavg.mgz: ${rawavg}"
-    echo "recon-all should write mri/rawavg.mgz; rerun Step 2 or check FS_SUBJECTS_DIR."
-    exit 1
-  }
-
-  # QSIRecon's MRtrix specs save the tractogram gzipped (*.tck.gz). MRtrix3
-  # tools read it transparently, but `find -name '*.tck'` does NOT match
-  # *.tck.gz. Match both, prefer the uncompressed form when present so MRtrix
-  # avoids the gzip decompression on every read (matters for the multi-pass
-  # tckinfo + tck2connectome below).
-  tracks="$(find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" -name '*.tck' 2>/dev/null | head -1)"
-  if [[ -z "${tracks}" ]]; then
-    tracks="$(find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" -name '*.tck.gz' 2>/dev/null | head -1)"
-  fi
-  [[ -n "${tracks}" ]] || {
-    echo "Missing QSIRecon tractogram (.tck) for sub-${SUBJECT} under ${QSIRECON_OUT}"
-    exit 1
-  }
-  tracks_rel="${tracks#${QSIRECON_OUT}/}"
-  tracks_in_container="/qsirecon/${tracks_rel}"
-
-  # Look for QSIPrep DWI-space reference image (in T1w/ACPC space) and the
-  # native -> T1w transform; both are needed to put aparc+aseg on the DWI grid.
-  # Prefer the session that matches the tractogram (multi-session BIDS).
-  local dk_ses=""
-  dk_ses="$(_bids_ses_from_path "${tracks}")"
-  local dwiref_path_glob="*sub-${SUBJECT}*"
-  [[ -n "${dk_ses}" ]] && dwiref_path_glob="*sub-${SUBJECT}*/ses-${dk_ses}/*"
-
-  if [[ "${DK_RESAMPLE_TO_DWI}" == "1" ]]; then
-    dwiref="$(find "${QSIPREP_OUT}" -type f -path "${dwiref_path_glob}" \
-                -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
-    [[ -z "${dwiref}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "${dwiref_path_glob}" \
-                -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
-    [[ -z "${dwiref}" && -n "${dk_ses}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
-                -name '*space-T1w_dwiref.nii.gz' 2>/dev/null | head -1)"
-    [[ -z "${dwiref}" && -n "${dk_ses}" ]] && dwiref="$(find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*" \
-                -name '*space-T1w*desc-preproc_dwi.nii.gz' 2>/dev/null | head -1)"
-
-    preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}")"
-    bids_t1w="$(find_bids_t1w "${SUBJECT}" "${dk_ses}")"
-
-    if [[ -n "${dwiref}" && -n "${preproc_t1w}" && -n "${bids_t1w}" ]]; then
-      dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
-      preproc_t1w_rel="${preproc_t1w#${QSIPREP_OUT}/}"
-      bids_t1w_rel="${bids_t1w#${BIDS_DIR}/}"
-      dwiref_in_container="/qsiprep/${dwiref_rel}"
-      preproc_t1w_in_container="/qsiprep/${preproc_t1w_rel}"
-      bids_t1w_in_container="/bids/${bids_t1w_rel}"
-      dk_warp=1
-      nodes_input_in_container="/out/aparc+aseg_in_dwi.nii.gz"
-      space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
-    else
-      echo "DK warning: cannot find QSIPrep DWI reference, preproc T1w, and/or BIDS T1w;"
-      echo "  dwiref=${dwiref:-<missing>}  preproc_t1w=${preproc_t1w:-<missing>}  bids_t1w=${bids_t1w:-<missing>}"
-      echo "  Falling back to FS conformed space — connectome may be mis-aligned."
-      echo "  Set DK_RESAMPLE_TO_DWI=0 to silence this; or check QSIPrep outputs."
-    fi
-  fi
-
-  # Step 4a runs in freesurfer_7.4.1.sif (mri_label2vol: FS conformed -> native).
-  # Step 4b+ run in qsirecon.sif:
-  #   antsRegistration (Affine)        — BIDS T1w -> desc-preproc_T1w (empirical
-  #                                    native->QSIPrep T1w; QSIPrep .mat alone mis-
-  #                                    aligns FS rawavg/scanner-native headers).
-  #   antsApplyTransforms              — labels -> preproc T1w -> dwiref grid.
-  #   mri_convert (trimmed FS)       — MGZ -> NIfTI for ANTs/MRtrix.
-  #   labelconvert + tck2connectome  — MRtrix3 connectome step.
-  #   mrinfo + tckinfo               — diagnostics for the space-alignment QC.
   echo "Using tractogram: ${tracks}"
   echo "Using aparc+aseg: ${aparc}"
-  [[ -n "${dwiref}" ]] && echo "Using DWI reference: ${dwiref}"
-  [[ -n "${preproc_t1w}" ]] && echo "Using QSIPrep T1w reference: ${preproc_t1w}"
-  [[ -n "${bids_t1w}"     ]] && echo "Using BIDS T1w (affine reg source): ${bids_t1w}"
   echo "Space handling: ${space_note}"
 
   if [[ "${dk_warp}" == "1" ]]; then
@@ -732,17 +762,11 @@ run_dk_connectome() {
           -o /out/aparc+aseg_in_dwi.nii.gz
       fi
 
-      # FreeSurferColorLUT.txt is bind-mounted in; MRtrix's fs_default.txt
-      # ships with mrtrix3-latest inside qsirecon.sif.
       fs_lut=/opt/freesurfer/FreeSurferColorLUT.txt
       mrtrix_lut=/opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt
 
       labelconvert -force '${nodes_input_in_container}' \"\$fs_lut\" \"\$mrtrix_lut\" /out/dk_nodes.mif
 
-      # MRtrix3 3.0.4 doesn't read *.tck.gz directly (truly gzipped TCK is not
-      # the same as the internal block-compressed format). If the input is
-      # gzipped, stage an uncompressed copy under /out, then clean it up at the
-      # end (these can be 10-20 GB per subject — don't leave them lying around).
       tck_in='${tracks_in_container}'
       tck_use=\"\$tck_in\"
       tck_staged=\"\"
@@ -768,6 +792,107 @@ run_dk_connectome() {
 
       [[ -n \"\$tck_staged\" ]] && rm -f \"\$tck_staged\"
     "
+}
+
+# -----------------------------------------------------------------------------
+# run_dk_connectome — Build DK connectome from QSIRecon tractogram + FS aseg
+# -----------------------------------------------------------------------------
+run_dk_connectome() {
+  echo "=== DK connectome: sub-${SUBJECT} ==="
+
+  local fs_dir="${FS_SUBJECTS_DIR}/sub-${SUBJECT}"
+  local aparc="${fs_dir}/mri/aparc+aseg.mgz"
+  local rawavg="${fs_dir}/mri/rawavg.mgz"
+  local outdir="${DK_OUT}/sub-${SUBJECT}"
+  local tracks
+  local tracks_rel
+  local tracks_in_container
+  local dwiref="" dwiref_rel="" dwiref_in_container=""
+  local preproc_t1w="" preproc_t1w_rel="" preproc_t1w_in_container=""
+  local bids_t1w="" bids_t1w_rel="" bids_t1w_in_container=""
+  local dk_warp=0
+  local space_note=""
+
+  mkdir -p "${outdir}"
+
+  [[ "${DK_RESAMPLE_TO_DWI}" == "1" ]] || \
+    _pipeline_fail "DK" "DK_RESAMPLE_TO_DWI must be 1 (strict pipeline — no FS-conformed fallback)"
+
+  [[ -d "${fs_dir}" ]] || _pipeline_fail "DK" "missing FreeSurfer subject dir: ${fs_dir}"
+  [[ -f "${aparc}" ]] || _pipeline_fail "DK" "missing aparc+aseg.mgz: ${aparc}" \
+    "Set FS_SUBJECTS_DIR to a tree containing sub-${SUBJECT}/mri/aparc+aseg.mgz."
+  [[ -f "${rawavg}" ]] || _pipeline_fail "DK" "missing rawavg.mgz: ${rawavg}" \
+    "Rerun Step 2 (recon) or check FS_SUBJECTS_DIR."
+
+  tracks="$(_strict_find_one "DK/tractogram" \
+    find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
+      \( -name '*.tck' -o -name '*.tck.gz' \))"
+  tracks_rel="${tracks#${QSIRECON_OUT}/}"
+  tracks_in_container="/qsirecon/${tracks_rel}"
+
+  local dk_ses=""
+  dk_ses="$(_bids_ses_from_path "${tracks}")"
+  [[ -n "${dk_ses}" ]] || _pipeline_fail "DK/session" "tractogram path has no ses-* entity: ${tracks}"
+
+  dwiref="$(_strict_find_one "DK/dwiref" \
+    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${dk_ses}/*" \
+      -name '*space-T1w_dwiref.nii.gz')"
+  preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}" "${dk_ses}")"
+  bids_t1w="$(find_bids_t1w "${SUBJECT}" "${dk_ses}")"
+
+  dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
+  preproc_t1w_rel="${preproc_t1w#${QSIPREP_OUT}/}"
+  bids_t1w_rel="${bids_t1w#${BIDS_DIR}/}"
+  dwiref_in_container="/qsiprep/${dwiref_rel}"
+  preproc_t1w_in_container="/qsiprep/${preproc_t1w_rel}"
+  bids_t1w_in_container="/bids/${bids_t1w_rel}"
+  dk_warp=1
+  space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
+
+  echo "Using tractogram: ${tracks}"
+  echo "Using aparc+aseg: ${aparc}"
+  [[ -n "${dwiref}" ]] && echo "Using DWI reference: ${dwiref}"
+  [[ -n "${preproc_t1w}" ]] && echo "Using QSIPrep T1w reference: ${preproc_t1w}"
+  [[ -n "${bids_t1w}"     ]] && echo "Using BIDS T1w (affine reg source): ${bids_t1w}"
+  echo "Space handling: ${space_note}"
+
+  if [[ "${DK_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
+    echo "[dk] Using legacy dual-container path (DK_LEGACY_DUAL_CONTAINER=1)"
+    _run_dk_connectome_dual_container \
+      "${fs_dir}" "${aparc}" "${rawavg}" "${outdir}" \
+      "${tracks}" "${tracks_in_container}" \
+      "${dwiref_in_container}" "${preproc_t1w_in_container}" "${bids_t1w_in_container}" \
+      "${dk_warp}" "${space_note}"
+  else
+    [[ -f "${CONTAINER_DK_CONNECTOME}" ]] || \
+      _pipeline_fail "DK" "missing CONTAINER_DK_CONNECTOME: ${CONTAINER_DK_CONNECTOME}" \
+        "Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh"
+
+    local -a dk_binds=()
+    if [[ "${DK_CONNECTOME_BIND_ENTRYPOINT:-0}" == "1" ]]; then
+      dk_binds+=(-B "${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/run_dk_connectome.sh":/usr/local/bin/run_dk_connectome:ro)
+    fi
+
+    apptainer run --cleanenv --containall \
+      --home /tmp \
+      --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
+      "${dk_binds[@]}" \
+      -B "${FS_SUBJECTS_DIR}":/subjects:ro \
+      -B "${QSIRECON_OUT}":/qsirecon:ro \
+      -B "${QSIPREP_OUT}":/qsiprep:ro \
+      -B "${BIDS_DIR}":/bids:ro \
+      -B "${outdir}":/out \
+      -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro \
+      "${CONTAINER_DK_CONNECTOME}" \
+      --freesurfer-subject "/subjects/sub-${SUBJECT}" \
+      --tractogram "${tracks_in_container}" \
+      --dwiref "${dwiref_in_container}" \
+      --preproc-t1w "${preproc_t1w_in_container}" \
+      --bids-t1w "${bids_t1w_in_container}" \
+      --output-dir /out \
+      --fs-license /opt/freesurfer/license.txt \
+      --subject-id "sub-${SUBJECT}"
+  fi
 
   echo "DK connectome: ${outdir}/dk_connectome.csv"
   echo "Space diagnostic: ${outdir}/dk_nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
@@ -781,12 +906,10 @@ case "${PIPELINE_MODE}" in
       run_recon
     else
       echo "Recon: skipped (RUN_RECON=0 / --no-recon)"
-      # If the user disabled recon, HSVS will fail at QSIRecon. Auto-degrade to FAST spec
-      # unless they have explicitly pointed at an external FreeSurfer subjects dir.
       if [[ "${QSIRECON_SPEC}" == *hsvs* && ! -d "${FS_SUBJECTS_DIR}/sub-${SUBJECT}" ]]; then
-        echo "Recon: no FS subjects dir; switching QSIRECON_SPEC ${QSIRECON_SPEC} -> mrtrix_singleshell_ss3t_ACT-fast"
-        QSIRECON_SPEC="mrtrix_singleshell_ss3t_ACT-fast"
-        RUN_DK_CONNECTOME=0
+        _pipeline_fail "qsirecon" "QSIRECON_SPEC=${QSIRECON_SPEC} requires FreeSurfer but recon was skipped" \
+          "Run Step 2, set FS_SUBJECTS_DIR to an existing subjects tree," \
+          "or set QSIRECON_SPEC=mrtrix_singleshell_ss3t_ACT-fast before submit."
       fi
     fi
     run_qsirecon

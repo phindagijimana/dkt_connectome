@@ -1,0 +1,30 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Philbert Ndagijimana
+    Version 2.1.0
+    Description Lean DK connectome (minimal FS + ANTs/MRtrix from qsirecon.sif)
+
+%environment
+    export FREESURFER_HOME=/opt/freesurfer
+    export ANTSPATH=/opt/ants/bin
+    export LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib
+    export PATH=/opt/freesurfer/bin:/opt/ants/bin:/opt/mrtrix3-latest/bin:/usr/bin:/bin
+    export MRTRIX_LUT=/opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt
+
+%files
+    run_dk_connectome.sh /usr/local/bin/run_dk_connectome
+    freesurfer /opt/freesurfer
+    ants /opt/ants
+    mrtrix3-latest /opt/mrtrix3-latest
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends ca-certificates bc libgomp1 libgfortran5 zlib1g
+    rm -rf /var/lib/apt/lists/*
+    chmod +x /usr/local/bin/run_dk_connectome
+
+%runscript
+    exec /usr/local/bin/run_dk_connectome "$@"

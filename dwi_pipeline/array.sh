@@ -30,12 +30,10 @@ set +H
 
 # Inside sbatch $0 points to Slurm's spool copy (/var/spool/slurmd/job<id>/slurm_script),
 # so deriving paths from $0 would write into /var/spool/slurmd (Permission denied).
-# Prefer values exported by submit.sh; fall back to SLURM_SUBMIT_DIR/dirname($0).
-DWI_ROOT="${DWI_ROOT:-${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}/dwi_pipeline}"
-if [[ ! -d "${DWI_ROOT}" ]]; then
-  DWI_ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}"
-fi
-TRACKTBI_ROOT="${TRACKTBI_ROOT:-$(cd "${DWI_ROOT}/.." && pwd)}"
+# Paths must be exported by submit.sh (Slurm spool copy of $0 cannot derive repo paths).
+: "${DWI_ROOT:?ERROR [array]: DWI_ROOT not set — run via submit.sh or export DWI_ROOT}"
+: "${TRACKTBI_ROOT:?ERROR [array]: TRACKTBI_ROOT not set — run via submit.sh or export TRACKTBI_ROOT}"
+[[ -d "${DWI_ROOT}" ]] || { echo "ERROR [array]: DWI_ROOT is not a directory: ${DWI_ROOT}"; exit 1; }
 PIPELINE="${PIPELINE:-${DWI_ROOT}/subject.sh}"
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 
@@ -70,8 +68,12 @@ SUBJECT_ARGS=()
 [[ "${RECON_TOOL:-freesurfer}" == "fastsurfer" ]] && SUBJECT_ARGS+=(--fastsurfer)
 [[ "${RUN_RECON:-1}" == "0" ]] && SUBJECT_ARGS+=(--no-recon)
 [[ "${RUN_DK_CONNECTOME:-1}" == "0" && "${PIPELINE_MODE}" == "all" ]] && SUBJECT_ARGS+=(--no-dk)
+[[ "${QSIPREP_NO_DWI_FILTER:-0}" == "1" ]] && SUBJECT_ARGS+=(--no-dwi-filter)
+[[ -n "${DWI_SELECT_JSON:-}" ]] && SUBJECT_ARGS+=(--dwi-select "${DWI_SELECT_JSON}")
+[[ -z "${DWI_SELECT_JSON:-}" && -n "${DWI_SHELL_B:-}" && "${DWI_SHELL_B}" != "1000" ]] && \
+  SUBJECT_ARGS+=(--dwi-shell "${DWI_SHELL_B}")
 
 echo "ACT array task ${SLURM_ARRAY_TASK_ID}: sub-${SUBJECT} mode=${PIPELINE_MODE} \
 recon=${RECON_TOOL:-freesurfer} run_recon=${RUN_RECON:-1} \
-NTHREADS=${NTHREADS} syn=${QSIPREP_USE_SYN_SDC:-0}"
+NTHREADS=${NTHREADS} syn=${QSIPREP_USE_SYN_SDC:-0} dwi_shell=${DWI_SHELL_B:-1000}"
 exec bash "${PIPELINE}" "${PIPELINE_MODE}" "${SUBJECT}" "${SUBJECT_ARGS[@]}"

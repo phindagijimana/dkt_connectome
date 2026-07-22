@@ -1,5 +1,0 @@
-# Subject IDs, one per line, without the "sub-" prefix.
-# Lines starting with # and blank lines are ignored.
-# Used when config.yaml has subjects_tsv set; falls back to config.subjects list.
-001
-007
