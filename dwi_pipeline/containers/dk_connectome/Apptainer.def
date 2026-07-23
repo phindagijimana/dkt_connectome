@@ -22,7 +22,7 @@ From: ubuntu:22.04
 %post
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    apt-get install -y --no-install-recommends ca-certificates bc libgomp1 libgfortran5 zlib1g
+    apt-get install -y --no-install-recommends ca-certificates bc libgomp1 libgfortran5 zlib1g libtiff5 libjpeg62
     rm -rf /var/lib/apt/lists/*
     chmod +x /usr/local/bin/run_dk_connectome
 

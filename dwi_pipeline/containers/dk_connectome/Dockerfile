@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libgomp1 \
       libgfortran5 \
       zlib1g \
+      libtiff5 \
+      libjpeg62 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ants /opt/ants
