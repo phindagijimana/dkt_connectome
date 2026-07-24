@@ -8,8 +8,12 @@ import sys
 from pathlib import Path
 
 from docx import Document
-from docx.shared import Pt
-from docx.enum.text import WD_BREAK
+from docx.shared import Pt, Emu
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+IMAGE_RE = re.compile(r"^!\[([^\]]*)\]\(([^)]+)\)\s*$")
+# Bold before italic, so ** is not consumed by the single-* pattern.
+INLINE_RE = re.compile(r"(\*\*[^*]+\*\*|(?<!\*)\*[^*]+\*(?!\*)|`[^`]+`)")
 
 
 def add_code_block(doc: Document, lines: list[str]) -> None:
@@ -17,6 +21,44 @@ def add_code_block(doc: Document, lines: list[str]) -> None:
     run = p.add_run("\n".join(lines))
     run.font.name = "Courier New"
     run.font.size = Pt(9)
+
+
+def add_rich_text(paragraph, text: str) -> None:
+    """Render **bold**, *italic* and `code` as runs rather than literal markers."""
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)  # links -> label
+    for part in INLINE_RE.split(text):
+        if not part:
+            continue
+        if part.startswith("**") and part.endswith("**"):
+            paragraph.add_run(part[2:-2]).bold = True
+        elif part.startswith("`") and part.endswith("`"):
+            run = paragraph.add_run(part[1:-1])
+            run.font.name = "Courier New"
+        elif part.startswith("*") and part.endswith("*"):
+            paragraph.add_run(part[1:-1]).italic = True
+        else:
+            paragraph.add_run(part)
+
+
+def usable_width(doc: Document) -> Emu:
+    section = doc.sections[0]
+    return Emu(section.page_width - section.left_margin - section.right_margin)
+
+
+def add_image(doc: Document, alt: str, src: Path, max_width: Emu) -> None:
+    """Embed an image scaled to the text width, or note it if unavailable."""
+    if not src.is_file():
+        p = doc.add_paragraph()
+        run = p.add_run(f"[missing figure: {src.name} — {alt}]")
+        run.italic = True
+        print(f"  WARNING: figure not found: {src}", file=sys.stderr)
+        return
+    doc.add_picture(str(src))
+    pic = doc.inline_shapes[-1]
+    if pic.width > max_width:
+        pic.height = Emu(int(pic.height * max_width / pic.width))
+        pic.width = max_width
+    doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
 def parse_table(lines: list[str]) -> tuple[list[str], list[list[str]]]:
@@ -40,6 +82,8 @@ def md_to_docx(md_path: Path, docx_path: Path) -> None:
     style = doc.styles["Normal"]
     style.font.name = "Calibri"
     style.font.size = Pt(11)
+    max_width = usable_width(doc)
+    md_dir = md_path.resolve().parent
 
     i = 0
     in_code = False
@@ -68,16 +112,18 @@ def md_to_docx(md_path: Path, docx_path: Path) -> None:
             i += 1
             continue
 
-        if line.startswith("# "):
-            doc.add_heading(line[2:].strip(), level=1)
+        img = IMAGE_RE.match(line.strip())
+        if img:
+            add_image(doc, img.group(1), (md_dir / img.group(2)).resolve(), max_width)
             i += 1
             continue
-        if line.startswith("## "):
-            doc.add_heading(line[3:].strip(), level=2)
-            i += 1
-            continue
-        if line.startswith("### "):
-            doc.add_heading(line[4:].strip(), level=3)
+
+        heading = re.match(r"^(#{1,4})\s+(.*)$", line)
+        if heading:
+            # Markers such as *(Beginner)* are part of the title text, not emphasis
+            # Word can render inside a heading, so drop them.
+            title = re.sub(r"[*`]", "", heading.group(2)).strip()
+            doc.add_heading(title, level=len(heading.group(1)))
             i += 1
             continue
 
@@ -100,12 +146,15 @@ def md_to_docx(md_path: Path, docx_path: Path) -> None:
             continue
 
         if line.strip().startswith("- "):
-            doc.add_paragraph(line.strip()[2:], style="List Bullet")
+            add_rich_text(doc.add_paragraph(style="List Bullet"), line.strip()[2:])
             i += 1
             continue
 
         if re.match(r"^\d+\.\s", line.strip()):
-            doc.add_paragraph(re.sub(r"^\d+\.\s", "", line.strip()), style="List Number")
+            add_rich_text(
+                doc.add_paragraph(style="List Number"),
+                re.sub(r"^\d+\.\s", "", line.strip()),
+            )
             i += 1
             continue
 
@@ -113,10 +162,7 @@ def md_to_docx(md_path: Path, docx_path: Path) -> None:
             i += 1
             continue
 
-        # inline code/backticks stripped simply
-        plain = re.sub(r"`([^`]+)`", r"\1", line)
-        plain = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", plain)
-        doc.add_paragraph(plain)
+        add_rich_text(doc.add_paragraph(), line)
         i += 1
 
     docx_path.parent.mkdir(parents=True, exist_ok=True)
