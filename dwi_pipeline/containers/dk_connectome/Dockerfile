@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libgfortran5 \
       zlib1g \
       libtiff5 \
-      libjpeg62 \
+      libpng16-16 \
+      libfftw3-double3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ants /opt/ants
@@ -28,6 +29,22 @@ COPY mrtrix3-latest /opt/mrtrix3-latest
 COPY freesurfer /opt/freesurfer
 COPY run_dk_connectome.sh /usr/local/bin/run_dk_connectome
 RUN chmod +x /usr/local/bin/run_dk_connectome
+
+# Missing runtime libraries do not break the build, only every later run
+# (exit 127), so assert here instead of shipping a broken image.
+RUN unresolved=0; \
+    for d in /opt/mrtrix3-latest/bin /opt/freesurfer/bin /opt/ants/bin; do \
+      for f in "$d"/*; do \
+        [ -f "$f" ] && [ -x "$f" ] || continue; \
+        if ldd "$f" 2>/dev/null | grep -q 'not found'; then \
+          echo "BUILD ERROR: unresolved libraries for $f" >&2; \
+          ldd "$f" 2>/dev/null | grep 'not found' >&2; \
+          unresolved=1; \
+        fi; \
+      done; \
+    done; \
+    [ "$unresolved" -eq 0 ] || exit 1; \
+    echo "[build] all staged binaries resolve their shared libraries"
 
 WORKDIR /work
 ENTRYPOINT ["/usr/local/bin/run_dk_connectome"]
