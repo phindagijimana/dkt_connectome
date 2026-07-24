@@ -46,7 +46,7 @@
 #   (84 nodes, fs_default.txt), FastSurfer a Desikan-Killiany-Tourville one
 #   (78 nodes, fs_dkt.txt), since FastSurfer's aparc+aseg.mgz is the DKT atlas.
 #   Writes dk_parcellation.json plus the matrix, named for the parcellation:
-#   dk_connectome.csv (DK) or DKT_connectome.csv (DKT), under dk_connectomes/sub-XXX/.
+#   dk_connectome.csv (DK) or dkt_connectome.csv (DKT), under dk_connectomes/sub-XXX/.
 #
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
@@ -89,6 +89,8 @@
 #   RUN_DK_CONNECTOME=0|1  DK in mode=all (default 1 when Step 2 ran)
 #   DK_PARCELLATION       auto|dk|dkt (default auto: dk for recon-all, dkt for FastSurfer)
 #   DK_LUT_DKT            labelconvert LUT for the DKT parcellation (78 nodes)
+#   DK_FAIL_ON_EMPTY_NODES=1  fail instead of warn when a node has no streamlines
+#   DK_DETERMINISTIC=0|1  pin ITK to 1 thread for a reproducible matrix (default 1)
 #   DK_RESAMPLE_TO_DWI=0|1 Resample aparc+aseg onto DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
 #   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc warn (same as --fmap-retry)
@@ -241,6 +243,16 @@ RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
 # auto picks dkt for a FastSurfer subject tree and dk for a recon-all tree.
 DK_PARCELLATION="${DK_PARCELLATION:-auto}"
 DK_LUT_DKT="${DK_LUT_DKT:-${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/mrtrix_lut/fs_dkt.txt}"
+# Empty nodes normally mean the LUT does not match the segmentation, but they can
+# also be genuine in severe pathology (resection, large lesion), so warn by
+# default and let callers escalate.
+DK_FAIL_ON_EMPTY_NODES="${DK_FAIL_ON_EMPTY_NODES:-0}"
+# ITK sums its registration metric across threads in a nondeterministic order, so
+# repeat runs of Step 4b differ by ~1e-10 in the affine. That is usually invisible
+# after nearest-neighbour label resampling, but it can flip boundary voxels and
+# shift a handful of streamline assignments. Pin ITK to one thread so the
+# connectome is reproducible; set 0 to trade reproducibility for speed.
+DK_DETERMINISTIC="${DK_DETERMINISTIC:-1}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
@@ -810,22 +822,79 @@ _run_dk_connectome_dual_container() {
 }
 
 # -----------------------------------------------------------------------------
+# _fs_aparc_has_dk_only_labels — Does the segmentation contain DK-only regions?
+#
+# The authoritative DK/DKT test: bankssts (1001/2001), frontal pole (1032/2032)
+# and temporal pole (1033/2033) exist in Desikan-Killiany but are not defined by
+# the DKT protocol. Prints 1 if any are present and 0 if none are; returns
+# non-zero (printing nothing) when the probe could not run.
+# -----------------------------------------------------------------------------
+_fs_aparc_has_dk_only_labels() {
+  local fs_dir="$1" scratch_parent="$2"
+  local scratch max
+
+  [[ -f "${CONTAINER_DK_CONNECTOME}" ]] || return 1
+  scratch="$(mktemp -d "${scratch_parent}/.dkprobe_XXXXXX" 2>/dev/null)" || return 1
+
+  max="$(apptainer exec --cleanenv --containall \
+      --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
+      -B "${fs_dir}/mri":/probe:ro \
+      -B "${scratch}":/scratch \
+      "${CONTAINER_DK_CONNECTOME}" bash -c '
+        set -e
+        a=/probe/aparc+aseg.mgz
+        mrcalc -quiet -force "$a" 1001 -eq "$a" 1032 -eq -add "$a" 1033 -eq -add \
+          "$a" 2001 -eq -add "$a" 2032 -eq -add "$a" 2033 -eq -add /scratch/dk_only.mif
+        mrstats /scratch/dk_only.mif -output max
+      ' 2>/dev/null | tr -d '[:space:]')"
+  rm -rf "${scratch}"
+
+  case "${max}" in
+    0) echo 0 ;;
+    1) echo 1 ;;
+    *) return 1 ;;
+  esac
+}
+
+# -----------------------------------------------------------------------------
 # _fs_tree_is_dkt — Is this subject tree a FastSurfer (DKT) segmentation?
 #
-# FastSurfer publishes aparc+aseg.mgz as a symlink to aparc.DKTatlas+aseg.mapped.mgz
-# and keeps its deep-learning segmentation beside it. recon-all writes a real
-# aparc+aseg.mgz (Desikan-Killiany) and never produces a *.deep.mgz. Note that a
-# recon-all tree does contain aparc.DKTatlas+aseg.mgz, so that name alone cannot
-# be the test.
+# Prefers the label content of aparc+aseg.mgz, which cannot be fooled by naming.
+# If that probe is unavailable, falls back to FastSurfer's file layout: it
+# publishes aparc+aseg.mgz as a symlink to aparc.DKTatlas+aseg.mapped.mgz and
+# keeps its deep-learning segmentation beside it, while recon-all writes a real
+# aparc+aseg.mgz and never produces a *.deep.mgz. Note that a recon-all tree does
+# contain aparc.DKTatlas+aseg.mgz, so that name alone cannot be the test.
+#
+# Sets _DK_DETECT_METHOD to describe which signal decided.
 # -----------------------------------------------------------------------------
 _fs_tree_is_dkt() {
-  local fs_dir="$1"
-  local aparc="${fs_dir}/mri/aparc+aseg.mgz"
+  local fs_dir="$1" scratch_parent="$2"
+  local probe
 
+  if probe="$(_fs_aparc_has_dk_only_labels "${fs_dir}" "${scratch_parent}")"; then
+    _DK_DETECT_METHOD="aparc+aseg.mgz label content"
+    [[ "${probe}" == "0" ]]
+    return
+  fi
+
+  _DK_DETECT_METHOD="file layout (label probe unavailable)"
+  local aparc="${fs_dir}/mri/aparc+aseg.mgz"
   if [[ -L "${aparc}" && "$(readlink "${aparc}")" == *DKTatlas* ]]; then
     return 0
   fi
   [[ -f "${fs_dir}/mri/aparc.DKTatlas+aseg.deep.mgz" ]]
+}
+
+# -----------------------------------------------------------------------------
+# _count_empty_nodes — Nodes with no connections in a connectome CSV
+#
+# The matrix is symmetric with a zero diagonal, so an all-zero row means the node
+# received no streamlines at all.
+# -----------------------------------------------------------------------------
+_count_empty_nodes() {
+  awk -F',' 'NF > 1 { s = 0; for (i = 1; i <= NF; i++) s += $i; if (s == 0) c++ }
+             END { print c + 0 }' "$1"
 }
 
 # -----------------------------------------------------------------------------
@@ -863,16 +932,17 @@ run_dk_connectome() {
   # correct regardless of which flags this invocation was given.
   local dk_parc="${DK_PARCELLATION}"
   local dk_parc_source=""
+  _DK_DETECT_METHOD=""
   case "${dk_parc}" in
     auto)
-      if _fs_tree_is_dkt "${fs_dir}"; then dk_parc="dkt"; else dk_parc="dk"; fi
-      dk_parc_source="auto-detected from subject tree"
-      echo "DK parcellation: ${dk_parc} (auto-detected from ${fs_dir})"
+      if _fs_tree_is_dkt "${fs_dir}" "${outdir}"; then dk_parc="dkt"; else dk_parc="dk"; fi
+      dk_parc_source="auto-detected from ${_DK_DETECT_METHOD}"
+      echo "DK parcellation: ${dk_parc} (auto-detected from ${_DK_DETECT_METHOD})"
       ;;
     dk|dkt)
       dk_parc_source="DK_PARCELLATION=${dk_parc}"
       echo "DK parcellation: ${dk_parc} (set via DK_PARCELLATION)"
-      if [[ "${dk_parc}" == "dk" ]] && _fs_tree_is_dkt "${fs_dir}"; then
+      if [[ "${dk_parc}" == "dk" ]] && _fs_tree_is_dkt "${fs_dir}" "${outdir}"; then
         echo "WARNING: DK_PARCELLATION=dk on a DKT (FastSurfer) tree — expect 6 empty" \
              "nodes (bankssts, frontal pole, temporal pole, bilaterally)."
       fi
@@ -944,9 +1014,16 @@ run_dk_connectome() {
       echo "Using DKT LUT: ${DK_LUT_DKT}"
     fi
 
+    local -a dk_env_args=()
+    if [[ "${DK_DETERMINISTIC}" == "1" ]]; then
+      dk_env_args+=(--env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1" --env "ANTS_RANDOM_SEED=1")
+      echo "Deterministic mode: ITK pinned to 1 thread (DK_DETERMINISTIC=1)"
+    fi
+
     apptainer run --cleanenv --containall \
       --home /tmp \
       --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
+      "${dk_env_args[@]}" \
       "${dk_binds[@]}" \
       -B "${FS_SUBJECTS_DIR}":/subjects:ro \
       -B "${QSIRECON_OUT}":/qsirecon:ro \
@@ -983,10 +1060,26 @@ run_dk_connectome() {
   # a stale file of the wrong dimension cannot be picked up later.
   local dk_matrix="${outdir}/dk_connectome.csv"
   if [[ "${dk_parc}" == "dkt" ]]; then
-    dk_matrix="${outdir}/DKT_connectome.csv"
+    dk_matrix="${outdir}/dkt_connectome.csv"
     mv -f "${outdir}/dk_connectome.csv" "${dk_matrix}"
   else
-    rm -f "${outdir}/DKT_connectome.csv"
+    rm -f "${outdir}/dkt_connectome.csv"
+  fi
+  # Briefly-lived earlier naming, removed so it cannot be mistaken for output.
+  rm -f "${outdir}/DKT_connectome.csv"
+
+  # A node with no streamlines almost always means the LUT does not match the
+  # segmentation, which is exactly the failure this parcellation logic exists to
+  # prevent, so surface it rather than let it reach group analysis unnoticed.
+  local dk_empty
+  dk_empty="$(_count_empty_nodes "${dk_matrix}")"
+  if [[ "${dk_empty}" -gt 0 ]]; then
+    echo "WARNING: ${dk_empty} of ${dk_nodes} ${dk_atlas} nodes received no streamlines."
+    echo "         Usually a LUT/segmentation mismatch; can be genuine after resection"
+    echo "         or a large lesion. Check ${outdir}/dk_parcellation.json."
+    if [[ "${DK_FAIL_ON_EMPTY_NODES}" == "1" ]]; then
+      _pipeline_fail "DK" "${dk_empty} empty nodes in ${dk_matrix} (DK_FAIL_ON_EMPTY_NODES=1)"
+    fi
   fi
 
   cat > "${outdir}/dk_parcellation.json" <<EOF
@@ -996,6 +1089,8 @@ run_dk_connectome() {
   "nodes": ${dk_nodes},
   "labelconvert_lut": "${dk_lut_used}",
   "connectome_csv": "${dk_matrix##*/}",
+  "empty_nodes": ${dk_empty},
+  "deterministic": ${DK_DETERMINISTIC},
   "selected_by": "${dk_parc_source}",
   "freesurfer_subject_dir": "${fs_dir}",
   "aparc_aseg": "${aparc}"
