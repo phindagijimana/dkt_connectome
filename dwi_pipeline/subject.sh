@@ -45,7 +45,8 @@
 #   The LUT follows the Step 2 tool: recon-all gives a Desikan-Killiany matrix
 #   (84 nodes, fs_default.txt), FastSurfer a Desikan-Killiany-Tourville one
 #   (78 nodes, fs_dkt.txt), since FastSurfer's aparc+aseg.mgz is the DKT atlas.
-#   Writes dk_connectome.csv and dk_parcellation.json under dk_connectomes/sub-XXX/.
+#   Writes dk_parcellation.json plus the matrix, named for the parcellation:
+#   dk_connectome.csv (DK) or DKT_connectome.csv (DKT), under dk_connectomes/sub-XXX/.
 #
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
@@ -975,19 +976,33 @@ run_dk_connectome() {
     dk_atlas="Desikan-Killiany-Tourville"
     dk_nodes=78
   fi
+
+  # The container always writes dk_connectome.csv. Name the final matrix after the
+  # parcellation so an 84-node DK and a 78-node DKT result can never be mistaken
+  # for each other, and clear any matrix left behind by the other parcellation so
+  # a stale file of the wrong dimension cannot be picked up later.
+  local dk_matrix="${outdir}/dk_connectome.csv"
+  if [[ "${dk_parc}" == "dkt" ]]; then
+    dk_matrix="${outdir}/DKT_connectome.csv"
+    mv -f "${outdir}/dk_connectome.csv" "${dk_matrix}"
+  else
+    rm -f "${outdir}/DKT_connectome.csv"
+  fi
+
   cat > "${outdir}/dk_parcellation.json" <<EOF
 {
   "parcellation": "${dk_parc}",
   "atlas": "${dk_atlas}",
   "nodes": ${dk_nodes},
   "labelconvert_lut": "${dk_lut_used}",
+  "connectome_csv": "${dk_matrix##*/}",
   "selected_by": "${dk_parc_source}",
   "freesurfer_subject_dir": "${fs_dir}",
   "aparc_aseg": "${aparc}"
 }
 EOF
 
-  echo "DK connectome: ${outdir}/dk_connectome.csv (${dk_atlas}, ${dk_nodes} nodes)"
+  echo "DK connectome: ${dk_matrix} (${dk_atlas}, ${dk_nodes} nodes)"
   echo "Parcellation provenance: ${outdir}/dk_parcellation.json"
   echo "Space diagnostic: ${outdir}/dk_nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
 }
