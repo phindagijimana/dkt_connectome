@@ -42,7 +42,10 @@
 #   Runs in CONTAINER_DK_CONNECTOME (dk_connectome.sif: FreeSurfer + ANTs + MRtrix3).
 #   Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh
 #   Legacy dual-container path: DK_LEGACY_DUAL_CONTAINER=1 (freesurfer + qsirecon).
-#   Writes dk_connectome.csv under dk_connectomes/sub-XXX/.
+#   The LUT follows the Step 2 tool: recon-all gives a Desikan-Killiany matrix
+#   (84 nodes, fs_default.txt), FastSurfer a Desikan-Killiany-Tourville one
+#   (78 nodes, fs_dkt.txt), since FastSurfer's aparc+aseg.mgz is the DKT atlas.
+#   Writes dk_connectome.csv and dk_parcellation.json under dk_connectomes/sub-XXX/.
 #
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
@@ -83,6 +86,8 @@
 #                          set ACT-fast explicitly or provide FS subjects dir)
 #   QSIRECON_ATLASES       optional QSIRecon --atlases (Schaefer100, AAL116, ...)
 #   RUN_DK_CONNECTOME=0|1  DK in mode=all (default 1 when Step 2 ran)
+#   DK_PARCELLATION       auto|dk|dkt (default auto: dk for recon-all, dkt for FastSurfer)
+#   DK_LUT_DKT            labelconvert LUT for the DKT parcellation (78 nodes)
 #   DK_RESAMPLE_TO_DWI=0|1 Resample aparc+aseg onto DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
 #   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc warn (same as --fmap-retry)
@@ -226,6 +231,15 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # or "" to opt out (only safe with specs that have no connectivity node — rare).
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
+# Grey-matter parcellation for the Step 4 connectome: auto | dk | dkt
+#   dk  — Desikan-Killiany, 84 nodes, MRtrix fs_default.txt (FreeSurfer recon-all)
+#   dkt — Desikan-Killiany-Tourville, 78 nodes, fs_dkt.txt (FastSurfer)
+# FastSurfer ships aparc+aseg.mgz as the DKT atlas, which by protocol has no
+# bankssts and no frontal/temporal pole. Running labelconvert over it with the DK
+# LUT yields 6 all-zero rows/columns, so the LUT has to follow the recon tool.
+# auto picks dkt for a FastSurfer subject tree and dk for a recon-all tree.
+DK_PARCELLATION="${DK_PARCELLATION:-auto}"
+DK_LUT_DKT="${DK_LUT_DKT:-${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/mrtrix_lut/fs_dkt.txt}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
@@ -795,6 +809,25 @@ _run_dk_connectome_dual_container() {
 }
 
 # -----------------------------------------------------------------------------
+# _fs_tree_is_dkt — Is this subject tree a FastSurfer (DKT) segmentation?
+#
+# FastSurfer publishes aparc+aseg.mgz as a symlink to aparc.DKTatlas+aseg.mapped.mgz
+# and keeps its deep-learning segmentation beside it. recon-all writes a real
+# aparc+aseg.mgz (Desikan-Killiany) and never produces a *.deep.mgz. Note that a
+# recon-all tree does contain aparc.DKTatlas+aseg.mgz, so that name alone cannot
+# be the test.
+# -----------------------------------------------------------------------------
+_fs_tree_is_dkt() {
+  local fs_dir="$1"
+  local aparc="${fs_dir}/mri/aparc+aseg.mgz"
+
+  if [[ -L "${aparc}" && "$(readlink "${aparc}")" == *DKTatlas* ]]; then
+    return 0
+  fi
+  [[ -f "${fs_dir}/mri/aparc.DKTatlas+aseg.deep.mgz" ]]
+}
+
+# -----------------------------------------------------------------------------
 # run_dk_connectome — Build DK connectome from QSIRecon tractogram + FS aseg
 # -----------------------------------------------------------------------------
 run_dk_connectome() {
@@ -823,6 +856,30 @@ run_dk_connectome() {
     "Set FS_SUBJECTS_DIR to a tree containing sub-${SUBJECT}/mri/aparc+aseg.mgz."
   [[ -f "${rawavg}" ]] || _pipeline_fail "DK" "missing rawavg.mgz: ${rawavg}" \
     "Rerun Step 2 (recon) or check FS_SUBJECTS_DIR."
+
+  # Match the LUT to the segmentation that Step 2 actually produced, reading the
+  # tree rather than RECON_TOOL so that `subject.sh dk` on an existing tree is
+  # correct regardless of which flags this invocation was given.
+  local dk_parc="${DK_PARCELLATION}"
+  local dk_parc_source=""
+  case "${dk_parc}" in
+    auto)
+      if _fs_tree_is_dkt "${fs_dir}"; then dk_parc="dkt"; else dk_parc="dk"; fi
+      dk_parc_source="auto-detected from subject tree"
+      echo "DK parcellation: ${dk_parc} (auto-detected from ${fs_dir})"
+      ;;
+    dk|dkt)
+      dk_parc_source="DK_PARCELLATION=${dk_parc}"
+      echo "DK parcellation: ${dk_parc} (set via DK_PARCELLATION)"
+      if [[ "${dk_parc}" == "dk" ]] && _fs_tree_is_dkt "${fs_dir}"; then
+        echo "WARNING: DK_PARCELLATION=dk on a DKT (FastSurfer) tree — expect 6 empty" \
+             "nodes (bankssts, frontal pole, temporal pole, bilaterally)."
+      fi
+      ;;
+    *)
+      _pipeline_fail "DK" "invalid DK_PARCELLATION=${dk_parc} (use auto, dk, or dkt)"
+      ;;
+  esac
 
   tracks="$(_strict_find_one "DK/tractogram" \
     find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
@@ -858,6 +915,9 @@ run_dk_connectome() {
 
   if [[ "${DK_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
     echo "[dk] Using legacy dual-container path (DK_LEGACY_DUAL_CONTAINER=1)"
+    [[ "${dk_parc}" == "dk" ]] || _pipeline_fail "DK" \
+      "the legacy dual-container path only supports the DK LUT, but this subject needs ${dk_parc}" \
+      "Drop DK_LEGACY_DUAL_CONTAINER, or set DK_PARCELLATION=dk to accept 6 empty nodes."
     _run_dk_connectome_dual_container \
       "${fs_dir}" "${aparc}" "${rawavg}" "${outdir}" \
       "${tracks}" "${tracks_in_container}" \
@@ -871,6 +931,16 @@ run_dk_connectome() {
     local -a dk_binds=()
     if [[ "${DK_CONNECTOME_BIND_ENTRYPOINT:-0}" == "1" ]]; then
       dk_binds+=(-B "${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/run_dk_connectome.sh":/usr/local/bin/run_dk_connectome:ro)
+    fi
+
+    # The image only ships fs_default.txt, so a DKT run binds its LUT in.
+    local -a dk_lut_args=()
+    if [[ "${dk_parc}" == "dkt" ]]; then
+      [[ -f "${DK_LUT_DKT}" ]] || _pipeline_fail "DK" "missing DKT LUT: ${DK_LUT_DKT}" \
+        "Generate it: python3 dwi_pipeline/scripts/make_dkt_lut.py"
+      dk_binds+=(-B "${DK_LUT_DKT}":/lut/fs_dkt.txt:ro)
+      dk_lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+      echo "Using DKT LUT: ${DK_LUT_DKT}"
     fi
 
     apptainer run --cleanenv --containall \
@@ -891,10 +961,34 @@ run_dk_connectome() {
       --bids-t1w "${bids_t1w_in_container}" \
       --output-dir /out \
       --fs-license /opt/freesurfer/license.txt \
+      "${dk_lut_args[@]}" \
       --subject-id "sub-${SUBJECT}"
   fi
 
-  echo "DK connectome: ${outdir}/dk_connectome.csv"
+  # Matrix size depends on the LUT (84 for DK, 78 for DKT), so record which one
+  # produced this connectome next to it.
+  local dk_lut_used="fs_default.txt"
+  local dk_atlas="Desikan-Killiany"
+  local dk_nodes=84
+  if [[ "${dk_parc}" == "dkt" ]]; then
+    dk_lut_used="fs_dkt.txt"
+    dk_atlas="Desikan-Killiany-Tourville"
+    dk_nodes=78
+  fi
+  cat > "${outdir}/dk_parcellation.json" <<EOF
+{
+  "parcellation": "${dk_parc}",
+  "atlas": "${dk_atlas}",
+  "nodes": ${dk_nodes},
+  "labelconvert_lut": "${dk_lut_used}",
+  "selected_by": "${dk_parc_source}",
+  "freesurfer_subject_dir": "${fs_dir}",
+  "aparc_aseg": "${aparc}"
+}
+EOF
+
+  echo "DK connectome: ${outdir}/dk_connectome.csv (${dk_atlas}, ${dk_nodes} nodes)"
+  echo "Parcellation provenance: ${outdir}/dk_parcellation.json"
   echo "Space diagnostic: ${outdir}/dk_nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
 }
 
