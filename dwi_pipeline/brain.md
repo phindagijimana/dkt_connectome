@@ -338,9 +338,9 @@ Step 4 now matches the lookup table to the segmentation. A `recon-all` subject u
 
 This is a relabelling, not a change to the tractography. Verified on this subject: the 78-node DKT matrix is *exactly* the 84-node DK matrix with those 6 rows and columns deleted — 0 differing cells, and the same 15,425,166 assigned streamlines. The 6 nodes that disappeared were empty rows all along.
 
-**DKT can also be obtained from a `recon-all` subject.** FreeSurfer writes both atlases — `aparc+aseg.mgz` (DK) and `aparc.DKTatlas+aseg.mgz` (DKT) — so setting `DK_PARCELLATION=dkt` reads the latter and yields a genuine 78-node DKT matrix. The reverse is not possible: a FastSurfer tree has no DK parcellation whatsoever. That asymmetry is worth knowing before committing a cohort, because `recon-all` keeps both options open at the cost of a re-run of Step 4 alone, whereas FastSurfer fixes the atlas at Step 2.
+**The pipeline standardises on DKT, from either recon tool.** FreeSurfer writes both atlases — `aparc+aseg.mgz` (DK) and `aparc.DKTatlas+aseg.mgz` (DKT) — while FastSurfer writes only DKT and has no DK parcellation whatsoever. DKT is therefore the one node set both can deliver, so Step 4 produces a 78-node DKT connectome by default regardless of which tool ran, reading whichever DKT image the tree provides. `--fastsurfer` changes how long Step 2 takes, not the parcellation, and subjects processed either way pool into a single array. `DK_PARCELLATION=dk` still gives the 84-node DK matrix where `recon-all` makes it available.
 
-**For a methods section:** report the recon tool and the parcellation together, since the recon tool constrains which atlases are available. Note that a cohort processed with a mix of the two tools has DKT as its only common node set.
+**For a methods section:** report the recon tool and the parcellation separately, since they are now independent — the tool no longer implies the atlas. Each subject's `dk_parcellation.json` records the atlas, node count, lookup table, the exact segmentation file read, and whether that came from the default or an explicit setting.
 
 ### *(PhD)* The parcellation problem is not solved
 

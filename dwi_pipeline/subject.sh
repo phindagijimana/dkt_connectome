@@ -42,16 +42,15 @@
 #   Runs in CONTAINER_DK_CONNECTOME (dk_connectome.sif: FreeSurfer + ANTs + MRtrix3).
 #   Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh
 #   Legacy dual-container path: DK_LEGACY_DUAL_CONTAINER=1 (freesurfer + qsirecon).
-#   By default the parcellation follows the Step 2 tool: recon-all gives a
-#   Desikan-Killiany matrix (84 nodes, fs_default.txt), FastSurfer a
-#   Desikan-Killiany-Tourville one (78 nodes, fs_dkt.txt), since FastSurfer's
-#   aparc+aseg.mgz is the DKT atlas.
-#   DK_PARCELLATION=dkt gives a true DKT matrix from either tool, reading
-#   aparc.DKTatlas+aseg.mgz on a recon-all tree — use it to keep one node set
-#   across a cohort processed with a mix of the two. DK is only available from
-#   recon-all; FastSurfer produces no DK atlas.
+#   Both recon tools yield the same parcellation by default: Desikan-Killiany-
+#   Tourville, 78 nodes, fs_dkt.txt (DK_PARCELLATION=dkt). FastSurfer's
+#   aparc+aseg.mgz is already DKT; a recon-all tree is read via its
+#   aparc.DKTatlas+aseg.mgz. So --fastsurfer changes how long Step 2 takes, not
+#   the node set, and a cohort pools regardless of which tool each subject used.
+#   DK (84 nodes, fs_default.txt) is available with DK_PARCELLATION=dk, but only
+#   from recon-all — FastSurfer produces no DK atlas.
 #   Writes dk_parcellation.json plus the matrix, named for the parcellation:
-#   dk_connectome.csv (DK) or dkt_connectome.csv (DKT), under dk_connectomes/sub-XXX/.
+#   dkt_connectome.csv (DKT) or dk_connectome.csv (DK), under dk_connectomes/sub-XXX/.
 #
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
@@ -92,8 +91,8 @@
 #                          set ACT-fast explicitly or provide FS subjects dir)
 #   QSIRECON_ATLASES       optional QSIRecon --atlases (Schaefer100, AAL116, ...)
 #   RUN_DK_CONNECTOME=0|1  DK in mode=all (default 1 when Step 2 ran)
-#   DK_PARCELLATION       auto|dk|dkt (default auto: dk for recon-all, dkt for
-#                         FastSurfer; dkt works on either tree, dk needs recon-all)
+#   DK_PARCELLATION       dkt|dk|auto (default dkt for both recon tools; dk needs
+#                         recon-all; auto follows the tree and mixes node counts)
 #   DK_LUT_DKT            labelconvert LUT for the DKT parcellation (78 nodes)
 #   DK_FAIL_ON_EMPTY_NODES=1  fail instead of warn when a node has no streamlines
 #   DK_DETERMINISTIC=0|1  pin ITK to 1 thread for a reproducible matrix (default 1)
@@ -240,19 +239,24 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # or "" to opt out (only safe with specs that have no connectivity node — rare).
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
-# Grey-matter parcellation for the Step 4 connectome: auto | dk | dkt
+# Grey-matter parcellation for the Step 4 connectome: dkt | dk | auto
+#   dkt — Desikan-Killiany-Tourville, 78 nodes, fs_dkt.txt. THE DEFAULT, and the
+#         only parcellation both recon tools can produce: FastSurfer's
+#         aparc+aseg.mgz is already DKT, and a recon-all tree is read via its
+#         aparc.DKTatlas+aseg.mgz. Fixing it here means every subject shares one
+#         node set whether or not the user passed --fastsurfer, so a cohort can
+#         be pooled without caring which tool ran.
 #   dk  — Desikan-Killiany, 84 nodes, fs_default.txt over aparc+aseg.mgz.
-#         recon-all only; FastSurfer produces no DK atlas.
-#   dkt — Desikan-Killiany-Tourville, 78 nodes, fs_dkt.txt. Available from either
-#         tool: FastSurfer's aparc+aseg.mgz is already DKT, and a recon-all tree
-#         is read via its aparc.DKTatlas+aseg.mgz.
-#   auto— follow the tree: dkt for FastSurfer, dk for recon-all.
+#         recon-all only; FastSurfer produces no DK atlas, so this leaves 6 empty
+#         nodes on a FastSurfer tree.
+#   auto— follow the tree instead: dkt for FastSurfer, dk for recon-all. Gives a
+#         mix of 78- and 84-node matrices across a cohort, so pick it only when
+#         you specifically want DK from recon-all subjects.
 # FastSurfer ships aparc+aseg.mgz as the DKT atlas, which by protocol has no
 # bankssts and no frontal/temporal pole. Running labelconvert over it with the DK
 # LUT yields 6 all-zero rows/columns, so the LUT has to follow the segmentation.
-# Set dkt explicitly to keep one node set across a cohort processed with a mix of
-# the two tools.
-DK_PARCELLATION="${DK_PARCELLATION:-auto}"
+_DK_PARCELLATION_EXPLICIT=$([[ -n "${DK_PARCELLATION:-}" ]] && echo 1 || echo 0)
+DK_PARCELLATION="${DK_PARCELLATION:-dkt}"
 DK_LUT_DKT="${DK_LUT_DKT:-${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/mrtrix_lut/fs_dkt.txt}"
 # Empty nodes normally mean the LUT does not match the segmentation, but they can
 # also be genuine in severe pathology (resection, large lesion), so warn by
@@ -954,8 +958,13 @@ run_dk_connectome() {
       echo "DK parcellation: ${dk_parc} (auto-detected from ${_DK_DETECT_METHOD})"
       ;;
     dk|dkt)
-      dk_parc_source="DK_PARCELLATION=${dk_parc}"
-      echo "DK parcellation: ${dk_parc} (set via DK_PARCELLATION)"
+      if [[ "${_DK_PARCELLATION_EXPLICIT}" == "1" ]]; then
+        dk_parc_source="DK_PARCELLATION=${dk_parc}"
+        echo "DK parcellation: ${dk_parc} (set via DK_PARCELLATION)"
+      else
+        dk_parc_source="pipeline default (${dk_parc}, same for both recon tools)"
+        echo "DK parcellation: ${dk_parc} (pipeline default — same for recon-all and FastSurfer)"
+      fi
       ;;
     *)
       _pipeline_fail "DK" "invalid DK_PARCELLATION=${dk_parc} (use auto, dk, or dkt)"
