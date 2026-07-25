@@ -1,7 +1,7 @@
 # =============================================================================
-# dk_connectome — .gitignore
+# dkt_connectome — .gitignore
 #
-# Strategy: track CODE (Snakefile, rules, configs, docs); ignore DATA
+# Strategy: track CODE (Snakefile, rules, scripts, configs, docs); ignore DATA
 # (BIDS inputs, derivatives, work dirs, caches, logs, container images).
 # =============================================================================
 
@@ -44,6 +44,17 @@ derivatives/
 *.simg
 containers/*.sif
 
+# --- Container build scratch (staged ANTs / MRtrix / FreeSurfer binaries) -----
+dwi_pipeline/containers/connectome/build_ctx/
+dwi_pipeline/containers/connectome/build_ctx_lean/
+dwi_pipeline/containers/connectome/.apptainer_tmp/
+dwi_pipeline/containers/connectome/.fs_min_test/
+dwi_pipeline/containers/connectome/.fs_min_out/
+**/apptainer_tmp/
+**/apptainer_cache/
+*.tar
+*.tar.gz
+
 # --- User-specific configs / subject lists (never commit private data) --------
 config/subjects.tsv
 config/*.local.yaml
@@ -51,5 +62,74 @@ config/*.private.yaml
 config/myconfig*.yaml
 
 # --- Cached templates / atlases -----------------------------------------------
-templateflow/
+/templateflow/
 .cache/
+
+# --- Local datasets mounted or symlinked in for processing --------------------
+# Add your own dataset directories here. Nothing under them should be tracked.
+/*_BIDS/
+/*_bids/
+/bids/
+/data/
+/datasets/
+/Two_Time_Points/
+
+# --- Vendored upstream projects (not our code) --------------------------------
+/dwi_minimum_preprocessing-master/
+
+# =============================================================================
+# Pipeline outputs / intermediate results / work directories
+# (anything QSIPrep / QSIRecon / FreeSurfer / FastSurfer / Step 4 writes)
+# =============================================================================
+
+# Legacy top-level run outputs from earlier exploration
+/dwi_phase1/
+/intermediate_results/
+/intermediate_results_recon/
+/intermediate_results_run1/
+/intermediate_results_run2/
+/intermediate_results_separate/
+/qsiprep_output/
+/qsiprep_run1_output/
+/qsiprep_run2_output/
+/qsiprep_separate_output/
+/qsiprep_merged_output/
+/qsirecon_output/
+/test_bids_fmap_no_sidecars/
+
+# Generic patterns for any future result dirs at any depth
+**/qsiprep_*_output/
+**/qsirecon_*_output/
+**/qsirecon_single_run_output/
+**/qsiprep_single_run_output/
+**/freesurfer/sub-*/
+**/connectomes/sub-*/
+**/.flags/
+**/work/
+**/_work_qsiprep_*/
+**/_work_qsirecon_*/
+
+# Derived per-subject artefacts written alongside code (small but generated)
+/extracted_csv_samples/
+/online_extracts/
+qsiprep_qsirecon_subject_status.csv
+
+# Backups
+backups/
+*.bak
+
+# Atlas-only connectome wrapper (lives locally, not in this repo)
+/dwi_connect_default/
+
+# Generated documentation artefacts. The markdown is the source; regenerate with
+# scripts/md_to_docx.py (.docx) and scripts/make_brain_figures.py (figures).
+# These are tracked so the documents render on GitHub, which is only safe
+# because every figure is rendered from public templates (fsaverage, MNI152)
+# rather than from participants. Do not commit figures built from study data.
+/dwi_pipeline/figures/**/.cache/
+
+# Real study identifiers must not reach the public repository. Subject lists and
+# the per-subject scan-parameter table stay local; the tracked template and
+# defaults carry placeholder IDs only.
+/dwi_pipeline/subjects_*.txt
+/dwi_pipeline/config/bids_repair_subjects.local.csv
