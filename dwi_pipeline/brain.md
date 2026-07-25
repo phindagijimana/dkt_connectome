@@ -16,7 +16,7 @@ This is written for someone who builds and operates neuroimaging pipelines and n
 
 Read the Foundation tier of every section first if you are new; the tiers are cumulative but each is self-contained enough to skip.
 
-**All imaging figures are generated from this project's own data** (subject `TBI011204`, FastSurfer + QSIPrep + QSIRecon ACT-HSVS run in `CIDUR_BIDS/dwi_test2_fast`) by `scripts/make_brain_figures.py`. Two figures are explicitly schematic drawings, and say so, because the repository contains no lesion-positive example to image. Nothing here is an AI-generated depiction of anatomy.
+**All imaging figures are generated from this project's own data** (subject `SUBJ01`, FastSurfer + QSIPrep + QSIRecon ACT-HSVS run in `CIDUR_BIDS/dwi_test2_fast`) by `scripts/make_brain_figures.py`. Two figures are explicitly schematic drawings, and say so, because the repository contains no lesion-positive example to image. Nothing here is an AI-generated depiction of anatomy.
 
 > **Scope and safety.** This document supports *research engineering*: QC, method choice, and interpretation of automated output. It is not a clinical reference and must not be used for diagnosis or patient care. Radiological interpretation is the responsibility of a qualified radiologist.
 
@@ -115,7 +115,7 @@ Getting this composition wrong produces surfaces that look plausible but are off
 
 ![Normal T1-weighted anatomy in three orthogonal planes](figures/brain/fig01_normal_anatomy.png)
 
-*Figure 1 — Normal T1-weighted anatomy of subject TBI011204 in three orthogonal planes. Arrow targets are computed from the centroids of the corresponding `aseg.mgz` labels, so every label points at this subject's actual structure rather than a textbook position.*
+*Figure 1 — Normal T1-weighted anatomy of subject SUBJ01 in three orthogonal planes. Arrow targets are computed from the centroids of the corresponding `aseg.mgz` labels, so every label points at this subject's actual structure rather than a textbook position.*
 
 Work outside in.
 
@@ -340,7 +340,7 @@ Which table was used is recorded per subject in `parcellation.json`, and the mat
 
 Getting DKT from a `recon-all` tree means **changing the input image, not just the table**. `labelconvert` matches regions by name, so applying the DKT table to the DK image would *discard* bankssts and the poles rather than reassign their territory to neighbouring gyri the way real DKT does — about 12,000 cortical voxels on a test subject, with no warning and a plausible-looking 78-node result. Step 4 therefore passes the chosen segmentation to the container explicitly.
 
-This is a relabelling, not a change to the tractography: the same streamlines are counted against a different set of regions. It is *not*, however, the same as deleting six rows from the DK matrix. On `sub-TBI011204` the true 78-node DKT matrix carries 7,691,076 assigned streamlines against the 84-node DK matrix's 7,736,752, because DKT merges bankssts and the poles into adjoining gyri rather than discarding them. Deleting the six rows instead — which is what applying the DKT table to a DK image amounts to — yields 7,425,289, losing 265,787 streamlines (3.4 %) and differing from true DKT in 91 % of cells.
+This is a relabelling, not a change to the tractography: the same streamlines are counted against a different set of regions. It is *not*, however, the same as deleting six rows from the DK matrix. On `sub-SUBJ01` the true 78-node DKT matrix carries 7,691,076 assigned streamlines against the 84-node DK matrix's 7,736,752, because DKT merges bankssts and the poles into adjoining gyri rather than discarding them. Deleting the six rows instead — which is what applying the DKT table to a DK image amounts to — yields 7,425,289, losing 265,787 streamlines (3.4 %) and differing from true DKT in 91 % of cells.
 
 **For a methods section:** report the recon tool and the parcellation separately, since they are now independent — the tool no longer implies the atlas. Each subject's `parcellation.json` records the atlas, node count, lookup table, the exact segmentation file read, and whether that came from the default or an explicit setting.
 
@@ -1367,18 +1367,18 @@ All imaging figures come from this repository's own data:
 ```bash
 python3 dwi_pipeline/scripts/make_brain_figures.py \
     --results-root /path/to/CIDUR_BIDS/dwi_test2_fast \
-    --subject sub-TBI011204 \
+    --subject sub-SUBJ01 \
     --session ses-2WK \
     --out-dir dwi_pipeline/figures/brain
 ```
 
-Requires `nibabel`, `matplotlib`, `numpy`, and `scipy`. Each figure caption states its source file. Figures 9 and 10 are schematic drawings and contain no patient data; Figure 12 is a conceptual diagram. Every other figure is rendered directly from subject `TBI011204`.
+Requires `nibabel`, `matplotlib`, `numpy`, and `scipy`. Each figure caption states its source file. Figures 9 and 10 are schematic drawings and contain no patient data; Figure 12 is a conceptual diagram. Every other figure is rendered directly from subject `SUBJ01`.
 
 **Data provenance for the figures**
 
 | Figure | Source |
 |--------|--------|
-| 1, 2, 3, 4, 5, 11 | `freesurfer/sub-TBI011204/` — FastSurfer 2.4.2 volumes, surfaces, and stats |
+| 1, 2, 3, 4, 5, 11 | `freesurfer/sub-SUBJ01/` — FastSurfer 2.4.2 volumes, surfaces, and stats |
 | 6 | `qsirecon_single_run_output/.../sub-TBI011204_space-ACPC_seg-hsvs_probseg.nii.gz` |
 | 7 | Headers of `T1.mgz`, `desc-preproc_T1w.nii.gz`, `space-T1w_dwiref.nii.gz` |
 | 8 | `.../sub-TBI011204_ses-2WK_acq-b1000_space-T1w_connectivity.mat` |

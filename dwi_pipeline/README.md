@@ -29,13 +29,13 @@ For **TrackTBI**, use `RESULTS_ROOT=.../dwi_test_TBI` (see [`CIDUR_BIDS/dwi_test
 ## Quick start
 
 ```bash
-cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
+cd /path/to/TrackTBI-Sub
 
 # TrackTBI example (full pipeline)
-export RESULTS_ROOT=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test_TBI
+export RESULTS_ROOT=/path/to/CIDUR_BIDS/dwi_test_TBI
 export BIDS_DIR=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI/phase2_test_bids
 
-bash dwi_pipeline/subject.sh all TBI011204
+bash dwi_pipeline/subject.sh all SUBJ01
 ```
 
 Slurm array:

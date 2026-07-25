@@ -40,8 +40,8 @@ Repo docs:
 Sidecar repair is **not** run inside the pipeline. Apply fixes first:
 
 ```bash
-./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids TBI011204 --dry-run
-./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids TBI011204
+./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01 --dry-run
+./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01
 ```
 
 Then verify the dwi-select filter (see § dwi-select below). See [`bids.md`](bids.md) for TRT, `IntendedFor`, and spreadsheet-driven repair.
@@ -63,7 +63,7 @@ Dry-run:
 
 ```bash
 python3 dwi_pipeline/scripts/build_bids_filter.py \
-  --bids-dir /path/to/bids --subject TBI011204 \
+  --bids-dir /path/to/bids --subject SUBJ01 \
   --select-json dwi_pipeline/config/dwi_select_b1000.json \
   --output /tmp/bids_filter_check.json
 ```
@@ -288,14 +288,14 @@ tck2connectome -symmetric -zero_diagonal \
 ### TrackTBI — full DK (recommended)
 
 ```bash
-cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
+cd /path/to/TrackTBI-Sub
 
 export BIDS_DIR=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI/phase2_test_bids
-export RESULTS_ROOT=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test_TBI
+export RESULTS_ROOT=/path/to/CIDUR_BIDS/dwi_test_TBI
 export PIPELINE_MODE=all
 export RUN_CONNECTOME=1
 
-bash dwi_pipeline/subject.sh all TBI011204
+bash dwi_pipeline/subject.sh all SUBJ01
 ```
 
 ### CIDUR / NAS cohort
@@ -317,10 +317,10 @@ bash dwi_connect_default/subject.sh all 001
 ### Individual stages
 
 ```bash
-bash dwi_pipeline/subject.sh qsiprep TBI011204
-bash dwi_pipeline/subject.sh recon TBI011204
-bash dwi_pipeline/subject.sh qsirecon TBI011204
-bash dwi_pipeline/subject.sh connectome TBI011204
+bash dwi_pipeline/subject.sh qsiprep SUBJ01
+bash dwi_pipeline/subject.sh recon SUBJ01
+bash dwi_pipeline/subject.sh qsirecon SUBJ01
+bash dwi_pipeline/subject.sh connectome SUBJ01
 ```
 
 ### Slurm array
