@@ -10,13 +10,13 @@
 #
 # Pipeline per subject (see subject.sh):
 #   QSIPrep -> Recon (recon-all by default, FastSurfer with --fastsurfer)
-#          -> QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> DK connectome
+#          -> QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> connectome
 #
 # Usage:
 #   ./submit.sh                    # full pipeline, recon-all (slow, ~10 h/subject)
 #   ./submit.sh --fastsurfer       # full pipeline, FastSurfer (~1-2 h/subject CPU)
 #   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
-#   ./submit.sh --no-dk            # full QSIPrep+Recon+QSIRecon, no DK CSV
+#   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV
 #   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc warn
 #   ./submit.sh --fmap-retry       # ignore measured fmaps, SyN SDC
 #   ./submit.sh --dwi-shell 1000     # default: acq-b1000 + IntendedFor fmaps for QSIPrep
@@ -27,10 +27,10 @@
 #   PIPELINE_MODE=qsiprep        # only QSIPrep
 #   PIPELINE_MODE=recon          # only Step 2 (recon-all / FastSurfer)
 #   PIPELINE_MODE=qsirecon       # only QSIRecon (QSIPrep must already exist)
-#   PIPELINE_MODE=dk             # only DK (needs QSIRecon + FS outputs)
+#   PIPELINE_MODE=connectome     # only Step 4 (needs QSIRecon + FS outputs)
 #   RECON_TOOL=fastsurfer        # same as --fastsurfer
 #   RUN_RECON=0                  # same as --no-recon
-#   RUN_DK_CONNECTOME=0          # same as --no-dk
+#   RUN_CONNECTOME=0             # same as --no-connectome
 #   QSIRECON_SPEC=mrtrix_singleshell_ss3t_ACT-fast  # skip FreeSurfer requirement
 #   QSIRECON_ATLASES="Schaefer100"  # parcellations baked in by QSIRecon
 #   RESULTS_ROOT=/path/to/output
@@ -65,7 +65,8 @@ DWI_SHELL_B="${DWI_SHELL_B:-1000}"
 QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
 RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"
-RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
+# RUN_DK_CONNECTOME was the name before Step 4 served both DK and DKT.
+RUN_CONNECTOME="${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -84,8 +85,8 @@ while [[ $# -gt 0 ]]; do
     --no-recon)
       RUN_RECON=0
       ;;
-    --no-dk)
-      RUN_DK_CONNECTOME=0
+    --no-connectome|--no-dk)
+      RUN_CONNECTOME=0
       ;;
     --bids-filter)
       QSIPREP_BIDS_FILTER="$2"
@@ -111,7 +112,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-dk)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-connectome)"
       exit 1
       ;;
   esac
@@ -131,6 +132,8 @@ ARRAY_CONCURRENCY="${ARRAY_CONCURRENCY:-5}"
 NTHREADS="${NTHREADS:-8}"
 OMP_NTHREADS="${OMP_NTHREADS:-8}"
 PIPELINE_MODE="${PIPELINE_MODE:-all}"
+# Step 4 was called "dk" before it served both DK and DKT.
+[[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
 QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # QSIRecon MRtrix specs require at least one atlas for connectivity estimation.
 # 4S156Parcels = Schaefer-100 cortex + Tian/HCP 56 subcortex (modern default).
@@ -180,7 +183,7 @@ N=$(wc -l < "${SUBJECT_LIST_FILE}")
 
 RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
 FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
-if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "dk" ]]; then
+if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "connectome" ]]; then
   _first_sub="$(head -1 "${SUBJECT_LIST_FILE}")"
   if [[ ! -d "${FS_SUBJECTS_DIR}/sub-${_first_sub}" ]]; then
     echo "ERROR [submit/FS_SUBJECTS_DIR]: ${FS_SUBJECTS_DIR}/sub-${_first_sub} not found"
@@ -212,7 +215,7 @@ if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
   echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  out=${RECON_OUT}"
 fi
 echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
-echo "  DK connectome: $([[ ${RUN_DK_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == dk ) ]] && echo on || echo off/skip)"
+echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == connectome ) ]] && echo on || echo off/skip)"
 [[ -n "${EXCLUDE_NODES}" ]] && echo "  Exclude nodes: ${EXCLUDE_NODES}"
 
 # Passed through to array.sh -> subject.sh (sbatch --export=ALL)
@@ -222,12 +225,12 @@ export DWI_ROOT TRACKTBI_ROOT
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
-export RUN_RECON RECON_TOOL RECON_OUT RUN_DK_CONNECTOME FS_SUBJECTS_DIR
+export RUN_RECON RECON_TOOL RECON_OUT RUN_CONNECTOME FS_SUBJECTS_DIR
 
 SBATCH_EXTRA=()
 [[ -n "${EXCLUDE_NODES}" ]] && SBATCH_EXTRA+=(--exclude="${EXCLUDE_NODES}")
 # Optional job-chaining hook used when stages are submitted as separate arrays
-# (recon -> qsirecon -> dk), so downstream stages only fire after upstream OK.
+# (recon -> qsirecon -> connectome), so downstream stages only fire after upstream OK.
 [[ -n "${SBATCH_DEPENDENCY:-}" ]] && SBATCH_EXTRA+=(--dependency="${SBATCH_DEPENDENCY}")
 # Optional one-shot overrides of the #SBATCH directives baked into array.sh.
 # Useful for picking a different partition (must allow the requested time),

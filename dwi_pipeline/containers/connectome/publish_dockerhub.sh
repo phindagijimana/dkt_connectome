@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Push dk_connectome.sif to Docker Hub as an OCI image (Apptainer oras transport).
+# Push connectome.sif to Docker Hub as an OCI image (Apptainer oras transport).
 #
 # Prerequisites:
 #   - apptainer
-#   - Existing .../others/containers/dk_connectome.sif (build first)
+#   - Existing .../others/containers/connectome.sif (build first)
 #   - Docker Hub credentials
 #
 # Usage:
@@ -17,9 +17,9 @@
 set -euo pipefail
 
 DOCKERHUB_USER="${DOCKERHUB_USER:-phindagijimana321}"
-IMAGE_NAME="${IMAGE_NAME:-dk_connectome}"
+IMAGE_NAME="${IMAGE_NAME:-connectome}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
-SIF="${SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dk_connectome.sif}"
+SIF="${SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/connectome.sif}"
 URI="oras://registry-1.docker.io/${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 [[ -f "${SIF}" ]] || { echo "ERROR: missing SIF: ${SIF}"; exit 1; }

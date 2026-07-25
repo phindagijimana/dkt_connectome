@@ -136,7 +136,7 @@ The **DKT** protocol refines those boundaries for reproducibility and, in doing 
 
 **DKT is therefore the only parcellation both tools can produce, and the pipeline standardises on it.** Step 4 outputs a 78-node DKT connectome by default whichever tool ran, reading the DKT image appropriate to the tree:
 
-| Step 2 recon | `DK_PARCELLATION` | Segmentation read | LUT | Matrix | Output file |
+| Step 2 recon | `CONNECTOME_PARCELLATION` | Segmentation read | LUT | Matrix | Output file |
 |---|---|---|---|---|---|
 | `recon-all` (default) | `dkt` (default) | `aparc.DKTatlas+aseg.mgz` | `fs_dkt.txt` | 78×78 | `dkt_connectome.csv` |
 | `--fastsurfer` | `dkt` (default) | `aparc+aseg.mgz` (is DKT) | `fs_dkt.txt` | 78×78 | `dkt_connectome.csv` |
@@ -145,7 +145,7 @@ The **DKT** protocol refines those boundaries for reproducibility and, in doing 
 
 The practical consequence is that **`--fastsurfer` changes how long Step 2 takes, not the node set**. A cohort in which some subjects ran `recon-all` and others FastSurfer still pools into one 78-node array, and no analysis has to branch on which tool a subject used. That is the reason for the default: had it followed the recon tool, a mixed cohort would produce a mixture of 84- and 78-node matrices that cannot be stacked.
 
-The last row is the one combination to avoid: the DK table asks for labels a DKT image does not contain, leaving **6 structurally empty nodes** (indices 1, 31, 32, 50, 80, 81). Step 4 warns when it happens. Set `DK_PARCELLATION=auto` to follow the recon tool instead, or `dk` to force the 84-node atlas where `recon-all` makes it genuinely available.
+The last row is the one combination to avoid: the DK table asks for labels a DKT image does not contain, leaving **6 structurally empty nodes** (indices 1, 31, 32, 50, 80, 81). Step 4 warns when it happens. Set `CONNECTOME_PARCELLATION=auto` to follow the recon tool instead, or `dk` to force the 84-node atlas where `recon-all` makes it genuinely available.
 
 **Requesting DKT must switch the input image, not just the LUT.** Because `labelconvert` matches by name, applying `fs_dkt.txt` to a DK image does not produce DKT: bankssts and the poles are absent from the target table, so those voxels map to 0 and are *discarded*, whereas real DKT reassigns that territory to the neighbouring gyri. Measured on one `recon-all` subject:
 
@@ -155,11 +155,23 @@ The last row is the one combination to avoid: the DK table asks for labels a DKT
 | `aparc+aseg.mgz` (DK) | `fs_dkt.txt` | 78 | 670,820 — **12,112 voxels silently lost** |
 | `aparc.DKTatlas+aseg.mgz` | `fs_dkt.txt` | 78 | 682,932 |
 
-The middle row yields a plausible-looking 78-node matrix with no empty nodes and no warning, which is precisely what makes it dangerous. Step 4 therefore selects the DKT *image* on a `recon-all` tree rather than only swapping the table, and records the file it read in `dk_parcellation.json` along with whether the parcellation came from the default or an explicit `DK_PARCELLATION`.
+The middle row yields a plausible-looking 78-node matrix with no empty nodes and no warning, which is precisely what makes it dangerous. Step 4 therefore selects the DKT *image* on a `recon-all` tree rather than only swapping the table, passes it to the container as `--segmentation`, and records the file it read in `parcellation.json` along with whether the parcellation came from the default or an explicit `CONNECTOME_PARCELLATION`.
+
+The `--segmentation` argument is what makes this real rather than nominal. The container defaults to `aparc+aseg.mgz` and cannot infer the caller's intent, so a version that chose the DKT image in the driver but never passed it through would read the DK image, apply the DKT table, and lose those 12,112 voxels while reporting the DKT filename in its provenance — the failure looks exactly like success. That is not hypothetical: it is the state this pipeline was in for one revision, and the numbers below are the difference it made.
+
+**The difference is not cosmetic.** Measured on `sub-TBI011204` (`recon-all`, deterministic mode), comparing a true DKT run against what the DK-image-plus-DKT-table path produced:
+
+| Matrix | Nodes | Assigned streamlines |
+|---|---|---|
+| DK (`aparc+aseg.mgz` + `fs_default.txt`) | 84 | 7,736,752 |
+| **True DKT** (`aparc.DKTatlas+aseg.mgz` + `fs_dkt.txt`) | 78 | **7,691,076** |
+| DK image + DKT table (the silent failure) | 78 | 7,425,289 |
+
+The last row loses **265,787 streamlines — 3.4 % of the total** — and differs from the true DKT matrix in **5,548 of 6,084 cells (91 %)**. The reason true DKT retains nearly all of the DK streamline count is that DKT does not delete bankssts and the poles, it *merges* them into adjoining gyri; only the small residue that fell outside any DKT region is lost. Deleting the rows instead throws away every connection those three regions had.
 
 `fs_dkt.txt` is generated from `fs_default.txt` by `dwi_pipeline/scripts/make_dkt_lut.py`, which drops those 6 regions and renumbers the remainder contiguously. It is generated rather than hand-written because `fs_default.txt` maps **two names to one node** for the thalamus (`Left-Thalamus` and `Left-Thalamus-Proper`, spanning FreeSurfer 6 and 7 naming), and that aliasing must survive renumbering.
 
-The swap is a **pure relabelling**: on a test subject the 78-node DKT matrix is exactly the 84-node DK matrix with those 6 rows and columns deleted (0 differing cells, identical streamline total). **Do not pool DK and DKT connectomes** — the node sets and dimensions differ. Each subject records its atlas, node count, LUT and empty-node count in **`dk_parcellation.json`**.
+The swap changes no tractography — the same streamlines are counted against a different set of regions — but it is **not** simply the DK matrix with six rows removed, as the table above shows. **Do not pool DK and DKT connectomes**: the node sets and dimensions differ. Each subject records its atlas, node count, LUT, the segmentation actually read and its empty-node count in **`parcellation.json`**.
 
 ---
 
@@ -433,11 +445,11 @@ Integration follows FOD peaks (iFOD2 algorithm in MRtrix). Step size, maximum an
 
 ### 11.3 Atlas connectomes (inside QSIRecon)
 
-If **`QSIRECON_ATLASES`** is set (e.g. **`4S156Parcels`**), QSIRecon runs **`tck2connectome`** against **template atlases** registered to subject space — independent of Step 4 DK.
+If **`QSIRECON_ATLASES`** is set (e.g. **`4S156Parcels`**), QSIRecon runs **`tck2connectome`** against **template atlases** registered to subject space — independent of Step 4.
 
-### 11.4 DK connectome (Step 4)
+### 11.4 Anatomical connectome (Step 4)
 
-Step 4 uses **subject-native FreeSurfer parcellation** warped to **`dwiref`**, producing the anatomical graph for this subject: **`dk_connectome.csv`** (Desikan–Killiany, 84 nodes) after `recon-all`, or **`dkt_connectome.csv`** (DKT, 78 nodes) after FastSurfer. See §2.6.
+Step 4 uses the **subject-native FreeSurfer parcellation** warped to **`dwiref`**, producing the anatomical graph for this subject: **`dkt_connectome.csv`** (DKT, 78 nodes) by default from either recon tool, or **`dk_connectome.csv`** (Desikan–Killiany, 84 nodes) with `CONNECTOME_PARCELLATION=dk` on a `recon-all` tree. See §2.6.
 
 ---
 
@@ -457,7 +469,7 @@ Step 4 uses **subject-native FreeSurfer parcellation** warped to **`dwiref`**, p
 
 ## 13. DK connectome: label warping and matrix generation
 
-Step 4 (`run_dk_connectome.sh`) performs a **three-stage spatial alignment**:
+Step 4 (`run_connectome.sh`) performs a **three-stage spatial alignment**:
 
 ```
 aparc+aseg.mgz (FS conformed)
@@ -472,7 +484,7 @@ aparc+aseg in QSIPrep T1w space
 aparc+aseg on tractography grid
         │  labelconvert (FS LUT → fs_default.txt for DK, fs_dkt.txt for DKT)
         ▼
-dk_nodes.mif  +  tractogram.tck  →  tck2connectome  →  dk_connectome.csv   (DK, 84 nodes)
+nodes.mif  +  tractogram.tck  →  tck2connectome  →  dkt_connectome.csv  (DKT, 78 nodes)
                                                        dkt_connectome.csv  (DKT, 78 nodes)
 ```
 
@@ -481,7 +493,7 @@ QSIPrep’s packaged FS-native transform may target a **reoriented T1wNative** f
 
 **`labelconvert`** maps FreeSurfer integer labels to MRtrix’s compact index set — **84-node** DK via `fs_default.txt`, or **78-node** DKT via `fs_dkt.txt`. The mapping is **by region name, not by integer**: each input label is resolved to a name through `FreeSurferColorLUT.txt`, and that name is looked up in the target table. Names absent from the target table become 0 and are excluded from the graph.
 
-Because the matrix dimension now depends on the recon tool, Step 4 counts nodes that received no streamlines and warns, since an empty node usually means the table does not match the segmentation. `DK_FAIL_ON_EMPTY_NODES=1` escalates that to a hard failure; it warns by default because empty nodes can be genuine after a resection or a large lesion.
+Because the matrix dimension now depends on the recon tool, Step 4 counts nodes that received no streamlines and warns, since an empty node usually means the table does not match the segmentation. `CONNECTOME_FAIL_ON_EMPTY_NODES=1` escalates that to a hard failure; it warns by default because empty nodes can be genuine after a resection or a large lesion.
 
 **`tck2connectome`** options in the pipeline:
 
@@ -497,7 +509,7 @@ ITK accumulates the registration metric across CPU threads, and floating-point a
 
 Measured on one subject: two runs that differed only in thread scheduling produced matrices differing in **482 of 6,084 cells** and **134 of 15.4 M streamlines (0.0009 %)**; two other pairs were identical.
 
-The magnitude is far below scan–rescan variability and will not change a statistical result. What it does affect is **verifiability**: re-running an archived subject may not reproduce the archived matrix exactly. Setting **`DK_DETERMINISTIC=1`** pins ITK to a single thread, after which repeat runs produce a **bitwise identical** affine and connectome. The cost is roughly **3.6× on Step 4** (about 3:20 → 12:20 for one subject), which is near **3 %** of a full four-step run.
+The magnitude is far below scan–rescan variability and will not change a statistical result. What it does affect is **verifiability**: re-running an archived subject may not reproduce the archived matrix exactly. Setting **`CONNECTOME_DETERMINISTIC=1`** pins ITK to a single thread, after which repeat runs produce a **bitwise identical** affine and connectome. The cost is roughly **3.6× on Step 4** (about 3:20 → 12:20 for one subject), which is near **3 %** of a full four-step run.
 
 ---
 
@@ -511,13 +523,13 @@ The magnitude is far below scan–rescan variability and will not change a stati
 | Diffusion modeling | **MRtrix3** | CSD, ACT, `tckgen`, SIFT2, connectomes |
 | Tissue seg (alt.) | **FSL FAST** | ACT-fast 5TT without surfaces |
 | Registration | **ANTs** | Affine / SyN, `antsApplyTransforms` |
-| DK step | **dk_connectome.sif** | FreeSurfer `mri_label2vol` + ANTs + MRtrix |
+| Connectome step | **connectome.sif** | FreeSurfer `mri_label2vol` + ANTs + MRtrix |
 | Orchestration | **`subject.sh`**, Slurm | Four-step batch processing |
 | Containers | Apptainer/Singularity | Reproducible HPC execution |
 
-### 14.1 Runtime libraries in `dk_connectome.sif`
+### 14.1 Runtime libraries in `connectome.sif`
 
-`dk_connectome.sif` is assembled rather than built from source: a minimal `ubuntu:22.04` base with the FreeSurfer, ANTs and MRtrix3 trees **copied in from `qsirecon.sif`**. This keeps the image small (~150 MB against several GB) and guarantees Step 4 uses the *same binaries* as Step 3, so no version skew can appear between the tractogram and the parcellation that indexes it.
+`connectome.sif` is assembled rather than built from source: a minimal `ubuntu:22.04` base with the FreeSurfer, ANTs and MRtrix3 trees **copied in from `qsirecon.sif`**. This keeps the image small (~150 MB against several GB) and guarantees Step 4 uses the *same binaries* as Step 3, so no version skew can appear between the tractogram and the parcellation that indexes it.
 
 The cost of copying binaries instead of installing packages is that **no package manager records their dependencies**. Each binary still needs its shared libraries at run time, and the base image must supply them explicitly:
 

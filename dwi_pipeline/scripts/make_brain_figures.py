@@ -28,7 +28,7 @@ from matplotlib.colors import ListedColormap, LogNorm
 DPI = 150
 FS_LUT_CANDIDATES = [
     Path(__file__).resolve().parents[1]
-    / "containers/dk_connectome/build_ctx_lean/freesurfer/FreeSurferColorLUT.txt",
+    / "containers/connectome/build_ctx_lean/freesurfer/FreeSurferColorLUT.txt",
     Path("/opt/freesurfer/FreeSurferColorLUT.txt"),
 ]
 
