@@ -327,7 +327,7 @@ bash dwi_pipeline/subject.sh connectome SUBJ01
 
 ```bash
 export RESULTS_ROOT=.../dwi_test_TBI
-export SUBJECT_LIST_FILE=dwi_pipeline/subjects_tbi011204_test.txt
+export SUBJECT_LIST_FILE=dwi_pipeline/subjects_subj01_test.txt
 ./dwi_pipeline/submit.sh
 ```
 

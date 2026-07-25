@@ -151,7 +151,7 @@ All three fmap sidecars (`magnitude1`, `magnitude2`, `phasediff`) in `phase2_tes
 
 ```json
 "IntendedFor": [
-    "ses-2WK/dwi/sub-TBI011204_ses-2WK_acq-b1000_dwi.nii.gz"
+    "ses-2WK/dwi/sub-SUBJ01_ses-2WK_acq-b1000_dwi.nii.gz"
 ]
 ```
 
@@ -166,14 +166,14 @@ All three fmap sidecars (`magnitude1`, `magnitude2`, `phasediff`) in `phase2_tes
 
 ```json
 "IntendedFor": [
-    "ses-2WK/dwi/sub-TBI011204_ses-2WK_acq-b1000_dwi.nii.gz",
-    "ses-2WK/dwi/sub-TBI011204_ses-2WK_acq-b3000_dwi.nii.gz"
+    "ses-2WK/dwi/sub-SUBJ01_ses-2WK_acq-b1000_dwi.nii.gz",
+    "ses-2WK/dwi/sub-SUBJ01_ses-2WK_acq-b3000_dwi.nii.gz"
 ]
 ```
 
 ---
 
-## 8. TrackTBI011204 worked example
+## 8. SUBJ01 worked example
 
 **Problem:** b1000 DWI + GRE fmap sidecars lacked `PhaseEncodingDirection`, `TotalReadoutTime`, and `EffectiveEchoSpacing` → QSIPrep `KeyError: 'TotalReadoutTime'`.
 
@@ -221,7 +221,7 @@ BandwidthPerPixelPhaseEncode = 1 / (0.000550012 × 96) = 18.938995 Hz/px
 
 **Paths updated (both BIDS trees):**
 
-- `TrackTBI/phase2_test_bids/sub-SUBJ01/ses-2WK/dwi/sub-TBI011204_ses-2WK_acq-b1000_dwi.json`
+- `TrackTBI/phase2_test_bids/sub-SUBJ01/ses-2WK/dwi/sub-SUBJ01_ses-2WK_acq-b1000_dwi.json`
 - `.../fmap/magnitude1.json`, `magnitude2.json`, `phasediff.json`
 - Copied to `TrackTBI/phase2_test/sub-SUBJ01/...`
 
