@@ -16,7 +16,7 @@ This is written for someone who builds and operates neuroimaging pipelines and n
 
 Read the Foundation tier of every section first if you are new; the tiers are cumulative but each is self-contained enough to skip.
 
-**All imaging figures are generated from this project's own data** (subject `SUBJ01`, FastSurfer + QSIPrep + QSIRecon ACT-HSVS run in `CIDUR_BIDS/dwi_test2_fast`) by `scripts/make_brain_figures.py`. Two figures are explicitly schematic drawings, and say so, because the repository contains no lesion-positive example to image. Nothing here is an AI-generated depiction of anatomy.
+**All imaging figures are rendered from public reference data**, never from study participants, by `scripts/make_brain_figures.py`. The volumes, label maps and surfaces come from FreeSurfer's **fsaverage** (an average of 40 subjects); the coordinate grids come from TemplateFlow's **MNI152NLin2009cAsym** (an average of 152). Because both are group averages, no figure depicts an individual and none can be traced to a person. Four panels are not measurements and say so in their captions: the contrast and lesion figures are schematic drawings, the 5TT figure is derived from the fsaverage segmentation rather than from `5ttgen hsvs`, and the connectome figure is modelled from parcel geometry rather than tractography. Nothing here is an AI-generated depiction of anatomy.
 
 > **Scope and safety.** This document supports *research engineering*: QC, method choice, and interpretation of automated output. It is not a clinical reference and must not be used for diagnosis or patient care. Radiological interpretation is the responsibility of a qualified radiologist.
 
@@ -115,7 +115,7 @@ Getting this composition wrong produces surfaces that look plausible but are off
 
 ![Normal T1-weighted anatomy in three orthogonal planes](figures/brain/fig01_normal_anatomy.png)
 
-*Figure 1 — Normal T1-weighted anatomy of subject SUBJ01 in three orthogonal planes. Arrow targets are computed from the centroids of the corresponding `aseg.mgz` labels, so every label points at this subject's actual structure rather than a textbook position.*
+*Figure 1 — Normal T1-weighted anatomy of the fsaverage template in three orthogonal planes. Arrow targets are computed from the centroids of the corresponding `aseg.mgz` labels, so every label points at the structure actually segmented rather than a textbook position. The image looks smoother than a single scan because it is an average of 40 brains.*
 
 Work outside in.
 
@@ -168,7 +168,7 @@ For engineering, this explains why lesion masks are **spatially structured, not 
 
 ![Tissue classes, intensity distributions, and volumes](figures/brain/fig02_tissue_classes.png)
 
-*Figure 2 — Cortical GM, WM, and CSF for this subject: spatial distribution (top), T1 intensity histograms (bottom left), and segmented volumes (bottom right). The overlapping histograms are precisely why intensity-only segmentation such as FSL FAST is imperfect at tissue boundaries.*
+*Figure 2 — Cortical GM, WM, and CSF in the fsaverage template: spatial distribution (top), T1 intensity histograms (bottom left), and segmented volumes (bottom right). The overlapping histograms are precisely why intensity-only segmentation such as FSL FAST is imperfect at tissue boundaries.*
 
 ### *(Beginner)* What the three classes are
 
@@ -293,7 +293,7 @@ The relevant caveat for study design is that the response functions are estimate
 
 ![Cortical surfaces defining the GM ribbon](figures/brain/fig05_cortical_surfaces.png)
 
-*Figure 5 — The white (red) and pial (green) surfaces for this subject on a supraventricular axial slice, with a ~68 mm zoom. The cortical ribbon is the volume between the surfaces. Sulcal CSF is excluded even where it is thinner than a voxel — the capability that volume-only segmentation cannot match.*
+*Figure 5 — The white (red) and pial (green) surfaces on a supraventricular axial slice of the fsaverage template, with a ~68 mm zoom. The cortical ribbon is the volume between the surfaces. Sulcal CSF is excluded even where it is thinner than a voxel — the capability that volume-only segmentation cannot match.*
 
 ### *(Beginner)* The cortex as a sheet
 
@@ -320,7 +320,7 @@ Surfaces solve this by construction. The pial surfaces of the two banks are dist
 
 ![Cortical and subcortical parcellation](figures/brain/fig04_parcellation.png)
 
-*Figure 4 — The parcellation for this subject. Each colour is a distinct anatomical region and becomes a node in the connectome.*
+*Figure 4 — The Desikan–Killiany parcellation in the fsaverage template. Each colour is a distinct anatomical region and becomes a node in the connectome.*
 
 A **parcellation** divides cortex into labelled regions. This matters because a connectome needs discrete nodes, and the choice of parcellation changes every result downstream.
 
@@ -828,11 +828,11 @@ A subtler point worth internalising: **left–right flips survive every one of t
 
 ![The HSVS 5TT image](figures/brain/fig06_5tt_hsvs.png)
 
-*Figure 6 — The actual HSVS 5TT image driving ACT for this subject: five partial-volume tissue maps plus a composite. Volume order and the percentage of total partial volume in each are read directly from the file.*
+*Figure 6 — The five-volume structure of a 5TT image: five partial-volume tissue maps plus a composite. Built here by block-averaging the fsaverage segmentation from 1 mm onto 2 mm, which is the other way fractional occupancy arises — a boundary voxel that is half grey and half white becomes 0.5/0.5. Volume order and the percentage of total partial volume in each are read from the resulting file. The pipeline itself builds this from surfaces with `5ttgen hsvs`.*
 
 ### *(Practitioner)* What the 5TT image is
 
-The **five-tissue-type (5TT)** image is a 4-D volume with five 3-D partial-volume maps. For this subject, QSIRecon wrote `sub-SUBJ01_space-ACPC_seg-hsvs_probseg.nii.gz` with shape `(135, 180, 147, 5)`. The MRtrix convention, verified against this file, is:
+The **five-tissue-type (5TT)** image is a 4-D volume with five 3-D partial-volume maps. On a real run QSIRecon writes `sub-<ID>_space-ACPC_seg-hsvs_probseg.nii.gz`, a 4-D file whose last axis has length 5. The MRtrix convention, verified against such a file, is:
 
 | Index | Tissue | Share of total PV here | ACT behaviour |
 |-------|--------|------------------------|---------------|
@@ -895,7 +895,7 @@ The **ACT-fast** alternative, used when no FreeSurfer surfaces exist, builds the
 
 ![Structural connectome](figures/brain/fig08_connectome.png)
 
-*Figure 8 — The real structural connectome for this subject from QSIRecon (SS3T + ACT-HSVS, 4S156 atlas): the SIFT2-weighted, volume-normalised matrix on a log scale, the nodal strength distribution, and summary graph statistics.*
+*Figure 8 — What a structural connectome looks like: the matrix on a log colour scale, the nodal strength distribution, and summary graph statistics. **The weights are modelled, not measured** — they are generated from fsaverage parcel centroid distances and region sizes, because a participant's measured matrix cannot be published here. The form is faithful (symmetric, zero diagonal, weights spanning orders of magnitude, right-skewed strength); the individual edges carry no anatomical meaning. Run Step 4 to produce a real matrix.*
 
 ### *(Beginner)* What a connectome is
 
@@ -917,7 +917,7 @@ This pipeline produces matrices that are **symmetric** (\(C_{ij} = C_{ji}\), bec
 
 **Streamline count is not fibre count.** Streamlines are computational objects whose number depends on seeding density and algorithm parameters, not on the number of axons. **SIFT2** addresses this by assigning each streamline a weight so that the weighted streamline density matches the fibre density implied by the FODs, making the values comparable across subjects. This pipeline's `connectivity.mat` contains several variants; Figure 8 shows `sift_invnodevol_radius2_count`, which is SIFT2-weighted and volume-normalised.
 
-**A concrete observation from this subject's data.** The matrix has 156 nodes and a **density of 0.936** — nearly every possible pair is connected. This is normal for probabilistic tractography with dense seeding and does **not** mean the brain is nearly fully connected. Most edges are very weak, which is why Figure 8 uses a log colour scale. Any graph analysis must therefore either use weighted metrics that are robust to weak edges, or threshold explicitly — and thresholding is itself a consequential methodological decision, since arbitrary thresholds change topology and different thresholds have produced opposite published conclusions.
+**A concrete observation from real runs of this pipeline.** A 156-node matrix from probabilistic tractography with dense seeding typically comes out at a **density above 0.9** — nearly every possible pair is connected. (Figure 8 is sparser only because it is modelled and thresholded.) That density does **not** mean the brain is nearly fully connected. Most edges are very weak, which is why Figure 8 uses a log colour scale. Any graph analysis must therefore either use weighted metrics that are robust to weak edges, or threshold explicitly — and thresholding is itself a consequential methodological decision, since arbitrary thresholds change topology and different thresholds have produced opposite published conclusions.
 
 ### *(PhD)* Graph metrics and their pitfalls
 
@@ -942,7 +942,7 @@ The four standards worth holding to: report density alongside every metric; use 
 
 ![Quantitative morphometry](figures/brain/fig11_volumetrics.png)
 
-*Figure 11 — Morphometry for this subject: the ventricular system, global measures from `aseg.stats`, and per-structure volumes with left/right pairs adjacent. QC values are shown in the centre panel.*
+*Figure 11 — Morphometry of the fsaverage template: the ventricular system, global measures, and per-structure volumes with left/right pairs adjacent. Volumes are measured from the `aseg` label map the same way `recon-all` derives `aseg.stats`; eTIV is absent because it requires a Talairach transform.*
 
 ### *(Practitioner)* The measures and how to read them
 
@@ -973,7 +973,7 @@ Because paired structures should be similar, the **asymmetry index** is a cheap,
 AI = \frac{V_L - V_R}{\tfrac{1}{2}(V_L + V_R)}
 \]
 
-For this subject: thalamus \(|AI| \approx 3\%\), hippocampus \(\approx 4\%\), putamen \(\approx 1\%\), caudate \(\approx 4\%\) — all within the few-percent range expected in health. Amygdala shows \(\approx 24\%\), which is worth noting: the amygdala is small, has poor intrinsic contrast, and is among the least reliable `aseg` structures, so this most likely reflects segmentation noise rather than biology. That distinction — knowing which structures are reliable — is exactly the practitioner-level knowledge that prevents over-interpretation.
+In the fsaverage template of Figure 11: thalamus \(|AI| \approx 0.2\%\), putamen \(\approx 5\%\), caudate \(\approx 6\%\), hippocampus \(\approx 4\%\) — all within the few-percent range expected in health. Amygdala shows \(\approx 14\%\), which is worth noting: the amygdala is small, has poor intrinsic contrast, and is among the least reliable `aseg` structures, so this most likely reflects segmentation noise rather than biology. That distinction — knowing which structures are reliable — is exactly the practitioner-level knowledge that prevents over-interpretation.
 
 Useful thresholds in practice: \(|AI| > 10\%\) in a large structure warrants inspection; \(> 20\%\) usually indicates a segmentation failure unless there is known pathology.
 
@@ -1362,27 +1362,38 @@ Grouped by what you are trying to learn, with an indication of level.
 
 ## Reproducing the figures
 
-All imaging figures come from this repository's own data:
+Every figure is rendered from public reference data, so anyone can reproduce
+them without access to study data:
 
 ```bash
 python3 dwi_pipeline/scripts/make_brain_figures.py \
-    --results-root /path/to/CIDUR_BIDS/dwi_test2_fast \
-    --subject sub-SUBJ01 \
-    --session ses-2WK \
-    --out-dir dwi_pipeline/figures/brain
+    --fsaverage    $FREESURFER_HOME/subjects/fsaverage \
+    --templateflow $TEMPLATEFLOW_HOME \
+    --out-dir      dwi_pipeline/figures/brain
 ```
 
-Requires `nibabel`, `matplotlib`, `numpy`, and `scipy`. Each figure caption states its source file. Figures 9 and 10 are schematic drawings and contain no patient data; Figure 12 is a conceptual diagram. Every other figure is rendered directly from subject `SUBJ01`.
+Requires `nibabel`, `matplotlib`, `numpy`, and `scipy`. Both defaults are picked
+up from the environment, so in a configured shell the flags can be omitted.
 
 **Data provenance for the figures**
 
-| Figure | Source |
-|--------|--------|
-| 1, 2, 3, 4, 5, 11 | `freesurfer/sub-SUBJ01/` — FastSurfer 2.4.2 volumes, surfaces, and stats |
-| 6 | `qsirecon_single_run_output/.../sub-SUBJ01_space-ACPC_seg-hsvs_probseg.nii.gz` |
-| 7 | Headers of `T1.mgz`, `desc-preproc_T1w.nii.gz`, `space-T1w_dwiref.nii.gz` |
-| 8 | `.../sub-SUBJ01_ses-2WK_acq-b1000_space-T1w_connectivity.mat` |
-| 9, 10, 12 | Schematic; drawn with matplotlib |
+| Figure | Source | Measured? |
+|--------|--------|-----------|
+| 1, 2, 3, 4, 5, 11 | FreeSurfer `fsaverage` — `T1.mgz`, `aseg.mgz`, `aparc+aseg.mgz`, `lh/rh.white`, `lh/rh.pial` | Yes, from the template |
+| 6 | `fsaverage/mri/aseg.mgz`, block-averaged 1 mm → 2 mm to create partial volumes | Derived, not `5ttgen hsvs` |
+| 7 | Headers of `fsaverage/mri/T1.mgz` and MNI152NLin2009cAsym at 1 mm and 2 mm | Yes |
+| 8 | Modelled from `fsaverage` parcel centroid distances and region sizes | **No — not tractography** |
+| 9, 10, 12 | Schematic; drawn with matplotlib | No |
+
+Nothing in the table above is participant data. The two group templates are
+themselves anonymous by construction — an average face has no owner.
+
+**Attribution.** `fsaverage` is distributed with FreeSurfer (Fischl et al.,
+*NeuroImage* 1999; derived from the MNI305 average of 40 subjects).
+`MNI152NLin2009cAsym` is the unbiased non-linear average of 152 subjects
+(Fonov et al., *NeuroImage* 2011), obtained through
+[TemplateFlow](https://www.templateflow.org/) and distributed under the terms in
+its `LICENSE` (© Louis Collins, McConnell Brain Imaging Centre, MNI, McGill).
 
 ---
 
