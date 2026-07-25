@@ -132,15 +132,20 @@ The **DK atlas** defines **34 cortical regions per hemisphere** (68 cortical lab
 
 The **DKT** protocol refines those boundaries for reproducibility and, in doing so, **removes three DK regions**: **bankssts**, the **frontal pole** and the **temporal pole**. DKT therefore has **31 cortical regions per hemisphere**, and a DKT connectome built on the same subcortical set has **78 nodes**.
 
-**This distinction is operational, not academic, because the recon tool decides it.** FastSurfer writes DKT labels into **`aparc.DKTatlas+aseg.mapped.mgz`**, usually symlinked to **`aparc+aseg.mgz`**. Reading that DKT segmentation through the DK table produces an 84×84 matrix in which **6 nodes are structurally empty** (indices 1, 31, 32, 50, 80, 81) — the DK table asks for labels the image does not contain. Step 4 therefore selects the table to match the segmentation:
+**This distinction is operational, not academic, because it interacts with the recon tool.** FastSurfer writes DKT labels into **`aparc.DKTatlas+aseg.mapped.mgz`**, usually symlinked to **`aparc+aseg.mgz`**, and produces **no DK atlas at all** — there is no `lh.aparc.annot` and no DK volume in the tree. `recon-all`, by contrast, writes **both**: `aparc+aseg.mgz` (DK) and `aparc.DKTatlas+aseg.mgz` (DKT).
+
+**DKT is therefore the only parcellation both tools can produce, and the pipeline standardises on it.** Step 4 outputs a 78-node DKT connectome by default whichever tool ran, reading the DKT image appropriate to the tree:
 
 | Step 2 recon | `DK_PARCELLATION` | Segmentation read | LUT | Matrix | Output file |
 |---|---|---|---|---|---|
-| `recon-all` | `auto` (→ dk) | `aparc+aseg.mgz` | `fs_default.txt` | 84×84 | `dk_connectome.csv` |
-| `recon-all` | `dkt` | **`aparc.DKTatlas+aseg.mgz`** | `fs_dkt.txt` | 78×78 | `dkt_connectome.csv` |
-| FastSurfer | `auto` (→ dkt) | `aparc+aseg.mgz` (is DKT) | `fs_dkt.txt` | 78×78 | `dkt_connectome.csv` |
+| `recon-all` (default) | `dkt` (default) | `aparc.DKTatlas+aseg.mgz` | `fs_dkt.txt` | 78×78 | `dkt_connectome.csv` |
+| `--fastsurfer` | `dkt` (default) | `aparc+aseg.mgz` (is DKT) | `fs_dkt.txt` | 78×78 | `dkt_connectome.csv` |
+| `recon-all` | `dk` | `aparc+aseg.mgz` | `fs_default.txt` | 84×84 | `dk_connectome.csv` |
+| `--fastsurfer` | `dk` | `aparc+aseg.mgz` (is DKT) | `fs_default.txt` | 84×84, **6 empty nodes** | `dk_connectome.csv` |
 
-**DKT is therefore available from either recon tool, but DK only from `recon-all`.** A FastSurfer tree contains no DK parcellation at all — there is no `lh.aparc.annot` and no DK volume — so the choice of recon tool is only reversible in one direction. This matters for a cohort processed with a mix of the two: the common node set is DKT, and `recon-all` subjects can be re-read as DKT for the cost of Step 4 alone, without repeating a 6–10 h recon.
+The practical consequence is that **`--fastsurfer` changes how long Step 2 takes, not the node set**. A cohort in which some subjects ran `recon-all` and others FastSurfer still pools into one 78-node array, and no analysis has to branch on which tool a subject used. That is the reason for the default: had it followed the recon tool, a mixed cohort would produce a mixture of 84- and 78-node matrices that cannot be stacked.
+
+The last row is the one combination to avoid: the DK table asks for labels a DKT image does not contain, leaving **6 structurally empty nodes** (indices 1, 31, 32, 50, 80, 81). Step 4 warns when it happens. Set `DK_PARCELLATION=auto` to follow the recon tool instead, or `dk` to force the 84-node atlas where `recon-all` makes it genuinely available.
 
 **Requesting DKT must switch the input image, not just the LUT.** Because `labelconvert` matches by name, applying `fs_dkt.txt` to a DK image does not produce DKT: bankssts and the poles are absent from the target table, so those voxels map to 0 and are *discarded*, whereas real DKT reassigns that territory to the neighbouring gyri. Measured on one `recon-all` subject:
 
@@ -150,7 +155,7 @@ The **DKT** protocol refines those boundaries for reproducibility and, in doing 
 | `aparc+aseg.mgz` (DK) | `fs_dkt.txt` | 78 | 670,820 — **12,112 voxels silently lost** |
 | `aparc.DKTatlas+aseg.mgz` | `fs_dkt.txt` | 78 | 682,932 |
 
-The middle row yields a plausible-looking 78-node matrix with no empty nodes and no warning, which is precisely what makes it dangerous. Step 4 therefore selects the DKT *image* whenever DKT is requested on a `recon-all` tree, and records the file it read in `dk_parcellation.json`.
+The middle row yields a plausible-looking 78-node matrix with no empty nodes and no warning, which is precisely what makes it dangerous. Step 4 therefore selects the DKT *image* on a `recon-all` tree rather than only swapping the table, and records the file it read in `dk_parcellation.json` along with whether the parcellation came from the default or an explicit `DK_PARCELLATION`.
 
 `fs_dkt.txt` is generated from `fs_default.txt` by `dwi_pipeline/scripts/make_dkt_lut.py`, which drops those 6 regions and renumbers the remainder contiguously. It is generated rather than hand-written because `fs_default.txt` maps **two names to one node** for the thalamus (`Left-Thalamus` and `Left-Thalamus-Proper`, spanning FreeSurfer 6 and 7 naming), and that aliasing must survive renumbering.
 
