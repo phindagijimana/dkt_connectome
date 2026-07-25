@@ -1,0 +1,53 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Philbert Ndagijimana
+    Version 2.1.0
+    Description Lean structural connectome (minimal FS + ANTs/MRtrix from qsirecon.sif)
+
+%environment
+    export FREESURFER_HOME=/opt/freesurfer
+    export ANTSPATH=/opt/ants/bin
+    export LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib
+    export PATH=/opt/freesurfer/bin:/opt/ants/bin:/opt/mrtrix3-latest/bin:/usr/bin:/bin
+    export MRTRIX_LUT=/opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt
+
+%files
+    run_connectome.sh /usr/local/bin/run_connectome
+    freesurfer /opt/freesurfer
+    ants /opt/ants
+    mrtrix3-latest /opt/mrtrix3-latest
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    # The ANTs/MRtrix trees are staged from qsirecon.sif, so this base image must
+    # supply their runtime libraries: libtiff.so.5 and libpng16.so.16 are needed
+    # by 110 binaries (including labelconvert and tck2connectome), and
+    # libfftw3.so.3 by mrdegibbs and mrfilter.
+    apt-get install -y --no-install-recommends \
+        ca-certificates bc libgomp1 libgfortran5 zlib1g \
+        libtiff5 libpng16-16 libfftw3-double3
+    rm -rf /var/lib/apt/lists/*
+    chmod +x /usr/local/bin/run_connectome
+
+    # Missing runtime libraries do not break the build, only every later run
+    # (exit 127), so assert here instead of shipping a broken image.
+    export LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib
+    unresolved=0
+    for d in /opt/mrtrix3-latest/bin /opt/freesurfer/bin /opt/ants/bin; do
+        for f in "${d}"/*; do
+            [ -f "${f}" ] && [ -x "${f}" ] || continue
+            if ldd "${f}" 2>/dev/null | grep -q 'not found'; then
+                echo "BUILD ERROR: unresolved libraries for ${f}" >&2
+                ldd "${f}" 2>/dev/null | grep 'not found' >&2
+                unresolved=1
+            fi
+        done
+    done
+    [ "${unresolved}" -eq 0 ] || exit 1
+    echo "[build] all staged binaries resolve their shared libraries"
+
+%runscript
+    exec /usr/local/bin/run_connectome "$@"
