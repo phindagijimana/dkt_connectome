@@ -314,7 +314,7 @@ The consequence for tractography is direct and serious: a streamline arriving at
 
 Surfaces solve this by construction. The pial surfaces of the two banks are distinct geometric objects with CSF between them, even where that CSF is thinner than a voxel, because the surface is placed using intensity gradients, curvature constraints, and topological requirements rather than per-voxel thresholding. This is exactly what Figure 5 shows, and it is the entire justification for **HSVS**.
 
-**The engineering consequence, stated plainly:** ACT-HSVS requires `surf/{lh,rh}.{white,pial}`. FastSurfer's `--seg_only` mode runs only the segmentation CNN and does **not** run `recon-surf`, so it produces no surfaces, and `5ttgen hsvs` cannot run. Either run full FastSurfer (as job 48173 did) or switch the recon spec to `ACT-fast`, which builds a 5TT from FSL FAST volumes instead. There is no way to get HSVS quality from `--seg_only` output.
+**The engineering consequence, stated plainly:** ACT-HSVS requires `surf/{lh,rh}.{white,pial}`. FastSurfer's `--seg_only` mode runs only the segmentation CNN and does **not** run `recon-surf`, so it produces no surfaces, and `5ttgen hsvs` cannot run. Either run full FastSurfer, including `recon-surf`, or switch the recon spec to `ACT-fast`, which builds a 5TT from FSL FAST volumes instead. There is no way to get HSVS quality from `--seg_only` output.
 
 ### *(Practitioner)* Parcellation: turning cortex into regions
 
@@ -1261,7 +1261,7 @@ Grouped by what you are trying to learn, with an indication of level.
 
 | Resource | Type | Why use it |
 |----------|------|-----------|
-| **TRACK-TBI** (tracktbi.ucsf.edu) | Study and data resource | Directly relevant to this cohort's design and measures |
+| **TRACK-TBI** ([tracktbi.ucsf.edu](https://tracktbi.ucsf.edu/)) | Study and data resource | Reference designs and outcome measures for TBI imaging cohorts |
 | **CENTER-TBI** (center-tbi.eu) | European counterpart | Large-scale TBI methodology |
 | **FITBIR** (fitbir.nih.gov) | Data repository | Shared TBI imaging data |
 | **Common Data Elements for TBI** (NINDS) | Standards | Harmonised variable definitions |
@@ -1397,6 +1397,6 @@ its `LICENSE` (© Louis Collins, McConnell Brain Imaging Centre, MNI, McGill).
 
 ---
 
-*Document version 1.0. Written against `subject.sh` on branch `lab-pipeline`, QSIRecon spec `mrtrix_singleshell_ss3t_ACT-hsvs`, FastSurfer 2.4.2, and the results in `CIDUR_BIDS/dwi_test2_fast` (Slurm job 48173).*
+*Document version 1.0. Written against `subject.sh`, QSIRecon spec `mrtrix_singleshell_ss3t_ACT-hsvs`, FreeSurfer 7.4.1 / FastSurfer 2.4.2, MRtrix3 3.0.4 and ANTs 2.4.3.*
 
 *This document supports research engineering and is not a clinical reference.*

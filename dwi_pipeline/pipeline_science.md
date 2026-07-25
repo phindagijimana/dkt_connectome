@@ -1,6 +1,6 @@
 # Pipeline Science Reference
 
-**TrackTBI-Sub DWI connectivity pipeline — physics, biology, mathematics, geometry, and software**
+**DWI connectivity pipeline — physics, biology, mathematics, geometry, and software**
 
 This document explains the scientific concepts behind the four-stage workflow implemented in `subject.sh`:
 
@@ -560,7 +560,7 @@ There is also no version of the pipeline in which these libraries alter a number
 |--------|-----------|
 | **ACT-HSVS default** | Best cortical tissue boundaries for ACT when FS/FastSurfer surfaces exist |
 | **Separate Step 2** | QSIPrep alone does not run full `recon-all`; HSVS needs FS subject dir |
-| **b1000 single-shell** | Matches clinical TrackTBI acquisitions; SS3T tailored to single shell |
+| **b1000 single-shell** | Matches typical clinical acquisitions; SS3T is tailored to a single shell |
 | **DK as Step 4** | QSIRecon atlases ≠ DK; explicit warp ensures label–tract alignment |
 | **ACT-fast fallback** | Enables tractography without FS when `--no-recon` |
 | **FastSurfer vs recon-all** | ~10× faster; GPU option; compatible outputs if `recon-surf` completes |

@@ -147,7 +147,7 @@ BIDS **recommends** `IntendedFor` on fieldmap sidecars to list which target imag
 
 ### SUBJ01 (current)
 
-All three fmap sidecars (`magnitude1`, `magnitude2`, `phasediff`) in `phase2_test_bids` and `phase2_test`:
+All three fmap sidecars (`magnitude1`, `magnitude2`, `phasediff`) in every copy of the BIDS tree:
 
 ```json
 "IntendedFor": [
@@ -221,9 +221,9 @@ BandwidthPerPixelPhaseEncode = 1 / (0.000550012 × 96) = 18.938995 Hz/px
 
 **Paths updated (both BIDS trees):**
 
-- `TrackTBI/phase2_test_bids/sub-SUBJ01/ses-2WK/dwi/sub-SUBJ01_ses-2WK_acq-b1000_dwi.json`
+- `$BIDS_DIR/sub-SUBJ01/ses-2WK/dwi/sub-SUBJ01_ses-2WK_acq-b1000_dwi.json`
 - `.../fmap/magnitude1.json`, `magnitude2.json`, `phasediff.json`
-- Copied to `TrackTBI/phase2_test/sub-SUBJ01/...`
+- Mirrored into any second copy of the tree you maintain
 
 **Note:** QSIPrep outputs generated **before** the TRT update still used the old readout time unless rerun.
 
@@ -310,11 +310,12 @@ Pair with dwi-select at QSIPrep time (default in the DK pipeline). Run this repa
 
 ### Result folders
 
-| Folder | Use |
-|--------|-----|
-| `CIDUR_BIDS/dwi_test_default` | Atlas connectome only (`dwi_connect_default`, no DK) |
-| `CIDUR_BIDS/dwi_test_TBI` | TrackTBI full pipeline with DK |
-| `CIDUR_BIDS/dwi_test2` / NAS `Gugger_Lab/NIR/dwi_test2` | CIDUR reference cohort |
+Use a separate `RESULTS_ROOT` per pipeline variant:
+
+| Pipeline | Use |
+|----------|-----|
+| `dwi_pipeline` | Full pipeline including the subject-native DKT connectome (Step 4) |
+| `dwi_connect_default` | Atlas connectome only (`RUN_CONNECTOME=0`, no Step 4) |
 
 See [`dwi_pipeline/README.md`](dwi_pipeline/README.md) and [`fmaps.md`](fmaps.md) for SDC and strict fail-fast behavior.
 

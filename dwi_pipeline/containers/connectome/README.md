@@ -24,16 +24,16 @@ libraries by hand (`libtiff5`, `libpng16-16`, `libfftw3-double3`, `zlib1g`,
 fails if any library is unresolved — a missing one does not break the build,
 only every later run, with exit 127 and no output.
 
-Validated: `subject.sh connectome SUBJ01` with baked entrypoint →
-**byte-identical** matrix vs job 48036.
+Validated: `subject.sh connectome SUBJ01` with the baked entrypoint reproduces a
+**byte-identical** matrix against a run using the bind-mounted entrypoint.
 
 ## Build
 
 ```bash
-cd /path/to/TrackTBI-Sub
+cd /path/to/repo
 
 bash dwi_pipeline/containers/connectome/build_connectome.sh
-# -> .../others/containers/dkt_connectome.sif
+# -> $OUT_SIF (default: ../containers/dkt_connectome.sif)
 
 SKIP_STAGE=1 bash dwi_pipeline/containers/connectome/build_connectome.sh  # rebuild SIF only
 ```
@@ -58,7 +58,7 @@ FreeSurfer binaries are in the image — use a **private** repo or restrict acce
 ## Share across the lab
 
 ```bash
-export CONTAINER_CONNECTOME=/mnt/nfs/.../others/containers/dkt_connectome.sif
+export CONTAINER_CONNECTOME=/path/to/containers/dkt_connectome.sif
 export FS_LICENSE=/path/to/license.txt
 bash dwi_pipeline/subject.sh connectome SUBJECT
 ```
