@@ -515,6 +515,31 @@ The magnitude is far below scan–rescan variability and will not change a stati
 | Orchestration | **`subject.sh`**, Slurm | Four-step batch processing |
 | Containers | Apptainer/Singularity | Reproducible HPC execution |
 
+### 14.1 Runtime libraries in `dk_connectome.sif`
+
+`dk_connectome.sif` is assembled rather than built from source: a minimal `ubuntu:22.04` base with the FreeSurfer, ANTs and MRtrix3 trees **copied in from `qsirecon.sif`**. This keeps the image small (~150 MB against several GB) and guarantees Step 4 uses the *same binaries* as Step 3, so no version skew can appear between the tractogram and the parcellation that indexes it.
+
+The cost of copying binaries instead of installing packages is that **no package manager records their dependencies**. Each binary still needs its shared libraries at run time, and the base image must supply them explicitly:
+
+| Package | Provides | Needed by | Used for |
+|---------|----------|-----------|----------|
+| `libtiff5` | `libtiff.so.5` | 110 binaries, incl. `labelconvert`, `tck2connectome` | TIFF codec in MRtrix's image-IO layer |
+| `libpng16-16` | `libpng16.so.16` | 110 binaries, incl. `labelconvert`, `tck2connectome` | PNG codec in the same layer |
+| `libfftw3-double3` | `libfftw3.so.3` | 2 binaries (`mrdegibbs`, `mrfilter`) | FFT for Gibbs-ringing removal and filtering |
+| `zlib1g` | `libz.so.1` | 112 binaries | gzip for `.nii.gz` and `.mgz` |
+| `libgomp1` | `libgomp.so.1` | `mri_label2vol`, `mri_convert` | OpenMP thread pool |
+| `bc`, `ca-certificates` | — | wrapper script | Arithmetic, TLS roots |
+
+**Why this was a real failure and not a theoretical one.** A missing shared library does not break the image build; it breaks every later *run*. The dynamic loader aborts before `main()`, the shell reports **exit 127**, and MRtrix prints nothing — so the pipeline appeared to skip Step 4 rather than fail it. This is what silently produced no `dk_connectome.csv` for an otherwise successful job. The build therefore ends with an assertion that runs `ldd` over every staged binary and **fails the build** if any report `not found`, so a broken image can never be shipped again.
+
+**These libraries cannot change any result.** They are format codecs, a compressor and a thread pool, not numerical kernels, and the distinction matters for three separate reasons:
+
+- `libtiff` and `libpng` are **never exercised** by this pipeline. MRtrix links one image-IO layer into every command, so every command declares the codecs whether or not the format is used; the pipeline's data are `.mgz`, `.nii.gz`, `.mif`, `.tck` and `.csv`. The libraries are loaded and then not called.
+- `libz` is used constantly but is **lossless** by construction.
+- `libfftw3` *is* a numerical library, but it is required only by `mrdegibbs` and `mrfilter`, **neither of which Step 4 invokes**. It is installed to satisfy the whole-image `ldd` assertion, so that the two commands are not latent traps for anyone who later reaches for them.
+
+There is also no version of the pipeline in which these libraries alter a number rather than an outcome: without them the binary cannot start at all. The comparison is between a run and a crash, not between two answers.
+
 ---
 
 ## 15. Design choices and alternatives
@@ -527,6 +552,9 @@ The magnitude is far below scan–rescan variability and will not change a stati
 | **DK as Step 4** | QSIRecon atlases ≠ DK; explicit warp ensures label–tract alignment |
 | **ACT-fast fallback** | Enables tractography without FS when `--no-recon` |
 | **FastSurfer vs recon-all** | ~10× faster; GPU option; compatible outputs if `recon-surf` completes |
+| **DKT for both recon tools** | The only parcellation both can produce, so `--fastsurfer` changes runtime rather than the node set and a mixed cohort still pools (§2.6) |
+| **Deterministic Step 4 by default** | Bitwise-reproducible matrices; ~3.6× on Step 4 but only ~3% of a full per-subject run (§13.1) |
+| **Binaries staged from `qsirecon.sif`** | Step 4 uses the same MRtrix/ANTs as Step 3, removing version skew; the price is declaring runtime libraries by hand (§14.1) |
 
 **Not recommended without validation:** `--seg_only` FastSurfer + ACT-HSVS (missing surfaces); DK connectome without **`mri_label2vol` + dwiref resample** (space mismatch silently corrupts matrices).
 
