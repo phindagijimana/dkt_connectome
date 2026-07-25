@@ -4,7 +4,7 @@ From: ubuntu:22.04
 %labels
     Author Philbert Ndagijimana
     Version 2.1.0
-    Description Lean DK connectome (minimal FS + ANTs/MRtrix from qsirecon.sif)
+    Description Lean structural connectome (minimal FS + ANTs/MRtrix from qsirecon.sif)
 
 %environment
     export FREESURFER_HOME=/opt/freesurfer
@@ -14,7 +14,7 @@ From: ubuntu:22.04
     export MRTRIX_LUT=/opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt
 
 %files
-    run_dk_connectome.sh /usr/local/bin/run_dk_connectome
+    run_connectome.sh /usr/local/bin/run_connectome
     freesurfer /opt/freesurfer
     ants /opt/ants
     mrtrix3-latest /opt/mrtrix3-latest
@@ -30,7 +30,7 @@ From: ubuntu:22.04
         ca-certificates bc libgomp1 libgfortran5 zlib1g \
         libtiff5 libpng16-16 libfftw3-double3
     rm -rf /var/lib/apt/lists/*
-    chmod +x /usr/local/bin/run_dk_connectome
+    chmod +x /usr/local/bin/run_connectome
 
     # Missing runtime libraries do not break the build, only every later run
     # (exit 127), so assert here instead of shipping a broken image.
@@ -50,4 +50,4 @@ From: ubuntu:22.04
     echo "[build] all staged binaries resolve their shared libraries"
 
 %runscript
-    exec /usr/local/bin/run_dk_connectome "$@"
+    exec /usr/local/bin/run_connectome "$@"

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Desikan–Killiany connectome from FreeSurfer aparc+aseg + QSIRecon tractogram.
-# Intended to run inside dk_connectome.sif (or on host with tools on PATH).
+# Structural connectome from a FreeSurfer parcellation + QSIRecon tractogram.
+# Intended to run inside connectome.sif (or on host with tools on PATH).
+#
+# The node set follows whichever segmentation and labelconvert LUT the caller
+# passes in — Desikan-Killiany or Desikan-Killiany-Tourville — so nothing here
+# is specific to either atlas.
 #
 # Warp chain: FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w
 #             (affine BIDS T1w -> desc-preproc_T1w) -> dwiref grid.
@@ -9,7 +13,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: run_dk_connectome.sh [OPTIONS]
+Usage: run_connectome.sh [OPTIONS]
 
 Required:
   --freesurfer-subject DIR   FreeSurfer subject dir (mri/aparc+aseg.mgz, rawavg.mgz)
@@ -17,12 +21,14 @@ Required:
   --dwiref PATH              QSIPrep *_space-T1w_dwiref.nii.gz
   --preproc-t1w PATH         QSIPrep *_desc-preproc_T1w.nii.gz
   --bids-t1w PATH            BIDS session T1w (affine registration source)
-  --output-dir DIR           Write dk_connectome.csv and intermediates here
+  --output-dir DIR           Write connectome.csv and intermediates here
   --fs-license PATH          FreeSurfer license.txt
 
 Optional:
+  --segmentation PATH        Parcellation to use (default: <subject>/mri/aparc+aseg.mgz;
+                             pass mri/aparc.DKTatlas+aseg.mgz for DKT from recon-all)
   --fs-lut PATH              FreeSurferColorLUT.txt (default: $FREESURFER_HOME/FreeSurferColorLUT.txt)
-  --mrtrix-lut PATH          MRtrix fs_default.txt for labelconvert
+  --mrtrix-lut PATH          MRtrix labelconvert LUT (default: fs_default.txt = DK)
   --subject-id ID            Label for log messages only
   -h, --help
 
@@ -32,7 +38,7 @@ EOF
 }
 
 fail() {
-  echo "ERROR [dk_connectome]: $*" >&2
+  echo "ERROR [connectome]: $*" >&2
   exit 1
 }
 
@@ -50,6 +56,7 @@ OUTDIR=""
 FS_LICENSE_PATH=""
 FS_LUT_PATH=""
 MRTRIX_LUT_PATH=""
+SEGMENTATION=""
 SUBJECT_ID=""
 
 while [[ $# -gt 0 ]]; do
@@ -63,6 +70,7 @@ while [[ $# -gt 0 ]]; do
     --fs-license) FS_LICENSE_PATH="$2"; shift 2 ;;
     --fs-lut) FS_LUT_PATH="$2"; shift 2 ;;
     --mrtrix-lut) MRTRIX_LUT_PATH="$2"; shift 2 ;;
+    --segmentation) SEGMENTATION="$2"; shift 2 ;;
     --subject-id) SUBJECT_ID="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) fail "unknown argument: $1 (try --help)" ;;
@@ -77,9 +85,16 @@ done
 [[ -n "${OUTDIR}" ]] || fail "--output-dir is required"
 [[ -n "${FS_LICENSE_PATH}" ]] || fail "--fs-license is required"
 
-APARC="${FS_SUBJECT}/mri/aparc+aseg.mgz"
+# The LUT and the segmentation have to describe the same atlas: labelconvert
+# matches regions by name, so a DKT LUT over a DK image silently drops bankssts
+# and the poles instead of reassigning them. The caller picks both.
+case "${SEGMENTATION}" in
+  "")  APARC="${FS_SUBJECT}/mri/aparc+aseg.mgz" ;;
+  /*)  APARC="${SEGMENTATION}" ;;
+  *)   APARC="${FS_SUBJECT}/mri/${SEGMENTATION}" ;;
+esac
 RAWAVG="${FS_SUBJECT}/mri/rawavg.mgz"
-[[ -f "${APARC}" ]] || fail "missing ${APARC}"
+[[ -f "${APARC}" ]] || fail "missing segmentation: ${APARC}"
 [[ -f "${RAWAVG}" ]] || fail "missing ${RAWAVG}"
 [[ -f "${TRACKS}" ]] || fail "missing tractogram: ${TRACKS}"
 [[ -f "${DWIREF}" ]] || fail "missing dwiref: ${DWIREF}"
@@ -120,15 +135,16 @@ for c in mri_label2vol mri_convert antsRegistration antsApplyTransforms labelcon
 done
 
 log_id="${SUBJECT_ID:-$(basename "${FS_SUBJECT}")}"
-echo "=== DK connectome: ${log_id} ==="
+echo "=== Connectome: ${log_id} ==="
 echo "Using tractogram: ${TRACKS}"
-echo "Using aparc+aseg: ${APARC}"
+echo "Using segmentation: ${APARC}"
+echo "Using labelconvert LUT: ${MRTRIX_LUT_PATH}"
 echo "Using DWI reference: ${DWIREF}"
 echo "Using QSIPrep T1w reference: ${PREPROC_T1W}"
 echo "Using BIDS T1w (affine reg source): ${BIDS_T1W}"
 echo "Space handling: FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
 
-echo "[dk] Step 4a: FS conformed -> native (mri_label2vol / rawavg.mgz)"
+echo "[connectome] Step 4a: FS conformed -> native (mri_label2vol / rawavg.mgz)"
 mri_label2vol --seg "${APARC}" \
   --temp "${RAWAVG}" \
   --o "${OUTDIR}/aparc+aseg_in_rawavg.mgz" \
@@ -137,7 +153,7 @@ mri_label2vol --seg "${APARC}" \
 mri_convert "${APARC}" "${OUTDIR}/aparc+aseg.nii.gz"
 mri_convert "${OUTDIR}/aparc+aseg_in_rawavg.mgz" "${OUTDIR}/aparc+aseg_in_rawavg.nii.gz"
 
-echo "[dk] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w"
+echo "[connectome] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w"
 antsRegistration --dimensionality 3 --float 0 \
   --output "[${OUTDIR}/native_to_preproc_T1w_,${OUTDIR}/native_to_preproc_T1w_Warped.nii.gz]" \
   --interpolation Linear \
@@ -149,7 +165,7 @@ antsRegistration --dimensionality 3 --float 0 \
   --shrink-factors 4x2x1 \
   --smoothing-sigmas 2x1x0vox
 
-echo "[dk] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)"
+echo "[connectome] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)"
 antsApplyTransforms -d 3 \
   -i "${OUTDIR}/aparc+aseg_in_rawavg.nii.gz" \
   -r "${PREPROC_T1W}" \
@@ -157,41 +173,41 @@ antsApplyTransforms -d 3 \
   -n GenericLabel \
   -o "${OUTDIR}/aparc+aseg_in_t1w.nii.gz"
 
-echo "[dk] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)"
+echo "[connectome] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)"
 antsApplyTransforms -d 3 \
   -i "${OUTDIR}/aparc+aseg_in_t1w.nii.gz" \
   -r "${DWIREF}" \
   -n GenericLabel \
   -o "${OUTDIR}/aparc+aseg_in_dwi.nii.gz"
 
-echo "[dk] Step 4c: labelconvert -> dk_nodes.mif"
+echo "[connectome] Step 4c: labelconvert -> nodes.mif"
 labelconvert -force "${OUTDIR}/aparc+aseg_in_dwi.nii.gz" \
-  "${FS_LUT_PATH}" "${MRTRIX_LUT_PATH}" "${OUTDIR}/dk_nodes.mif"
+  "${FS_LUT_PATH}" "${MRTRIX_LUT_PATH}" "${OUTDIR}/nodes.mif"
 
 tck_use="${TRACKS}"
 tck_staged=""
 if [[ "${TRACKS}" == *.tck.gz ]]; then
   tck_staged="${OUTDIR}/streamlines.tck"
-  echo "[dk] Decompressing ${TRACKS} -> ${tck_staged}"
+  echo "[connectome] Decompressing ${TRACKS} -> ${tck_staged}"
   gunzip -c "${TRACKS}" > "${tck_staged}"
   tck_use="${tck_staged}"
 fi
 
-echo "[dk] === space-alignment diagnostic ==="
-mrinfo "${OUTDIR}/dk_nodes.mif" | tee "${OUTDIR}/dk_nodes.mrinfo.txt" | sed -n '1,20p'
+echo "[connectome] === space-alignment diagnostic ==="
+mrinfo "${OUTDIR}/nodes.mif" | tee "${OUTDIR}/nodes.mrinfo.txt" | sed -n '1,20p'
 tckinfo "${tck_use}" | tee "${OUTDIR}/tracks.tckinfo.txt" | sed -n '1,30p'
-echo "[dk] =================================="
+echo "[connectome] =================================="
 
-echo "[dk] Step 4f: tck2connectome"
+echo "[connectome] Step 4f: tck2connectome"
 tck2connectome -force \
   "${tck_use}" \
-  "${OUTDIR}/dk_nodes.mif" \
-  "${OUTDIR}/dk_connectome.csv" \
+  "${OUTDIR}/nodes.mif" \
+  "${OUTDIR}/connectome.csv" \
   -symmetric \
   -zero_diagonal \
-  -out_assignments "${OUTDIR}/dk_assignments.csv"
+  -out_assignments "${OUTDIR}/assignments.csv"
 
 [[ -n "${tck_staged}" ]] && rm -f "${tck_staged}"
 
-echo "DK connectome: ${OUTDIR}/dk_connectome.csv"
-echo "Space diagnostic: ${OUTDIR}/dk_nodes.mrinfo.txt , ${OUTDIR}/tracks.tckinfo.txt"
+echo "Connectome: ${OUTDIR}/connectome.csv"
+echo "Space diagnostic: ${OUTDIR}/nodes.mrinfo.txt , ${OUTDIR}/tracks.tckinfo.txt"

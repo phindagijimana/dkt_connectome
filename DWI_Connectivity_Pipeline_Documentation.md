@@ -19,12 +19,12 @@ Tractography and the DK connectome both live in **QSIPrep T1w / dwiref space**. 
 
 ## Pipeline variants and result folders
 
-| Variant | Wrapper / entry | `RESULTS_ROOT` | DK step |
+| Variant | Wrapper / entry | `RESULTS_ROOT` | Step 4 |
 |---------|-----------------|----------------|---------|
-| **Full DK pipeline** | `dwi_pipeline/subject.sh` | `.../dwi_test_TBI` (TrackTBI) or `.../dwi_test2` (CIDUR / NAS) | ON (`RUN_DK_CONNECTOME=1`) |
-| **Atlas connectome only** | `dwi_connect_default/subject.sh` | `.../dwi_test_default` | OFF (`RUN_DK_CONNECTOME=0`) |
+| **Full pipeline** | `dwi_pipeline/subject.sh` | `.../dwi_test_TBI` (TrackTBI) or `.../dwi_test2` (CIDUR / NAS) | ON (`RUN_CONNECTOME=1`) |
+| **Atlas connectome only** | `dwi_connect_default/subject.sh` | `.../dwi_test_default` | OFF (`RUN_CONNECTOME=0`) |
 
-**TrackTBI** subjects with DK use `dwi_test_TBI`. **CIDUR** test subjects and the shared NAS copy use `dwi_test2` (`smb://smdnas/gugger_lab/NIR/dwi_test2/`).
+**TrackTBI** subjects with the anatomical connectome use `dwi_test_TBI`. **CIDUR** test subjects and the shared NAS copy use `dwi_test2` (`smb://smdnas/gugger_lab/NIR/dwi_test2/`).
 
 Repo docs:
 
@@ -79,8 +79,8 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 | FreeSurfer SIF | Requires `freesurfer_7.4.1.sif`; no fallback to FastSurfer's trimmed FS |
 | SDC | Measured when fmap in filter; else require `--syn` or `--fmap-retry` |
 | Recon rerun | Fails if `aparc+aseg.mgz` exists unless `RECON_SKIP_IF_EXISTS=1` |
-| DK inputs | Exactly one tractogram, dwiref, desc-preproc T1w, session-matched BIDS T1w |
-| DK space | `DK_RESAMPLE_TO_DWI=1` required |
+| Step 4 inputs | Exactly one tractogram, dwiref, desc-preproc T1w, session-matched BIDS T1w |
+| Step 4 space | `CONNECTOME_RESAMPLE_TO_DWI=1` required |
 | `--no-recon` | Does not auto-switch to ACT-fast; set spec or provide FS dir |
 
 ---
@@ -199,13 +199,22 @@ Tractogram is in **QSIPrep T1w space**.
 
 ---
 
-## Step 4 — Post-hoc Desikan–Killiany connectome
+## Step 4 — Post-hoc anatomical connectome
 
-*Skipped when `RUN_DK_CONNECTOME=0` (`dwi_connect_default` / `--no-dk`).*
+*Skipped when `RUN_CONNECTOME=0` (`dwi_connect_default` / `--no-connectome`).*
 
 ### Purpose
 
-Build an **84-node DK connectome** from the QSIRecon tractogram and FreeSurfer `aparc+aseg.mgz`.
+Build an anatomical connectome from the QSIRecon tractogram and a FreeSurfer parcellation.
+
+The default is the **78-node Desikan–Killiany–Tourville (DKT)** matrix, from either recon tool:
+FastSurfer's `aparc+aseg.mgz` is already DKT, and a `recon-all` tree is read via its
+`aparc.DKTatlas+aseg.mgz`. The **84-node Desikan–Killiany (DK)** matrix is available with
+`CONNECTOME_PARCELLATION=dk`, but only from `recon-all`.
+
+The lookup table and the segmentation must describe the same atlas: `labelconvert` matches
+regions by name, so applying the DKT table to a DK image silently *drops* bankssts and the
+frontal/temporal poles instead of reassigning their territory to neighbouring gyri.
 
 ### Coordinate alignment
 
@@ -222,13 +231,13 @@ Build an **84-node DK connectome** from the QSIRecon tractogram and FreeSurfer `
 
 | Sub-step | Container |
 |----------|-----------|
-| 4a–4f (default) | `dk_connectome.sif` — FreeSurfer 7.4.1 + ANTs + MRtrix3 |
-| 4a–4f (legacy) | `freesurfer_7.4.1.sif` + `qsirecon.sif` when `DK_LEGACY_DUAL_CONTAINER=1` |
+| 4a–4f (default) | `connectome.sif` — FreeSurfer 7.4.1 + ANTs + MRtrix3 |
+| 4a–4f (legacy) | `freesurfer_7.4.1.sif` + `qsirecon.sif` when `CONNECTOME_LEGACY_DUAL_CONTAINER=1` |
 
-Build the DK image:
+Build the Step 4 image:
 
 ```bash
-bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh
+bash dwi_pipeline/containers/connectome/build_connectome.sh
 ```
 
 Runtime binds: FreeSurfer subject dir, QSIPrep/QSIRecon outputs, BIDS T1w, output dir, and `FS_LICENSE`.
@@ -236,10 +245,11 @@ Runtime binds: FreeSurfer subject dir, QSIPrep/QSIRecon outputs, BIDS T1w, outpu
 ### Step 4a — Warp labels to native space
 
 ```bash
-mri_label2vol --seg /fs_subject/mri/aparc+aseg.mgz \
+# $SEG is aparc+aseg.mgz, or aparc.DKTatlas+aseg.mgz for DKT from recon-all
+mri_label2vol --seg $SEG \
   --temp /fs_subject/mri/rawavg.mgz \
   --o /out/aparc+aseg_in_rawavg.mgz \
-  --regheader /fs_subject/mri/aparc+aseg.mgz
+  --regheader $SEG
 ```
 
 ### Step 4b — Warp into QSIPrep space
@@ -251,19 +261,22 @@ mri_label2vol --seg /fs_subject/mri/aparc+aseg.mgz \
 ### Step 4c–4f — Connectome
 
 ```bash
-labelconvert ... /out/dk_nodes.mif
+# $LUT is fs_default.txt (DK, 84 nodes) or fs_dkt.txt (DKT, 78 nodes)
+labelconvert ... $LUT /out/nodes.mif
 tck2connectome -symmetric -zero_diagonal \
-  /out/streamlines.tck /out/dk_nodes.mif /out/dk_connectome.csv \
-  -out_assignments /out/dk_assignments.csv
+  /out/streamlines.tck /out/nodes.mif /out/connectome.csv \
+  -out_assignments /out/assignments.csv
 ```
 
-### DK outputs (`dk_connectomes/sub-XXX/`)
+### Step 4 outputs (`connectomes/sub-XXX/`)
 
 | File | Description |
 |------|-------------|
-| `dk_connectome.csv` | 84 × 84 symmetric streamline-count matrix |
-| `dk_assignments.csv` | Per-streamline node-pair assignments |
-| `dk_nodes.mif` / `dk_nodes.mrinfo.txt` | MRtrix label image + QC metadata |
+| `dkt_connectome.csv` | 78 × 78 symmetric streamline-count matrix (default) |
+| `dk_connectome.csv` | 84 × 84 instead, when `CONNECTOME_PARCELLATION=dk` |
+| `parcellation.json` | Atlas, node count, LUT, segmentation read, empty-node count |
+| `assignments.csv` | Per-streamline node-pair assignments |
+| `nodes.mif` / `nodes.mrinfo.txt` | MRtrix label image + QC metadata |
 | `tracks.tckinfo.txt` | Tractogram QC (expect ~10M streamlines) |
 | `aparc+aseg_in_dwi.nii.gz` | Labels on tractography grid |
 | `native_to_preproc_T1w_0GenericAffine.mat` | BIDS T1w → desc-preproc_T1w affine |
@@ -280,7 +293,7 @@ cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
 export BIDS_DIR=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI/phase2_test_bids
 export RESULTS_ROOT=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test_TBI
 export PIPELINE_MODE=all
-export RUN_DK_CONNECTOME=1
+export RUN_CONNECTOME=1
 
 bash dwi_pipeline/subject.sh all TBI011204
 ```
@@ -293,7 +306,7 @@ export RESULTS_ROOT=.../dwi_test2   # or NAS: /mnt/nfs/Gugger_Lab/NIR/dwi_test2
 bash dwi_pipeline/subject.sh all 001
 ```
 
-### Atlas connectome only (no DK)
+### Atlas connectome only (no Step 4)
 
 ```bash
 export RESULTS_ROOT=.../CIDUR_BIDS/dwi_test_default
@@ -307,7 +320,7 @@ bash dwi_connect_default/subject.sh all 001
 bash dwi_pipeline/subject.sh qsiprep TBI011204
 bash dwi_pipeline/subject.sh recon TBI011204
 bash dwi_pipeline/subject.sh qsirecon TBI011204
-bash dwi_pipeline/subject.sh dk TBI011204
+bash dwi_pipeline/subject.sh connectome TBI011204
 ```
 
 ### Slurm array
@@ -325,7 +338,7 @@ export SUBJECT_LIST_FILE=dwi_pipeline/subjects_tbi011204_test.txt
 | Output | Parcellation | Produced by |
 |--------|--------------|-------------|
 | `*_connectivity.mat` | 4S156 (156 regions) | QSIRecon (`--atlases 4S156Parcels`) |
-| `dk_connectome.csv` | Desikan–Killiany (84 regions) | Post-hoc DK step |
+| `dkt_connectome.csv` | Desikan–Killiany–Tourville (78 regions) | Post-hoc Step 4 |
 
 Only the label map differs; the underlying streamline set is the same.
 
@@ -340,9 +353,10 @@ Only the label map differs; the underlying streamline set is the same.
 | QSIPrep | Measured SDC when fmaps in filter; exit 0 |
 | FreeSurfer | `aparc+aseg.mgz`, `rawavg.mgz`, `recon-all.done` |
 | QSIRecon | ~10M streamlines; ACT-HSVS completes |
-| DK log | Space chain: conformed → native → desc-preproc_T1w → dwiref |
-| `dk_nodes.mrinfo.txt` | Grid matches dwiref (~2 mm) |
-| `dk_connectome.csv` | 84×84 symmetric; all ROIs populated (no empty rows) |
+| Step 4 log | Space chain: conformed → native → desc-preproc_T1w → dwiref |
+| `nodes.mrinfo.txt` | Grid matches dwiref (~2 mm) |
+| `dkt_connectome.csv` | 78×78 symmetric; all ROIs populated (no empty rows) |
+| `parcellation.json` | `empty_nodes: 0`, and `aparc_aseg` matches the requested atlas |
 
 ---
 

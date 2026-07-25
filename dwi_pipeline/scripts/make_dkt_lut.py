@@ -115,7 +115,7 @@ def format_lut(rows) -> str:
 
 def main() -> int:
     here = Path(__file__).resolve().parent
-    lut_dir = here.parent / "containers" / "dk_connectome" / "mrtrix_lut"
+    lut_dir = here.parent / "containers" / "connectome" / "mrtrix_lut"
 
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)

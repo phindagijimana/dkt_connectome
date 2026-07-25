@@ -1,6 +1,6 @@
-# dk_connectome — lean legacy-staged Desikan–Killiany connectome image
+# connectome — lean legacy-staged structural connectome image (DK or DKT)
 #
-# build_ctx from build_dk_connectome.sh:
+# build_ctx from build_connectome.sh:
 #   freesurfer/      — mri_label2vol, mri_convert, FreeSurferColorLUT.txt
 #   ants/            — from qsirecon.sif (/opt/ants)
 #   mrtrix3-latest/  — from qsirecon.sif (/opt/mrtrix3-latest)
@@ -27,8 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ants /opt/ants
 COPY mrtrix3-latest /opt/mrtrix3-latest
 COPY freesurfer /opt/freesurfer
-COPY run_dk_connectome.sh /usr/local/bin/run_dk_connectome
-RUN chmod +x /usr/local/bin/run_dk_connectome
+COPY run_connectome.sh /usr/local/bin/run_connectome
+RUN chmod +x /usr/local/bin/run_connectome
 
 # Missing runtime libraries do not break the build, only every later run
 # (exit 127), so assert here instead of shipping a broken image.
@@ -47,5 +47,5 @@ RUN unresolved=0; \
     echo "[build] all staged binaries resolve their shared libraries"
 
 WORKDIR /work
-ENTRYPOINT ["/usr/local/bin/run_dk_connectome"]
+ENTRYPOINT ["/usr/local/bin/run_connectome"]
 CMD ["--help"]

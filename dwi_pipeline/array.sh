@@ -8,7 +8,7 @@
 #
 # For each SLURM_ARRAY_TASK_ID:
 #   1. Read subject ID from line N of subjects.txt (or SUBJECT_LIST_FILE)
-#   2. Call subject.sh with PIPELINE_MODE (all | qsiprep | qsirecon | dk)
+#   2. Call subject.sh with PIPELINE_MODE (all | qsiprep | qsirecon | connectome)
 #
 # %5 in the array (set by submit.sh) limits concurrent subjects to 5.
 # =============================================================================
@@ -56,9 +56,11 @@ SUBJECT="${SUBJECT%"${SUBJECT##*[![:space:]]}"}"
 SUBJECT="${SUBJECT#sub-}"
 
 PIPELINE_MODE="${PIPELINE_MODE:-all}"
+# Step 4 was called "dk" before it served both DK and DKT; subject.sh still
+# accepts the old name, so pass it through rather than rejecting it here.
 case "${PIPELINE_MODE}" in
-  all|qsiprep|recon|qsirecon|dk) ;;
-  *) echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all|qsiprep|recon|qsirecon|dk)"; exit 1 ;;
+  all|qsiprep|recon|qsirecon|connectome|dk) ;;
+  *) echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all|qsiprep|recon|qsirecon|connectome)"; exit 1 ;;
 esac
 
 # Optional flags forwarded to subject.sh (set by submit.sh or export before sbatch)
@@ -67,7 +69,8 @@ SUBJECT_ARGS=()
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && SUBJECT_ARGS+=(--fmap-retry)
 [[ "${RECON_TOOL:-freesurfer}" == "fastsurfer" ]] && SUBJECT_ARGS+=(--fastsurfer)
 [[ "${RUN_RECON:-1}" == "0" ]] && SUBJECT_ARGS+=(--no-recon)
-[[ "${RUN_DK_CONNECTOME:-1}" == "0" && "${PIPELINE_MODE}" == "all" ]] && SUBJECT_ARGS+=(--no-dk)
+[[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "0" && "${PIPELINE_MODE}" == "all" ]] && \
+  SUBJECT_ARGS+=(--no-connectome)
 [[ "${QSIPREP_NO_DWI_FILTER:-0}" == "1" ]] && SUBJECT_ARGS+=(--no-dwi-filter)
 [[ -n "${DWI_SELECT_JSON:-}" ]] && SUBJECT_ARGS+=(--dwi-select "${DWI_SELECT_JSON}")
 [[ -z "${DWI_SELECT_JSON:-}" && -n "${DWI_SHELL_B:-}" && "${DWI_SHELL_B}" != "1000" ]] && \

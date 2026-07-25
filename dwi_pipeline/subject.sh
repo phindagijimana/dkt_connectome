@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# subject.sh — Process ONE participant: QSIPrep, Recon, QSIRecon, DK connectome
+# subject.sh — Process ONE participant: QSIPrep, Recon, QSIRecon, connectome
 # =============================================================================
 #
 # Called by array.sh (one Slurm array task = one subject).
@@ -31,37 +31,37 @@
 #   produced by Step 2). With --no-recon, you must set QSIRECON_SPEC to ACT-fast
 #   or provide an existing FS subjects dir — no automatic spec switch.
 #
-# Step 4 — DK connectome (container, default ON when Step 2 ran):
-#   Post-step after QSIRecon. Uses FreeSurfer aparc+aseg.mgz + QSIRecon .tck.
-#   Space alignment: aparc+aseg lives in FreeSurfer conformed (orig.mgz) space
-#   (256³); tractogram lives in QSIPrep T1w (dwiref) space. Step 4a warps labels
-#   to native T1w (rawavg.mgz). Step 4b affine-registers BIDS T1w -> desc-preproc_T1w
-#   (QSIPrep's packaged from-T1wNative_to-T1wACPC .mat targets a reoriented
-#   T1wNative frame, not FS scanner-native rawavg), applies that warp to labels,
-#   then resamples onto dwiref (-n GenericLabel).
-#   Runs in CONTAINER_DK_CONNECTOME (dk_connectome.sif: FreeSurfer + ANTs + MRtrix3).
-#   Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh
-#   Legacy dual-container path: DK_LEGACY_DUAL_CONTAINER=1 (freesurfer + qsirecon).
+# Step 4 — Connectome (container, default ON when Step 2 ran):
+#   Post-step after QSIRecon. Uses a FreeSurfer parcellation + QSIRecon .tck.
+#   Space alignment: the segmentation lives in FreeSurfer conformed (orig.mgz)
+#   space (256³); the tractogram lives in QSIPrep T1w (dwiref) space. Step 4a
+#   warps labels to native T1w (rawavg.mgz). Step 4b affine-registers BIDS T1w ->
+#   desc-preproc_T1w (QSIPrep's packaged from-T1wNative_to-T1wACPC .mat targets a
+#   reoriented T1wNative frame, not FS scanner-native rawavg), applies that warp
+#   to labels, then resamples onto dwiref (-n GenericLabel).
+#   Runs in CONTAINER_CONNECTOME (connectome.sif: FreeSurfer + ANTs + MRtrix3).
+#   Build: bash dwi_pipeline/containers/connectome/build_connectome.sh
+#   Legacy dual-container path: CONNECTOME_LEGACY_DUAL_CONTAINER=1 (freesurfer + qsirecon).
 #   Both recon tools yield the same parcellation by default: Desikan-Killiany-
-#   Tourville, 78 nodes, fs_dkt.txt (DK_PARCELLATION=dkt). FastSurfer's
+#   Tourville, 78 nodes, fs_dkt.txt (CONNECTOME_PARCELLATION=dkt). FastSurfer's
 #   aparc+aseg.mgz is already DKT; a recon-all tree is read via its
 #   aparc.DKTatlas+aseg.mgz. So --fastsurfer changes how long Step 2 takes, not
 #   the node set, and a cohort pools regardless of which tool each subject used.
-#   DK (84 nodes, fs_default.txt) is available with DK_PARCELLATION=dk, but only
-#   from recon-all — FastSurfer produces no DK atlas.
-#   Writes dk_parcellation.json plus the matrix, named for the parcellation:
-#   dkt_connectome.csv (DKT) or dk_connectome.csv (DK), under dk_connectomes/sub-XXX/.
+#   DK (84 nodes, fs_default.txt) is available with CONNECTOME_PARCELLATION=dk,
+#   but only from recon-all — FastSurfer produces no DK atlas.
+#   Writes parcellation.json plus the matrix, named for the parcellation:
+#   dkt_connectome.csv (DKT) or dk_connectome.csv (DK), under connectomes/sub-XXX/.
 #
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
 #   bash subject.sh all 014 --fastsurfer     # use FastSurfer in Step 2
 #   bash subject.sh all 014 --no-recon       # skip Step 2 (set ACT-fast or FS dir)
-#   bash subject.sh all 014 --no-dk          # skip Step 4
+#   bash subject.sh all 014 --no-connectome  # skip Step 4
 #   bash subject.sh qsiprep 014              # preprocessing only
 #   bash subject.sh recon 014                # Step 2 only (recon-all by default)
 #   bash subject.sh recon 014 --fastsurfer   # Step 2 only via FastSurfer
 #   bash subject.sh qsirecon 014             # Step 3 only (QSIPrep must exist)
-#   bash subject.sh dk 014                   # Step 4 only (needs FS dir + .tck)
+#   bash subject.sh connectome 014           # Step 4 only (needs FS dir + .tck)
 #   bash subject.sh all 014 --syn            # no BIDS fmap -> --use-syn-sdc warn
 #   bash subject.sh all 014 --fmap-retry     # ignore measured fmaps, SyN SDC
 #   bash subject.sh all 014 --dwi-shell 1000 # default: acq-b1000 DWI + IntendedFor fmaps
@@ -76,11 +76,11 @@
 # SDC (QSIPrep) — strict: measured fmaps when dwi-select includes fmap; else require --syn or --fmap-retry.
 #
 # Outputs under RESULTS_ROOT (default: .../CIDUR_BIDS/dwi_test):
-#   qsiprep_single_run_output/   freesurfer/   qsirecon_single_run_output/   dk_connectomes/
+#   qsiprep_single_run_output/   freesurfer/   qsirecon_single_run_output/   connectomes/
 #
 # Environment (optional overrides):
 #   RESULTS_ROOT, BIDS_DIR, NTHREADS, OMP_NTHREADS, OUTPUT_RES
-#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_DK_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER
+#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER
 #   FS_LICENSE, TEMPLATEFLOW_HOME
 #   RUN_RECON=0|1          Step 2 in mode=all (default 1)
 #   RECON_TOOL             freesurfer (default) or fastsurfer
@@ -90,19 +90,25 @@
 #   QSIRECON_SPEC          default: mrtrix_singleshell_ss3t_ACT-hsvs (with --no-recon,
 #                          set ACT-fast explicitly or provide FS subjects dir)
 #   QSIRECON_ATLASES       optional QSIRecon --atlases (Schaefer100, AAL116, ...)
-#   RUN_DK_CONNECTOME=0|1  DK in mode=all (default 1 when Step 2 ran)
-#   DK_PARCELLATION       dkt|dk|auto (default dkt for both recon tools; dk needs
-#                         recon-all; auto follows the tree and mixes node counts)
-#   DK_LUT_DKT            labelconvert LUT for the DKT parcellation (78 nodes)
-#   DK_FAIL_ON_EMPTY_NODES=1  fail instead of warn when a node has no streamlines
-#   DK_DETERMINISTIC=0|1  pin ITK to 1 thread for a reproducible matrix (default 1)
-#   DK_RESAMPLE_TO_DWI=0|1 Resample aparc+aseg onto DWI grid (default 1)
+#   RUN_CONNECTOME=0|1     Step 4 in mode=all (default 1 when Step 2 ran)
+#   CONNECTOME_PARCELLATION  dkt|dk|auto (default dkt for both recon tools; dk
+#                          needs recon-all; auto follows the tree and so mixes
+#                          node counts across a cohort)
+#   CONNECTOME_LUT_DKT     labelconvert LUT for the DKT parcellation (78 nodes)
+#   CONNECTOME_FAIL_ON_EMPTY_NODES=1  fail instead of warn when a node has no streamlines
+#   CONNECTOME_DETERMINISTIC=0|1  pin ITK to 1 thread for a reproducible matrix (default 1)
+#   CONNECTOME_RESAMPLE_TO_DWI=0|1  resample the segmentation onto the DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
 #   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc warn (same as --fmap-retry)
 #   DWI_SHELL_B=1000         b-value for default dwi-select (config/dwi_select_b<SHELL>.json)
 #   DWI_SELECT_JSON=         explicit dwi-select config (overrides DWI_SHELL_B path)
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
 #   RECON_SESSION=2WK         override session for recon T1w (default: from dwi-select filter)
+#
+# Renamed in this version: Step 4 was called "dk" and its variables were prefixed
+# DK_, from a time when it only produced Desikan-Killiany. The step now serves
+# both atlases, so it is "connectome" throughout. The old mode name, the --no-dk
+# flag and the DK_* variables still work; the variables print a deprecation note.
 # =============================================================================
 
 set -euo pipefail
@@ -126,8 +132,31 @@ _strict_find_one() {
   echo "${matches[0]}"
 }
 
+# Step 4 variables were prefixed DK_ before the step was made parcellation-
+# neutral. Honour the old names: a job script still setting DK_PARCELLATION=dk
+# must not silently get the DKT default it never asked for.
+_renamed_var() {
+  local old="$1" new="$2"
+  [[ -n "${!old:-}" ]] || return 0
+  if [[ -z "${!new:-}" ]]; then
+    printf -v "${new}" '%s' "${!old}"
+    echo "NOTE: ${old} is deprecated, use ${new} (honouring ${new}=${!new})" >&2
+  fi
+}
+_renamed_var CONTAINER_DK_CONNECTOME        CONTAINER_CONNECTOME
+_renamed_var RUN_DK_CONNECTOME              RUN_CONNECTOME
+_renamed_var DK_PARCELLATION                CONNECTOME_PARCELLATION
+_renamed_var DK_LUT_DKT                     CONNECTOME_LUT_DKT
+_renamed_var DK_FAIL_ON_EMPTY_NODES         CONNECTOME_FAIL_ON_EMPTY_NODES
+_renamed_var DK_DETERMINISTIC               CONNECTOME_DETERMINISTIC
+_renamed_var DK_RESAMPLE_TO_DWI             CONNECTOME_RESAMPLE_TO_DWI
+_renamed_var DK_LEGACY_DUAL_CONTAINER       CONNECTOME_LEGACY_DUAL_CONTAINER
+_renamed_var DK_CONNECTOME_BIND_ENTRYPOINT  CONNECTOME_BIND_ENTRYPOINT
+
 # --- CLI: mode, subject ID, optional flags ---
-PIPELINE_MODE="${1:?Need mode: all, qsiprep, recon, qsirecon, or dk}"
+PIPELINE_MODE="${1:?Need mode: all, qsiprep, recon, qsirecon, or connectome}"
+# Step 4 used to be called "dk"; keep the old mode name working.
+[[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
 SUBJECT="${2:?Need subject id}"
 SUBJECT="${SUBJECT#sub-}"
 shift 2 || true
@@ -148,8 +177,8 @@ while [[ $# -gt 0 ]]; do
     --no-recon)
       RUN_RECON=0
       ;;
-    --no-dk)
-      RUN_DK_CONNECTOME=0
+    --no-connectome|--no-dk)
+      RUN_CONNECTOME=0
       ;;
     --bids-filter)
       QSIPREP_BIDS_FILTER="${2:?Need path after --bids-filter}"
@@ -171,11 +200,13 @@ while [[ $# -gt 0 ]]; do
       QSIPREP_NO_DWI_FILTER=1
       ;;
     -h|--help)
-      sed -n '50,95p' "$0"
+      # Print the header from "Usage:" to its closing rule, so the help text
+      # cannot drift out of sync with a hardcoded line range.
+      awk '/^# Usage:/,/^# ={10,}$/' "$0" | sed 's/^# \{0,1\}//; $d'
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-dk)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-connectome)"
       exit 1
       ;;
   esac
@@ -206,12 +237,12 @@ if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
       "Or set CONTAINER_FREESURFER to a full FreeSurfer 7.4.1 image path."
   fi
 fi
-_DK_CONNECTOME_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dk_connectome.sif"
-CONTAINER_DK_CONNECTOME="${CONTAINER_DK_CONNECTOME:-${_DK_CONNECTOME_SIF_DEFAULT}}"
+_CONNECTOME_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/connectome.sif"
+CONTAINER_CONNECTOME="${CONTAINER_CONNECTOME:-${_CONNECTOME_SIF_DEFAULT}}"
 TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${TRACKTBI_ROOT}/templateflow}"
 FS_LICENSE="${FS_LICENSE:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt}"
 # FreeSurferColorLUT.txt — qsirecon.sif's trimmed FreeSurfer doesn't ship this
-# file, but labelconvert needs it in the DK step. Default to the LUT shipped
+# file, but labelconvert needs it in Step 4. Default to the LUT shipped
 # with the host-side FS install (next to the license).
 FS_LUT="${FS_LUT:-${FS_LICENSE%/*}/FreeSurferColorLUT.txt}"
 
@@ -220,7 +251,7 @@ RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"           # freesurfer | fastsurfer
 RECON_FASTSURFER_DEVICE="${RECON_FASTSURFER_DEVICE:-cpu}"
 
-# --- QSIRecon (Step 3) + DK (Step 4) defaults ---
+# --- QSIRecon (Step 3) + connectome (Step 4) defaults ---
 QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # QSIRecon's MRtrix specs include connectivity-estimation nodes that REQUIRE
 # at least one atlas. Without one, qsirecon aborts during workflow build:
@@ -234,11 +265,11 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # 4S156Parcels == Schaefer-100 cortex (100) + 56 subcortex/brainstem = 156.)
 #
 # Default = 4S156Parcels: modern Schaefer-based, smallest of the 4S series,
-# fast (small matrix), and complements our anatomical DK connectome (Step 4).
+# fast (small matrix), and complements our anatomical connectome (Step 4).
 # Override with a space-separated list, e.g. QSIRECON_ATLASES="4S156Parcels AAL116"
 # or "" to opt out (only safe with specs that have no connectivity node — rare).
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
-RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
+RUN_CONNECTOME="${RUN_CONNECTOME:-1}"
 # Grey-matter parcellation for the Step 4 connectome: dkt | dk | auto
 #   dkt — Desikan-Killiany-Tourville, 78 nodes, fs_dkt.txt. THE DEFAULT, and the
 #         only parcellation both recon tools can produce: FastSurfer's
@@ -255,19 +286,19 @@ RUN_DK_CONNECTOME="${RUN_DK_CONNECTOME:-1}"
 # FastSurfer ships aparc+aseg.mgz as the DKT atlas, which by protocol has no
 # bankssts and no frontal/temporal pole. Running labelconvert over it with the DK
 # LUT yields 6 all-zero rows/columns, so the LUT has to follow the segmentation.
-_DK_PARCELLATION_EXPLICIT=$([[ -n "${DK_PARCELLATION:-}" ]] && echo 1 || echo 0)
-DK_PARCELLATION="${DK_PARCELLATION:-dkt}"
-DK_LUT_DKT="${DK_LUT_DKT:-${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/mrtrix_lut/fs_dkt.txt}"
+_CONNECTOME_PARCELLATION_EXPLICIT=$([[ -n "${CONNECTOME_PARCELLATION:-}" ]] && echo 1 || echo 0)
+CONNECTOME_PARCELLATION="${CONNECTOME_PARCELLATION:-dkt}"
+CONNECTOME_LUT_DKT="${CONNECTOME_LUT_DKT:-${TRACKTBI_ROOT}/dwi_pipeline/containers/connectome/mrtrix_lut/fs_dkt.txt}"
 # Empty nodes normally mean the LUT does not match the segmentation, but they can
 # also be genuine in severe pathology (resection, large lesion), so warn by
 # default and let callers escalate.
-DK_FAIL_ON_EMPTY_NODES="${DK_FAIL_ON_EMPTY_NODES:-0}"
+CONNECTOME_FAIL_ON_EMPTY_NODES="${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}"
 # ITK sums its registration metric across threads in a nondeterministic order, so
 # repeat runs of Step 4b differ by ~1e-10 in the affine. That is usually invisible
 # after nearest-neighbour label resampling, but it can flip boundary voxels and
 # shift a handful of streamline assignments. Pin ITK to one thread so the
 # connectome is reproducible; set 0 to trade reproducibility for speed.
-DK_DETERMINISTIC="${DK_DETERMINISTIC:-1}"
+CONNECTOME_DETERMINISTIC="${CONNECTOME_DETERMINISTIC:-1}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
@@ -302,14 +333,14 @@ if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
 elif [[ -n "${DWI_SELECT_JSON}" ]]; then
   echo "dwi-select: ${DWI_SELECT_JSON} (target shell b=${DWI_SHELL_B})"
 fi
-DK_RESAMPLE_TO_DWI="${DK_RESAMPLE_TO_DWI:-1}"
+CONNECTOME_RESAMPLE_TO_DWI="${CONNECTOME_RESAMPLE_TO_DWI:-1}"
 
 # --- Output layout under RESULTS_ROOT ---
 QSIPREP_OUT="${RESULTS_ROOT}/qsiprep_single_run_output"
 QSIRECON_OUT="${RESULTS_ROOT}/qsirecon_single_run_output"
 RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
 FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
-DK_OUT="${RESULTS_ROOT}/dk_connectomes"
+CONNECTOME_OUT="${RESULTS_ROOT}/connectomes"
 INTER_QSP="${RESULTS_ROOT}/intermediate_results_qsiprep_single"
 INTER_QSI="${RESULTS_ROOT}/intermediate_results_qsirecon_single"
 # Per-subject nipype work dirs (removed after each stage to avoid stale cache)
@@ -323,7 +354,7 @@ BIDS_FILTER_CACHE="${INTER_QSP}/bids_filter_sub-${SUBJECT}.json"
 [[ -f "${CONTAINER_QSIPREP}" ]] || { echo "Missing ${CONTAINER_QSIPREP}"; exit 1; }
 [[ -f "${CONTAINER_QSIRECON}" ]] || { echo "Missing ${CONTAINER_QSIRECON}"; exit 1; }
 [[ -f "${FS_LICENSE}" ]] || { echo "Missing FreeSurfer license: ${FS_LICENSE}"; exit 1; }
-# Recon containers only required when we will actually run Step 2 / DK
+# Recon containers only required when we will actually run Step 2 / Step 4
 if [[ "${PIPELINE_MODE}" == "all" && "${RUN_RECON}" == "1" ]] || [[ "${PIPELINE_MODE}" == "recon" ]]; then
   case "${RECON_TOOL}" in
     freesurfer) [[ -f "${CONTAINER_FREESURFER}" ]] || { echo "Missing CONTAINER_FREESURFER: ${CONTAINER_FREESURFER}"; exit 1; } ;;
@@ -331,11 +362,11 @@ if [[ "${PIPELINE_MODE}" == "all" && "${RUN_RECON}" == "1" ]] || [[ "${PIPELINE_
     *) echo "Invalid RECON_TOOL=${RECON_TOOL} (use freesurfer or fastsurfer)"; exit 1 ;;
   esac
 fi
-if [[ "${PIPELINE_MODE}" == "dk" ]] || { [[ "${PIPELINE_MODE}" == "all" ]] && [[ "${RUN_DK_CONNECTOME}" == "1" ]]; }; then
-  if [[ "${DK_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
-    [[ -f "${CONTAINER_DK_CONNECTOME}" ]] || {
-      echo "Missing CONTAINER_DK_CONNECTOME: ${CONTAINER_DK_CONNECTOME}"
-      echo "  Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh"
+if [[ "${PIPELINE_MODE}" == "connectome" ]] || { [[ "${PIPELINE_MODE}" == "all" ]] && [[ "${RUN_CONNECTOME}" == "1" ]]; }; then
+  if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
+    [[ -f "${CONTAINER_CONNECTOME}" ]] || {
+      echo "Missing CONTAINER_CONNECTOME: ${CONTAINER_CONNECTOME}"
+      echo "  Build: bash dwi_pipeline/containers/connectome/build_connectome.sh"
       exit 1
     }
   fi
@@ -690,7 +721,7 @@ _bids_ses_from_path() {
 # QSIPrep desc-preproc T1w: exactly one file under session anat/ or subject anat/.
 find_qsiprep_preproc_t1w() {
   local qsiprep_out="$1" subject="$2" session="$3"
-  _strict_find_one "DK/QSIPrep desc-preproc T1w" \
+  _strict_find_one "connectome/QSIPrep desc-preproc T1w" \
     find "${qsiprep_out}/sub-${subject}" \( \
       -path "*/ses-${session}/anat/*sub-${subject}_desc-preproc_T1w.nii.gz" -o \
       -path "*/anat/*sub-${subject}_desc-preproc_T1w.nii.gz" \
@@ -700,32 +731,32 @@ find_qsiprep_preproc_t1w() {
 # BIDS T1w for the target session (exactly one match required).
 find_bids_t1w() {
   local subject="$1" session="$2"
-  [[ -n "${session}" ]] || _pipeline_fail "DK/BIDS T1w" "session is required"
-  _strict_find_one "DK/BIDS T1w" \
+  [[ -n "${session}" ]] || _pipeline_fail "connectome/BIDS T1w" "session is required"
+  _strict_find_one "connectome/BIDS T1w" \
     find "${BIDS_DIR}/sub-${subject}/ses-${session}/anat" -type f \
       \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \)
 }
 
 # -----------------------------------------------------------------------------
-# _run_dk_connectome_dual_container — Legacy Step 4 (freesurfer.sif + qsirecon.sif)
+# _run_connectome_dual_container — Legacy Step 4 (freesurfer.sif + qsirecon.sif)
 # -----------------------------------------------------------------------------
-_run_dk_connectome_dual_container() {
+_run_connectome_dual_container() {
   local fs_dir="$1" aparc="$2" rawavg="$3" outdir="$4"
   local tracks="$5" tracks_in_container="$6"
   local dwiref_in_container="$7" preproc_t1w_in_container="$8" bids_t1w_in_container="$9"
-  local dk_warp="${10}" space_note="${11}"
+  local warp_labels="${10}" space_note="${11}"
   local nodes_input_in_container="/out/aparc+aseg_in_dwi.nii.gz"
 
   echo "Using tractogram: ${tracks}"
   echo "Using aparc+aseg: ${aparc}"
   echo "Space handling: ${space_note}"
 
-  if [[ "${dk_warp}" == "1" ]]; then
+  if [[ "${warp_labels}" == "1" ]]; then
     apptainer exec --cleanenv "${CONTAINER_FREESURFER}" bash -lc "command -v mri_label2vol" >/dev/null 2>&1 || {
       echo "Missing mri_label2vol in CONTAINER_FREESURFER (${CONTAINER_FREESURFER})"
       exit 1
     }
-    echo "[dk] Warping aparc+aseg from FS conformed -> native (mri_label2vol / rawavg.mgz)"
+    echo "[connectome] Warping aparc+aseg from FS conformed -> native (mri_label2vol / rawavg.mgz)"
     apptainer exec --cleanenv --containall \
       -B "${fs_dir}":/fs_subject:ro \
       -B "${outdir}":/out \
@@ -762,7 +793,7 @@ _run_dk_connectome_dual_container() {
     -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro
     -B "${FS_LUT}":/opt/freesurfer/FreeSurferColorLUT.txt:ro
   )
-  [[ "${dk_warp}" == "1" ]] && binds+=(
+  [[ "${warp_labels}" == "1" ]] && binds+=(
     -B "${QSIPREP_OUT}":/qsiprep:ro
     -B "${BIDS_DIR}":/bids:ro
   )
@@ -776,9 +807,9 @@ _run_dk_connectome_dual_container() {
 
       mri_convert /fs_subject/mri/aparc+aseg.mgz /out/aparc+aseg.nii.gz
 
-      if [[ '${dk_warp}' == '1' ]]; then
+      if [[ '${warp_labels}' == '1' ]]; then
         mri_convert /out/aparc+aseg_in_rawavg.mgz /out/aparc+aseg_in_rawavg.nii.gz
-        echo '[dk] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w'
+        echo '[connectome] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w'
         antsRegistration --dimensionality 3 --float 0 \
           --output [/out/native_to_preproc_T1w_,/out/native_to_preproc_T1w_Warped.nii.gz] \
           --interpolation Linear \
@@ -789,14 +820,14 @@ _run_dk_connectome_dual_container() {
           --convergence [500x250x100,1e-6,10] \
           --shrink-factors 4x2x1 \
           --smoothing-sigmas 2x1x0vox
-        echo '[dk] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)'
+        echo '[connectome] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)'
         antsApplyTransforms -d 3 \
           -i /out/aparc+aseg_in_rawavg.nii.gz \
           -r '${preproc_t1w_in_container}' \
           -t /out/native_to_preproc_T1w_0GenericAffine.mat \
           -n GenericLabel \
           -o /out/aparc+aseg_in_t1w.nii.gz
-        echo '[dk] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)'
+        echo '[connectome] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)'
         antsApplyTransforms -d 3 \
           -i /out/aparc+aseg_in_t1w.nii.gz \
           -r '${dwiref_in_container}' \
@@ -807,30 +838,30 @@ _run_dk_connectome_dual_container() {
       fs_lut=/opt/freesurfer/FreeSurferColorLUT.txt
       mrtrix_lut=/opt/mrtrix3-latest/share/mrtrix3/labelconvert/fs_default.txt
 
-      labelconvert -force '${nodes_input_in_container}' \"\$fs_lut\" \"\$mrtrix_lut\" /out/dk_nodes.mif
+      labelconvert -force '${nodes_input_in_container}' \"\$fs_lut\" \"\$mrtrix_lut\" /out/nodes.mif
 
       tck_in='${tracks_in_container}'
       tck_use=\"\$tck_in\"
       tck_staged=\"\"
       if [[ \"\$tck_in\" == *.tck.gz ]]; then
         tck_staged=/out/streamlines.tck
-        echo \"[dk] Decompressing \$tck_in -> \$tck_staged\"
+        echo \"[connectome] Decompressing \$tck_in -> \$tck_staged\"
         gunzip -c \"\$tck_in\" > \"\$tck_staged\"
         tck_use=\"\$tck_staged\"
       fi
 
-      echo '[dk] === space-alignment diagnostic ==='
-      mrinfo /out/dk_nodes.mif      | tee /out/dk_nodes.mrinfo.txt   | sed -n '1,20p'
+      echo '[connectome] === space-alignment diagnostic ==='
+      mrinfo /out/nodes.mif      | tee /out/nodes.mrinfo.txt   | sed -n '1,20p'
       tckinfo \"\$tck_use\"         | tee /out/tracks.tckinfo.txt    | sed -n '1,30p'
-      echo '[dk] =================================='
+      echo '[connectome] =================================='
 
       tck2connectome -force \
         \"\$tck_use\" \
-        /out/dk_nodes.mif \
-        /out/dk_connectome.csv \
+        /out/nodes.mif \
+        /out/connectome.csv \
         -symmetric \
         -zero_diagonal \
-        -out_assignments /out/dk_assignments.csv
+        -out_assignments /out/assignments.csv
 
       [[ -n \"\$tck_staged\" ]] && rm -f \"\$tck_staged\"
     "
@@ -848,14 +879,14 @@ _fs_aparc_has_dk_only_labels() {
   local fs_dir="$1" scratch_parent="$2"
   local scratch max
 
-  [[ -f "${CONTAINER_DK_CONNECTOME}" ]] || return 1
+  [[ -f "${CONTAINER_CONNECTOME}" ]] || return 1
   scratch="$(mktemp -d "${scratch_parent}/.dkprobe_XXXXXX" 2>/dev/null)" || return 1
 
   max="$(apptainer exec --cleanenv --containall \
       --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
       -B "${fs_dir}/mri":/probe:ro \
       -B "${scratch}":/scratch \
-      "${CONTAINER_DK_CONNECTOME}" bash -c '
+      "${CONTAINER_CONNECTOME}" bash -c '
         set -e
         a=/probe/aparc+aseg.mgz
         mrcalc -quiet -force "$a" 1001 -eq "$a" 1032 -eq -add "$a" 1033 -eq -add \
@@ -881,19 +912,19 @@ _fs_aparc_has_dk_only_labels() {
 # aparc+aseg.mgz and never produces a *.deep.mgz. Note that a recon-all tree does
 # contain aparc.DKTatlas+aseg.mgz, so that name alone cannot be the test.
 #
-# Sets _DK_DETECT_METHOD to describe which signal decided.
+# Sets _CONNECTOME_DETECT_METHOD to describe which signal decided.
 # -----------------------------------------------------------------------------
 _fs_tree_is_dkt() {
   local fs_dir="$1" scratch_parent="$2"
   local probe
 
   if probe="$(_fs_aparc_has_dk_only_labels "${fs_dir}" "${scratch_parent}")"; then
-    _DK_DETECT_METHOD="aparc+aseg.mgz label content"
+    _CONNECTOME_DETECT_METHOD="aparc+aseg.mgz label content"
     [[ "${probe}" == "0" ]]
     return
   fi
 
-  _DK_DETECT_METHOD="file layout (label probe unavailable)"
+  _CONNECTOME_DETECT_METHOD="file layout (label probe unavailable)"
   local aparc="${fs_dir}/mri/aparc+aseg.mgz"
   if [[ -L "${aparc}" && "$(readlink "${aparc}")" == *DKTatlas* ]]; then
     return 0
@@ -913,61 +944,61 @@ _count_empty_nodes() {
 }
 
 # -----------------------------------------------------------------------------
-# run_dk_connectome — Build DK connectome from QSIRecon tractogram + FS aseg
+# run_connectome — Build the structural connectome from the QSIRecon tractogram
 # -----------------------------------------------------------------------------
-run_dk_connectome() {
-  echo "=== DK connectome: sub-${SUBJECT} ==="
+run_connectome() {
+  echo "=== Connectome: sub-${SUBJECT} ==="
 
   local fs_dir="${FS_SUBJECTS_DIR}/sub-${SUBJECT}"
   local aparc="${fs_dir}/mri/aparc+aseg.mgz"
   local rawavg="${fs_dir}/mri/rawavg.mgz"
-  local outdir="${DK_OUT}/sub-${SUBJECT}"
+  local outdir="${CONNECTOME_OUT}/sub-${SUBJECT}"
   local tracks
   local tracks_rel
   local tracks_in_container
   local dwiref="" dwiref_rel="" dwiref_in_container=""
   local preproc_t1w="" preproc_t1w_rel="" preproc_t1w_in_container=""
   local bids_t1w="" bids_t1w_rel="" bids_t1w_in_container=""
-  local dk_warp=0
+  local warp_labels=0
   local space_note=""
 
   mkdir -p "${outdir}"
 
-  [[ "${DK_RESAMPLE_TO_DWI}" == "1" ]] || \
-    _pipeline_fail "DK" "DK_RESAMPLE_TO_DWI must be 1 (strict pipeline — no FS-conformed fallback)"
+  [[ "${CONNECTOME_RESAMPLE_TO_DWI}" == "1" ]] || \
+    _pipeline_fail "connectome" "CONNECTOME_RESAMPLE_TO_DWI must be 1 (strict pipeline — no FS-conformed fallback)"
 
-  [[ -d "${fs_dir}" ]] || _pipeline_fail "DK" "missing FreeSurfer subject dir: ${fs_dir}"
-  [[ -f "${aparc}" ]] || _pipeline_fail "DK" "missing aparc+aseg.mgz: ${aparc}" \
+  [[ -d "${fs_dir}" ]] || _pipeline_fail "connectome" "missing FreeSurfer subject dir: ${fs_dir}"
+  [[ -f "${aparc}" ]] || _pipeline_fail "connectome" "missing aparc+aseg.mgz: ${aparc}" \
     "Set FS_SUBJECTS_DIR to a tree containing sub-${SUBJECT}/mri/aparc+aseg.mgz."
-  [[ -f "${rawavg}" ]] || _pipeline_fail "DK" "missing rawavg.mgz: ${rawavg}" \
+  [[ -f "${rawavg}" ]] || _pipeline_fail "connectome" "missing rawavg.mgz: ${rawavg}" \
     "Rerun Step 2 (recon) or check FS_SUBJECTS_DIR."
 
   # Read what Step 2 actually produced rather than trusting RECON_TOOL, so that
   # `subject.sh dk` on an existing tree is correct regardless of which flags this
   # invocation was given.
-  local dk_parc="${DK_PARCELLATION}"
-  local dk_parc_source=""
+  local parc="${CONNECTOME_PARCELLATION}"
+  local parc_source=""
   local tree_is_dkt=0
-  _DK_DETECT_METHOD=""
+  _CONNECTOME_DETECT_METHOD=""
   if _fs_tree_is_dkt "${fs_dir}" "${outdir}"; then tree_is_dkt=1; fi
 
-  case "${dk_parc}" in
+  case "${parc}" in
     auto)
-      if [[ "${tree_is_dkt}" == "1" ]]; then dk_parc="dkt"; else dk_parc="dk"; fi
-      dk_parc_source="auto-detected from ${_DK_DETECT_METHOD}"
-      echo "DK parcellation: ${dk_parc} (auto-detected from ${_DK_DETECT_METHOD})"
+      if [[ "${tree_is_dkt}" == "1" ]]; then parc="dkt"; else parc="dk"; fi
+      parc_source="auto-detected from ${_CONNECTOME_DETECT_METHOD}"
+      echo "Parcellation: ${parc} (auto-detected from ${_CONNECTOME_DETECT_METHOD})"
       ;;
     dk|dkt)
-      if [[ "${_DK_PARCELLATION_EXPLICIT}" == "1" ]]; then
-        dk_parc_source="DK_PARCELLATION=${dk_parc}"
-        echo "DK parcellation: ${dk_parc} (set via DK_PARCELLATION)"
+      if [[ "${_CONNECTOME_PARCELLATION_EXPLICIT}" == "1" ]]; then
+        parc_source="CONNECTOME_PARCELLATION=${parc}"
+        echo "Parcellation: ${parc} (set via CONNECTOME_PARCELLATION)"
       else
-        dk_parc_source="pipeline default (${dk_parc}, same for both recon tools)"
-        echo "DK parcellation: ${dk_parc} (pipeline default — same for recon-all and FastSurfer)"
+        parc_source="pipeline default (${parc}, same for both recon tools)"
+        echo "Parcellation: ${parc} (pipeline default — same for recon-all and FastSurfer)"
       fi
       ;;
     *)
-      _pipeline_fail "DK" "invalid DK_PARCELLATION=${dk_parc} (use auto, dk, or dkt)"
+      _pipeline_fail "connectome" "invalid CONNECTOME_PARCELLATION=${parc} (use auto, dk, or dkt)"
       ;;
   esac
 
@@ -977,36 +1008,38 @@ run_dk_connectome() {
   # *drop* bankssts and the poles rather than reassign their territory to
   # neighbours the way DKT does (12,112 cortical voxels on a test subject).
   # FastSurfer's aparc+aseg.mgz is already DKT, so it needs no substitution.
-  if [[ "${dk_parc}" == "dkt" && "${tree_is_dkt}" != "1" ]]; then
+  # Whatever is chosen here is passed to the container as --segmentation; the
+  # container defaults to aparc+aseg.mgz and cannot infer the choice on its own.
+  if [[ "${parc}" == "dkt" && "${tree_is_dkt}" != "1" ]]; then
     aparc="${fs_dir}/mri/aparc.DKTatlas+aseg.mgz"
-    [[ -f "${aparc}" ]] || _pipeline_fail "DK" \
+    [[ -f "${aparc}" ]] || _pipeline_fail "connectome" \
       "DKT requested but this recon-all tree has no DKT segmentation: ${aparc}" \
-      "recon-all normally writes it; rerun Step 2, or use DK_PARCELLATION=dk."
+      "recon-all normally writes it; rerun Step 2, or use CONNECTOME_PARCELLATION=dk."
     echo "Using the recon-all DKT segmentation: ${aparc}"
   fi
 
   # FastSurfer never produces a DK atlas (no lh.aparc.annot), so DK there can only
   # mean the DK LUT over DKT labels, which leaves the 6 DK-only nodes empty.
-  if [[ "${dk_parc}" == "dk" && "${tree_is_dkt}" == "1" ]]; then
-    echo "WARNING: DK_PARCELLATION=dk on a FastSurfer tree, which has no DK atlas —" \
+  if [[ "${parc}" == "dk" && "${tree_is_dkt}" == "1" ]]; then
+    echo "WARNING: CONNECTOME_PARCELLATION=dk on a FastSurfer tree, which has no DK atlas —" \
          "expect 6 empty nodes (bankssts, frontal pole, temporal pole, bilaterally)."
   fi
 
-  tracks="$(_strict_find_one "DK/tractogram" \
+  tracks="$(_strict_find_one "connectome/tractogram" \
     find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
       \( -name '*.tck' -o -name '*.tck.gz' \))"
   tracks_rel="${tracks#${QSIRECON_OUT}/}"
   tracks_in_container="/qsirecon/${tracks_rel}"
 
-  local dk_ses=""
-  dk_ses="$(_bids_ses_from_path "${tracks}")"
-  [[ -n "${dk_ses}" ]] || _pipeline_fail "DK/session" "tractogram path has no ses-* entity: ${tracks}"
+  local ses=""
+  ses="$(_bids_ses_from_path "${tracks}")"
+  [[ -n "${ses}" ]] || _pipeline_fail "connectome/session" "tractogram path has no ses-* entity: ${tracks}"
 
-  dwiref="$(_strict_find_one "DK/dwiref" \
-    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${dk_ses}/*" \
+  dwiref="$(_strict_find_one "connectome/dwiref" \
+    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
       -name '*space-T1w_dwiref.nii.gz')"
-  preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}" "${dk_ses}")"
-  bids_t1w="$(find_bids_t1w "${SUBJECT}" "${dk_ses}")"
+  preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
+  bids_t1w="$(find_bids_t1w "${SUBJECT}" "${ses}")"
 
   dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
   preproc_t1w_rel="${preproc_t1w#${QSIPREP_OUT}/}"
@@ -1014,7 +1047,7 @@ run_dk_connectome() {
   dwiref_in_container="/qsiprep/${dwiref_rel}"
   preproc_t1w_in_container="/qsiprep/${preproc_t1w_rel}"
   bids_t1w_in_container="/bids/${bids_t1w_rel}"
-  dk_warp=1
+  warp_labels=1
   space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
 
   echo "Using tractogram: ${tracks}"
@@ -1024,122 +1057,122 @@ run_dk_connectome() {
   [[ -n "${bids_t1w}"     ]] && echo "Using BIDS T1w (affine reg source): ${bids_t1w}"
   echo "Space handling: ${space_note}"
 
-  if [[ "${DK_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
-    echo "[dk] Using legacy dual-container path (DK_LEGACY_DUAL_CONTAINER=1)"
-    [[ "${dk_parc}" == "dk" ]] || _pipeline_fail "DK" \
-      "the legacy dual-container path only supports the DK LUT, but this subject needs ${dk_parc}" \
-      "Drop DK_LEGACY_DUAL_CONTAINER, or set DK_PARCELLATION=dk to accept 6 empty nodes."
-    _run_dk_connectome_dual_container \
+  if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
+    echo "[connectome] Using legacy dual-container path (CONNECTOME_LEGACY_DUAL_CONTAINER=1)"
+    [[ "${parc}" == "dk" ]] || _pipeline_fail "connectome" \
+      "the legacy dual-container path only supports the DK LUT, but this subject needs ${parc}" \
+      "Drop CONNECTOME_LEGACY_DUAL_CONTAINER, or set CONNECTOME_PARCELLATION=dk to accept 6 empty nodes."
+    _run_connectome_dual_container \
       "${fs_dir}" "${aparc}" "${rawavg}" "${outdir}" \
       "${tracks}" "${tracks_in_container}" \
       "${dwiref_in_container}" "${preproc_t1w_in_container}" "${bids_t1w_in_container}" \
-      "${dk_warp}" "${space_note}"
+      "${warp_labels}" "${space_note}"
   else
-    [[ -f "${CONTAINER_DK_CONNECTOME}" ]] || \
-      _pipeline_fail "DK" "missing CONTAINER_DK_CONNECTOME: ${CONTAINER_DK_CONNECTOME}" \
-        "Build: bash dwi_pipeline/containers/dk_connectome/build_dk_connectome.sh"
+    [[ -f "${CONTAINER_CONNECTOME}" ]] || \
+      _pipeline_fail "connectome" "missing CONTAINER_CONNECTOME: ${CONTAINER_CONNECTOME}" \
+        "Build: bash dwi_pipeline/containers/connectome/build_connectome.sh"
 
-    local -a dk_binds=()
-    if [[ "${DK_CONNECTOME_BIND_ENTRYPOINT:-0}" == "1" ]]; then
-      dk_binds+=(-B "${TRACKTBI_ROOT}/dwi_pipeline/containers/dk_connectome/run_dk_connectome.sh":/usr/local/bin/run_dk_connectome:ro)
+    local -a binds=()
+    if [[ "${CONNECTOME_BIND_ENTRYPOINT:-0}" == "1" ]]; then
+      binds+=(-B "${TRACKTBI_ROOT}/dwi_pipeline/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro)
     fi
 
     # The image only ships fs_default.txt, so a DKT run binds its LUT in.
-    local -a dk_lut_args=()
-    if [[ "${dk_parc}" == "dkt" ]]; then
-      [[ -f "${DK_LUT_DKT}" ]] || _pipeline_fail "DK" "missing DKT LUT: ${DK_LUT_DKT}" \
+    local -a lut_args=()
+    if [[ "${parc}" == "dkt" ]]; then
+      [[ -f "${CONNECTOME_LUT_DKT}" ]] || _pipeline_fail "connectome" "missing DKT LUT: ${CONNECTOME_LUT_DKT}" \
         "Generate it: python3 dwi_pipeline/scripts/make_dkt_lut.py"
-      dk_binds+=(-B "${DK_LUT_DKT}":/lut/fs_dkt.txt:ro)
-      dk_lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
-      echo "Using DKT LUT: ${DK_LUT_DKT}"
+      binds+=(-B "${CONNECTOME_LUT_DKT}":/lut/fs_dkt.txt:ro)
+      lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+      echo "Using DKT LUT: ${CONNECTOME_LUT_DKT}"
     fi
 
-    local -a dk_env_args=()
-    if [[ "${DK_DETERMINISTIC}" == "1" ]]; then
-      dk_env_args+=(--env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1" --env "ANTS_RANDOM_SEED=1")
-      echo "Deterministic mode: ITK pinned to 1 thread (DK_DETERMINISTIC=1)"
+    local -a env_args=()
+    if [[ "${CONNECTOME_DETERMINISTIC}" == "1" ]]; then
+      env_args+=(--env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1" --env "ANTS_RANDOM_SEED=1")
+      echo "Deterministic mode: ITK pinned to 1 thread (CONNECTOME_DETERMINISTIC=1)"
     fi
 
     apptainer run --cleanenv --containall \
       --home /tmp \
       --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
-      "${dk_env_args[@]}" \
-      "${dk_binds[@]}" \
+      "${env_args[@]}" \
+      "${binds[@]}" \
       -B "${FS_SUBJECTS_DIR}":/subjects:ro \
       -B "${QSIRECON_OUT}":/qsirecon:ro \
       -B "${QSIPREP_OUT}":/qsiprep:ro \
       -B "${BIDS_DIR}":/bids:ro \
       -B "${outdir}":/out \
       -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro \
-      "${CONTAINER_DK_CONNECTOME}" \
+      "${CONTAINER_CONNECTOME}" \
       --freesurfer-subject "/subjects/sub-${SUBJECT}" \
+      --segmentation "${aparc##*/}" \
       --tractogram "${tracks_in_container}" \
       --dwiref "${dwiref_in_container}" \
       --preproc-t1w "${preproc_t1w_in_container}" \
       --bids-t1w "${bids_t1w_in_container}" \
       --output-dir /out \
       --fs-license /opt/freesurfer/license.txt \
-      "${dk_lut_args[@]}" \
+      "${lut_args[@]}" \
       --subject-id "sub-${SUBJECT}"
   fi
 
   # Matrix size depends on the LUT (84 for DK, 78 for DKT), so record which one
   # produced this connectome next to it.
-  local dk_lut_used="fs_default.txt"
-  local dk_atlas="Desikan-Killiany"
-  local dk_nodes=84
-  if [[ "${dk_parc}" == "dkt" ]]; then
-    dk_lut_used="fs_dkt.txt"
-    dk_atlas="Desikan-Killiany-Tourville"
-    dk_nodes=78
+  local lut_used="fs_default.txt"
+  local atlas="Desikan-Killiany"
+  local node_count=84
+  if [[ "${parc}" == "dkt" ]]; then
+    lut_used="fs_dkt.txt"
+    atlas="Desikan-Killiany-Tourville"
+    node_count=78
   fi
 
-  # The container always writes dk_connectome.csv. Name the final matrix after the
-  # parcellation so an 84-node DK and a 78-node DKT result can never be mistaken
-  # for each other, and clear any matrix left behind by the other parcellation so
-  # a stale file of the wrong dimension cannot be picked up later.
-  local dk_matrix="${outdir}/dk_connectome.csv"
-  if [[ "${dk_parc}" == "dkt" ]]; then
-    dk_matrix="${outdir}/dkt_connectome.csv"
-    mv -f "${outdir}/dk_connectome.csv" "${dk_matrix}"
-  else
-    rm -f "${outdir}/dkt_connectome.csv"
-  fi
+  # The container writes a parcellation-neutral connectome.csv. Name the final
+  # matrix after the parcellation so an 84-node DK and a 78-node DKT result can
+  # never be mistaken for each other, and clear any matrix left behind by the
+  # other parcellation so a stale file of the wrong dimension cannot be picked up.
+  local matrix="${outdir}/${parc}_connectome.csv"
+  mv -f "${outdir}/connectome.csv" "${matrix}"
+  local other
+  for other in dk dkt; do
+    [[ "${other}" == "${parc}" ]] || rm -f "${outdir}/${other}_connectome.csv"
+  done
   # Briefly-lived earlier naming, removed so it cannot be mistaken for output.
   rm -f "${outdir}/DKT_connectome.csv"
 
   # A node with no streamlines almost always means the LUT does not match the
   # segmentation, which is exactly the failure this parcellation logic exists to
   # prevent, so surface it rather than let it reach group analysis unnoticed.
-  local dk_empty
-  dk_empty="$(_count_empty_nodes "${dk_matrix}")"
-  if [[ "${dk_empty}" -gt 0 ]]; then
-    echo "WARNING: ${dk_empty} of ${dk_nodes} ${dk_atlas} nodes received no streamlines."
+  local empty_nodes
+  empty_nodes="$(_count_empty_nodes "${matrix}")"
+  if [[ "${empty_nodes}" -gt 0 ]]; then
+    echo "WARNING: ${empty_nodes} of ${node_count} ${atlas} nodes received no streamlines."
     echo "         Usually a LUT/segmentation mismatch; can be genuine after resection"
-    echo "         or a large lesion. Check ${outdir}/dk_parcellation.json."
-    if [[ "${DK_FAIL_ON_EMPTY_NODES}" == "1" ]]; then
-      _pipeline_fail "DK" "${dk_empty} empty nodes in ${dk_matrix} (DK_FAIL_ON_EMPTY_NODES=1)"
+    echo "         or a large lesion. Check ${outdir}/parcellation.json."
+    if [[ "${CONNECTOME_FAIL_ON_EMPTY_NODES}" == "1" ]]; then
+      _pipeline_fail "connectome" "${empty_nodes} empty nodes in ${matrix} (CONNECTOME_FAIL_ON_EMPTY_NODES=1)"
     fi
   fi
 
-  cat > "${outdir}/dk_parcellation.json" <<EOF
+  cat > "${outdir}/parcellation.json" <<EOF
 {
-  "parcellation": "${dk_parc}",
-  "atlas": "${dk_atlas}",
-  "nodes": ${dk_nodes},
-  "labelconvert_lut": "${dk_lut_used}",
-  "connectome_csv": "${dk_matrix##*/}",
-  "empty_nodes": ${dk_empty},
-  "deterministic": ${DK_DETERMINISTIC},
-  "selected_by": "${dk_parc_source}",
+  "parcellation": "${parc}",
+  "atlas": "${atlas}",
+  "nodes": ${node_count},
+  "labelconvert_lut": "${lut_used}",
+  "connectome_csv": "${matrix##*/}",
+  "empty_nodes": ${empty_nodes},
+  "deterministic": ${CONNECTOME_DETERMINISTIC},
+  "selected_by": "${parc_source}",
   "freesurfer_subject_dir": "${fs_dir}",
   "aparc_aseg": "${aparc}"
 }
 EOF
 
-  echo "DK connectome: ${dk_matrix} (${dk_atlas}, ${dk_nodes} nodes)"
-  echo "Parcellation provenance: ${outdir}/dk_parcellation.json"
-  echo "Space diagnostic: ${outdir}/dk_nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
+  echo "Connectome: ${matrix} (${atlas}, ${node_count} nodes)"
+  echo "Parcellation provenance: ${outdir}/parcellation.json"
+  echo "Space diagnostic: ${outdir}/nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
 }
 
 # --- Dispatch: run one or more stages ---
@@ -1157,16 +1190,16 @@ case "${PIPELINE_MODE}" in
       fi
     fi
     run_qsirecon
-    if [[ "${RUN_DK_CONNECTOME}" == "1" ]]; then
-      run_dk_connectome
+    if [[ "${RUN_CONNECTOME}" == "1" ]]; then
+      run_connectome
     fi
     ;;
-  qsiprep)  run_qsiprep ;;
-  recon)    run_recon ;;
-  qsirecon) run_qsirecon ;;
-  dk)       run_dk_connectome ;;
+  qsiprep)    run_qsiprep ;;
+  recon)      run_recon ;;
+  qsirecon)   run_qsirecon ;;
+  connectome) run_connectome ;;
   *)
-    echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all, qsiprep, recon, qsirecon, or dk)"
+    echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all, qsiprep, recon, qsirecon, or connectome)"
     exit 1
     ;;
 esac
@@ -1174,4 +1207,4 @@ esac
 echo "QSIPrep output:  ${QSIPREP_OUT}"
 echo "Recon output:    ${RECON_OUT}"
 echo "QSIRecon output: ${QSIRECON_OUT}"
-echo "DK output:       ${DK_OUT}"
+echo "Connectome output: ${CONNECTOME_OUT}"

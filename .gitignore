@@ -39,12 +39,12 @@ dag.svg
 *.img
 *.simg
 
-# --- dk_connectome build scratch (staged ANTs/MRtrix/FS binaries) ---
-dwi_pipeline/containers/dk_connectome/build_ctx/
-dwi_pipeline/containers/dk_connectome/build_ctx_lean/
-dwi_pipeline/containers/dk_connectome/.apptainer_tmp/
-dwi_pipeline/containers/dk_connectome/.fs_min_test/
-dwi_pipeline/containers/dk_connectome/.fs_min_out/
+# --- connectome container build scratch (staged ANTs/MRtrix/FS binaries) ---
+dwi_pipeline/containers/connectome/build_ctx/
+dwi_pipeline/containers/connectome/build_ctx_lean/
+dwi_pipeline/containers/connectome/.apptainer_tmp/
+dwi_pipeline/containers/connectome/.fs_min_test/
+dwi_pipeline/containers/connectome/.fs_min_out/
 
 # --- TemplateFlow cache (downloaded on demand) ---
 /templateflow/
@@ -83,7 +83,7 @@ dwi_pipeline/containers/dk_connectome/.fs_min_out/
 **/qsirecon_single_run_output/
 **/qsiprep_single_run_output/
 **/freesurfer/sub-*/
-**/dk_connectomes/sub-*/
+**/connectomes/sub-*/
 **/.flags/
 **/work/
 **/_work_qsiprep_*/
@@ -104,7 +104,7 @@ qsiprep_qsirecon_subject_status.csv
 backups/
 *.bak
 
-# Atlas-only connectome wrapper (lives locally, not in dk_connectome repo)
+# Atlas-only connectome wrapper (lives locally, not in the container repo)
 /dwi_connect_default/
 
 # Generated documentation artefacts. The markdown is the source; regenerate with

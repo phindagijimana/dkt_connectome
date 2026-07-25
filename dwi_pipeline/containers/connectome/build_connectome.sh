@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build dk_connectome.sif — lean shareable Step 4 image (~500 MB).
+# Build connectome.sif — lean shareable Step 4 image (~500 MB).
 #
 # Stages from your existing pipeline SIFs (no version drift vs dual-container Step 4):
 #   freesurfer_7.4.1.sif  → mri_label2vol, mri_convert, FreeSurferColorLUT.txt (~8 MB)
@@ -8,8 +8,8 @@
 # FreeSurfer license is bind-mounted at runtime, not baked in.
 #
 # Usage:
-#   bash build_dk_connectome.sh
-#   SKIP_STAGE=1 bash build_dk_connectome.sh
+#   bash build_connectome.sh
+#   SKIP_STAGE=1 bash build_connectome.sh
 #
 set -euo pipefail
 
@@ -21,10 +21,10 @@ mkdir -p "${APPTAINER_TMPDIR}"
 
 FS_SIF="${CONTAINER_FREESURFER:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/freesurfer_7.4.1.sif}"
 QSI_SIF="${CONTAINER_QSIRECON:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif}"
-OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dk_connectome.sif}"
-IMAGE_TAG="${IMAGE_TAG:-dk_connectome:latest}"
+OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/connectome.sif}"
+IMAGE_TAG="${IMAGE_TAG:-connectome:latest}"
 
-echo "=== dk_connectome build (legacy-staged lean) ==="
+echo "=== connectome build (legacy-staged lean) ==="
 echo "  FS source:  ${FS_SIF}"
 echo "  QSI source: ${QSI_SIF}"
 echo "  Output SIF: ${OUT_SIF}"
@@ -92,7 +92,7 @@ else
   stage_from_qsirecon
 fi
 
-cp "${HERE}/run_dk_connectome.sh" "${CTX}/"
+cp "${HERE}/run_connectome.sh" "${CTX}/"
 echo "  Build context: $(du -sh "${CTX}" | awk '{print $1}')"
 
 if [[ -f "${OUT_SIF}" && "${BACKUP_EXISTING:-1}" == "1" ]]; then

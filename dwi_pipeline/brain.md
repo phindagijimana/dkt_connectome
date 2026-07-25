@@ -327,20 +327,22 @@ A **parcellation** divides cortex into labelled regions. This matters because a 
 | Atlas | Regions | Basis | Where it appears here |
 |-------|---------|-------|----------------------|
 | **Desikan–Killiany (DK)** | 34 cortical per hemisphere | Gyral and sulcal landmarks | Step 4 output after `recon-all`, 84 nodes with subcortical |
-| **DKT (Desikan–Killiany–Tourville)** | 31 cortical per hemisphere | DK with refined, more reproducible boundaries | What FastSurfer produces; Step 4 output after FastSurfer, 78 nodes |
+| **DKT (Desikan–Killiany–Tourville)** | 31 cortical per hemisphere | DK with refined, more reproducible boundaries | The Step 4 default, 78 nodes, from either recon tool |
 | **Destrieux** | 74 per hemisphere | Explicit gyral/sulcal division | FreeSurfer `aparc.a2009s` |
 | **4S (4S156 and larger)** | 156 and up | Multi-scale, includes subcortical and cerebellar | QSIRecon atlas connectome, Figure 8 |
 | **Schaefer** | 100–1000 | Functional connectivity boundaries | Common in functional work |
 
 **A subtlety specific to this repository.** FastSurfer writes DKT labels into `aparc+aseg.mgz` (in this subject, a symlink to `aparc.DKTatlas+aseg.mapped.mgz`), and the DKT protocol does not define three DK regions: **bankssts**, the **frontal pole** and the **temporal pole**. Step 4 originally applied MRtrix `labelconvert` with `fs_default.txt`, the **DK** lookup table, to that DKT segmentation. The result was an 84-node matrix in which 6 nodes — those three regions, bilaterally — were structurally empty, because the labels the DK table asks for are simply not in the image. `tck2connectome` warned about exactly those indices: 1, 31, 32, 50, 80, 81.
 
-Step 4 now matches the lookup table to the segmentation. A `recon-all` subject uses `fs_default.txt` and yields the 84-node DK matrix; a FastSurfer subject uses `fs_dkt.txt` and yields a **78-node DKT matrix with no empty nodes**. Which table was used is recorded per subject in `dk_parcellation.json`, and the matrix is named for it (`dk_connectome.csv` or `dkt_connectome.csv`) so the two can never be confused — they have different dimensions and must not be pooled.
+Step 4 now matches the lookup table to the segmentation, and **standardises on DKT from either recon tool**. `recon-all` writes both atlases — `aparc+aseg.mgz` (DK) and `aparc.DKTatlas+aseg.mgz` (DKT) — while FastSurfer writes only DKT and has no DK parcellation whatsoever. DKT is therefore the one node set both can deliver, so Step 4 produces a 78-node DKT connectome by default regardless of which tool ran, reading whichever DKT image the tree provides. `--fastsurfer` changes how long Step 2 takes, not the parcellation, and subjects processed either way pool into a single array. `CONNECTOME_PARCELLATION=dk` still gives the 84-node DK matrix where `recon-all` makes it available.
 
-This is a relabelling, not a change to the tractography. Verified on this subject: the 78-node DKT matrix is *exactly* the 84-node DK matrix with those 6 rows and columns deleted — 0 differing cells, and the same 15,425,166 assigned streamlines. The 6 nodes that disappeared were empty rows all along.
+Which table was used is recorded per subject in `parcellation.json`, and the matrix is named for it (`dkt_connectome.csv` or `dk_connectome.csv`) so the two can never be confused — they have different dimensions and must not be pooled.
 
-**The pipeline standardises on DKT, from either recon tool.** FreeSurfer writes both atlases — `aparc+aseg.mgz` (DK) and `aparc.DKTatlas+aseg.mgz` (DKT) — while FastSurfer writes only DKT and has no DK parcellation whatsoever. DKT is therefore the one node set both can deliver, so Step 4 produces a 78-node DKT connectome by default regardless of which tool ran, reading whichever DKT image the tree provides. `--fastsurfer` changes how long Step 2 takes, not the parcellation, and subjects processed either way pool into a single array. `DK_PARCELLATION=dk` still gives the 84-node DK matrix where `recon-all` makes it available.
+Getting DKT from a `recon-all` tree means **changing the input image, not just the table**. `labelconvert` matches regions by name, so applying the DKT table to the DK image would *discard* bankssts and the poles rather than reassign their territory to neighbouring gyri the way real DKT does — about 12,000 cortical voxels on a test subject, with no warning and a plausible-looking 78-node result. Step 4 therefore passes the chosen segmentation to the container explicitly.
 
-**For a methods section:** report the recon tool and the parcellation separately, since they are now independent — the tool no longer implies the atlas. Each subject's `dk_parcellation.json` records the atlas, node count, lookup table, the exact segmentation file read, and whether that came from the default or an explicit setting.
+This is a relabelling, not a change to the tractography: the same streamlines are counted against a different set of regions. It is *not*, however, the same as deleting six rows from the DK matrix. On `sub-TBI011204` the true 78-node DKT matrix carries 7,691,076 assigned streamlines against the 84-node DK matrix's 7,736,752, because DKT merges bankssts and the poles into adjoining gyri rather than discarding them. Deleting the six rows instead — which is what applying the DKT table to a DK image amounts to — yields 7,425,289, losing 265,787 streamlines (3.4 %) and differing from true DKT in 91 % of cells.
+
+**For a methods section:** report the recon tool and the parcellation separately, since they are now independent — the tool no longer implies the atlas. Each subject's `parcellation.json` records the atlas, node count, lookup table, the exact segmentation file read, and whether that came from the default or an explicit setting.
 
 ### *(PhD)* The parcellation problem is not solved
 
@@ -783,10 +785,11 @@ Each exists for a reason. FreeSurfer conforms to a fixed 256³ 1 mm LIA grid bec
 
 ### *(Practitioner)* How Step 4 aligns them
 
-`run_dk_connectome.sh` performs an explicit three-stage chain:
+`run_connectome.sh` performs an explicit three-stage chain:
 
 ```
-aparc+aseg.mgz                       FreeSurfer conformed, 256³ LIA
+the segmentation                     FreeSurfer conformed, 256³ LIA
+  (aparc.DKTatlas+aseg.mgz for DKT from recon-all, else aparc+aseg.mgz)
   │  mri_label2vol --temp rawavg.mgz
   ▼
 labels on the native T1w grid        scanner-native geometry
@@ -798,8 +801,8 @@ labels in QSIPrep anatomical space
 labels on the tractography grid      2 mm, matches the .tck
   │  labelconvert (FreeSurfer LUT → fs_default.txt for DK, fs_dkt.txt for DKT)
   ▼
-dk_nodes.mif  +  tractogram  →  tck2connectome  →  dk_connectome.csv   (DK, 84 nodes)
-                                                   dkt_connectome.csv  (DKT, 78 nodes)
+nodes.mif  +  tractogram  →  tck2connectome  →  dkt_connectome.csv  (DKT, 78 nodes, default)
+                                                dk_connectome.csv   (DK, 84 nodes)
 ```
 
 Three details are load-bearing and easy to get wrong:
@@ -812,7 +815,7 @@ Three details are load-bearing and easy to get wrong:
 
 Because misalignment is silent, verification must be active. Four checks, in increasing strength:
 
-- **Header comparison.** `mrinfo` on the node image and `tckinfo` on the tractogram should agree on transform and extent. Step 4 writes both to `dk_nodes.mrinfo.txt` and `tracks.tckinfo.txt` for precisely this purpose.
+- **Header comparison.** `mrinfo` on the node image and `tckinfo` on the tractogram should agree on transform and extent. Step 4 writes both to `nodes.mrinfo.txt` and `tracks.tckinfo.txt` for precisely this purpose.
 - **Visual overlay.** Render the resampled parcellation on the DWI reference and inspect boundaries. Cheap and catches gross errors.
 - **Assignment statistics.** `tck2connectome -out_assignments` records the nodes assigned to each streamline. A high proportion of unassigned endpoints (assignment to node 0) indicates that streamline ends are not landing in labelled tissue — a strong misalignment signal.
 - **Label-count sanity.** Compare node volumes in `dwiref` space against the expected values from `aseg.stats`, scaled for voxel size. Systematic discrepancy indicates a resampling problem.
@@ -1027,7 +1030,7 @@ Every check below has an anatomical rationale — that is what makes it a check 
 | Brain mask correct on DWI | Missing tissue means missing tracts |
 | Node image and tractogram headers agree | `mrinfo`/`tckinfo` mismatch |
 | Parcellation overlays correctly on `dwiref` | Labels offset from anatomy |
-| Assignment rate reasonable | Many streamlines unassigned in `dk_assignments.csv` |
+| Assignment rate reasonable | Many streamlines unassigned in `assignments.csv` |
 | 5TT plausible | Compare against Figure 6; look for missing tissue classes |
 
 **Stage 4: Connectome.**
