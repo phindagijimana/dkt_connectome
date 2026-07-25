@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 """Generate the figure set used by dwi_pipeline/brain.md and brain.docx.
 
-Renders real subject data (FreeSurfer/FastSurfer volumes and surfaces, QSIPrep
-grids, QSIRecon HSVS 5TT and connectome) plus schematic panels for radiological
-contrast and lesion patterns, which are drawn rather than imaged because no
-lesion-positive example is shipped with the repository.
+Every panel is rendered from **public reference data**, never from study
+participants: FreeSurfer's fsaverage (an average of 40 subjects) supplies the
+volumes, label maps and surfaces, and TemplateFlow's MNI152NLin2009cAsym (an
+average of 152) supplies the coordinate grids. Nothing here depicts an
+individual, so the figures are safe to publish.
+
+Two consequences worth knowing when reading the output. The 5TT panel is built
+by block-averaging the fsaverage aseg onto a coarser grid rather than by running
+5ttgen hsvs, and the connectome panel is modelled from parcel geometry rather
+than measured with tractography; both captions say so. The contrast and lesion
+panels are schematics, since no lesion-positive example ships with the repo.
 
 Usage:
-    python3 make_brain_figures.py [--subject-dir DIR] [--out-dir DIR]
+    python3 make_brain_figures.py [--fsaverage DIR] [--templateflow DIR] [--out-dir DIR]
 """
 from __future__ import annotations
 
@@ -29,7 +36,10 @@ DPI = 150
 FS_LUT_CANDIDATES = [
     Path(__file__).resolve().parents[1]
     / "containers/connectome/build_ctx_lean/freesurfer/FreeSurferColorLUT.txt",
+    Path(os.environ.get("FS_LUT", "/opt/freesurfer/FreeSurferColorLUT.txt")),
     Path("/opt/freesurfer/FreeSurferColorLUT.txt"),
+    Path("/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/"
+         "data_mining/freesurfer/FreeSurferColorLUT.txt"),
 ]
 
 # Cortical GM, subcortical GM, WM and CSF label groups in the FreeSurfer aseg
@@ -290,9 +300,9 @@ def fig_normal_anatomy(paths, out):
     finish(
         fig,
         out / "fig01_normal_anatomy.png",
-        "Source: FreeSurfer/FastSurfer T1.mgz, conformed 1 mm isotropic, reoriented to RAS. Arrow "
+        "Source: FreeSurfer fsaverage T1.mgz, conformed 1 mm isotropic, reoriented to RAS. Arrow "
         "targets are centroids of the corresponding aseg.mgz labels within the displayed slab, so "
-        "labels track this subject's actual anatomy.",
+        "labels track the anatomy of the fsaverage template, an average of 40 subjects.",
     )
 
 
@@ -367,7 +377,7 @@ def fig_tissue_classes(paths, out):
     for i, v in enumerate(vols.values()):
         ax_v.text(i, v, f"{v:.0f}", ha="center", va="bottom", fontsize=7)
     ax_v.set_ylabel("volume (cm³)", fontsize=8)
-    ax_v.set_title("Segmented tissue volumes for this subject", fontsize=9)
+    ax_v.set_title("Segmented tissue volumes", fontsize=9)
     ax_v.tick_params(labelsize=7)
     plt.setp(ax_v.get_xticklabels(), rotation=15, ha="right")
 
@@ -474,7 +484,7 @@ def fig_parcellation(paths, out):
     finish(
         fig,
         out / "fig04_parcellation.png",
-        "FastSurfer DKT parcellation mapped to aparc+aseg.mgz. Step 4 converts these to the 84-node "
+        "Desikan-Killiany parcellation in fsaverage aparc+aseg.mgz. Step 4 converts these to the 84-node "
         "Desikan-Killiany index set via MRtrix labelconvert and fs_default.txt.",
     )
 
@@ -595,14 +605,16 @@ def fig_5tt(paths, out):
     panel_label(ax, "Composite\n(GM=green, subGM=red,\nCSF=blue, WM=white)")
 
     fig.suptitle(
-        "Figure 6 — The real HSVS 5TT image driving ACT for this subject (5 partial-volume tissue maps)",
+        "Figure 6 — The 5TT image that drives ACT: five partial-volume tissue maps",
         fontsize=10,
     )
     finish(
         fig,
         out / "fig06_5tt_hsvs.png",
-        "Source: QSIRecon sub-SUBJ01_space-ACPC_seg-hsvs_probseg.nii.gz "
-        f"(shape {data.shape}). Values are partial volume fractions in [0, 1].",
+        f"Built from the fsaverage aseg (shape {data.shape}): each tissue class is block-averaged "
+        "from the 1 mm label grid onto 2 mm, so boundary voxels carry fractional occupancy in "
+        "[0, 1] exactly as a real HSVS 5TT does. Volume 4 (pathological) is empty, as it is in a "
+        "healthy brain. The pipeline itself builds this from surfaces via 5ttgen hsvs.",
     )
 
 
@@ -611,13 +623,13 @@ def fig_spaces(paths, out):
     pre = nib.load(str(paths["preproc_t1w"]))
     dwi = nib.load(str(paths["dwiref"]))
 
-    fig, axes = plt.subplots(1, 3, figsize=(12, 4.6))
+    fig, axes = plt.subplots(1, 3, figsize=(12, 5.0))
     for ax, (img, title) in zip(
         axes,
         [
             (fs, "FreeSurfer conformed\nT1.mgz"),
-            (pre, "QSIPrep anatomical\ndesc-preproc_T1w"),
-            (dwi, "Tractography grid\nspace-T1w_dwiref"),
+            (pre, "Anatomical reference\nMNI152 1 mm"),
+            (dwi, "Tractography grid\nMNI152 resampled to 2 mm"),
         ],
     ):
         can = nib.as_closest_canonical(img)
@@ -633,29 +645,59 @@ def fig_spaces(paths, out):
             f"{zooms[0]}×{zooms[1]}×{zooms[2]} mm\naxcodes {''.join(nib.aff2axcodes(img.affine))}",
         )
 
+    # The panel headings run to three lines, so lift the suptitle clear of them
+    # and reserve the space explicitly rather than letting the two collide.
+    fig.subplots_adjust(top=0.74)
     fig.suptitle(
         "Figure 7 — Three coordinate grids the pipeline must reconcile before counting connections",
         fontsize=10,
+        y=1.02,
     )
     finish(
         fig,
         out / "fig07_coordinate_spaces.png",
-        "Labels are read directly from each NIfTI/MGZ header. Step 4 of the pipeline resamples "
-        "parcellation labels from the left grid onto the right grid.",
+        "Shape, voxel size and axis codes are read directly from each NIfTI/MGZ header. Step 4 of "
+        "the pipeline resamples parcellation labels from the left grid onto the right grid; the "
+        "grids shown are public references standing in for a subject's own three spaces.",
     )
+
+
+def geometric_connectome(aparc_path, decay_mm=35.0, seed=0):
+    """A connectome-shaped matrix built from parcel geometry, not tractography.
+
+    Publishing a participant's measured matrix is not an option here, but the
+    properties the figure teaches — symmetry, a zero diagonal, weights spanning
+    orders of magnitude, a right-skewed strength distribution — all follow from
+    the fact that connection probability falls off with distance and scales with
+    region size. So those are modelled directly: no streamline is involved, and
+    the caption says so. Do not read anatomy off this matrix.
+    """
+    img = load_canonical(aparc_path)
+    seg = np.asarray(img.dataobj).astype(np.int32)
+    labels = [l for l in np.unique(seg)
+              if 1000 <= l < 1036 or 2000 <= l < 2036]
+
+    centroids, sizes = [], []
+    for l in labels:
+        idx = np.argwhere(seg == l)
+        centroids.append(nib.affines.apply_affine(img.affine, idx.mean(axis=0)))
+        sizes.append(len(idx))
+    centroids = np.asarray(centroids)
+    sizes = np.asarray(sizes, dtype=float)
+
+    d = np.linalg.norm(centroids[:, None, :] - centroids[None, :, :], axis=-1)
+    C = np.exp(-d / decay_mm) * np.sqrt(np.outer(sizes, sizes))
+    # Sparsify and roughen the way a real thresholded connectome looks.
+    rng = np.random.default_rng(seed)
+    C *= rng.lognormal(mean=0.0, sigma=0.45, size=C.shape)
+    C = (C + C.T) / 2.0
+    np.fill_diagonal(C, 0.0)
+    C[C < np.percentile(C, 55)] = 0.0
+    return C
 
 
 def fig_connectome(paths, out):
-    import scipy.io as sio
-
-    m = sio.loadmat(str(paths["conn"]))
-    key_sift = next(
-        (k for k in m if k.endswith("sift_invnodevol_radius2_count_connectivity")), None
-    )
-    key_count = next((k for k in m if k.endswith("radius2_count_connectivity")), None)
-    key = key_sift or key_count
-    C = np.array(m[key], dtype=float)
-    C = np.nan_to_num(C)
+    C = geometric_connectome(paths["aparc"])
 
     fig = plt.figure(figsize=(14.5, 5.2))
     gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1.1, 0.95], wspace=0.55)
@@ -702,14 +744,16 @@ def fig_connectome(paths, out):
         ax3.text(0.62, 0.88 - i * 0.14, v, fontsize=8.5, family="monospace")
 
     fig.suptitle(
-        "Figure 8 — Real structural connectome for this subject (QSIRecon SS3T + ACT-HSVS, 4S156 atlas)",
+        "Figure 8 — The anatomy of a structural connectome: what the matrix looks like and how to read it",
         fontsize=10,
     )
     finish(
         fig,
         out / "fig08_connectome.png",
-        f"Source: connectivity.mat, field '{key}'. SIFT2-weighted and inverse-node-volume scaled "
-        "streamline counts.",
+        "NOT MEASURED DATA. Weights are modelled from fsaverage parcel centroid distances and "
+        "region sizes, to show the form a connectome takes — symmetric, zero diagonal, weights "
+        "over orders of magnitude, right-skewed nodal strength. A real matrix from this pipeline "
+        "is SIFT2-weighted streamline counts between DKT regions; run Step 4 to produce one.",
     )
 
 
@@ -939,6 +983,30 @@ def fig_volumetrics(paths, out):
     aseg = load_canonical(paths["aseg"])
     data = t1.get_fdata()
     seg = aseg.get_fdata().astype(int)
+
+    if not measures:
+        # No aseg.stats alongside the label map (fsaverage ships none), so
+        # measure the segmentation directly. recon-all derives these the same
+        # way; only eTIV is unavailable, since it needs the Talairach transform.
+        vox_mm3 = float(np.abs(np.linalg.det(aseg.affine[:3, :3])))
+        lut = read_fs_lut()
+
+        def vol(labels):
+            return float(np.isin(seg, labels).sum()) * vox_mm3
+
+        measures = {
+            "CortexVol": vol((3, 42)),
+            "CerebralWhiteMatterVol": vol((2, 41)),
+            "SubCortGrayVol": vol((10, 11, 12, 13, 17, 18, 26, 49, 50, 51, 52, 53, 54, 58)),
+            "VentricleChoroidVol": vol((4, 43, 5, 44, 14, 15, 31, 63)),
+            "BrainSegVol": float((seg > 0).sum()) * vox_mm3,
+        }
+        rows = [
+            (lut[l][0], float(c) * vox_mm3)
+            for l, c in zip(*np.unique(seg, return_counts=True))
+            if l in lut and l != 0
+        ]
+
     vmin, vmax = robust_window(data)
     vent = np.isin(seg, (4, 43, 5, 44, 14, 15))
     z = largest_area_index(np.isin(seg, (4, 43)), 2)
@@ -973,7 +1041,7 @@ def fig_volumetrics(paths, out):
     for i, v in enumerate(vals[::-1]):
         ax2.text(v, i, f" {v:,.0f}", va="center", fontsize=7.5)
     ax2.set_xlabel("volume (cm³)", fontsize=8)
-    ax2.set_title("Global measures from aseg.stats", fontsize=9)
+    ax2.set_title("Global measures from the segmentation", fontsize=9)
     ax2.tick_params(labelsize=7.5)
     ax2.set_xlim(0, max(vals) * 1.22 if vals else 1)
     qc = []
@@ -1029,8 +1097,9 @@ def fig_volumetrics(paths, out):
     finish(
         fig,
         out / "fig11_volumetrics.png",
-        f"Source: {stats_path.name} produced by FastSurfer 2.4.2. "
-        "eTIV is used to normalise volumes across head sizes.",
+        "Volumes measured from the fsaverage aseg label map, the same way recon-all derives "
+        "aseg.stats. eTIV is absent here because it needs a Talairach transform; on a real "
+        "subject it is what you divide by to compare volumes across head sizes.",
     )
 
 
@@ -1110,19 +1179,145 @@ def fig_anatomy_pipeline_map(out):
 
 
 # --------------------------------------------------------------------------
+def public_paths(fsaverage, templateflow, cache):
+    """Figure inputs taken from public reference data only.
+
+    fsaverage is FreeSurfer's average of 40 subjects and MNI152NLin2009cAsym is
+    an average of 152; neither depicts an individual, so the figures carry no
+    participant data. fsaverage is the backbone because it ships the FreeSurfer
+    label conventions (aseg, aparc+aseg) that these panels already speak.
+    """
+    tpl = templateflow / "tpl-MNI152NLin2009cAsym"
+
+    def t(name):
+        p = tpl / f"tpl-MNI152NLin2009cAsym_{name}"
+        if not p.exists():
+            raise FileNotFoundError(f"missing template file: {p}")
+        return p
+
+    if not (fsaverage / "mri" / "aseg.mgz").exists():
+        raise FileNotFoundError(f"fsaverage not found at {fsaverage}")
+
+    return {
+        "t1": fsaverage / "mri" / "T1.mgz",
+        "aseg": fsaverage / "mri" / "aseg.mgz",
+        "aparc": fsaverage / "mri" / "aparc+aseg.mgz",
+        "surf": fsaverage / "surf",
+        # fsaverage ships no stats/; fig_volumetrics measures the aseg instead.
+        "stats": fsaverage / "stats",
+        # Three deliberately different grids for the coordinate figure. The
+        # template is skull-stripped first so no orbit or facial tissue appears.
+        "preproc_t1w": mni_brain(
+            t("res-01_T1w.nii.gz"), t("res-01_desc-brain_mask.nii.gz"), cache
+        ),
+        "dwiref": mni_brain(
+            t("res-01_T1w.nii.gz"), t("res-01_desc-brain_mask.nii.gz"), cache, factor=2
+        ),
+        "hsvs": derive_5tt(fsaverage / "mri" / "aseg.mgz", cache),
+        "conn": None,  # built from the parcellation; see fig_connectome
+    }
+
+
+# 5TT tissue classes, as MRtrix orders them, expressed in FreeSurfer aseg labels.
+_5TT_ASEG = [
+    (3, 42, 8, 47),                                              # 0 cortical GM
+    (10, 11, 12, 13, 17, 18, 26, 28, 49, 50, 51, 52, 53, 54, 58, 60),  # 1 subcortical GM
+    (2, 41, 7, 46, 251, 252, 253, 254, 255, 77, 85),             # 2 white matter
+    (4, 5, 14, 15, 24, 43, 44, 30, 62, 72),                      # 3 CSF
+]
+
+
+def mni_brain(t1_path, mask_path, cache, factor=1):
+    """Skull-stripped MNI152, optionally on a coarser grid.
+
+    TemplateFlow here holds only the 1 mm T1w and its brain mask as real files;
+    the rest of the tree is empty placeholders awaiting download. Applying the
+    mask locally removes the face and orbits, and block-averaging gives a second,
+    genuinely different voxel grid for the coordinate-space figure.
+    """
+    cache.mkdir(parents=True, exist_ok=True)
+    outp = cache / f"mni152_{factor}mm_brain.nii.gz"
+    if outp.exists():
+        return outp
+
+    img = nib.load(str(t1_path))
+    data = np.asarray(img.dataobj, dtype=np.float32)
+    data *= np.asarray(nib.load(str(mask_path)).dataobj).astype(bool)
+
+    affine = img.affine.copy()
+    if factor > 1:
+        trim = tuple(s - s % factor for s in data.shape)
+        data = data[: trim[0], : trim[1], : trim[2]]
+        shape = tuple(s // factor for s in trim)
+        data = data.reshape(
+            shape[0], factor, shape[1], factor, shape[2], factor
+        ).mean(axis=(1, 3, 5))
+        affine[:3, :3] *= factor
+
+    nib.save(nib.Nifti1Image(data, affine), str(outp))
+    return outp
+
+
+def derive_5tt(aseg_path, cache, factor=2):
+    """Build a partial-volume 5TT image from a 1 mm label map.
+
+    Real HSVS gets fractional occupancy from surface geometry. Here the same
+    effect is produced the other honest way: block-average each binary tissue
+    mask from the 1 mm grid onto a 2 mm grid, so a boundary voxel that is half
+    grey and half white ends up 0.5/0.5. The point of the figure — that 5TT
+    stores continuous fractions, not a hard label — survives intact.
+    """
+    cache.mkdir(parents=True, exist_ok=True)
+    outp = cache / "fsaverage_5tt_from-aseg_probseg.nii.gz"
+    if outp.exists():
+        return outp
+
+    img = nib.load(str(aseg_path))
+    seg = np.asarray(img.dataobj).astype(np.int32)
+    # Trim to a multiple of the block size so the reshape below is exact.
+    trim = tuple(s - s % factor for s in seg.shape)
+    seg = seg[: trim[0], : trim[1], : trim[2]]
+    shape = tuple(s // factor for s in trim)
+
+    pv = np.zeros(shape + (5,), dtype=np.float32)
+    for k, labels in enumerate(_5TT_ASEG):
+        mask = np.isin(seg, labels).astype(np.float32)
+        pv[..., k] = mask.reshape(
+            shape[0], factor, shape[1], factor, shape[2], factor
+        ).mean(axis=(1, 3, 5))
+    # Volume 4 is pathological tissue: zero in a healthy template, as in a
+    # normal subject, and present so the image has the shape ACT expects.
+
+    affine = img.affine.copy()
+    affine[:3, :3] *= factor
+    nib.save(nib.Nifti1Image(pv, affine), str(outp))
+    return outp
+
+
 def main():
-    ap = argparse.ArgumentParser()
-    default_results = Path(
-        os.environ.get(
-            "BRAIN_FIG_RESULTS",
-            "/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test2_fast",
-        )
+    ap = argparse.ArgumentParser(
+        description="Render the brain.md figures from public reference data "
+        "(FreeSurfer fsaverage + TemplateFlow MNI152NLin2009cAsym)."
     )
-    ap.add_argument("--results-root", type=Path, default=default_results)
-    # Real study IDs are kept out of this repository; point at one with
-    # --subject or BRAIN_FIG_SUBJECT when regenerating the figures.
-    ap.add_argument("--subject", default=os.environ.get("BRAIN_FIG_SUBJECT", "sub-SUBJ01"))
-    ap.add_argument("--session", default="ses-2WK")
+    root = Path(__file__).resolve().parents[2]
+    ap.add_argument(
+        "--fsaverage",
+        type=Path,
+        default=Path(
+            os.environ.get(
+                "BRAIN_FIG_FSAVERAGE",
+                "/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/"
+                "data_mining/freesurfer/subjects/fsaverage",
+            )
+        ),
+        help="FreeSurfer fsaverage subject directory",
+    )
+    ap.add_argument(
+        "--templateflow",
+        type=Path,
+        default=Path(os.environ.get("TEMPLATEFLOW_HOME", root / "templateflow")),
+        help="TemplateFlow home containing tpl-MNI152NLin2009cAsym",
+    )
     ap.add_argument(
         "--out-dir",
         type=Path,
@@ -1130,41 +1325,12 @@ def main():
     )
     args = ap.parse_args()
 
-    R = args.results_root
-    sub = args.subject
-    ses = args.session
-    fs = R / "freesurfer" / sub
-    recon_deriv = (
-        R / "qsirecon_single_run_output" / "derivatives" / "qsirecon-MRtrix3_fork-SS3T_act-HSVS" / sub / ses / "dwi"
-    )
-    paths = {
-        "t1": fs / "mri" / "T1.mgz",
-        "aseg": fs / "mri" / "aseg.mgz",
-        "aparc": fs / "mri" / "aparc+aseg.mgz",
-        "surf": fs / "surf",
-        "stats": fs / "stats",
-        "preproc_t1w": R
-        / "qsiprep_single_run_output"
-        / sub
-        / "anat"
-        / f"{sub}_desc-preproc_T1w.nii.gz",
-        "dwiref": R
-        / "qsiprep_single_run_output"
-        / sub
-        / ses
-        / "dwi"
-        / f"{sub}_{ses}_acq-b1000_space-T1w_dwiref.nii.gz",
-        "hsvs": R
-        / "qsirecon_single_run_output"
-        / sub
-        / "anat"
-        / f"{sub}_space-ACPC_seg-hsvs_probseg.nii.gz",
-        "conn": recon_deriv / f"{sub}_{ses}_acq-b1000_space-T1w_connectivity.mat",
-    }
-
     out = args.out_dir
     out.mkdir(parents=True, exist_ok=True)
+    paths = public_paths(args.fsaverage, args.templateflow, out / ".cache")
     print(f"Writing figures to {out}")
+    print(f"  fsaverage:    {args.fsaverage}")
+    print(f"  templateflow: {args.templateflow}")
 
     jobs = [
         ("normal anatomy", lambda: fig_normal_anatomy(paths, out)),

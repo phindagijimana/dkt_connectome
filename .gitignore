@@ -109,8 +109,10 @@ backups/
 
 # Generated documentation artefacts. The markdown is the source; regenerate with
 # scripts/md_to_docx.py (.docx) and scripts/make_brain_figures.py (figures).
-/dwi_pipeline/*.docx
-/dwi_pipeline/figures/
+# These are tracked so the documents render on GitHub, which is only safe
+# because every figure is rendered from public templates (fsaverage, MNI152)
+# rather than from participants. Do not commit figures built from study data.
+/dwi_pipeline/figures/**/.cache/
 
 # Real study identifiers must not reach the public repository. Subject lists and
 # the per-subject scan-parameter table stay local; the tracked template and
