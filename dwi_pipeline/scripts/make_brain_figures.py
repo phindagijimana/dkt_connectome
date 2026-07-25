@@ -601,7 +601,7 @@ def fig_5tt(paths, out):
     finish(
         fig,
         out / "fig06_5tt_hsvs.png",
-        "Source: QSIRecon sub-TBI011204_space-ACPC_seg-hsvs_probseg.nii.gz "
+        "Source: QSIRecon sub-SUBJ01_space-ACPC_seg-hsvs_probseg.nii.gz "
         f"(shape {data.shape}). Values are partial volume fractions in [0, 1].",
     )
 

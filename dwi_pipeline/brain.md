@@ -832,7 +832,7 @@ A subtler point worth internalising: **left–right flips survive every one of t
 
 ### *(Practitioner)* What the 5TT image is
 
-The **five-tissue-type (5TT)** image is a 4-D volume with five 3-D partial-volume maps. For this subject, QSIRecon wrote `sub-TBI011204_space-ACPC_seg-hsvs_probseg.nii.gz` with shape `(135, 180, 147, 5)`. The MRtrix convention, verified against this file, is:
+The **five-tissue-type (5TT)** image is a 4-D volume with five 3-D partial-volume maps. For this subject, QSIRecon wrote `sub-SUBJ01_space-ACPC_seg-hsvs_probseg.nii.gz` with shape `(135, 180, 147, 5)`. The MRtrix convention, verified against this file, is:
 
 | Index | Tissue | Share of total PV here | ACT behaviour |
 |-------|--------|------------------------|---------------|
@@ -1379,9 +1379,9 @@ Requires `nibabel`, `matplotlib`, `numpy`, and `scipy`. Each figure caption stat
 | Figure | Source |
 |--------|--------|
 | 1, 2, 3, 4, 5, 11 | `freesurfer/sub-SUBJ01/` — FastSurfer 2.4.2 volumes, surfaces, and stats |
-| 6 | `qsirecon_single_run_output/.../sub-TBI011204_space-ACPC_seg-hsvs_probseg.nii.gz` |
+| 6 | `qsirecon_single_run_output/.../sub-SUBJ01_space-ACPC_seg-hsvs_probseg.nii.gz` |
 | 7 | Headers of `T1.mgz`, `desc-preproc_T1w.nii.gz`, `space-T1w_dwiref.nii.gz` |
-| 8 | `.../sub-TBI011204_ses-2WK_acq-b1000_space-T1w_connectivity.mat` |
+| 8 | `.../sub-SUBJ01_ses-2WK_acq-b1000_space-T1w_connectivity.mat` |
 | 9, 10, 12 | Schematic; drawn with matplotlib |
 
 ---

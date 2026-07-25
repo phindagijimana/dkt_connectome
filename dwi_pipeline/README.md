@@ -43,7 +43,7 @@ Slurm array:
 ```bash
 export RESULTS_ROOT=.../dwi_test_TBI
 export BIDS_DIR=.../phase2_test_bids
-export SUBJECT_LIST_FILE=dwi_pipeline/subjects_tbi011204_test.txt
+export SUBJECT_LIST_FILE=dwi_pipeline/subjects_subj01_test.txt
 ./dwi_pipeline/submit.sh
 ```
 
