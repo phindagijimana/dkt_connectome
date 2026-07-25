@@ -7,9 +7,10 @@ recon tool, because DKT is the only parcellation both `recon-all` and FastSurfer
 **Desikan–Killiany (DK, 84 nodes)** is available with `CONNECTOME_PARCELLATION=dk`, but only from
 `recon-all` — FastSurfer produces no DK atlas.
 
-For **atlas-only** connectomes (4S156 in QSIRecon, no Step 4), use [`dwi_connect_default/`](../dwi_connect_default/) → `RESULTS_ROOT=.../dwi_test_default`.
+For **atlas-only** connectomes (4S156 in QSIRecon, no Step 4), use [`dwi_connect_default/`](../dwi_connect_default/) with its own `RESULTS_ROOT`.
 
-For **TrackTBI**, use `RESULTS_ROOT=.../dwi_test_TBI` (see [`CIDUR_BIDS/dwi_test_TBI/README.md`](../CIDUR_BIDS/dwi_test_TBI/README.md)).
+Give each cohort, and each combination of settings, a separate `RESULTS_ROOT`,
+so that one run cannot overwrite another's outputs.
 
 ---
 
@@ -29,11 +30,11 @@ For **TrackTBI**, use `RESULTS_ROOT=.../dwi_test_TBI` (see [`CIDUR_BIDS/dwi_test
 ## Quick start
 
 ```bash
-cd /path/to/TrackTBI-Sub
+cd /path/to/repo
 
-# TrackTBI example (full pipeline)
-export RESULTS_ROOT=/path/to/CIDUR_BIDS/dwi_test_TBI
-export BIDS_DIR=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI/phase2_test_bids
+# Full pipeline
+export RESULTS_ROOT=/path/to/results
+export BIDS_DIR=/path/to/bids
 
 bash dwi_pipeline/subject.sh all SUBJ01
 ```
@@ -41,9 +42,9 @@ bash dwi_pipeline/subject.sh all SUBJ01
 Slurm array:
 
 ```bash
-export RESULTS_ROOT=.../dwi_test_TBI
-export BIDS_DIR=.../phase2_test_bids
-export SUBJECT_LIST_FILE=dwi_pipeline/subjects_subj01_test.txt
+export RESULTS_ROOT=/path/to/results
+export BIDS_DIR=/path/to/bids
+export SUBJECT_LIST_FILE=dwi_pipeline/subjects.txt
 ./dwi_pipeline/submit.sh
 ```
 
@@ -53,8 +54,8 @@ export SUBJECT_LIST_FILE=dwi_pipeline/subjects_subj01_test.txt
 
 | Setting | Default |
 |---------|---------|
-| `BIDS_DIR` | `.../CIDUR_BIDS/data_bids` |
-| `RESULTS_ROOT` | `.../CIDUR_BIDS/dwi_test` |
+| `BIDS_DIR` | your BIDS dataset root |
+| `RESULTS_ROOT` | your output directory |
 | `QSIRECON_SPEC` | `mrtrix_singleshell_ss3t_ACT-hsvs` |
 | `QSIRECON_ATLASES` | `4S156Parcels` |
 | `RECON_TOOL` | `freesurfer` (`recon-all -all`) |
@@ -107,7 +108,7 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 | `CONTAINER_FREESURFER` | `.../others/containers/freesurfer_7.4.1.sif` |
 | `CONTAINER_FASTSURFER` | `.../others/containers/fastsurfer_latest.sif` |
 | `FS_LICENSE` | `.../others/data_mining/freesurfer/license.txt` |
-| `TEMPLATEFLOW_HOME` | `TrackTBI-Sub/templateflow` |
+| `TEMPLATEFLOW_HOME` | `templateflow/` in the repo root |
 
 Pull FreeSurfer SIF: `sbatch dwi_pipeline/containers/pull_freesurfer_sif.sbatch`
 
@@ -150,11 +151,13 @@ Repair is **not** invoked automatically by `submit.sh`.
 
 ## Result folder guide
 
-| Folder | Pipeline | Step 4 |
-|--------|----------|--------|
-| `dwi_test_default` | Atlas connectome (`dwi_connect_default`, `RUN_CONNECTOME=0`) | off |
-| `dwi_test_TBI` | Full TrackTBI pipeline | on |
-| `dwi_test2` | CIDUR reference cohort (NAS: `Gugger_Lab/NIR/dwi_test2`) | on |
+Keep one `RESULTS_ROOT` per pipeline variant, because the two write different
+outputs and Step 4 is on in one and off in the other:
+
+| Pipeline | Step 4 | Connectome produced |
+|----------|--------|---------------------|
+| `dwi_pipeline` (this launcher) | on | `dkt_connectome.csv`, subject-native DKT, 78 nodes |
+| `dwi_connect_default` (`RUN_CONNECTOME=0`) | off | QSIRecon atlas connectome only (4S156) |
 
 ---
 

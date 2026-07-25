@@ -19,19 +19,19 @@ Tractography and the DK connectome both live in **QSIPrep T1w / dwiref space**. 
 
 ## Pipeline variants and result folders
 
-| Variant | Wrapper / entry | `RESULTS_ROOT` | Step 4 |
-|---------|-----------------|----------------|---------|
-| **Full pipeline** | `dwi_pipeline/subject.sh` | `.../dwi_test_TBI` (TrackTBI) or `.../dwi_test2` (CIDUR / NAS) | ON (`RUN_CONNECTOME=1`) |
-| **Atlas connectome only** | `dwi_connect_default/subject.sh` | `.../dwi_test_default` | OFF (`RUN_CONNECTOME=0`) |
+| Variant | Wrapper / entry | Step 4 |
+|---------|-----------------|--------|
+| **Full pipeline** | `dwi_pipeline/subject.sh` | ON (`RUN_CONNECTOME=1`) |
+| **Atlas connectome only** | `dwi_connect_default/subject.sh` | OFF (`RUN_CONNECTOME=0`) |
 
-**TrackTBI** subjects with the anatomical connectome use `dwi_test_TBI`. **CIDUR** test subjects and the shared NAS copy use `dwi_test2` (`smb://smdnas/gugger_lab/NIR/dwi_test2/`).
+`RESULTS_ROOT` is yours to choose. Give each cohort its own directory so that
+runs made with different settings cannot overwrite one another.
 
 Repo docs:
 
 - [`dwi_pipeline/README.md`](dwi_pipeline/README.md) — launcher reference
 - [`bids.md`](bids.md) — PE metadata and dwi-select
 - [`fmaps.md`](fmaps.md) — SDC / fieldmap behavior
-- [`CIDUR_BIDS/dwi_test_TBI/README.md`](CIDUR_BIDS/dwi_test_TBI/README.md) — TrackTBI runs
 
 ---
 
@@ -89,13 +89,13 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 
 | Input | Example path |
 |-------|----------------|
-| BIDS root | `.../TrackTBI/phase2_test_bids` (TrackTBI) or `.../CIDUR_BIDS/data_bids` |
+| BIDS root | `$BIDS_DIR` — any [BIDS](https://bids.neuroimaging.io/)-valid dataset |
 | Subject DWI | `sub-XXX/ses-*/dwi/*_dwi.nii.gz` |
 | Subject T1w | `sub-XXX/ses-*/anat/*_T1w.nii.gz` |
 | Fieldmap (optional) | `sub-XXX/ses-*/fmap/*` with `IntendedFor` in JSON |
 | Containers | `qsiprep.sif`, `freesurfer_7.4.1.sif`, `qsirecon.sif` |
 | FreeSurfer license | `license.txt` |
-| TemplateFlow cache | `.../TrackTBI-Sub/templateflow` |
+| TemplateFlow cache | `$TEMPLATEFLOW_HOME` (defaults to `templateflow/` in the repo) |
 
 ---
 
@@ -285,32 +285,24 @@ tck2connectome -symmetric -zero_diagonal \
 
 ## Running the pipeline
 
-### TrackTBI — full DK (recommended)
+### Full pipeline with the anatomical connectome (recommended)
 
 ```bash
-cd /path/to/TrackTBI-Sub
+cd /path/to/repo
 
-export BIDS_DIR=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI/phase2_test_bids
-export RESULTS_ROOT=/path/to/CIDUR_BIDS/dwi_test_TBI
+export BIDS_DIR=/path/to/bids
+export RESULTS_ROOT=/path/to/results
 export PIPELINE_MODE=all
 export RUN_CONNECTOME=1
 
 bash dwi_pipeline/subject.sh all SUBJ01
 ```
 
-### CIDUR / NAS cohort
-
-```bash
-export BIDS_DIR=.../CIDUR_BIDS/data_bids
-export RESULTS_ROOT=.../dwi_test2   # or NAS: /mnt/nfs/Gugger_Lab/NIR/dwi_test2
-bash dwi_pipeline/subject.sh all 001
-```
-
 ### Atlas connectome only (no Step 4)
 
 ```bash
-export RESULTS_ROOT=.../CIDUR_BIDS/dwi_test_default
-bash dwi_connect_default/subject.sh all 001
+export RESULTS_ROOT=/path/to/results_atlas_only
+bash dwi_connect_default/subject.sh all SUBJ01
 # or: ./dwi_connect_default/submit.sh
 ```
 
@@ -326,8 +318,8 @@ bash dwi_pipeline/subject.sh connectome SUBJ01
 ### Slurm array
 
 ```bash
-export RESULTS_ROOT=.../dwi_test_TBI
-export SUBJECT_LIST_FILE=dwi_pipeline/subjects_subj01_test.txt
+export RESULTS_ROOT=/path/to/results
+export SUBJECT_LIST_FILE=dwi_pipeline/subjects.txt
 ./dwi_pipeline/submit.sh
 ```
 
