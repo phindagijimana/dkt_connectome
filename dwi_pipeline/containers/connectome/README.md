@@ -15,7 +15,7 @@ matrix (the pipeline default) or the 84-node Desikan–Killiany one.
 | ANTs 2.4.3 | `qsirecon.sif` `/opt/ants` | ~381 MB |
 | MRtrix 3.0.4 | `qsirecon.sif` `/opt/mrtrix3-latest` | ~298 MB |
 
-Final **`connectome.sif`**: **~146 MB** (squashfs).
+Final **`dkt_connectome.sif`**: **~146 MB** (squashfs).
 
 Because the ANTs/MRtrix trees are copied in rather than installed, no package
 manager records their dependencies, so the base image declares the runtime
@@ -33,7 +33,7 @@ Validated: `subject.sh connectome TBI011204` with baked entrypoint →
 cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
 
 bash dwi_pipeline/containers/connectome/build_connectome.sh
-# -> .../others/containers/connectome.sif
+# -> .../others/containers/dkt_connectome.sif
 
 SKIP_STAGE=1 bash dwi_pipeline/containers/connectome/build_connectome.sh  # rebuild SIF only
 ```
@@ -42,7 +42,7 @@ Requires: `freesurfer_7.4.1.sif`, `qsirecon.sif`, `apptainer`, network for Ubunt
 
 ## Publish to Docker Hub
 
-Lab shareable as OCI on Docker Hub (`phindagijimana321/connectome`):
+Lab shareable as OCI on Docker Hub (`phindagijimana321/dkt_connectome`):
 
 ```bash
 # Build SIF first, then push with a Docker Hub access token
@@ -51,14 +51,14 @@ export DOCKERHUB_TOKEN=...   # hub.docker.com → Account Settings → Security
 bash dwi_pipeline/containers/connectome/publish_dockerhub.sh
 ```
 
-Pull elsewhere: `docker pull phindagijimana321/connectome:latest`
+Pull elsewhere: `docker pull phindagijimana321/dkt_connectome:latest`
 
 FreeSurfer binaries are in the image — use a **private** repo or restrict access; recipients still need a valid FS license at runtime.
 
 ## Share across the lab
 
 ```bash
-export CONTAINER_CONNECTOME=/mnt/nfs/.../others/containers/connectome.sif
+export CONTAINER_CONNECTOME=/mnt/nfs/.../others/containers/dkt_connectome.sif
 export FS_LICENSE=/path/to/license.txt
 bash dwi_pipeline/subject.sh connectome SUBJECT
 ```
@@ -81,6 +81,6 @@ reassigning that territory to neighbouring gyri.
 
 | Variable | Default | Notes |
 |----------|---------|-------|
-| `CONTAINER_CONNECTOME` | `.../others/containers/connectome.sif` | Shared image |
+| `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` | Shared image |
 | `CONNECTOME_BIND_ENTRYPOINT` | `0` | Set `1` to override entrypoint from repo |
 | `CONNECTOME_LEGACY_DUAL_CONTAINER` | `0` | Set `1` for old freesurfer + qsirecon runtime path |

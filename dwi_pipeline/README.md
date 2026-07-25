@@ -20,7 +20,7 @@ For **TrackTBI**, use `RESULTS_ROOT=.../dwi_test_TBI` (see [`CIDUR_BIDS/dwi_test
 | 1 | `qsiprep` | QSIPrep | Preprocessed DWI, `dwiref`, transforms |
 | 2 | `recon` | FreeSurfer / FastSurfer | `aparc+aseg.mgz`, surfaces |
 | 3 | `qsirecon` | QSIRecon (SS3T + ACT-HSVS) | Tractogram (~10M streamlines), optional 4S156 atlas connectome |
-| 4 | `connectome` | `connectome.sif` (FreeSurfer + ANTs + MRtrix3) | `dkt_connectome.csv` (78×78) |
+| 4 | `connectome` | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) | `dkt_connectome.csv` (78×78) |
 
 `bash subject.sh all SUBJECT` runs steps 1–4 sequentially.
 
@@ -103,7 +103,7 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 |----------|--------------|
 | `CONTAINER_QSIPREP` | `.../others/containers/qsiprep.sif` |
 | `CONTAINER_QSIRECON` | `.../others/containers/qsirecon.sif` |
-| `CONTAINER_CONNECTOME` | `.../others/containers/connectome.sif` |
+| `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` |
 | `CONTAINER_FREESURFER` | `.../others/containers/freesurfer_7.4.1.sif` |
 | `CONTAINER_FASTSURFER` | `.../others/containers/fastsurfer_latest.sif` |
 | `FS_LICENSE` | `.../others/data_mining/freesurfer/license.txt` |
@@ -174,7 +174,7 @@ work; the variables print a deprecation note.
 | `DK_PARCELLATION`, `DK_DETERMINISTIC`, … | `CONNECTOME_PARCELLATION`, `CONNECTOME_DETERMINISTIC`, … |
 | `dk_connectomes/` | `connectomes/` |
 | `dk_nodes.mif`, `dk_assignments.csv`, `dk_parcellation.json` | `nodes.mif`, `assignments.csv`, `parcellation.json` |
-| `dk_connectome.sif` | `connectome.sif` |
+| `dk_connectome.sif` | `dkt_connectome.sif` |
 
 The **matrix filename stays parcellation-specific** — `dkt_connectome.csv` or
 `dk_connectome.csv` — because 78- and 84-node results must never be pooled.

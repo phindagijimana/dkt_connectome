@@ -39,7 +39,7 @@
 #   desc-preproc_T1w (QSIPrep's packaged from-T1wNative_to-T1wACPC .mat targets a
 #   reoriented T1wNative frame, not FS scanner-native rawavg), applies that warp
 #   to labels, then resamples onto dwiref (-n GenericLabel).
-#   Runs in CONTAINER_CONNECTOME (connectome.sif: FreeSurfer + ANTs + MRtrix3).
+#   Runs in CONTAINER_CONNECTOME (dkt_connectome.sif: FreeSurfer + ANTs + MRtrix3).
 #   Build: bash dwi_pipeline/containers/connectome/build_connectome.sh
 #   Legacy dual-container path: CONNECTOME_LEGACY_DUAL_CONTAINER=1 (freesurfer + qsirecon).
 #   Both recon tools yield the same parcellation by default: Desikan-Killiany-
@@ -237,7 +237,7 @@ if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
       "Or set CONTAINER_FREESURFER to a full FreeSurfer 7.4.1 image path."
   fi
 fi
-_CONNECTOME_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/connectome.sif"
+_CONNECTOME_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif"
 CONTAINER_CONNECTOME="${CONTAINER_CONNECTOME:-${_CONNECTOME_SIF_DEFAULT}}"
 TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${TRACKTBI_ROOT}/templateflow}"
 FS_LICENSE="${FS_LICENSE:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt}"

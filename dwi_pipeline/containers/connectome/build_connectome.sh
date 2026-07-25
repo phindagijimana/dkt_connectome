@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build connectome.sif — lean shareable Step 4 image (~500 MB).
+# Build dkt_connectome.sif — lean shareable Step 4 image (~500 MB).
 #
 # Stages from your existing pipeline SIFs (no version drift vs dual-container Step 4):
 #   freesurfer_7.4.1.sif  → mri_label2vol, mri_convert, FreeSurferColorLUT.txt (~8 MB)
@@ -21,10 +21,10 @@ mkdir -p "${APPTAINER_TMPDIR}"
 
 FS_SIF="${CONTAINER_FREESURFER:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/freesurfer_7.4.1.sif}"
 QSI_SIF="${CONTAINER_QSIRECON:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif}"
-OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/connectome.sif}"
-IMAGE_TAG="${IMAGE_TAG:-connectome:latest}"
+OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif}"
+IMAGE_TAG="${IMAGE_TAG:-dkt_connectome:latest}"
 
-echo "=== connectome build (legacy-staged lean) ==="
+echo "=== dkt_connectome build (legacy-staged lean) ==="
 echo "  FS source:  ${FS_SIF}"
 echo "  QSI source: ${QSI_SIF}"
 echo "  Output SIF: ${OUT_SIF}"
