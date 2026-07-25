@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Structural connectome from a FreeSurfer parcellation + QSIRecon tractogram.
-# Intended to run inside connectome.sif (or on host with tools on PATH).
+# Intended to run inside dkt_connectome.sif (or on host with tools on PATH).
 #
 # The node set follows whichever segmentation and labelconvert LUT the caller
 # passes in — Desikan-Killiany or Desikan-Killiany-Tourville — so nothing here

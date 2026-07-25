@@ -523,13 +523,13 @@ The magnitude is far below scan–rescan variability and will not change a stati
 | Diffusion modeling | **MRtrix3** | CSD, ACT, `tckgen`, SIFT2, connectomes |
 | Tissue seg (alt.) | **FSL FAST** | ACT-fast 5TT without surfaces |
 | Registration | **ANTs** | Affine / SyN, `antsApplyTransforms` |
-| Connectome step | **connectome.sif** | FreeSurfer `mri_label2vol` + ANTs + MRtrix |
+| Connectome step | **dkt_connectome.sif** | FreeSurfer `mri_label2vol` + ANTs + MRtrix |
 | Orchestration | **`subject.sh`**, Slurm | Four-step batch processing |
 | Containers | Apptainer/Singularity | Reproducible HPC execution |
 
-### 14.1 Runtime libraries in `connectome.sif`
+### 14.1 Runtime libraries in `dkt_connectome.sif`
 
-`connectome.sif` is assembled rather than built from source: a minimal `ubuntu:22.04` base with the FreeSurfer, ANTs and MRtrix3 trees **copied in from `qsirecon.sif`**. This keeps the image small (~150 MB against several GB) and guarantees Step 4 uses the *same binaries* as Step 3, so no version skew can appear between the tractogram and the parcellation that indexes it.
+`dkt_connectome.sif` is assembled rather than built from source: a minimal `ubuntu:22.04` base with the FreeSurfer, ANTs and MRtrix3 trees **copied in from `qsirecon.sif`**. This keeps the image small (~150 MB against several GB) and guarantees Step 4 uses the *same binaries* as Step 3, so no version skew can appear between the tractogram and the parcellation that indexes it.
 
 The cost of copying binaries instead of installing packages is that **no package manager records their dependencies**. Each binary still needs its shared libraries at run time, and the base image must supply them explicitly:
 

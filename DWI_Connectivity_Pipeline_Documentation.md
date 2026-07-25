@@ -231,7 +231,7 @@ frontal/temporal poles instead of reassigning their territory to neighbouring gy
 
 | Sub-step | Container |
 |----------|-----------|
-| 4a–4f (default) | `connectome.sif` — FreeSurfer 7.4.1 + ANTs + MRtrix3 |
+| 4a–4f (default) | `dkt_connectome.sif` — FreeSurfer 7.4.1 + ANTs + MRtrix3 |
 | 4a–4f (legacy) | `freesurfer_7.4.1.sif` + `qsirecon.sif` when `CONNECTOME_LEGACY_DUAL_CONTAINER=1` |
 
 Build the Step 4 image:
