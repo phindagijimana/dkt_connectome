@@ -23,8 +23,9 @@ WORK_DIR=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/int
 FS_LICENSE=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/data_mining/freesurfer/license.txt
 BIDS_FILTER=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/bids_filter_run2.json
 
-# Subject to process (without 'sub-' prefix)
-SUBJECT="TBI031066"
+# Subject to process (without 'sub-' prefix). Real study IDs are kept out of
+# this repository, so override it: SUBJECT=<id> bash run_qsiprep_run2.sh
+SUBJECT="${SUBJECT:-SUBJ03}"
 
 # Create TemplateFlow directory
 mkdir -p $TEMPLATEFLOW_HOME

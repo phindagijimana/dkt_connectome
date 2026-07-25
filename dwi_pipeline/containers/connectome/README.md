@@ -24,13 +24,13 @@ libraries by hand (`libtiff5`, `libpng16-16`, `libfftw3-double3`, `zlib1g`,
 fails if any library is unresolved — a missing one does not break the build,
 only every later run, with exit 127 and no output.
 
-Validated: `subject.sh connectome TBI011204` with baked entrypoint →
+Validated: `subject.sh connectome SUBJ01` with baked entrypoint →
 **byte-identical** matrix vs job 48036.
 
 ## Build
 
 ```bash
-cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
+cd /path/to/TrackTBI-Sub
 
 bash dwi_pipeline/containers/connectome/build_connectome.sh
 # -> .../others/containers/dkt_connectome.sif

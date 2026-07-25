@@ -82,8 +82,8 @@ python3 dwi_pipeline/scripts/build_bids_filter.py \
 Sidecar repair is **not** run inside `subject.sh`. Apply fixes separately, then submit the pipeline:
 
 ```bash
-./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids TBI011204 --dry-run
-./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids TBI011204
+./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01 --dry-run
+./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01
 ```
 
 See [`bids.md`](bids.md) §9 for TRT anchors, `IntendedFor`, and spreadsheet-driven repair.

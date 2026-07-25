@@ -1,6 +1,6 @@
 # BIDS phase-encoding metadata (DWI / fmap sidecars)
 
-This note documents **phase-encoding (PE) readout fields** and **fieldmap linking** in BIDS JSON sidecars: what BIDS requires, what QSIPrep needs, credible formulas, and how we repaired sparse Siemens exports (notably **sub-TBI011204**).
+This note documents **phase-encoding (PE) readout fields** and **fieldmap linking** in BIDS JSON sidecars: what BIDS requires, what QSIPrep needs, credible formulas, and how we repaired sparse Siemens exports (notably **sub-SUBJ01**).
 
 **Related:**
 
@@ -47,7 +47,7 @@ Example: `"j-"` = phase encode along column axis, reverse direction.
 
 | Location | QSIPrep need | Notes |
 |----------|--------------|-------|
-| **DWI JSON** | **`PhaseEncodingDirection` + `TotalReadoutTime`** | Missing TRT on DWI caused `KeyError: 'TotalReadoutTime'` for TBI011204 |
+| **DWI JSON** | **`PhaseEncodingDirection` + `TotalReadoutTime`** | Missing TRT on DWI caused `KeyError: 'TotalReadoutTime'` for SUBJ01 |
 | **phasediff JSON** | **`EchoTime1` + `EchoTime2`** | Builds the fieldmap (Case 2) |
 | **phasediff / magnitude JSON** | PE + TRT **optional** | Good practice; values should **match DWI** if present |
 | **Fmap-only PE/TRT** | Does **not** replace DWI metadata | If PE/TRT are only on fmaps and missing from DWI, QSIPrep still fails |
@@ -68,7 +68,7 @@ What matters:
 - Valid JSON syntax
 - Sidecar filename matches NIfTI (`sub-XXX_dwi.json` ↔ `sub-XXX_dwi.nii.gz`)
 
-We group PE fields after `PhaseEncodingAxis` in TBI011204 sidecars **for human readability only**.
+We group PE fields after `PhaseEncodingAxis` in SUBJ01 sidecars **for human readability only**.
 
 ---
 
@@ -121,7 +121,7 @@ EffectiveEchoSpacing         = 1 / (BWpppe × ReconMatrixPE)
 TotalReadoutTime             = EffectiveEchoSpacing × (AcquisitionMatrixPE − 1)
 ```
 
-Calibrated against TrioTim sidecars where dcm2niix exported full PE metadata (e.g. **sub-TBI011011**). Prefer §4 formulas anchored on vendor TRT when available.
+Calibrated against TrioTim sidecars where dcm2niix exported full PE metadata (e.g. **sub-SUBJ02**). Prefer §4 formulas anchored on vendor TRT when available.
 
 ---
 
@@ -133,7 +133,7 @@ Calibrated against TrioTim sidecars where dcm2niix exported full PE metadata (e.
 | **`AcquisitionMatrixPE`** | DICOM **(0018,9231)** via dcm2niix | Acquisition k-space lines; **can differ** from recon |
 | **`PhaseEncodingSteps`** | DICOM / dcm2niix | k-space coverage (e.g. partial Fourier); **do not** substitute for `ReconMatrixPE` |
 
-BIDS warns `ReconMatrixPE` is **not always equal** to `AcquisitionMatrixPE` (GRAPPA, oversampling, interpolation). For **TBI011204** both are **96**, matching NIfTI shape `(96, 96, 64)` with `PhaseEncodingDirection: j-` → column dim = 96.
+BIDS warns `ReconMatrixPE` is **not always equal** to `AcquisitionMatrixPE` (GRAPPA, oversampling, interpolation). For **SUBJ01** both are **96**, matching NIfTI shape `(96, 96, 64)` with `PhaseEncodingDirection: j-` → column dim = 96.
 
 **Confirm recon PE size:** read NIfTI dimensions along the PE axis from `PhaseEncodingDirection`, or trust dcm2niix `ReconMatrixPE` when it matches the NIfTI.
 
@@ -145,7 +145,7 @@ BIDS **recommends** `IntendedFor` on fieldmap sidecars to list which target imag
 
 **Alternative (newer BIDS):** `B0FieldIdentifier` / `B0FieldSource` — optional; `IntendedFor` alone is sufficient for QSIPrep on Case 2 datasets.
 
-### TBI011204 (current)
+### SUBJ01 (current)
 
 All three fmap sidecars (`magnitude1`, `magnitude2`, `phasediff`) in `phase2_test_bids` and `phase2_test`:
 
@@ -221,9 +221,9 @@ BandwidthPerPixelPhaseEncode = 1 / (0.000550012 × 96) = 18.938995 Hz/px
 
 **Paths updated (both BIDS trees):**
 
-- `TrackTBI/phase2_test_bids/sub-TBI011204/ses-2WK/dwi/sub-TBI011204_ses-2WK_acq-b1000_dwi.json`
+- `TrackTBI/phase2_test_bids/sub-SUBJ01/ses-2WK/dwi/sub-TBI011204_ses-2WK_acq-b1000_dwi.json`
 - `.../fmap/magnitude1.json`, `magnitude2.json`, `phasediff.json`
-- Copied to `TrackTBI/phase2_test/sub-TBI011204/...`
+- Copied to `TrackTBI/phase2_test/sub-SUBJ01/...`
 
 **Note:** QSIPrep outputs generated **before** the TRT update still used the old readout time unless rerun.
 
@@ -285,18 +285,18 @@ Expect log lines: keep `acq-b1000_dwi`; keep default fmaps `(IntendedFor)`; **no
 
 ### Sidecar repair pipeline (before QSIPrep)
 
-Apply the TBI011204 metadata fixes reproducibly:
+Apply the SUBJ01 metadata fixes reproducibly:
 
 ```bash
 # Dry-run
-./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids TBI011204 --dry-run
+./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01 --dry-run
 
-# Apply (TRT from config subjects.TBI011204.total_readout_time)
-./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids TBI011204
+# Apply (TRT from config subjects.SUBJ01.total_readout_time)
+./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01
 
 # Override TRT for one run
 python3 dwi_pipeline/scripts/repair_bids_sidecars.py \
-  --bids-dir /path/to/bids --subject TBI011204 --total-readout-time 0.0522511
+  --bids-dir /path/to/bids --subject SUBJ01 --total-readout-time 0.0522511
 ```
 
 **Per subject in config** (`bids_repair_defaults.json`): set `subjects.<ID>.total_readout_time` (vendor anchor).  
@@ -346,11 +346,16 @@ Required columns (flexible names):
 # One subject; TRT/PE taken from the sheet row for that ID
 python3 dwi_pipeline/scripts/repair_bids_sidecars.py \
   --bids-dir /path/to/bids \
-  --subject TBI011204 \
+  --subject SUBJ01 \
   --subjects-table /path/to/subjects.csv
 ```
 
 Table values **override** `subjects.<ID>` in `bids_repair_defaults.json` for matching IDs.
+
+Because this repository is public, the IDs in `bids_repair_defaults.json` and in
+the template CSV are **placeholders** (`SUBJ01`, `SUBJ02`), not real study IDs.
+Keep the real mapping in an untracked table — `dwi_pipeline/config/bids_repair_subjects.local.csv`
+is git-ignored for this purpose — and pass it with `--subjects-table`.
 
 ---
 

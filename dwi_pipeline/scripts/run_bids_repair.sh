@@ -2,9 +2,9 @@
 # Repair BIDS DWI/fmap sidecars for QSIPrep (PE, phasediff echoes, IntendedFor).
 #
 # Usage:
-#   ./run_bids_repair.sh /path/to/bids TBI011204 [TBI011011 ...]
+#   ./run_bids_repair.sh /path/to/bids SUBJ01 [SUBJ02 ...]
 #   ./run_bids_repair.sh /path/to/bids --subjects-table subjects.csv --all-from-table
-#   ./run_bids_repair.sh /path/to/bids TBI011204 --dry-run
+#   ./run_bids_repair.sh /path/to/bids SUBJ01 --dry-run
 #
 set -euo pipefail
 

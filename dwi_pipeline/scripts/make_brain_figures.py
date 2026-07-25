@@ -284,7 +284,7 @@ def fig_normal_anatomy(paths, out):
         panel_label(ax, name)
 
     fig.suptitle(
-        "Figure 1 — Normal T1-weighted anatomy in three orthogonal planes (subject TBI011204)",
+        "Figure 1 — Normal T1-weighted anatomy in three orthogonal planes",
         fontsize=11,
     )
     finish(
@@ -1029,7 +1029,7 @@ def fig_volumetrics(paths, out):
     finish(
         fig,
         out / "fig11_volumetrics.png",
-        f"Source: {stats_path.name} produced by FastSurfer 2.4.2 for subject TBI011204. "
+        f"Source: {stats_path.name} produced by FastSurfer 2.4.2. "
         "eTIV is used to normalise volumes across head sizes.",
     )
 
@@ -1119,7 +1119,9 @@ def main():
         )
     )
     ap.add_argument("--results-root", type=Path, default=default_results)
-    ap.add_argument("--subject", default="sub-TBI011204")
+    # Real study IDs are kept out of this repository; point at one with
+    # --subject or BRAIN_FIG_SUBJECT when regenerating the figures.
+    ap.add_argument("--subject", default=os.environ.get("BRAIN_FIG_SUBJECT", "sub-SUBJ01"))
     ap.add_argument("--session", default="ses-2WK")
     ap.add_argument(
         "--out-dir",

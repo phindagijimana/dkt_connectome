@@ -111,3 +111,9 @@ backups/
 # scripts/md_to_docx.py (.docx) and scripts/make_brain_figures.py (figures).
 /dwi_pipeline/*.docx
 /dwi_pipeline/figures/
+
+# Real study identifiers must not reach the public repository. Subject lists and
+# the per-subject scan-parameter table stay local; the tracked template and
+# defaults carry placeholder IDs only.
+/dwi_pipeline/subjects_tbi*.txt
+/dwi_pipeline/config/bids_repair_subjects.local.csv

@@ -159,7 +159,7 @@ The middle row yields a plausible-looking 78-node matrix with no empty nodes and
 
 The `--segmentation` argument is what makes this real rather than nominal. The container defaults to `aparc+aseg.mgz` and cannot infer the caller's intent, so a version that chose the DKT image in the driver but never passed it through would read the DK image, apply the DKT table, and lose those 12,112 voxels while reporting the DKT filename in its provenance — the failure looks exactly like success. That is not hypothetical: it is the state this pipeline was in for one revision, and the numbers below are the difference it made.
 
-**The difference is not cosmetic.** Measured on `sub-TBI011204` (`recon-all`, deterministic mode), comparing a true DKT run against what the DK-image-plus-DKT-table path produced:
+**The difference is not cosmetic.** Measured on `sub-SUBJ01` (`recon-all`, deterministic mode), comparing a true DKT run against what the DK-image-plus-DKT-table path produced:
 
 | Matrix | Nodes | Assigned streamlines |
 |---|---|---|
