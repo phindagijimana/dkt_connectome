@@ -1,0 +1,17 @@
+{
+  "target_shell_b": 1300,
+  "shell_tolerance": 100,
+  "b0_tolerance": 50,
+  "match_mode": "contains_target",
+  "allow_multi_shell": false,
+  "include_fmaps": true,
+  "exclude_fmap_acquisitions": [
+    "rs"
+  ],
+  "include_sessions": [
+    "6MO"
+  ],
+  "exclude_acquisitions": [],
+  "on_no_match": "error",
+  "dwi_acquisition": null
+}

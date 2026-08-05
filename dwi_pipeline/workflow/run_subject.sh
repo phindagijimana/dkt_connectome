@@ -1,0 +1,241 @@
+#!/bin/bash
+# =============================================================================
+# run_subject.sh — subject.sh-equivalent CLI in front of the Snakemake
+# plugin/workflow engine. Translates (mode, subject, flags) into a
+# `snakemake --config ... -- <target>` invocation, using a generated
+# override configfile for anything that needs a nested config key (--config
+# on the Snakemake CLI itself only sets flat top-level keys).
+#
+# Usage (mirrors dwi_pipeline/subject.sh exactly):
+#   bash run_subject.sh all 014                  # full pipeline
+#   bash run_subject.sh all 014 --fastsurfer
+#   bash run_subject.sh all 014 --fast-fs         # FastSurfer + --fsaparc
+#   bash run_subject.sh all 014 --no-recon
+#   bash run_subject.sh all 014 --no-connectome   # (Step 5 with it)
+#   bash run_subject.sh all 014 --no-inpaint
+#   bash run_subject.sh all 014 --no-node-strength
+#   bash run_subject.sh qsiprep 014
+#   bash run_subject.sh inpaint 014               # Step 1.5 only (needs a lesion mask)
+#   bash run_subject.sh recon 014 --fastsurfer
+#   bash run_subject.sh qsirecon 014
+#   bash run_subject.sh connectome 014
+#   bash run_subject.sh nodestrength 014
+#
+# Not yet ported from subject.sh (use subject.sh directly for these):
+#   CONNECTOME_LEGACY_DUAL_CONTAINER=1.
+#
+# Extra flags not in subject.sh:
+#   --dry-run     forward -n to snakemake (show the plan, run nothing)
+#   --            everything after this is passed through to snakemake as-is
+# =============================================================================
+set -euo pipefail
+set +H
+
+WORKFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DWI_PIPELINE_DIR="$(dirname "${WORKFLOW_DIR}")"
+COMMON_SH="${WORKFLOW_DIR}/lib/common.sh"
+RESOLVE_SESSION_PY="${WORKFLOW_DIR}/lib/resolve_session.py"
+source "${COMMON_SH}"
+
+PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength}"
+[[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
+SUBJECT="${2:?Need subject id}"
+SUBJECT="${SUBJECT#sub-}"
+shift 2 || true
+
+NTHREADS="${NTHREADS:-8}"
+RESULTS_ROOT="${RESULTS_ROOT:-}"
+BIDS_DIR="${BIDS_DIR:-}"
+DRY_RUN=0
+declare -A OVERRIDES=()   # dotted-path -> YAML scalar value
+[[ -n "${RECON_SESSION:-}" ]] && OVERRIDES[recon.session]="${RECON_SESSION}"
+declare -a SNAKEMAKE_PASSTHROUGH=()
+
+TRACKTBI_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${TRACKTBI_ROOT}/.cache}"
+mkdir -p "${XDG_CACHE_HOME}"
+
+# Apply subject.sh-equivalent env vars when CLI flags did not already set them.
+_apply_env() {
+  local key="$1" val="${2:-}"
+  [[ -n "${val}" ]] || return 0
+  [[ -z "${OVERRIDES[$key]+x}" ]] && OVERRIDES["$key"]="$val"
+}
+[[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && _apply_env qsiprep.use_syn_sdc true
+[[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && _apply_env qsiprep.fmap_retry true
+_apply_env qsiprep.bids_filter        "${QSIPREP_BIDS_FILTER:-}"
+_apply_env dwi_select.json            "${DWI_SELECT_JSON:-}"
+_apply_env dwi_select.shell_b         "${DWI_SHELL_B:-}"
+[[ "${QSIPREP_NO_DWI_FILTER:-0}" == "1" ]] && _apply_env dwi_select.enabled false
+_apply_env recon.enabled              "$([[ "${RUN_RECON:-1}" == "1" ]] && echo true || echo false)"
+_apply_env recon.tool                 "${RECON_TOOL:-}"
+_apply_env recon.fsaparc              "$([[ "${RECON_FSAPARC:-0}" == "1" ]] && echo true || echo false)"
+_apply_env recon.fastsurfer_device    "${RECON_FASTSURFER_DEVICE:-}"
+_apply_env recon.session              "${RECON_SESSION:-}"
+_apply_env recon_out                  "${RECON_OUT:-}"
+_apply_env fs_subjects_dir            "${FS_SUBJECTS_DIR:-}"
+_apply_env nodestrength_out           "${NODESTRENGTH_OUT:-}"
+_apply_env inpaint.enabled            "$([[ "${RUN_INPAINT:-1}" == "1" ]] && echo true || echo false)"
+_apply_env inpaint.require_mask       "$([[ "${INPAINT_REQUIRE_MASK:-0}" == "1" ]] && echo true || echo false)"
+_apply_env inpaint.dilate             "${INPAINT_DILATE:-}"
+_apply_env inpaint.device             "${INPAINT_DEVICE:-}"
+_apply_env inpaint.batch_size         "${INPAINT_BATCH_SIZE:-}"
+_apply_env inpaint.labels             "${INPAINT_LABELS:-}"
+_apply_env inpaint.binarize           "$([[ "${INPAINT_BINARIZE:-0}" == "1" ]] && echo true || echo false)"
+_apply_env inpaint.fail_on_qc         "$([[ "${INPAINT_FAIL_ON_QC:-0}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.enabled         "$([[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.parcellation    "${CONNECTOME_PARCELLATION:-}"
+_apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
+_apply_env nodestrength.enabled       "$([[ "${RUN_NODESTRENGTH:-1}" == "1" ]] && echo true || echo false)"
+_apply_env nodestrength.strength_only "$([[ "${NODESTRENGTH_STRENGTH_ONLY:-0}" == "1" ]] && echo true || echo false)"
+_apply_env nodestrength.no_report     "$([[ "${NODESTRENGTH_NO_REPORT:-0}" == "1" ]] && echo true || echo false)"
+_apply_env qsirecon.spec              "${QSIRECON_SPEC:-}"
+if [[ -n "${QSIRECON_ATLASES:-}" ]]; then
+  _apply_env qsirecon.atlases         "${QSIRECON_ATLASES}"
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true ;;
+    --fmap-retry)          OVERRIDES[qsiprep.fmap_retry]=true ;;
+    --bids-filter)         OVERRIDES[qsiprep.bids_filter]="${2:?Need path after --bids-filter}"; shift ;;
+    --fastsurfer)          OVERRIDES[recon.tool]=fastsurfer ;;
+    --freesurfer)          OVERRIDES[recon.tool]=freesurfer ;;
+    --fast-fs)             OVERRIDES[recon.tool]=fastsurfer; OVERRIDES[recon.fsaparc]=true ;;
+    --no-recon)            OVERRIDES[recon.enabled]=false ;;
+    --no-connectome|--no-dk) OVERRIDES[connectome.enabled]=false ;;
+    --inpaint)             OVERRIDES[inpaint.enabled]=true ;;
+    --no-inpaint)          OVERRIDES[inpaint.enabled]=false ;;
+    --node-strength)       OVERRIDES[nodestrength.enabled]=true ;;
+    --no-node-strength)    OVERRIDES[nodestrength.enabled]=false ;;
+    --strength-only)       OVERRIDES[nodestrength.strength_only]=true ;;
+    --no-report)           OVERRIDES[nodestrength.no_report]=true ;;
+    --dwi-shell)           OVERRIDES[dwi_select.shell_b]="${2:?Need b-value after --dwi-shell}"; shift ;;
+    --dwi-select)          OVERRIDES[dwi_select.json]="${2:?Need path after --dwi-select}"; shift ;;
+    --no-dwi-filter)       OVERRIDES[dwi_select.enabled]=false ;;
+    --recon-session)       OVERRIDES[recon.session]="${2:?Need session after --recon-session}"; shift ;;
+    --dry-run|-n)          DRY_RUN=1 ;;
+    --)
+      shift
+      SNAKEMAKE_PASSTHROUGH+=("$@")
+      break
+      ;;
+    -h|--help)
+      awk '/^# Usage/,/^# ={10,}$/' "$0" | sed 's/^# \{0,1\}//; $d'
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1 (see --help)"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# --- Build the override configfile (nested keys `--config` can't express) ---
+OVERRIDE_YAML="$(mktemp /tmp/dwi_workflow_override_XXXXXX.yaml)"
+trap 'rm -f "${OVERRIDE_YAML}"' EXIT
+{
+  # subject MUST be quoted: Snakemake's --config / YAML scalar parsing would
+  # otherwise read a leading-zero id like "001" as the integer 1.
+  echo "subject: \"${SUBJECT}\""
+  [[ -n "${RESULTS_ROOT}" ]] && echo "results_root: \"${RESULTS_ROOT}\""
+  [[ -n "${BIDS_DIR}" ]]     && echo "bids_dir: \"${BIDS_DIR}\""
+  echo "nthreads: ${NTHREADS}"
+} > "${OVERRIDE_YAML}"
+python3 - "${OVERRIDE_YAML}" <<PY
+import yaml
+path = "${OVERRIDE_YAML}"
+data = yaml.safe_load(open(path)) or {}
+overrides = {
+$(for k in "${!OVERRIDES[@]}"; do printf '    %s: %s,\n' "\"${k}\"" "\"${OVERRIDES[$k]}\""; done)
+}
+def to_scalar(v):
+    if v in ("true", "false"):
+        return v == "true"
+    try:
+        return int(v)
+    except ValueError:
+        return v
+for dotted, raw in overrides.items():
+    node = data
+    parts = dotted.split(".")
+    for part in parts[:-1]:
+        node = node.setdefault(part, {})
+    val = to_scalar(raw)
+    if parts[-1] == "atlases" and isinstance(val, str):
+        node[parts[-1]] = val.split()
+    else:
+        node[parts[-1]] = val
+with open(path, "w") as fh:
+    yaml.safe_dump(data, fh)
+PY
+
+case "${PIPELINE_MODE}" in
+  all)          TARGET="all" ;;
+  qsiprep)      TARGET="target_qsiprep" ;;
+  recon)        TARGET="target_recon" ;;
+  qsirecon)     TARGET="target_qsirecon" ;;
+  connectome)   TARGET="target_connectome" ;;
+  nodestrength) TARGET="target_nodestrength" ;;
+  inpaint)      TARGET="target_inpaint" ;;
+  *)
+    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength)"
+    exit 1
+    ;;
+esac
+
+# --- Step 1.5 no-op guard for standalone `inpaint` mode -----------------------
+# Mirrors subject.sh's run_inpaint(): calling the plugin for a subject with
+# no lesion mask is a silent no-op, not an error, unless require_mask is set.
+if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
+  INPAINT_ENABLED="${OVERRIDES[inpaint.enabled]:-true}"
+  if [[ "${INPAINT_ENABLED}" == "true" ]]; then
+    _results_root="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
+    _bids_dir="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
+    _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
+    mkdir -p "$(dirname "${_filter_cache}")"
+    _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
+    _dwi_select_json="${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-${DWI_PIPELINE_DIR}/config/dwi_select_b${_dwi_shell_b}.json}}"
+    _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
+    declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
+    if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
+      _resolve_session_args+=(--recon-session "${OVERRIDES[recon.session]:-${RECON_SESSION}}")
+    elif [[ -n "${_static_filter}" ]]; then
+      _resolve_session_args+=(--static-bids-filter "${_static_filter}")
+    else
+      _resolve_session_args+=(--dwi-select-json "${_dwi_select_json}")
+    fi
+    _session="$(python3 "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
+    BIDS_DIR="${_bids_dir}"
+    _mask="$(find_lesion_mask "${SUBJECT}" "${_session}")"
+    if [[ -z "${_mask}" ]]; then
+      _require_mask="${OVERRIDES[inpaint.require_mask]:-false}"
+      if [[ "${_require_mask}" == "true" ]]; then
+        _pipeline_fail "inpaint" "require_mask=true but no lesion mask found for sub-${SUBJECT} ses-${_session}"
+      fi
+      echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${_session} — skipping Step 1.5 (no-op, same as subject.sh)"
+      exit 0
+    fi
+  fi
+fi
+
+declare -a CMD=(
+  snakemake -s "${WORKFLOW_DIR}/Snakefile"
+  --directory "${DWI_PIPELINE_DIR}"
+  # Absolute path: --directory chdir's before the Snakefile's own
+  # `configfile: "config/config.yaml"` directive resolves its relative path,
+  # so that directive alone would look under DWI_PIPELINE_DIR/config/ instead
+  # of workflow/config/ and miss every default. Pass it explicitly here too.
+  --configfile "${WORKFLOW_DIR}/config/config.yaml" "${OVERRIDE_YAML}"
+  --cores "${NTHREADS}"
+  --rerun-incomplete
+)
+((DRY_RUN)) && CMD+=(--dry-run)
+CMD+=("${SNAKEMAKE_PASSTHROUGH[@]}")
+CMD+=(-- "${TARGET}")
+
+echo "+ ${CMD[*]}"
+exec "${CMD[@]}"

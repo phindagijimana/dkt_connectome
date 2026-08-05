@@ -19,9 +19,9 @@ APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-${HERE}/.apptainer_tmp}"
 export APPTAINER_TMPDIR SINGULARITY_TMPDIR="${APPTAINER_TMPDIR}" PROOT_TMP_DIR="${APPTAINER_TMPDIR}"
 mkdir -p "${APPTAINER_TMPDIR}"
 
-FS_SIF="${CONTAINER_FREESURFER:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/freesurfer_7.4.1.sif}"
-QSI_SIF="${CONTAINER_QSIRECON:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif}"
-OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif}"
+FS_SIF="${CONTAINER_FREESURFER:-/path/to/others/containers/freesurfer_7.4.1.sif}"
+QSI_SIF="${CONTAINER_QSIRECON:-/path/to/others/containers/qsirecon.sif}"
+OUT_SIF="${OUT_SIF:-/path/to/others/containers/dkt_connectome.sif}"
 IMAGE_TAG="${IMAGE_TAG:-dkt_connectome:latest}"
 
 echo "=== dkt_connectome build (legacy-staged lean) ==="

@@ -19,7 +19,7 @@ set -euo pipefail
 DOCKERHUB_USER="${DOCKERHUB_USER:-phindagijimana321}"
 IMAGE_NAME="${IMAGE_NAME:-dkt_connectome}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
-SIF="${SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif}"
+SIF="${SIF:-/path/to/others/containers/dkt_connectome.sif}"
 URI="oras://registry-1.docker.io/${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 [[ -f "${SIF}" ]] || { echo "ERROR: missing SIF: ${SIF}"; exit 1; }

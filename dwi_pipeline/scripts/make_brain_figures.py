@@ -38,7 +38,7 @@ FS_LUT_CANDIDATES = [
     / "containers/connectome/build_ctx_lean/freesurfer/FreeSurferColorLUT.txt",
     Path(os.environ.get("FS_LUT", "/opt/freesurfer/FreeSurferColorLUT.txt")),
     Path("/opt/freesurfer/FreeSurferColorLUT.txt"),
-    Path("/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/"
+    Path("/path/to/others/"
          "data_mining/freesurfer/FreeSurferColorLUT.txt"),
 ]
 
@@ -1306,7 +1306,7 @@ def main():
         default=Path(
             os.environ.get(
                 "BRAIN_FIG_FSAVERAGE",
-                "/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/"
+                "/path/to/others/"
                 "data_mining/freesurfer/subjects/fsaverage",
             )
         ),
