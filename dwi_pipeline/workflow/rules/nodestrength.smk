@@ -43,7 +43,10 @@ rule nodestrength:
         SUBJECT="{wildcards.subject}"
 
         echo "=== Node strength / ENIGMA report (Step 5): sub-${{SUBJECT}} ==="
-        mkdir -p "{NODESTRENGTH_OUT}"
+        # Replace prior strength/report outputs for this subject (resume-safe)
+        rm -f "{NODESTRENGTH_OUT}/strength/per_subject/sub-${{SUBJECT}}"_*
+        rm -rf "{NODESTRENGTH_OUT}/reports/sub-${{SUBJECT}}"
+        mkdir -p "{NODESTRENGTH_OUT}" "{NODESTRENGTH_OUT}/strength/per_subject"
 
         fs_bind=()
         fs_arg=""

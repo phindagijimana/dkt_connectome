@@ -128,6 +128,8 @@ rule connectome:
         [[ "{CONNECTOME_RESAMPLE_TO_DWI}" == "True" ]] || \
           _pipeline_fail "connectome" "connectome.resample_to_dwi must be true (strict pipeline)"
 
+        # Replace any prior connectome dir for this subject (resume-safe)
+        rm -rf "{params.outdir}"
         mkdir -p "{params.outdir}"
         aparc="{input.aparc}"
 

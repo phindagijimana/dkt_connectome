@@ -95,6 +95,16 @@ _apply_env qsirecon.spec              "${QSIRECON_SPEC:-}"
 if [[ -n "${QSIRECON_ATLASES:-}" ]]; then
   _apply_env qsirecon.atlases         "${QSIRECON_ATLASES}"
 fi
+# Container / license paths (same env names as subject.sh; override config.local.yaml)
+_apply_env containers.qsiprep         "${CONTAINER_QSIPREP:-}"
+_apply_env containers.qsirecon        "${CONTAINER_QSIRECON:-}"
+_apply_env containers.fastsurfer      "${CONTAINER_FASTSURFER:-}"
+_apply_env containers.freesurfer      "${CONTAINER_FREESURFER:-}"
+_apply_env containers.connectome      "${CONTAINER_CONNECTOME:-}"
+_apply_env containers.lit             "${CONTAINER_LIT:-}"
+_apply_env containers.nodestrength    "${CONTAINER_NODESTRENGTH:-}"
+_apply_env fs_license                 "${FS_LICENSE:-}"
+_apply_env templateflow_home          "${TEMPLATEFLOW_HOME:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -134,21 +144,33 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-# --- Build the override configfile (nested keys `--config` can't express) ---
+# --- Build merged configfile (Snakemake replaces config on each --configfile) ---
 OVERRIDE_YAML="$(mktemp /tmp/dwi_workflow_override_XXXXXX.yaml)"
 trap 'rm -f "${OVERRIDE_YAML}"' EXIT
+BASE_CONFIG="${WORKFLOW_DIR}/config/config.yaml"
+LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
 {
-  # subject MUST be quoted: Snakemake's --config / YAML scalar parsing would
-  # otherwise read a leading-zero id like "001" as the integer 1.
   echo "subject: \"${SUBJECT}\""
   [[ -n "${RESULTS_ROOT}" ]] && echo "results_root: \"${RESULTS_ROOT}\""
   [[ -n "${BIDS_DIR}" ]]     && echo "bids_dir: \"${BIDS_DIR}\""
   echo "nthreads: ${NTHREADS}"
-} > "${OVERRIDE_YAML}"
-python3 - "${OVERRIDE_YAML}" <<PY
-import yaml
-path = "${OVERRIDE_YAML}"
-data = yaml.safe_load(open(path)) or {}
+} > "${OVERRIDE_YAML}.runtime"
+python3 - "${BASE_CONFIG}" "${LOCAL_CONFIG}" "${OVERRIDE_YAML}.runtime" "${OVERRIDE_YAML}" <<PY
+import sys, yaml
+from pathlib import Path
+
+def merge(base, override):
+    for key, val in override.items():
+        if isinstance(val, dict) and isinstance(base.get(key), dict):
+            merge(base[key], val)
+        else:
+            base[key] = val
+
+base = yaml.safe_load(open(sys.argv[1])) or {}
+local = Path(sys.argv[2])
+if local.is_file():
+    merge(base, yaml.safe_load(local.open()) or {})
+merge(base, yaml.safe_load(open(sys.argv[3])) or {})
 overrides = {
 $(for k in "${!OVERRIDES[@]}"; do printf '    %s: %s,\n' "\"${k}\"" "\"${OVERRIDES[$k]}\""; done)
 }
@@ -160,7 +182,7 @@ def to_scalar(v):
     except ValueError:
         return v
 for dotted, raw in overrides.items():
-    node = data
+    node = base
     parts = dotted.split(".")
     for part in parts[:-1]:
         node = node.setdefault(part, {})
@@ -169,9 +191,10 @@ for dotted, raw in overrides.items():
         node[parts[-1]] = val.split()
     else:
         node[parts[-1]] = val
-with open(path, "w") as fh:
-    yaml.safe_dump(data, fh)
+with open(sys.argv[4], "w") as fh:
+    yaml.safe_dump(base, fh)
 PY
+rm -f "${OVERRIDE_YAML}.runtime"
 
 case "${PIPELINE_MODE}" in
   all)          TARGET="all" ;;
@@ -225,11 +248,9 @@ fi
 declare -a CMD=(
   snakemake -s "${WORKFLOW_DIR}/Snakefile"
   --directory "${DWI_PIPELINE_DIR}"
-  # Absolute path: --directory chdir's before the Snakefile's own
-  # `configfile: "config/config.yaml"` directive resolves its relative path,
-  # so that directive alone would look under DWI_PIPELINE_DIR/config/ instead
-  # of workflow/config/ and miss every default. Pass it explicitly here too.
-  --configfile "${WORKFLOW_DIR}/config/config.yaml" "${OVERRIDE_YAML}"
+  # Single merged configfile: Snakemake replaces (not deep-merges) on each
+  # --configfile, so runtime overrides must include the full effective config.
+  --configfile "${OVERRIDE_YAML}"
   --cores "${NTHREADS}"
   --rerun-incomplete
 )

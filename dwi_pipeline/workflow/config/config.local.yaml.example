@@ -1,0 +1,20 @@
+# Copy to config.local.yaml and fill in real paths for this machine.
+# config.local.yaml is gitignored — never commit personal NFS paths.
+#
+#   cp config.local.yaml.example config.local.yaml
+#
+# Alternatively, export the same paths as subject.sh env vars before submit:
+#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_FASTSURFER,
+#   CONTAINER_FREESURFER, CONTAINER_CONNECTOME, CONTAINER_LIT,
+#   CONTAINER_NODESTRENGTH, FS_LICENSE
+
+containers:
+  qsiprep: /path/to/others/containers/qsiprep.sif
+  qsirecon: /path/to/others/containers/qsirecon.sif
+  fastsurfer: /path/to/others/containers/fastsurfer_latest.sif
+  freesurfer: /path/to/others/containers/freesurfer_7.4.1.sif
+  connectome: /path/to/others/containers/dkt_connectome.sif
+  lit: /path/to/others/containers/lit_0.6.0.sif
+  nodestrength: /path/to/node_strength/containers/nodestrength_0.1.0.sif
+
+fs_license: /path/to/others/data_mining/freesurfer/license.txt
