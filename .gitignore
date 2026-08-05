@@ -133,3 +133,21 @@ backups/
 # defaults carry placeholder IDs only.
 /dwi_pipeline/subjects_*.txt
 /dwi_pipeline/config/bids_repair_subjects.local.csv
+
+# --- Report figures (per-subject, derived from real study data) ---------------
+# The visualization CODE in dwi_pipeline/reports/scripts/ is tracked; every
+# per-subject output folder it writes into is not. Do not commit figures,
+# volumes, or draft reports built from participant data.
+/dwi_pipeline/reports/sub-*/
+
+# venv_enigma_vtk is a full python venv (~1.7GB, incl. a pinned VTK build) --
+# see dwi_pipeline/reports/scripts/README.md to rebuild it locally, never commit it.
+/dwi_pipeline/reports/scripts/venv_enigma_vtk/
+
+# TemplateFlow cache (download at runtime; do not commit)
+dwi_pipeline/templateflow/
+
+# Local reference papers / repair configs with real subject IDs (never commit)
+dwi_pipeline/Inpainting/
+dwi_pipeline/ENIGMA.docx
+dwi_pipeline/config/bids_repair_phase2_rsfmap.json

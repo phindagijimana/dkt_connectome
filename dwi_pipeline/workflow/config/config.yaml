@@ -1,0 +1,86 @@
+# =============================================================================
+# config.yaml — Default configuration for the Snakemake plugin/workflow engine
+# =============================================================================
+# Every value here has the same default as the corresponding env var in
+# subject.sh, and can be overridden the same way you'd override that env var,
+# just via --config key=value (or a --configfile) instead of exporting it.
+# See dwi_pipeline/workflow/README.md for the mapping table.
+# =============================================================================
+
+# --- Paths ---
+results_root: /path/to/CIDUR_BIDS/dwi_test
+bids_dir: /path/to/CIDUR_BIDS/data_bids
+templateflow_home: null   # default: <repo>/templateflow
+recon_out: null             # default: <results_root>/freesurfer  (RECON_OUT)
+fs_subjects_dir: null       # default: recon_out                 (FS_SUBJECTS_DIR)
+nodestrength_out: null      # default: <results_root>/node_strength
+
+nthreads: 8
+omp_nthreads: 8
+output_res: 2
+
+# --- Containers ---
+containers:
+  qsiprep: /path/to/others/containers/qsiprep.sif
+  qsirecon: /path/to/others/containers/qsirecon.sif
+  fastsurfer: /path/to/others/containers/fastsurfer_latest.sif
+  freesurfer: /path/to/others/containers/freesurfer_7.4.1.sif
+  connectome: /path/to/others/containers/dkt_connectome.sif
+  lit: /path/to/others/containers/lit_0.6.0.sif
+  nodestrength: /path/to/node_strength/containers/nodestrength_0.1.0.sif
+
+fs_license: /path/to/others/data_mining/freesurfer/license.txt
+fs_lut: null   # default: dirname(fs_license)/FreeSurferColorLUT.txt
+
+# --- Step 1: QSIPrep ---
+qsiprep:
+  use_syn_sdc: false       # --syn / QSIPREP_USE_SYN_SDC=1
+  fmap_retry: false        # --fmap-retry / QSIPREP_FMAP_RETRY=1
+  bids_filter: null        # static filter JSON (--bids-filter); mutually exclusive with dwi-select
+
+# --- DWI series selection (QSIPrep) ---
+dwi_select:
+  enabled: true
+  shell_b: 1000
+  json: null   # explicit override path; default: config/dwi_select_b<shell_b>.json
+
+# --- Step 1.5: Inpaint (LIT) ---
+inpaint:
+  enabled: true            # auto-on; no-op per subject unless a lesion mask is found
+  require_mask: false
+  dilate: 2
+  device: auto             # auto | cpu | cuda
+  batch_size: 4            # 8 OOMs on gpu:l40s.6g MIG slices; use 12g/24g or lower this
+  labels: all
+  binarize: false
+  min_outside_corr: 0.995
+  max_corr_drop: 0.01
+  fail_on_qc: false
+
+# --- Step 2: Recon (recon-all / FastSurfer) ---
+recon:
+  enabled: true
+  tool: freesurfer         # freesurfer | fastsurfer
+  fsaparc: false           # --fast-fs sets tool=fastsurfer + fsaparc=true
+  fastsurfer_device: cpu
+  session: null            # override auto-resolved session (RECON_SESSION; bare label, e.g. 2WK)
+
+# --- Step 3: QSIRecon ---
+qsirecon:
+  spec: mrtrix_singleshell_ss3t_ACT-hsvs
+  atlases: ["4S156Parcels"]
+
+# --- Step 4: Connectome ---
+connectome:
+  enabled: true
+  parcellation: dkt         # dkt | dk | auto
+  lut_dkt: null             # default: containers/connectome/mrtrix_lut/fs_dkt.txt
+  fail_on_empty_nodes: false
+  deterministic: true
+  resample_to_dwi: true
+
+# --- Step 5: Node strength / ENIGMA report ---
+nodestrength:
+  enabled: true             # auto-on whenever Step 4 ran
+  strength_only: false
+  no_report: false

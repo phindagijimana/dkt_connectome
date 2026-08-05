@@ -6,31 +6,44 @@
 # What this script does:
 #   1. Scans BIDS and writes dwi_pipeline/subjects.txt (DWI participants by default)
 #   2. Submits array.sh with --array=1-N%K (default K=5 concurrent jobs)
-#   3. Exports env vars so each array task runs subject.sh with the same settings
+#   3. Exports env vars so each array task runs the pipeline engine with the same settings
 #
-# Pipeline per subject (see subject.sh):
-#   QSIPrep -> Recon (recon-all by default, FastSurfer with --fastsurfer)
-#          -> QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> connectome
+# Pipeline per subject (see subject.sh / workflow/run_subject.sh):
+#   QSIPrep -> Inpaint (Step 1.5, only if a lesion mask exists) ->
+#   Recon (recon-all by default, FastSurfer with --fastsurfer) ->
+#   QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> connectome ->
+#   Node strength / ENIGMA report (Step 5, auto-on when the connectome ran)
 #
 # Usage:
 #   ./submit.sh                    # full pipeline, recon-all (slow, ~10 h/subject)
 #   ./submit.sh --fastsurfer       # full pipeline, FastSurfer (~1-2 h/subject CPU)
+#   ./submit.sh --fast-fs          # FastSurfer + --fsaparc (adds a DK-68 atlas too)
 #   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
-#   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV
+#   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV (skips Step 5 too)
+#   ./submit.sh --no-inpaint       # force-skip Step 1.5 even for subjects with a lesion mask
+#   ./submit.sh --no-node-strength # skip Step 5 only (keep the connectome CSV)
 #   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc warn
 #   ./submit.sh --fmap-retry       # ignore measured fmaps, SyN SDC
 #   ./submit.sh --dwi-shell 1000     # default: acq-b1000 + IntendedFor fmaps for QSIPrep
 #   ./submit.sh --no-dwi-filter      # legacy: no series filter
 #
 # Common overrides:
+#   PIPELINE_ENGINE=snakemake     # default; use bash for legacy subject.sh path
 #   ARRAY_CONCURRENCY=5          # Slurm %K throttle
 #   PIPELINE_MODE=qsiprep        # only QSIPrep
+#   PIPELINE_MODE=inpaint        # only Step 1.5 (needs a lesion mask for the subject)
 #   PIPELINE_MODE=recon          # only Step 2 (recon-all / FastSurfer)
 #   PIPELINE_MODE=qsirecon       # only QSIRecon (QSIPrep must already exist)
 #   PIPELINE_MODE=connectome     # only Step 4 (needs QSIRecon + FS outputs)
+#   PIPELINE_MODE=nodestrength   # only Step 5 (needs an existing connectome CSV)
 #   RECON_TOOL=fastsurfer        # same as --fastsurfer
+#   RECON_FSAPARC=1              # same as --fast-fs (with RECON_TOOL=fastsurfer)
 #   RUN_RECON=0                  # same as --no-recon
 #   RUN_CONNECTOME=0             # same as --no-connectome
+#   RUN_INPAINT=0                # same as --no-inpaint
+#   RUN_NODESTRENGTH=0           # same as --no-node-strength
+#   NODESTRENGTH_OUT=/path       # Step 5 output dir (default RESULTS_ROOT/node_strength)
+#   INPAINT_DEVICE=cuda          # auto (default) | cpu | cuda -- see subject.sh header
 #   QSIRECON_SPEC=mrtrix_singleshell_ss3t_ACT-fast  # skip FreeSurfer requirement
 #   QSIRECON_ATLASES="Schaefer100"  # parcellations baked in by QSIRecon
 #   RESULTS_ROOT=/path/to/output
@@ -41,6 +54,7 @@
 #   DWI_SHELL_B=1000             # b-value for default dwi-select config
 #   QSIPREP_NO_DWI_FILTER=1      # same as --no-dwi-filter
 #   EXCLUDE_NODES=smdodwork05    # comma-list passed to sbatch --exclude
+#   SBATCH_GRES=gpu:l40s.24g:1   # GPU for Step 1.5 inpainting (auto-set when inpaint on)
 #   SBATCH_DEPENDENCY=afterok:JOBID
 #                                # chain this submission after another Slurm job
 #                                # (e.g. PIPELINE_MODE=qsirecon SBATCH_DEPENDENCY=afterok:44600)
@@ -65,8 +79,15 @@ DWI_SHELL_B="${DWI_SHELL_B:-1000}"
 QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
 RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"
+RECON_FSAPARC="${RECON_FSAPARC:-0}"
+RUN_INPAINT="${RUN_INPAINT:-1}"
 # RUN_DK_CONNECTOME was the name before Step 4 served both DK and DKT.
 RUN_CONNECTOME="${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}"
+RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
+PIPELINE_ENGINE="${PIPELINE_ENGINE:-snakemake}"
+RECON_FASTSURFER_DEVICE="${RECON_FASTSURFER_DEVICE:-cpu}"
+INPAINT_DEVICE="${INPAINT_DEVICE:-auto}"
+INPAINT_BATCH_SIZE="${INPAINT_BATCH_SIZE:-4}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -82,11 +103,27 @@ while [[ $# -gt 0 ]]; do
     --freesurfer)
       RECON_TOOL=freesurfer
       ;;
+    --fast-fs)
+      RECON_TOOL=fastsurfer
+      RECON_FSAPARC=1
+      ;;
     --no-recon)
       RUN_RECON=0
       ;;
     --no-connectome|--no-dk)
       RUN_CONNECTOME=0
+      ;;
+    --inpaint)
+      RUN_INPAINT=1
+      ;;
+    --no-inpaint)
+      RUN_INPAINT=0
+      ;;
+    --node-strength)
+      RUN_NODESTRENGTH=1
+      ;;
+    --no-node-strength)
+      RUN_NODESTRENGTH=0
       ;;
     --bids-filter)
       QSIPREP_BIDS_FILTER="$2"
@@ -108,11 +145,11 @@ while [[ $# -gt 0 ]]; do
       QSIPREP_NO_DWI_FILTER=1
       ;;
     -h|--help)
-      sed -n '14,48p' "$0"
+      sed -n '11,63p' "$0"
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-connectome)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
       exit 1
       ;;
   esac
@@ -123,8 +160,8 @@ DWI_ROOT="$(cd "$(dirname "$0")" && pwd)"
 TRACKTBI_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
 
 # --- Defaults (override via environment before ./submit.sh) ---
-BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
-RESULTS_ROOT="${RESULTS_ROOT:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test}"
+BIDS_DIR="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
+RESULTS_ROOT="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 SUBJECT_LIST_ONLY_DWI="${SUBJECT_LIST_ONLY_DWI:-1}"
 ARRAY_SCRIPT="${DWI_ROOT}/array.sh"
@@ -193,6 +230,7 @@ if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "connectome" ]];
 fi
 
 echo "dwi_pipeline submit"
+echo "  Engine: ${PIPELINE_ENGINE}"
 echo "  Subjects: ${N} from ${SUBJECT_LIST_FILE}"
 echo "  Array: 1-${N}%${ARRAY_CONCURRENCY}"
 echo "  Mode: ${PIPELINE_MODE}"
@@ -212,23 +250,54 @@ else
 fi
 [[ -n "${QSIPREP_BIDS_FILTER}" ]] && echo "  QSIPREP_BIDS_FILTER: ${QSIPREP_BIDS_FILTER}"
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
-  echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  out=${RECON_OUT}"
+  echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  fsaparc=${RECON_FSAPARC}  out=${RECON_OUT}"
+fi
+if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "inpaint" || "${PIPELINE_MODE}" == "recon" ]]; then
+  echo "  Inpaint (Step 1.5): $([[ ${RUN_INPAINT} == 1 ]] && echo "auto (runs only if a lesion mask is found)" || echo off)"
 fi
 echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
 echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == connectome ) ]] && echo on || echo off/skip)"
+if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
+  echo "  Node strength (Step 5): $([[ ${RUN_NODESTRENGTH} == 1 ]] && echo on || echo off)"
+fi
 [[ -n "${EXCLUDE_NODES}" ]] && echo "  Exclude nodes: ${EXCLUDE_NODES}"
 
-# Passed through to array.sh -> subject.sh (sbatch --export=ALL)
+# Auto-request a GPU slice when inpainting may run (Step 1.5 needs >=12g MIG).
+if [[ -z "${SBATCH_GRES:-}" ]]; then
+  case "${PIPELINE_MODE}" in
+    all|inpaint|recon)
+      if [[ "${RUN_INPAINT:-1}" == "1" ]]; then
+        SBATCH_GRES="gpu:l40s.24g:1"
+        echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: Step 1.5 inpaint may need GPU)"
+      elif [[ "${RECON_TOOL}" == "fastsurfer" && "${RECON_FASTSURFER_DEVICE}" == "cuda" ]]; then
+        SBATCH_GRES="gpu:l40s.24g:1"
+        echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: FastSurfer cuda)"
+      fi
+      ;;
+  esac
+fi
+
+if [[ "${PIPELINE_ENGINE}" != "bash" ]]; then
+  bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --quick \
+    || exit 1
+fi
+
+# Passed through to array.sh -> run_subject.sh / subject.sh (sbatch --export=ALL)
 # DWI_ROOT/TRACKTBI_ROOT are critical: inside sbatch $0 points to Slurm's spool
 # copy of the script, so array.sh cannot derive them on the compute node.
-export DWI_ROOT TRACKTBI_ROOT
+export DWI_ROOT TRACKTBI_ROOT PIPELINE_ENGINE
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
-export RUN_RECON RECON_TOOL RECON_OUT RUN_CONNECTOME FS_SUBJECTS_DIR
+export RUN_RECON RECON_TOOL RECON_FSAPARC RECON_OUT RUN_CONNECTOME RUN_INPAINT RUN_NODESTRENGTH FS_SUBJECTS_DIR
+export RECON_FASTSURFER_DEVICE RECON_SESSION
+export INPAINT_DEVICE INPAINT_BATCH_SIZE INPAINT_DILATE INPAINT_LABELS INPAINT_BINARIZE INPAINT_REQUIRE_MASK INPAINT_FAIL_ON_QC
+export CONNECTOME_PARCELLATION CONNECTOME_FAIL_ON_EMPTY_NODES CONNECTOME_DETERMINISTIC CONNECTOME_RESAMPLE_TO_DWI
+export NODESTRENGTH_STRENGTH_ONLY NODESTRENGTH_NO_REPORT NODESTRENGTH_OUT
 
 SBATCH_EXTRA=()
 [[ -n "${EXCLUDE_NODES}" ]] && SBATCH_EXTRA+=(--exclude="${EXCLUDE_NODES}")
+[[ -n "${SBATCH_GRES:-}" ]] && SBATCH_EXTRA+=(--gres="${SBATCH_GRES}")
 # Optional job-chaining hook used when stages are submitted as separate arrays
 # (recon -> qsirecon -> connectome), so downstream stages only fire after upstream OK.
 [[ -n "${SBATCH_DEPENDENCY:-}" ]] && SBATCH_EXTRA+=(--dependency="${SBATCH_DEPENDENCY}")

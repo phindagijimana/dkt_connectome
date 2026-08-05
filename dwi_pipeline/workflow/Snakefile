@@ -1,0 +1,97 @@
+"""
+Snakefile — dwi_pipeline as a set of plugins joined into one workflow.
+
+Each stage of the original subject.sh (QSIPrep, LIT inpainting, recon,
+QSIRecon, connectome, node strength) is now one Snakemake rule ("plugin"):
+a self-contained unit that declares its inputs/outputs/params and wraps one
+container invocation. This file ("the workflow") wires them together by
+input/output dependency, exactly like subject.sh's function-call chain did,
+but declaratively -- Snakemake computes the DAG instead of a human tracing
+if/else branches.
+
+Run from the dwi_pipeline/ directory (config/config.yaml loads automatically):
+    snakemake -s workflow/Snakefile --cores 8 --config subject=011 -- all
+    snakemake -s workflow/Snakefile --cores 8 --config subject=011 -- recon   # just one plugin
+
+Prefer the thin CLI wrapper for subject.sh-equivalent ergonomics (see
+workflow/README.md for the full guide):
+    bash workflow/run_subject.sh all 011 --fastsurfer
+"""
+
+configfile: "config/config.yaml"
+
+include: "rules/common.smk"
+include: "rules/qsiprep.smk"
+include: "rules/inpaint.smk"
+include: "rules/recon.smk"
+include: "rules/qsirecon.smk"
+include: "rules/connectome.smk"
+include: "rules/nodestrength.smk"
+
+
+def subject_targets(subject: str) -> list:
+    """Final-artifact targets for `subject`, following the same stage
+    on/off switches as subject.sh's `all` dispatch."""
+    targets = [qsiprep_marker(subject)]
+    if not RECON_CFG.get("enabled", True):
+        targets.append(qsirecon_marker(subject))
+        return targets
+    targets.append(recon_aparc(subject))
+    targets.append(qsirecon_marker(subject))
+    if not CONNECTOME_CFG.get("enabled", True):
+        return targets
+    targets.append(connectome_matrix(subject))
+    if not NODESTRENGTH_CFG.get("enabled", True):
+        return targets
+    targets.append(nodestrength_strength_csv(subject))
+    return targets
+
+
+def _config_subject() -> str:
+    if "subject" not in config:
+        raise WorkflowError("Set --config subject=<id> (e.g. --config subject=011)")
+    return str(config["subject"])
+
+
+rule all:
+    input:
+        lambda wc: subject_targets(_config_subject()),
+    default_target: True
+
+
+# --- Wildcard-free "single plugin" targets ------------------------------------
+# Rule-name targeting in Snakemake is only allowed for rules with no
+# wildcards in their output. qsiprep/inpaint/recon/qsirecon/connectome/
+# nodestrength all key their real output paths off {subject}, so each gets a
+# thin phony wrapper (same no-output "aggregator" pattern as `rule all`) that
+# reads config["subject"] directly -- this is what lets
+# `snakemake target_recon --config subject=011` (or run_subject.sh's
+# `recon` mode) target exactly one plugin.
+rule target_qsiprep:
+    input:
+        lambda wc: qsiprep_marker(_config_subject()),
+
+
+rule target_inpaint:
+    input:
+        lambda wc: inpaint_paths(_config_subject())["result"],
+
+
+rule target_recon:
+    input:
+        lambda wc: recon_aparc(_config_subject()),
+
+
+rule target_qsirecon:
+    input:
+        lambda wc: qsirecon_marker(_config_subject()),
+
+
+rule target_connectome:
+    input:
+        lambda wc: connectome_matrix(_config_subject()),
+
+
+rule target_nodestrength:
+    input:
+        lambda wc: nodestrength_strength_csv(_config_subject()),

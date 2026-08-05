@@ -11,17 +11,43 @@
 #   license inside the container for anatomical steps (not a separate recon-all
 #   job on the host).
 #
+# Step 1.5 — Inpaint (container, default auto-on; skipped when no lesion mask):
+#   Runs neuroLIT (deepmi/lit, a DDPM lesion-inpainting model with VINN layers)
+#   on the subject's T1w *before* Step 2, filling in the manually-traced lesion
+#   region so a lesion doesn't throw off recon-all/FastSurfer's atlas-based
+#   skull-strip, Talairach registration, or cortical parcellation.
+#   Only runs when a sibling BIDS file matching *_T1w_label-lesion_roi.nii.gz
+#   exists next to the T1w for the target session (see find_lesion_mask); for
+#   every other subject it is a silent no-op and Step 2 uses the raw BIDS T1w
+#   exactly as before. Set --no-inpaint / RUN_INPAINT=0 to force-skip even when
+#   a mask is present, or INPAINT_REQUIRE_MASK=1 to fail loudly instead of
+#   skipping when no mask is found (useful for demo runs where you want to be
+#   sure inpainting actually happened).
+#   Pipeline: dwi_pipeline/scripts/prepare_lesion_mask.py (resample/select
+#   labels/binarize + provenance) -> lit-inpainting inside CONTAINER_LIT
+#   (--keepgeom, so the result stays on the T1w's native grid) ->
+#   dwi_pipeline/scripts/check_inpainting.py (correlation-based QC comparing
+#   against a resampling-only control). Writes INPAINT_OUT/sub-XXX/ses-YYY/
+#   {lesion_mask_prepared.nii.gz, inpainting_volumes/inpainting_result.nii.gz,
+#   inpainting.json}. Steps 2 and 4 use inpainting_result.nii.gz in place of
+#   the raw BIDS T1w whenever this stage ran for that subject/session.
+#   Build the container: bash dwi_pipeline/containers/lit/build_lit.sh
+#
 # Step 2 — Recon (container, default ON; tools: recon-all OR FastSurfer):
-#   Runs anatomical surface reconstruction on the subject's T1w from BIDS to
-#   produce a FreeSurfer-style subjects directory (aparc+aseg.mgz, surfaces,
-#   labels, etc.) at RECON_OUT/sub-XXX/.
+#   Runs anatomical surface reconstruction on the subject's T1w (the Step 1.5
+#   inpainted T1w when that ran, else the raw BIDS T1w) to produce a
+#   FreeSurfer-style subjects directory (aparc+aseg.mgz, surfaces, labels,
+#   etc.) at RECON_OUT/sub-XXX/.
 #     RECON_TOOL=freesurfer (default): runs recon-all -all (~6-10 h CPU)
 #       inside CONTAINER_FREESURFER. Requires the dedicated full FreeSurfer
 #       7.4.1 SIF at ../others/containers/freesurfer_7.4.1.sif (pulled via
 #       containers/pull_freesurfer_sif.sbatch). Pipeline fails if missing.
 #     RECON_TOOL=fastsurfer (CLI flag --fastsurfer): runs FastSurfer inside
 #       CONTAINER_FASTSURFER (~1-2 h CPU, ~20 min GPU). Produces aparc+aseg.mgz
-#       via recon-surf.
+#       via recon-surf. --fast-fs additionally sets RECON_FSAPARC=1, which
+#       passes FastSurfer --fsaparc so it also writes the classic aparc/DK-68
+#       segmentation and ribbon alongside its native DKT one — the only way to
+#       get a DK atlas without a full recon-all run (adds ~10-20 min CPU).
 #   Skips Step 2 only when RECON_SKIP_IF_EXISTS=1 and aparc+aseg.mgz exists;
 #   otherwise fails if aparc already present (strict rerun policy).
 #
@@ -52,16 +78,39 @@
 #   Writes parcellation.json plus the matrix, named for the parcellation:
 #   dkt_connectome.csv (DKT) or dk_connectome.csv (DK), under connectomes/sub-XXX/.
 #
+# Step 5 — Node strength / ENIGMA report (container, default ON when Step 4 ran):
+#   Post-step after the connectome. Runs the standalone `nodestrength` container
+#   (github.com/phindagijimana/dwi-AI) against CONNECTOME_OUT (bind-mounted
+#   read-only, --include SUBJECT so a shared connectomes/ tree is safe to reuse
+#   across subjects) plus FS_SUBJECTS_DIR (for per-node volumes from nodes.mif).
+#   Atlas-agnostic: auto-detects 78-node DKT vs. 84-node DK from the connectome's
+#   own shape, so it works unmodified against either of Step 4's outputs.
+#   Computes node strength, interhemispheric/intrahemispheric asymmetry index,
+#   and volume AI (BCT-parity `strengths_und`; see node_strength/BCT.md), renders
+#   an ENIGMA-style inflated cortical surface + subcortical panel + seed
+#   connectivity profiles, and writes a lean clinician-facing report.pdf.
+#   Writes NODESTRENGTH_OUT/{strength,volume,compare,reports/sub-XXX/{report.pdf,
+#   figures/}}, manifest.json. Set --no-node-strength / RUN_NODESTRENGTH=0 to
+#   skip; --strength-only / --no-report thin it out (skip volume+compare, or
+#   skip the PDF+figures, respectively).
+#   Container: /path/to/node_strength/containers/nodestrength_0.1.0.sif
+#   (build: bash node_strength/containers/build.sh; docs: node_strength/containers/README.md)
+#
 # Usage:
 #   bash subject.sh all 014                  # full pipeline (recon-all default)
 #   bash subject.sh all 014 --fastsurfer     # use FastSurfer in Step 2
+#   bash subject.sh all 014 --fast-fs        # FastSurfer + --fsaparc (adds DK-68)
 #   bash subject.sh all 014 --no-recon       # skip Step 2 (set ACT-fast or FS dir)
-#   bash subject.sh all 014 --no-connectome  # skip Step 4
+#   bash subject.sh all 014 --no-connectome  # skip Step 4 (and Step 5 with it)
+#   bash subject.sh all 014 --no-inpaint     # force-skip Step 1.5 even if a mask exists
+#   bash subject.sh all 014 --no-node-strength  # skip Step 5 only
 #   bash subject.sh qsiprep 014              # preprocessing only
+#   bash subject.sh inpaint 014              # Step 1.5 only (needs a lesion mask)
 #   bash subject.sh recon 014                # Step 2 only (recon-all by default)
 #   bash subject.sh recon 014 --fastsurfer   # Step 2 only via FastSurfer
 #   bash subject.sh qsirecon 014             # Step 3 only (QSIPrep must exist)
 #   bash subject.sh connectome 014           # Step 4 only (needs FS dir + .tck)
+#   bash subject.sh nodestrength 014         # Step 5 only (needs an existing connectome)
 #   bash subject.sh all 014 --syn            # no BIDS fmap -> --use-syn-sdc warn
 #   bash subject.sh all 014 --fmap-retry     # ignore measured fmaps, SyN SDC
 #   bash subject.sh all 014 --dwi-shell 1000 # default: acq-b1000 DWI + IntendedFor fmaps
@@ -76,14 +125,28 @@
 # SDC (QSIPrep) — strict: measured fmaps when dwi-select includes fmap; else require --syn or --fmap-retry.
 #
 # Outputs under RESULTS_ROOT (default: .../CIDUR_BIDS/dwi_test):
-#   qsiprep_single_run_output/   freesurfer/   qsirecon_single_run_output/   connectomes/
+#   inpainted/   qsiprep_single_run_output/   freesurfer/   qsirecon_single_run_output/   connectomes/   node_strength/
 #
 # Environment (optional overrides):
 #   RESULTS_ROOT, BIDS_DIR, NTHREADS, OMP_NTHREADS, OUTPUT_RES
-#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER
+#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER, CONTAINER_LIT, CONTAINER_NODESTRENGTH
 #   FS_LICENSE, TEMPLATEFLOW_HOME
+#   RUN_INPAINT=0|1        Step 1.5 in mode=all/recon (default 1: auto-runs only if a
+#                          lesion mask is found; --no-inpaint or 0 forces a skip)
+#   INPAINT_REQUIRE_MASK=1 fail instead of silently skipping when no lesion mask is found
+#   INPAINT_OUT            inpainted-T1w output dir (default: RESULTS_ROOT/inpainted)
+#   INPAINT_DILATE         voxels to dilate the lesion mask before inpainting (default 2)
+#   INPAINT_DEVICE         auto (default) | cpu | cuda -- passed to lit-inpainting
+#   INPAINT_BATCH_SIZE     slices per GPU batch (default 8; lower for less VRAM)
+#   INPAINT_LABELS         lesion-mask label values to inpaint, comma list or "all" (default)
+#   INPAINT_BINARIZE=1     collapse selected labels to one value before inpainting (default 0)
+#   INPAINT_MIN_OUTSIDE_CORR   QC threshold, correlation outside the lesion (default 0.995)
+#   INPAINT_MAX_CORR_DROP  QC threshold, drop vs. resampling-only control (default 0.01)
+#   INPAINT_FAIL_ON_QC=1   fail instead of warn when check_inpainting.py reports ok=false
+#   INPAINT_SKIP_IF_EXISTS=0  force a rerun even if inpainting.json already exists (default 1: skip)
 #   RUN_RECON=0|1          Step 2 in mode=all (default 1)
 #   RECON_TOOL             freesurfer (default) or fastsurfer
+#   RECON_FSAPARC=1        FastSurfer --fsaparc (adds classic DK-68 aparc/ribbon); same as --fast-fs
 #   RECON_OUT              FreeSurfer subjects dir (default: RESULTS_ROOT/freesurfer)
 #   FS_SUBJECTS_DIR        same as RECON_OUT unless overridden (used by Steps 3 + 4)
 #   RECON_FASTSURFER_DEVICE  cpu (default) or cuda for FastSurfer GPU runs
@@ -104,6 +167,13 @@
 #   DWI_SELECT_JSON=         explicit dwi-select config (overrides DWI_SHELL_B path)
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
 #   RECON_SESSION=2WK         override session for recon T1w (default: from dwi-select filter)
+#   RUN_NODESTRENGTH=0|1   Step 5 in mode=all/connectome (default 1 when Step 4 ran)
+#   NODESTRENGTH_OUT       Step 5 output dir (default: RESULTS_ROOT/node_strength; cohort-shared,
+#                          not per-subject, since the container itself groups by --include)
+#   NODESTRENGTH_STRENGTH_ONLY=1  same as --strength-only (skip volume/ and compare/)
+#   NODESTRENGTH_NO_REPORT=1      same as --no-report (skip the PDF + figures/)
+#   NODESTRENGTH_SKIP_IF_EXISTS=0  force a rerun even if this subject is already in
+#                          manifest.json / has a report.pdf (default 1: skip)
 #
 # Renamed in this version: Step 4 was called "dk" and its variables were prefixed
 # DK_, from a time when it only produced Desikan-Killiany. The step now serves
@@ -154,7 +224,7 @@ _renamed_var DK_LEGACY_DUAL_CONTAINER       CONNECTOME_LEGACY_DUAL_CONTAINER
 _renamed_var DK_CONNECTOME_BIND_ENTRYPOINT  CONNECTOME_BIND_ENTRYPOINT
 
 # --- CLI: mode, subject ID, optional flags ---
-PIPELINE_MODE="${1:?Need mode: all, qsiprep, recon, qsirecon, or connectome}"
+PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength}"
 # Step 4 used to be called "dk"; keep the old mode name working.
 [[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
 SUBJECT="${2:?Need subject id}"
@@ -174,11 +244,33 @@ while [[ $# -gt 0 ]]; do
     --freesurfer)
       RECON_TOOL=freesurfer
       ;;
+    --fast-fs)
+      RECON_TOOL=fastsurfer
+      RECON_FSAPARC=1
+      ;;
     --no-recon)
       RUN_RECON=0
       ;;
     --no-connectome|--no-dk)
       RUN_CONNECTOME=0
+      ;;
+    --inpaint)
+      RUN_INPAINT=1
+      ;;
+    --no-inpaint)
+      RUN_INPAINT=0
+      ;;
+    --node-strength)
+      RUN_NODESTRENGTH=1
+      ;;
+    --no-node-strength)
+      RUN_NODESTRENGTH=0
+      ;;
+    --strength-only)
+      NODESTRENGTH_STRENGTH_ONLY=1
+      ;;
+    --no-report)
+      NODESTRENGTH_NO_REPORT=1
       ;;
     --bids-filter)
       QSIPREP_BIDS_FILTER="${2:?Need path after --bids-filter}"
@@ -206,7 +298,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --no-recon, --no-connectome)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength, --strength-only, --no-report)"
       exit 1
       ;;
   esac
@@ -215,19 +307,19 @@ done
 
 # --- Paths: repo root, BIDS input, separate output tree for ACT/connectome ---
 TRACKTBI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-RESULTS_ROOT="${RESULTS_ROOT:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/dwi_test}"
-BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
+RESULTS_ROOT="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
+BIDS_DIR="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
 NTHREADS="${NTHREADS:-8}"
 OMP_NTHREADS="${OMP_NTHREADS:-8}"
 OUTPUT_RES="${OUTPUT_RES:-2}"
 
 # --- Apptainer images and FreeSurfer license (required for anat + ACT) ---
-CONTAINER_QSIPREP="${CONTAINER_QSIPREP:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsiprep.sif}"
-CONTAINER_QSIRECON="${CONTAINER_QSIRECON:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif}"
-CONTAINER_FASTSURFER="${CONTAINER_FASTSURFER:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/fastsurfer_latest.sif}"
+CONTAINER_QSIPREP="${CONTAINER_QSIPREP:-/path/to/others/containers/qsiprep.sif}"
+CONTAINER_QSIRECON="${CONTAINER_QSIRECON:-/path/to/others/containers/qsirecon.sif}"
+CONTAINER_FASTSURFER="${CONTAINER_FASTSURFER:-/path/to/others/containers/fastsurfer_latest.sif}"
 # Dedicated full FreeSurfer 7.4.1 image (pulled via
 # dwi_pipeline/containers/pull_freesurfer_sif.sbatch). Pipeline fails if missing.
-_FS_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/freesurfer_7.4.1.sif"
+_FS_SIF_DEFAULT="/path/to/others/containers/freesurfer_7.4.1.sif"
 if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
   if [[ -f "${_FS_SIF_DEFAULT}" ]]; then
     CONTAINER_FREESURFER="${_FS_SIF_DEFAULT}"
@@ -237,19 +329,53 @@ if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
       "Or set CONTAINER_FREESURFER to a full FreeSurfer 7.4.1 image path."
   fi
 fi
-_CONNECTOME_SIF_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif"
+_CONNECTOME_SIF_DEFAULT="/path/to/others/containers/dkt_connectome.sif"
 CONTAINER_CONNECTOME="${CONTAINER_CONNECTOME:-${_CONNECTOME_SIF_DEFAULT}}"
+# Step 1.5 (deepmi/lit). Only required when a lesion mask is actually found for
+# a subject/session; see run_inpaint(). Build: bash dwi_pipeline/containers/lit/build_lit.sh
+CONTAINER_LIT="${CONTAINER_LIT:-/path/to/others/containers/lit_0.6.0.sif}"
+# Step 5 (nodestrength / dwi-AI). Standalone repo+container, not built from
+# dwi_pipeline; see /path/to/node_strength.
+CONTAINER_NODESTRENGTH="${CONTAINER_NODESTRENGTH:-/path/to/node_strength/containers/nodestrength_0.1.0.sif}"
 TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${TRACKTBI_ROOT}/templateflow}"
-FS_LICENSE="${FS_LICENSE:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer/license.txt}"
+FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
 # FreeSurferColorLUT.txt — qsirecon.sif's trimmed FreeSurfer doesn't ship this
 # file, but labelconvert needs it in Step 4. Default to the LUT shipped
 # with the host-side FS install (next to the license).
 FS_LUT="${FS_LUT:-${FS_LICENSE%/*}/FreeSurferColorLUT.txt}"
 
+# --- Inpaint (Step 1.5) defaults ---
+# Auto-on: only actually runs when find_lesion_mask() finds a mask for this
+# subject/session (see run_inpaint). Most subjects have none, so this is a
+# no-op for them and the pipeline behaves exactly as it did before Step 1.5
+# existed. --no-inpaint / RUN_INPAINT=0 forces a skip even when a mask exists.
+RUN_INPAINT="${RUN_INPAINT:-1}"
+INPAINT_REQUIRE_MASK="${INPAINT_REQUIRE_MASK:-0}"
+INPAINT_OUT="${INPAINT_OUT:-${RESULTS_ROOT}/inpainted}"
+INPAINT_DILATE="${INPAINT_DILATE:-2}"
+INPAINT_DEVICE="${INPAINT_DEVICE:-auto}"           # auto | cpu | cuda
+INPAINT_BATCH_SIZE="${INPAINT_BATCH_SIZE:-8}"
+INPAINT_LABELS="${INPAINT_LABELS:-all}"
+INPAINT_BINARIZE="${INPAINT_BINARIZE:-0}"
+INPAINT_MIN_OUTSIDE_CORR="${INPAINT_MIN_OUTSIDE_CORR:-0.995}"
+INPAINT_MAX_CORR_DROP="${INPAINT_MAX_CORR_DROP:-0.01}"
+INPAINT_FAIL_ON_QC="${INPAINT_FAIL_ON_QC:-0}"
+INPAINT_SKIP_IF_EXISTS="${INPAINT_SKIP_IF_EXISTS:-1}"
+PREPARE_LESION_MASK="${TRACKTBI_ROOT}/dwi_pipeline/scripts/prepare_lesion_mask.py"
+CHECK_INPAINTING="${TRACKTBI_ROOT}/dwi_pipeline/scripts/check_inpainting.py"
+# Set by run_inpaint() when it actually ran and produced a result; consumed by
+# run_recon() and run_connectome() in place of the raw BIDS T1w. Empty means
+# "no inpainting for this subject/session -- behave exactly as before".
+INPAINTED_T1W=""
+_INPAINT_ATTEMPTED=0
+
 # --- Recon (Step 2) defaults ---
 RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"           # freesurfer | fastsurfer
 RECON_FASTSURFER_DEVICE="${RECON_FASTSURFER_DEVICE:-cpu}"
+# FastSurfer --fsaparc: also write the classic DK-68 aparc/ribbon alongside its
+# native DKT segmentation. Set by --fast-fs (RECON_TOOL=fastsurfer + this=1).
+RECON_FSAPARC="${RECON_FSAPARC:-0}"
 
 # --- QSIRecon (Step 3) + connectome (Step 4) defaults ---
 QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
@@ -270,6 +396,15 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # or "" to opt out (only safe with specs that have no connectivity node — rare).
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RUN_CONNECTOME="${RUN_CONNECTOME:-1}"
+# Step 5 (nodestrength): auto-on whenever Step 4 ran. Cheap (~20s CPU, no GPU)
+# and atlas-agnostic (auto-detects 78-node DKT vs. 84-node DK from the
+# connectome's own shape), so unlike Step 1.5 there is no precondition to gate
+# on -- every subject with a connectome gets a report. --no-node-strength /
+# RUN_NODESTRENGTH=0 to skip.
+RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
+NODESTRENGTH_STRENGTH_ONLY="${NODESTRENGTH_STRENGTH_ONLY:-0}"
+NODESTRENGTH_NO_REPORT="${NODESTRENGTH_NO_REPORT:-0}"
+NODESTRENGTH_SKIP_IF_EXISTS="${NODESTRENGTH_SKIP_IF_EXISTS:-1}"
 # Grey-matter parcellation for the Step 4 connectome: dkt | dk | auto
 #   dkt — Desikan-Killiany-Tourville, 78 nodes, fs_dkt.txt. THE DEFAULT, and the
 #         only parcellation both recon tools can produce: FastSurfer's
@@ -341,6 +476,7 @@ QSIRECON_OUT="${RESULTS_ROOT}/qsirecon_single_run_output"
 RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
 FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
 CONNECTOME_OUT="${RESULTS_ROOT}/connectomes"
+NODESTRENGTH_OUT="${NODESTRENGTH_OUT:-${RESULTS_ROOT}/node_strength}"
 INTER_QSP="${RESULTS_ROOT}/intermediate_results_qsiprep_single"
 INTER_QSI="${RESULTS_ROOT}/intermediate_results_qsirecon_single"
 # Per-subject nipype work dirs (removed after each stage to avoid stale cache)
@@ -372,7 +508,7 @@ if [[ "${PIPELINE_MODE}" == "connectome" ]] || { [[ "${PIPELINE_MODE}" == "all" 
   fi
 fi
 
-mkdir -p "${TEMPLATEFLOW_HOME}" "${QSIPREP_OUT}" "${QSIRECON_OUT}" "${RECON_OUT}" "${INTER_QSP}" "${INTER_QSI}" "${RESULTS_ROOT}/logs"
+mkdir -p "${TEMPLATEFLOW_HOME}" "${QSIPREP_OUT}" "${QSIRECON_OUT}" "${RECON_OUT}" "${INPAINT_OUT}" "${INTER_QSP}" "${INTER_QSI}" "${RESULTS_ROOT}/logs"
 echo "RESULTS_ROOT=${RESULTS_ROOT} (ACT connectome pipeline)"
 
 _bids_filter_includes_fmap() {
@@ -507,6 +643,162 @@ run_qsiprep() {
   rm -rf "${WORK_QSIPREP}" && echo "Cleanup: removed QSIPrep workdir sub-${SUBJECT}" || true
 }
 
+# find_lesion_mask — 0 or 1 sibling *_T1w_label-lesion_roi.nii.gz next to the
+# session's T1w. Echoes nothing (not an error) when none exists — most
+# subjects have no lesion mask, and that's the normal case, not a failure.
+# More than one match is a data problem and is treated as one.
+find_lesion_mask() {
+  local subject="$1" session="$2"
+  local anat_dir="${BIDS_DIR}/sub-${subject}/ses-${session}/anat"
+  [[ -d "${anat_dir}" ]] || return 0
+  local -a matches=()
+  mapfile -t matches < <(find "${anat_dir}" -maxdepth 1 -type f \
+    -name '*_T1w_label-lesion_roi.nii.gz' 2>/dev/null | LC_ALL=C sort -u)
+  ((${#matches[@]})) || return 0
+  ((${#matches[@]} == 1)) || _pipeline_fail "inpaint/lesion mask" \
+    "expected 0 or 1 lesion mask for sub-${subject} ses-${session}, found ${#matches[@]}" "${matches[@]}"
+  echo "${matches[0]}"
+}
+
+# -----------------------------------------------------------------------------
+# run_inpaint — Step 1.5: neuroLIT fills the lesion on the T1w before Step 2.
+#   No-op (not a failure) when no lesion mask exists for this subject/session,
+#   unless INPAINT_REQUIRE_MASK=1. Sets INPAINTED_T1W when it actually ran, so
+#   run_recon/run_connectome can pick up the result; leaves it empty otherwise
+#   so they fall back to the raw BIDS T1w exactly as before Step 1.5 existed.
+#   Idempotent per call (only does real work once per subject.sh invocation)
+#   and, across invocations, skips when INPAINT_SKIP_IF_EXISTS=1 (default) and
+#   a prior inpainting.json + result already exist.
+# -----------------------------------------------------------------------------
+run_inpaint() {
+  ((_INPAINT_ATTEMPTED)) && return 0
+  _INPAINT_ATTEMPTED=1
+
+  if [[ "${RUN_INPAINT}" != "1" ]]; then
+    echo "Inpaint: skipped (RUN_INPAINT=0 / --no-inpaint)"
+    return 0
+  fi
+
+  local target_ses
+  target_ses="$(_resolve_target_session)" || exit 1
+
+  local t1w
+  t1w="$(_strict_find_one "inpaint/T1w" \
+    find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
+      \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \))"
+
+  local mask
+  mask="$(find_lesion_mask "${SUBJECT}" "${target_ses}")"
+  if [[ -z "${mask}" ]]; then
+    if [[ "${INPAINT_REQUIRE_MASK}" == "1" ]]; then
+      _pipeline_fail "inpaint" "INPAINT_REQUIRE_MASK=1 but no lesion mask found for sub-${SUBJECT} ses-${target_ses}" \
+        "Expected ${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat/*_T1w_label-lesion_roi.nii.gz"
+    fi
+    echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${target_ses} — skipping Step 1.5 (Step 2 uses the raw T1w)"
+    return 0
+  fi
+  echo "Inpaint: found lesion mask ${mask}"
+
+  [[ -f "${CONTAINER_LIT}" ]] || _pipeline_fail "inpaint" "missing CONTAINER_LIT: ${CONTAINER_LIT}" \
+    "Build it: bash dwi_pipeline/containers/lit/build_lit.sh"
+  [[ -f "${PREPARE_LESION_MASK}" ]] || _pipeline_fail "inpaint" "missing ${PREPARE_LESION_MASK}"
+  [[ -f "${CHECK_INPAINTING}" ]] || _pipeline_fail "inpaint" "missing ${CHECK_INPAINTING}"
+
+  local outdir="${INPAINT_OUT}/sub-${SUBJECT}/ses-${target_ses}"
+  local final_json="${outdir}/inpainting.json"
+  local result="${outdir}/inpainting_volumes/inpainting_result.nii.gz"
+
+  if [[ "${INPAINT_SKIP_IF_EXISTS}" == "1" && -f "${final_json}" && -f "${result}" ]]; then
+    echo "Inpaint: ${final_json} already exists — skipping (INPAINT_SKIP_IF_EXISTS=1)"
+    INPAINTED_T1W="${result}"
+    return 0
+  fi
+
+  echo "=== Inpaint (Step 1.5): sub-${SUBJECT} ses-${target_ses} ==="
+  mkdir -p "${outdir}"
+
+  local mask_prepared="${outdir}/lesion_mask_prepared.nii.gz"
+  local mask_json="${outdir}/lesion_mask_prepared.json"
+  local -a prep_xtra=()
+  [[ "${INPAINT_BINARIZE}" == "1" ]] && prep_xtra+=(--binarize)
+  python3 "${PREPARE_LESION_MASK}" \
+    --t1w "${t1w}" --mask "${mask}" \
+    --out "${mask_prepared}" --json "${mask_json}" \
+    --labels "${INPAINT_LABELS}" \
+    "${prep_xtra[@]}"
+
+  # --nv is a no-op (not a hard failure) on nodes with no visible GPU/driver,
+  # so it's always safe to pass whenever the caller didn't explicitly ask for
+  # CPU-only inference.
+  local -a nv_args=()
+  [[ "${INPAINT_DEVICE}" != "cpu" ]] && nv_args+=(--nv)
+
+  apptainer exec "${nv_args[@]}" --cleanenv --containall \
+    -B "$(dirname "${t1w}")":/t1w_input:ro \
+    -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+    -B "${outdir}":/out \
+    "${CONTAINER_LIT}" \
+    lit-inpainting \
+      -i "/t1w_input/$(basename "${t1w}")" \
+      -m /mask/lesion_mask_prepared.nii.gz \
+      -o /out \
+      --dilate "${INPAINT_DILATE}" \
+      --keepgeom \
+      --device "${INPAINT_DEVICE}" \
+      --batch_size "${INPAINT_BATCH_SIZE}"
+
+  [[ -f "${result}" ]] || _pipeline_fail "inpaint" "lit-inpainting finished but ${result} was not produced" \
+    "Inspect ${outdir} for tool output."
+
+  local qc_json="${outdir}/inpainting_qc.json"
+  python3 "${CHECK_INPAINTING}" \
+    --original "${t1w}" --inpainted "${result}" --mask "${mask_prepared}" \
+    --json "${qc_json}" \
+    --min-outside-corr "${INPAINT_MIN_OUTSIDE_CORR}" \
+    --max-corr-drop "${INPAINT_MAX_CORR_DROP}"
+
+  local qc_ok
+  qc_ok="$(python3 -c "import json; print(json.load(open('${qc_json}'))['ok'])")"
+  if [[ "${qc_ok}" != "True" ]]; then
+    echo "WARNING: Inpaint QC failed for sub-${SUBJECT} ses-${target_ses} — see ${qc_json}"
+    if [[ "${INPAINT_FAIL_ON_QC}" == "1" ]]; then
+      _pipeline_fail "inpaint" "QC failed for sub-${SUBJECT} ses-${target_ses} (INPAINT_FAIL_ON_QC=1)" "See ${qc_json}"
+    fi
+  fi
+
+  python3 - "${t1w}" "${mask}" "${mask_prepared}" "${result}" "${mask_json}" "${qc_json}" "${final_json}" \
+    "sub-${SUBJECT}" "ses-${target_ses}" "${CONTAINER_LIT}" "${INPAINT_LABELS}" "${INPAINT_DILATE}" \
+    "${INPAINT_DEVICE}" "${INPAINT_BATCH_SIZE}" <<'PY'
+import json, sys
+(t1w, mask, mask_prepared, result, mask_json, qc_json, final_json,
+ subject, session, container, labels, dilate, device, batch_size) = sys.argv[1:15]
+out = {
+    "subject": subject,
+    "session": session,
+    "tool": "neuroLIT (FastSurfer-LIT)",
+    "container": container,
+    "input_t1w": t1w,
+    "lesion_mask_source": mask,
+    "lesion_mask_prepared": mask_prepared,
+    "mask_labels": labels,
+    "dilate": int(dilate),
+    "device": device,
+    "batch_size": int(batch_size),
+    "keepgeom": True,
+    "inpainted_t1w": result,
+    "mask_summary": json.load(open(mask_json)),
+    "qc": json.load(open(qc_json)),
+}
+with open(final_json, "w") as fh:
+    json.dump(out, fh, indent=2)
+    fh.write("\n")
+PY
+
+  echo "Inpaint: OK — inpainted T1w: ${result}"
+  echo "         Provenance: ${final_json}"
+  INPAINTED_T1W="${result}"
+}
+
 # -----------------------------------------------------------------------------
 # run_recon — Anatomical surface reconstruction: BIDS T1w -> FreeSurfer subjects dir
 #   RECON_TOOL=freesurfer -> recon-all -all (slow, ~6-10 h CPU)
@@ -538,12 +830,18 @@ run_recon() {
   target_ses="$(_resolve_target_session)" || exit 1
   echo "Recon: target session ses-${target_ses} (from dwi-select filter or RECON_SESSION)"
 
-  local t1w
-  t1w="$(_strict_find_one "recon/T1w" \
-    find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
-      \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \))"
+  run_inpaint
 
-  echo "Recon: T1w input: ${t1w}"
+  local t1w
+  if [[ -n "${INPAINTED_T1W}" ]]; then
+    t1w="${INPAINTED_T1W}"
+    echo "Recon: T1w input: ${t1w} (Step 1.5 inpainted — lesion mask was found)"
+  else
+    t1w="$(_strict_find_one "recon/T1w" \
+      find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
+        \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \))"
+    echo "Recon: T1w input: ${t1w}"
+  fi
   mkdir -p "${RECON_OUT}"
 
   case "${RECON_TOOL}" in
@@ -608,16 +906,23 @@ _run_recon_freesurfer() {
   }
   echo "Recon: FREESURFER_HOME inside container = ${fs_home}"
 
+  # Bind each T1w's own parent directory at a neutral mount point rather than
+  # assuming it lives under BIDS_DIR — the Step 1.5 inpainted T1w lives under
+  # INPAINT_OUT instead, and this way recon-all doesn't care which it got.
   local -a i_args=()
+  local -a t1_binds=()
+  local idx=0
   for t in "$@"; do
-    local rel="${t#${BIDS_DIR}/}"
-    i_args+=( -i "/bids/${rel}" )
+    local mnt="/t1w_input_${idx}"
+    t1_binds+=( -B "$(dirname "${t}")":"${mnt}":ro )
+    i_args+=( -i "${mnt}/$(basename "${t}")" )
+    idx=$((idx + 1))
   done
   # We bind the license at a neutral path and let FreeSurfer pick it up via the
   # FS_LICENSE env var (modern FS honours this over $FREESURFER_HOME/license.txt).
   # That way we don't have to know the image's FREESURFER_HOME ahead of time.
   apptainer exec --cleanenv --containall \
-    -B "${BIDS_DIR}":/bids:ro \
+    "${t1_binds[@]}" \
     -B "${RECON_OUT}":/sd \
     -B "${FS_LICENSE}":/.fs_license.txt:ro \
     "${CONTAINER_FREESURFER}" \
@@ -632,13 +937,18 @@ _run_recon_freesurfer() {
 # Internal: FastSurfer (segmentation + surface) inside CONTAINER_FASTSURFER.
 _run_recon_fastsurfer() {
   local t1="$1"
-  local rel="${t1#${BIDS_DIR}/}"
   apptainer exec --cleanenv "${CONTAINER_FASTSURFER}" bash -lc 'test -x /fastsurfer/run_fastsurfer.sh' || {
     echo "Recon: /fastsurfer/run_fastsurfer.sh not found in CONTAINER_FASTSURFER=${CONTAINER_FASTSURFER}"
     exit 1
   }
-  apptainer exec --cleanenv --containall \
-    -B "${BIDS_DIR}":/bids:ro \
+  # --nv is a no-op (not a hard failure) on nodes with no visible GPU/driver.
+  local -a nv_args=()
+  [[ "${RECON_FASTSURFER_DEVICE}" != "cpu" ]] && nv_args+=(--nv)
+  # --fsaparc: also write the classic DK-68 aparc/ribbon (set by --fast-fs).
+  local -a fsaparc_args=()
+  [[ "${RECON_FSAPARC}" == "1" ]] && fsaparc_args+=(--fsaparc)
+  apptainer exec "${nv_args[@]}" --cleanenv --containall \
+    -B "$(dirname "${t1}")":/t1w_input:ro \
     -B "${RECON_OUT}":/sd \
     -B "${FS_LICENSE}":/fs_license/license.txt:ro \
     "${CONTAINER_FASTSURFER}" \
@@ -646,10 +956,11 @@ _run_recon_fastsurfer() {
       --fs_license /fs_license/license.txt \
       --sid "sub-${SUBJECT}" \
       --sd /sd \
-      --t1 "/bids/${rel}" \
+      --t1 "/t1w_input/$(basename "${t1}")" \
       --parallel \
       --threads "${NTHREADS}" \
-      --device "${RECON_FASTSURFER_DEVICE}"
+      --device "${RECON_FASTSURFER_DEVICE}" \
+      "${fsaparc_args[@]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -737,6 +1048,29 @@ find_bids_t1w() {
       \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \)
 }
 
+# T1w to use as the Step 4b-1 affine-registration source. Step 2's recon-all/
+# FastSurfer read whichever T1w run_inpaint() (in this invocation, or a prior
+# one) actually produced a subjects dir from; if that was the Step 1.5
+# inpainted T1w, register *that* to QSIPrep's T1w rather than the still-
+# lesioned raw BIDS one, since --keepgeom means their geometry is identical
+# but only the inpainted one is intensity-consistent with what recon-all saw.
+# Falls back to the raw BIDS T1w whenever no inpainting result exists yet
+# (the common case, and the pre-Step-1.5 behaviour of this pipeline).
+_resolve_registration_t1w() {
+  local subject="$1" session="$2"
+  if [[ -n "${INPAINTED_T1W}" ]]; then
+    echo "${INPAINTED_T1W}"
+    return 0
+  fi
+  local cached="${INPAINT_OUT}/sub-${subject}/ses-${session}/inpainting_volumes/inpainting_result.nii.gz"
+  if [[ "${RUN_INPAINT}" == "1" && -f "${cached}" ]]; then
+    echo "Connectome: reusing cached Step 1.5 result from a prior run: ${cached}" >&2
+    echo "${cached}"
+    return 0
+  fi
+  find_bids_t1w "${subject}" "${session}"
+}
+
 # -----------------------------------------------------------------------------
 # _run_connectome_dual_container — Legacy Step 4 (freesurfer.sif + qsirecon.sif)
 # -----------------------------------------------------------------------------
@@ -796,6 +1130,7 @@ _run_connectome_dual_container() {
   [[ "${warp_labels}" == "1" ]] && binds+=(
     -B "${QSIPREP_OUT}":/qsiprep:ro
     -B "${BIDS_DIR}":/bids:ro
+    "${_CONNECTOME_T1W_OVERRIDE_BINDS[@]}"
   )
 
   apptainer exec --cleanenv --containall \
@@ -1039,14 +1374,24 @@ run_connectome() {
     find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
       -name '*space-T1w_dwiref.nii.gz')"
   preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
-  bids_t1w="$(find_bids_t1w "${SUBJECT}" "${ses}")"
+  bids_t1w="$(_resolve_registration_t1w "${SUBJECT}" "${ses}")"
 
   dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
   preproc_t1w_rel="${preproc_t1w#${QSIPREP_OUT}/}"
-  bids_t1w_rel="${bids_t1w#${BIDS_DIR}/}"
   dwiref_in_container="/qsiprep/${dwiref_rel}"
   preproc_t1w_in_container="/qsiprep/${preproc_t1w_rel}"
-  bids_t1w_in_container="/bids/${bids_t1w_rel}"
+
+  # bids_t1w is usually under BIDS_DIR (already bound at /bids below), but
+  # when Step 1.5 ran it's the inpainted T1w under INPAINT_OUT instead — bind
+  # its own parent directory rather than assuming BIDS_DIR covers it.
+  local -a _CONNECTOME_T1W_OVERRIDE_BINDS=()
+  if [[ "${bids_t1w}" == "${BIDS_DIR}"/* ]]; then
+    bids_t1w_rel="${bids_t1w#${BIDS_DIR}/}"
+    bids_t1w_in_container="/bids/${bids_t1w_rel}"
+  else
+    _CONNECTOME_T1W_OVERRIDE_BINDS=( -B "$(dirname "${bids_t1w}")":/bids_t1w_override:ro )
+    bids_t1w_in_container="/bids_t1w_override/$(basename "${bids_t1w}")"
+  fi
   warp_labels=1
   space_note="FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
 
@@ -1098,6 +1443,7 @@ run_connectome() {
       --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
       "${env_args[@]}" \
       "${binds[@]}" \
+      "${_CONNECTOME_T1W_OVERRIDE_BINDS[@]}" \
       -B "${FS_SUBJECTS_DIR}":/subjects:ro \
       -B "${QSIRECON_OUT}":/qsirecon:ro \
       -B "${QSIPREP_OUT}":/qsiprep:ro \
@@ -1173,6 +1519,82 @@ EOF
   echo "Connectome: ${matrix} (${atlas}, ${node_count} nodes)"
   echo "Parcellation provenance: ${outdir}/parcellation.json"
   echo "Space diagnostic: ${outdir}/nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
+
+  run_nodestrength
+}
+
+_NODESTRENGTH_ATTEMPTED=0
+
+run_nodestrength() {
+  ((_NODESTRENGTH_ATTEMPTED)) && return 0
+  _NODESTRENGTH_ATTEMPTED=1
+
+  if [[ "${RUN_NODESTRENGTH}" != "1" ]]; then
+    echo "Node strength (Step 5): skipped (RUN_NODESTRENGTH=0 / --no-node-strength)"
+    return 0
+  fi
+
+  echo "=== Node strength / ENIGMA report (Step 5): sub-${SUBJECT} ==="
+
+  [[ -f "${CONTAINER_NODESTRENGTH}" ]] || _pipeline_fail "nodestrength" \
+    "missing CONTAINER_NODESTRENGTH: ${CONTAINER_NODESTRENGTH}" \
+    "Build/pull it: see node_strength/containers/README.md, or" \
+    "set CONTAINER_NODESTRENGTH to an existing nodestrength_*.sif."
+
+  local subj_dir="${CONNECTOME_OUT}/sub-${SUBJECT}"
+  [[ -d "${subj_dir}" ]] || _pipeline_fail "nodestrength" "missing connectome dir: ${subj_dir}" \
+    "Run Step 4 (connectome) first."
+  local has_matrix=0
+  [[ -f "${subj_dir}/dkt_connectome.csv" || -f "${subj_dir}/dk_connectome.csv" \
+     || -f "${subj_dir}/connectome.csv" ]] && has_matrix=1
+  ((has_matrix)) || _pipeline_fail "nodestrength" \
+    "no dkt_connectome.csv / dk_connectome.csv in ${subj_dir}" \
+    "Run Step 4 (connectome) first."
+
+  local manifest="${NODESTRENGTH_OUT}/manifest.json"
+  local report="${NODESTRENGTH_OUT}/reports/sub-${SUBJECT}/report.pdf"
+  local strength_csv="${NODESTRENGTH_OUT}/strength/per_subject/sub-${SUBJECT}_strength.csv"
+  if [[ "${NODESTRENGTH_SKIP_IF_EXISTS}" == "1" && -f "${strength_csv}" \
+        && ( "${NODESTRENGTH_NO_REPORT}" == "1" || -f "${report}" ) ]]; then
+    echo "Node strength: ${strength_csv} already exists — skipping (NODESTRENGTH_SKIP_IF_EXISTS=1)"
+    return 0
+  fi
+
+  mkdir -p "${NODESTRENGTH_OUT}"
+
+  local -a extra_args=()
+  [[ "${NODESTRENGTH_STRENGTH_ONLY}" == "1" ]] && extra_args+=(--strength-only)
+  [[ "${NODESTRENGTH_NO_REPORT}" == "1" ]] && extra_args+=(--no-report)
+
+  # FS_SUBJECTS_DIR is optional to the container (only used for nodes.mif lookup
+  # when it isn't already beside the connectome); it may not exist yet if Step 5
+  # is invoked standalone against a connectome tree with no local FS output.
+  local -a fs_bind=()
+  local fs_arg=""
+  if [[ -d "${FS_SUBJECTS_DIR}" ]]; then
+    fs_bind=(-B "${FS_SUBJECTS_DIR}:${FS_SUBJECTS_DIR}:ro")
+    fs_arg="${FS_SUBJECTS_DIR}"
+  fi
+
+  apptainer run --cleanenv --containall \
+    -B "${CONNECTOME_OUT}":"${CONNECTOME_OUT}":ro \
+    "${fs_bind[@]}" \
+    -B "${NODESTRENGTH_OUT}":"${NODESTRENGTH_OUT}" \
+    "${CONTAINER_NODESTRENGTH}" \
+    "${CONNECTOME_OUT}" "${NODESTRENGTH_OUT}" ${fs_arg:+"${fs_arg}"} \
+    --include "${SUBJECT}" \
+    "${extra_args[@]}"
+
+  [[ -f "${manifest}" ]] || _pipeline_fail "nodestrength" \
+    "nodestrength finished but ${manifest} was not written" \
+    "Inspect ${NODESTRENGTH_OUT} for the container's own error output."
+
+  echo "Node strength: ${strength_csv}"
+  if [[ "${NODESTRENGTH_NO_REPORT}" == "1" ]]; then
+    echo "Report: skipped (--no-report / NODESTRENGTH_NO_REPORT=1)"
+  else
+    echo "Report: ${report}"
+  fi
 }
 
 # --- Dispatch: run one or more stages ---
@@ -1194,12 +1616,14 @@ case "${PIPELINE_MODE}" in
       run_connectome
     fi
     ;;
-  qsiprep)    run_qsiprep ;;
-  recon)      run_recon ;;
-  qsirecon)   run_qsirecon ;;
-  connectome) run_connectome ;;
+  qsiprep)      run_qsiprep ;;
+  inpaint)      run_inpaint ;;
+  recon)        run_recon ;;
+  qsirecon)     run_qsirecon ;;
+  connectome)   run_connectome ;;
+  nodestrength) run_nodestrength ;;
   *)
-    echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all, qsiprep, recon, qsirecon, or connectome)"
+    echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength)"
     exit 1
     ;;
 esac
@@ -1208,3 +1632,4 @@ echo "QSIPrep output:  ${QSIPREP_OUT}"
 echo "Recon output:    ${RECON_OUT}"
 echo "QSIRecon output: ${QSIRECON_OUT}"
 echo "Connectome output: ${CONNECTOME_OUT}"
+echo "Node strength output: ${NODESTRENGTH_OUT}"

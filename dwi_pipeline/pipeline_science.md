@@ -2,12 +2,14 @@
 
 **DWI connectivity pipeline — physics, biology, mathematics, geometry, and software**
 
-This document explains the scientific concepts behind the four-stage workflow implemented in `subject.sh`:
+This document explains the scientific concepts behind the workflow implemented in `subject.sh`:
 
 1. **QSIPrep** — diffusion MRI preprocessing  
-2. **FreeSurfer / FastSurfer** — anatomical reconstruction and parcellation  
+1.5. **neuroLIT inpainting** — DDPM lesion-filling on the T1w, **only** for subjects with a manually-traced lesion mask (skipped otherwise)  
+2. **FreeSurfer / FastSurfer** — anatomical reconstruction and parcellation (on the inpainted T1w when Step 1.5 ran)  
 3. **QSIRecon** (`mrtrix_singleshell_ss3t_ACT-hsvs`) — constrained tractography  
-4. **DK connectome** — Desikan–Killiany region-to-region connectivity from FreeSurfer labels  
+4. **Connectome** — Desikan–Killiany–Tourville (DKT, 78 nodes, default, either recon tool) or Desikan–Killiany (DK, 84 nodes, `recon-all` only) region-to-region connectivity from FreeSurfer labels  
+5. **Node strength / ENIGMA report** — node strength, interhemispheric asymmetry index, volume AI, and a clinician-facing PDF from the Step 4 connectome (standalone `nodestrength` container, auto-on whenever a connectome exists)  
 
 Default recon spec: **`mrtrix_singleshell_ss3t_ACT-hsvs`**. Alternative without Step 2: **`mrtrix_singleshell_ss3t_ACT-fast`** (FSL FAST 5TT).
 
@@ -16,6 +18,7 @@ Default recon spec: **`mrtrix_singleshell_ss3t_ACT-hsvs`**. Alternative without 
 ## Table of contents
 
 1. [End-to-end data flow](#1-end-to-end-data-flow)  
+1.5. [Lesion inpainting (Step 1.5): neuroLIT and denoising diffusion](#15-lesion-inpainting-step-15-neurolit-and-denoising-diffusion)  
 2. [Biology: brain tissues and parcellations](#2-biology-brain-tissues-and-parcellations)  
 3. [Physics: diffusion MRI](#3-physics-diffusion-mri)  
 4. [Mathematics: models, transforms, and connectivity](#4-mathematics-models-transforms-and-connectivity)  
@@ -28,6 +31,7 @@ Default recon spec: **`mrtrix_singleshell_ss3t_ACT-hsvs`**. Alternative without 
 11. [Tractography, SIFT2, and connectomes](#11-tractography-sift2-and-connectomes)  
 12. [FreeSurfer / FastSurfer outputs used by the pipeline](#12-freesurfer--fastsurfer-outputs-used-by-the-pipeline)  
 13. [DK connectome: label warping and matrix generation](#13-dk-connectome-label-warping-and-matrix-generation)  
+13.5. [Node strength / ENIGMA report (Step 5)](#135-node-strength--enigma-report-step-5)  
 14. [Software stack summary](#14-software-stack-summary)  
 15. [Design choices and alternatives](#15-design-choices-and-alternatives)  
 16. [References](#16-references)  
@@ -41,10 +45,16 @@ BIDS (T1w + DWI [+ fieldmaps])
         │
         ├──────────────────────────────┐
         ▼                              ▼
-   QSIPrep (Step 1)              FreeSurfer / FastSurfer (Step 2)
-   • denoise, SDC, eddy          • cortical surfaces + aseg
-   • DWI → T1w registration      • aparc+aseg.mgz, rawavg.mgz
-   • desc-preproc_T1w, dwiref    • white/pial surfaces (HSVS input)
+   QSIPrep (Step 1)              neuroLIT inpaint (Step 1.5)
+   • denoise, SDC, eddy          • ONLY if *_T1w_label-lesion_roi.nii.gz exists
+   • DWI → T1w registration      • DDPM fills the lesion, --keepgeom preserves grid
+   • desc-preproc_T1w, dwiref    • no-op (raw T1w passes through) otherwise
+        │                              │
+        │                              ▼
+        │                       FreeSurfer / FastSurfer (Step 2)
+        │                       • cortical surfaces + aseg (on inpainted T1w if Step 1.5 ran)
+        │                       • aparc+aseg.mgz, rawavg.mgz
+        │                       • white/pial surfaces (HSVS input)
         │                              │
         └──────────────┬───────────────┘
                        ▼
@@ -54,12 +64,150 @@ BIDS (T1w + DWI [+ fieldmaps])
               • optional atlas connectome (e.g. 4S156)
                        │
                        ▼
-              DK connectome (Step 4)
-              • warp aparc+aseg → dwiref grid
-              • tck2connectome → 84×84 DK matrix
+              Connectome (Step 4)
+              • warp aparc+aseg (or aparc.DKTatlas+aseg) → dwiref grid
+              • tck2connectome → 78×78 DKT (default) or 84×84 DK matrix
+                       │
+                       ▼
+              Node strength / ENIGMA report (Step 5)
+              • nodestrength container (separate repo, auto-detects DKT vs. DK)
+              • node strength, side/intra AI, volume AI
+              • ENIGMA cortical surface + subcortical panel + seed profiles
+              • report.pdf (clinician-facing)
 ```
 
-**Key principle:** Tractography and connectome counting happen on a **common 3D grid** (`dwiref`, ~2 mm in QSIPrep T1w space). Anatomical labels from FreeSurfer start in a **different space** (conformed 256³); Step 4 resamples them onto the tractography grid before counting streamlines.
+**Key principle:** Tractography and connectome counting happen on a **common 3D grid** (`dwiref`, ~2 mm in QSIPrep T1w space). Anatomical labels from FreeSurfer start in a **different space** (conformed 256³); Step 4 resamples them onto the tractography grid before counting streamlines. Step 1.5, when it runs, changes only the **T1w that feeds Steps 2 and 4's registration** — it never touches the DWI, so the diffusion data Step 1/3 process is completely unaffected by inpainting. Step 5 reads only Step 4's *output* matrix (plus, optionally, the FreeSurfer subjects dir for per-node volumes); it never re-touches imaging data.
+
+---
+
+## 1.5. Lesion inpainting (Step 1.5): neuroLIT and denoising diffusion
+
+### 1.5.1 The problem it solves
+
+FreeSurfer/FastSurfer's skull-strip, Talairach/MNI registration, and cortical/subcortical
+segmentation are trained on — and tuned for — **healthy anatomy**. A large TBI lesion
+(hemorrhage, encephalomalacia, resection cavity) is a region where the expected
+GM/WM/CSF intensity relationships simply don't hold. Feeding a lesioned T1w straight into
+`recon-all`/FastSurfer risks:
+
+- **Local segmentation errors** inside and around the lesion (wrong tissue class, holes/spikes in `aparc+aseg`)
+- **Global registration drift**: Talairach and template-based steps optimize a single affine/nonlinear fit over the *whole* volume, so a large enough lesion can pull the fit for the whole brain, not just the lesion, subtly mis-registering healthy tissue far from the injury
+- **Downstream corruption of Step 4**: since Step 4's node assignment depends on `aparc+aseg` and the affine between BIDS T1w and `desc-preproc_T1w` (§13), any of the above propagates directly into which streamlines get counted into which node
+
+The pipeline's answer is not to mask the lesion out (that discards information FreeSurfer
+needs to make a sensible decision nearby) or to exclude the subject, but to **synthesize
+plausible tissue inside the lesion** so recon-all/FastSurfer see an image consistent with
+their training distribution, run Step 2 and Step 4's registration on that image, and record
+the lesion mask itself as metadata rather than baking it into the connectome.
+
+### 1.5.2 Denoising Diffusion Probabilistic Models (DDPM)
+
+[neuroLIT](containers/lit/README.md) (FastSurfer-LIT) frames lesion-filling as
+**conditional image inpainting** with a DDPM. A DDPM defines a fixed forward process that
+gradually adds Gaussian noise to an image over `T` steps until it is pure noise, and trains a
+neural network to reverse that process one step at a time:
+
+```
+Forward  (fixed, no learning):  x_0 → x_1 → x_2 → … → x_T   (add noise, closed-form)
+Reverse  (learned):             x_T → x_{T-1} → … → x_0     (denoise, one U-Net call per step)
+```
+
+At inference, LIT starts from noise **inside the lesion only** and iteratively denoises,
+while at every step it re-inserts the **known, unlesioned voxels unchanged** — a standard
+inpainting trick (e.g. RePaint-style resampling) that lets the network use the surrounding
+healthy anatomy as context for what it synthesizes inside the mask, rather than
+hallucinating from noise alone. `--dilate N` (default 2) grows the mask by `N` voxels before
+this process, so the network also resynthesizes a thin rim around the traced boundary —
+manually-traced lesion edges are rarely pixel-perfect, and a lesion's partial-volume/edema
+margin often extends slightly beyond the traced ROI.
+
+### 1.5.3 VINN layers: why resolution doesn't need to be fixed
+
+Classical FastSurfer/FreeSurfer-style CNNs require the input **conformed** to a fixed
+256³, 1 mm-isotropic grid before the network runs, because convolution kernels are defined
+in voxel units — a network trained on 1 mm data behaves differently on 0.8 mm or
+1.2×1×1 mm data unless the input is resampled first. LIT instead uses a
+**Voxel-size Independent Neural Network (VINN)**, an architecture (introduced by the
+FastSurfer team) whose convolutional layers are parameterized in **physical units (mm)**
+rather than voxels, so it operates correctly across the range of voxel sizes seen in
+research/clinical T1w acquisitions without a mandatory resample-and-reconform round trip.
+This is what makes `--keepgeom` possible: the result can be returned on the **exact input
+grid** (same shape, affine, and voxel size as the original BIDS T1w) instead of on
+FreeSurfer's 256³ conformed grid, so it is a drop-in replacement for the raw T1w anywhere
+downstream that expects the subject's native geometry — including Step 4's
+`mri_label2vol --temp rawavg.mgz` warp chain (§13), which assumes its T1w-space inputs share
+one grid.
+
+### 1.5.4 2.5D multi-plane inference
+
+LIT runs the diffusion process independently in the sagittal, coronal, and axial planes
+(2.5D) and aggregates the three view predictions, rather than a full 3D convolution over the
+whole volume. This is a memory/compute trade-off common to brain-MRI deep-learning
+tools (FastSurfer uses the same trick for segmentation): a 2.5D network is far cheaper to
+run than an equivalent full-3D one, at some cost in cross-plane consistency that the
+multi-view aggregation is designed to recover. In practice this is also why LIT is
+**GPU-only in this pipeline**: 1000 reverse-diffusion steps × 3 planes × one U-Net forward
+pass each is minutes on a GPU and impractically slow on CPU even for a single subject
+(`INPAINT_DEVICE=cpu` remains available for debugging on nodes with no GPU, but is not a
+production path).
+
+### 1.5.5 Pipeline integration
+
+```
+BIDS T1w + *_T1w_label-lesion_roi.nii.gz
+        │
+        ▼
+scripts/prepare_lesion_mask.py
+  • resample mask onto the T1w grid if it isn't already (nearest-neighbour)
+  • select labels (INPAINT_LABELS, default "all" — TrackTBI masks use 1=core, 2=oedema)
+  • optional --binarize (INPAINT_BINARIZE=1) if LIT should treat all selected labels alike
+  • → lesion_mask_prepared.nii.gz + lesion_mask_prepared.json (provenance)
+        │
+        ▼
+lit-inpainting  (inside CONTAINER_LIT, --nv unless INPAINT_DEVICE=cpu)
+  -i T1w  -m lesion_mask_prepared.nii.gz  --dilate N  --keepgeom  --device ...  --batch_size ...
+  • → inpainting_volumes/inpainting_result.nii.gz  (same grid as the input T1w)
+        │
+        ▼
+scripts/check_inpainting.py  (§1.5.6 — QC)
+        │
+        ▼
+inpainting.json  (merged provenance: inputs, mask summary, QC, ok/failures)
+        │
+        ▼
+INPAINTED_T1W  →  used by Step 2 (recon input) and Step 4 (_resolve_registration_t1w,
+                   BIDS-T1w side of the registration affine) in place of the raw BIDS T1w
+```
+
+Because Step 1.5 only runs when a lesion mask is found (`find_lesion_mask`, one match
+required — zero is a silent skip, more than one is a hard failure so an ambiguous BIDS tree
+never picks one arbitrarily), every subject without a traced lesion is byte-for-byte
+unaffected by this feature: `INPAINTED_T1W` stays empty, and Steps 2/4 fall back to
+`find_bids_t1w` exactly as before Step 1.5 existed.
+
+### 1.5.6 QC: proving inpainting only touched the lesion
+
+The risk with any generative fill is that it also perturbs *healthy* tissue outside the
+mask — that would be strictly worse than doing nothing, since it corrupts data instead of
+just leaving a known-bad region known-bad. `check_inpainting.py` quantifies this with four
+numbers, all computed **outside the (prepared, possibly dilated) lesion mask**:
+
+- **Outside-lesion correlation** — Pearson *r* between the original and inpainted image restricted to non-lesion foreground voxels. This should be very close to 1.0; the QC gate (`INPAINT_MIN_OUTSIDE_CORR`, default 0.995) fails the run if it isn't.
+- **Resampling-only control** — the *same* correlation, but between the original image and a version of itself put through LIT's own conform → 1 mm-isotropic → deconform round trip with **no inpainting** (`nibabel.processing.conform` + `resample_from_to`). This isolates how much correlation loss is simply due to resampling/interpolation, independent of anything the network changed, and gives a subject-specific noise floor rather than one constant assumed to hold for every acquisition.
+- **Correlation drop vs. control** — `resampling_control_correlation − outside_lesion_correlation`. If inpainting behaved like a pure resample, this is ≈0; a large positive value means the network altered voxels beyond what resampling alone explains. Gated by `INPAINT_MAX_CORR_DROP` (default 0.01).
+- **Regenerated voxels** — a count of voxels outside the lesion whose intensity changed by more than an adaptive threshold. Because LIT's DDPM output is on its own intensity scale (in practice an integer-quantized 0–255 range, not the input's native units), the script first fits a linear rescale (`slope, intercept`, least-squares on outside-lesion voxels) to map the inpainted image back onto the original's intensity scale before differencing — without this, a global scale difference alone would flag nearly every foreground voxel as "changed." The threshold itself is **adaptive**: 3× the 95th-percentile absolute change observed outside the lesion, i.e. a voxel counts as regenerated only if it changed substantially more than the typical resampling/quantization noise floor for *this* image, since a fixed absolute intensity threshold cannot be meaningful across T1w acquisitions with different scanners, sequences, and native intensity ranges.
+
+The two correlation metrics gate `ok` in `inpainting_qc.json` (and hence `inpainting.json`);
+`regenerated_voxels` is reported for inspection but does not gate pass/fail, since some
+regeneration in a dilated rim around the traced lesion is expected and desired (§1.5.2).
+`INPAINT_FAIL_ON_QC=1` turns a QC failure into a hard pipeline failure instead of the
+default warn-and-continue.
+
+The pipeline also reports `lesion_relative_intensity_{before,after}` — mean intensity
+inside the lesion divided by mean intensity outside it, before and after inpainting — as a
+sanity check that the lesion moved from being hyper/hypo-intense toward a value more
+typical of the surrounding tissue, without gating on it (a lesion adjacent to CSF vs. WM has
+a different "normal" target, so this is informative, not a pass/fail number).
 
 ---
 
@@ -458,12 +606,13 @@ Step 4 uses the **subject-native FreeSurfer parcellation** warped to **`dwiref`*
 | Output | Space | Consumer |
 |--------|-------|----------|
 | `mri/aparc+aseg.mgz` | Conformed 256³ | DK Step 4, parcellation |
-| `mri/rawavg.mgz` | Native T1w grid | `mri_label2vol` target for DK warp |
+| `mri/aparc.DKTatlas+aseg.mgz` | Conformed 256³ | DKT Step 4, parcellation (default; produced by `recon-all` and by FastSurfer's default `--seg_only`/`recon-surf`) |
+| `mri/rawavg.mgz` | Native T1w grid | `mri_label2vol` target for DK/DKT warp |
 | `mri/aseg.mgz` | Conformed | HSVS subcortical component |
 | `surf/*.white`, `surf/*.pial` | Surface mesh | HSVS cortical ribbon |
 | `mri/brain.mgz` | Conformed | Masking |
 
-**FastSurfer** mimics FreeSurfer folder layout. Full pipeline runs **`recon-surf`** (not **`--seg_only`**) so surfaces exist for HSVS.
+**FastSurfer** mimics FreeSurfer folder layout. Full pipeline runs **`recon-surf`** (not **`--seg_only`**) so surfaces exist for HSVS. FastSurfer's native output is **DKT only** (`aparc.DKTatlas+aseg.mgz`) — it has no equivalent of `recon-all`'s classic `aparc+aseg.mgz`. `--fast-fs` (`RECON_TOOL=fastsurfer` + `--fsaparc`) additionally runs FastSurfer's `--fsaparc` stage, which reruns the FreeSurfer-style `mris_ca_label`/`mri_aparc2aseg` steps on top of FastSurfer's surfaces to produce a genuine **DK-68** `aparc+aseg.mgz` alongside the DKT one — so a `--fast-fs` subject has both atlases available for Step 4 (`CONNECTOME_PARCELLATION=dk` or `dkt`) and for any DK-only visualization/ENIGMA workflow, at the cost of the extra `--fsaparc` runtime on top of FastSurfer's normal (already ~10×-faster-than-recon-all) run.
 
 ---
 
@@ -484,8 +633,8 @@ aparc+aseg in QSIPrep T1w space
 aparc+aseg on tractography grid
         │  labelconvert (FS LUT → fs_default.txt for DK, fs_dkt.txt for DKT)
         ▼
-nodes.mif  +  tractogram.tck  →  tck2connectome  →  dkt_connectome.csv  (DKT, 78 nodes)
-                                                       dkt_connectome.csv  (DKT, 78 nodes)
+nodes.mif  +  tractogram.tck  →  tck2connectome  →  dkt_connectome.csv  (DKT, 78 nodes, default)
+                                                       dk_connectome.csv  (DK, 84 nodes, recon-all only)
 ```
 
 **Why not use QSIPrep’s `from-orig_to-T1w` transform alone?**  
@@ -509,7 +658,77 @@ ITK accumulates the registration metric across CPU threads, and floating-point a
 
 Measured on one subject: two runs that differed only in thread scheduling produced matrices differing in **482 of 6,084 cells** and **134 of 15.4 M streamlines (0.0009 %)**; two other pairs were identical.
 
-The magnitude is far below scan–rescan variability and will not change a statistical result. What it does affect is **verifiability**: re-running an archived subject may not reproduce the archived matrix exactly. Setting **`CONNECTOME_DETERMINISTIC=1`** pins ITK to a single thread, after which repeat runs produce a **bitwise identical** affine and connectome. The cost is roughly **3.6× on Step 4** (about 3:20 → 12:20 for one subject), which is near **3 %** of a full four-step run.
+The magnitude is far below scan–rescan variability and will not change a statistical result. What it does affect is **verifiability**: re-running an archived subject may not reproduce the archived matrix exactly. Setting **`CONNECTOME_DETERMINISTIC=1`** pins ITK to a single thread, after which repeat runs produce a **bitwise identical** affine and connectome. The cost is roughly **3.6× on Step 4** (about 3:20 → 12:20 for one subject), which is near **3 %** of a full per-subject pipeline run.
+
+---
+
+## 13.5. Node strength / ENIGMA report (Step 5)
+
+Step 5 is not part of this repo — it invokes a **separate, standalone container**
+(`nodestrength`, repo [`dwi-AI`](https://github.com/phindagijimana/dwi-AI), maintained at
+`/path/to/node_strength`) against whatever
+matrix Step 4 produced. It implements the analysis pipeline from Piper et al. 2026
+(*Epilepsia*; see §16), generalized here from THOMAS-nucleus epilepsy data to
+whole-brain DKT/DK connectomes.
+
+**What it computes**, per subject, straight from the SIFT2-weighted, symmetric,
+zero-diagonal connectome (`tck2connectome -symmetric -zero_diagonal`):
+
+| Quantity | Formula |
+|---|---|
+| Node strength | `s_i = Σ_{j≠i} W_ij` (BCT `strengths_und`; uses `bctpy` if installed, else an equivalent pure-numpy expression) |
+| Side (interhemispheric) asymmetry index | `(L − R) / (L + R)` |
+| Intrahemispheric strength | Row-sum using only within-hemisphere edges (excludes the callosal connections that dominate raw strength) |
+| Volume AI | Per-node ROI volume from `nodes.mif` on the tractography grid, same `(L−R)/(L+R)` formula |
+
+**Atlas resolution is automatic, not configured.** `nodestrength` inspects the connectome's
+own shape at load time (`analysis_atlas.resolve_analysis_atlas(n_nodes)`): 78×78 → its own
+`fs_dkt`-ordered 78-node table (mirroring `dwi_pipeline/containers/connectome/mrtrix_lut/fs_dkt.txt`
+exactly, including which 3 DK regions — bankssts, frontal pole, temporal pole — DKT excludes
+bilaterally), 84×84 → the legacy 84-node `fs_default` table. This means Step 5 runs correctly,
+unmodified, against either of Step 4's outputs (`CONNECTOME_PARCELLATION=dkt` default or `=dk`)
+without the two repos needing to negotiate a shared configuration flag — the file itself carries
+the information Step 5 needs.
+
+**Visualization is intentionally on a different atlas than the analysis.** Node strength and
+AI are computed on whichever atlas the connectome actually used (78-node DKT by default). The
+ENIGMA-style cortical surface figure, however, is always rendered on the standard **DK-based
+fsaverage5** surface (the convention ENIGMA Toolbox ships), because that is the surface every
+ENIGMA consumer already expects — `manifest.json` records this explicitly as
+`analysis_scheme` (`dkt`) vs. `viz_scheme` (`dk`). The 31 DKT cortical names map onto their DK
+counterparts one-to-one (DKT is DK's 34 minus the 3 excluded regions); the 3 DK-only regions
+simply have no corresponding value to paint when the analysis atlas was DKT.
+
+**Output**, under `NODESTRENGTH_OUT` (cohort-shared, not per-subject, since the container's
+own `--include SUBJECT` mechanism is what scopes a run to one subject against a shared
+`connectomes/` tree):
+
+```
+strength/per_subject/sub-XXX_{strength,ai,strength_intra,ai_intra}.csv   + cohort tables
+volume/per_subject/sub-XXX_{volume,volume_ai}.csv                        + cohort tables (from nodes.mif)
+compare/strength_vs_volume_ai.csv
+reports/sub-XXX/report.pdf                Lean clinical summary: key-structure table
+                                           (strength/intra/volume AI for thalamus,
+                                           hippocampus, amygdala, insula), top-5 asymmetric
+                                           regions, ENIGMA cortical surface, subcortical
+                                           strength/volume panel, seed connectivity profiles
+reports/sub-XXX/figures/                  Full PNG gallery behind the PDF
+manifest.json                             Per-run provenance: atlas, n_nodes, paths, caveats
+```
+
+**Why this belongs after Step 4, not folded into it.** Step 4's container
+(`dkt_connectome.sif`) is FreeSurfer + ANTs + MRtrix3 — spatial/geometric tools with no
+graph-theory or plotting stack. `nodestrength`'s container is Python + `numpy`/`pandas`/
+`scipy`/`nibabel`/`bctpy` + `nilearn`/ENIGMA Toolbox/VTK for rendering — a completely
+different runtime with no imaging-registration dependencies at all. Keeping them as two
+containers means a change to the node-strength math or the report layout never requires
+rebuilding or re-validating the tractography/connectome container, and vice versa.
+
+**Caveats carried through from the underlying method** (recorded in every `manifest.json`):
+DK/DKT do not subdivide the thalamus into AV/CM/MDPf/PUL nuclei the way THOMAS does, so the
+whole-thalamus AI here is L-vs-R of one `Thalamus-Proper` node, not a per-nucleus breakdown;
+values are raw asymmetry indices, not age/sex-adjusted normative z-scores (§ENIGMA.md
+discusses when a normative cohort model would be needed instead).
 
 ---
 
@@ -518,13 +737,15 @@ The magnitude is far below scan–rescan variability and will not change a stati
 | Layer | Package | Role |
 |-------|---------|------|
 | Preprocessing | **QSIPrep** | BIDS DWI/T1w preprocessing, SDC, eddy |
+| Lesion inpainting | **neuroLIT / lit_0.6.0.sif** (DDPM, VINN layers) | Fills a traced lesion on the T1w, GPU-only; only runs when a mask exists (§1.5) |
 | Anatomy | **FreeSurfer** / **FastSurfer** | Surfaces, `aparc+aseg`, `aseg` |
 | Reconstruction | **QSIRecon** | Workflow orchestration, HSVS 5TT, tractography |
 | Diffusion modeling | **MRtrix3** | CSD, ACT, `tckgen`, SIFT2, connectomes |
 | Tissue seg (alt.) | **FSL FAST** | ACT-fast 5TT without surfaces |
 | Registration | **ANTs** | Affine / SyN, `antsApplyTransforms` |
 | Connectome step | **dkt_connectome.sif** | FreeSurfer `mri_label2vol` + ANTs + MRtrix |
-| Orchestration | **`subject.sh`**, Slurm | Four-step batch processing |
+| Node strength / report | **nodestrength_0.1.0.sif** (standalone repo, Python + `bctpy`/`nilearn`/ENIGMA Toolbox) | Node strength, AI, ENIGMA figures, `report.pdf` (§13.5) |
+| Orchestration | **`subject.sh`**, Slurm | Per-subject, multi-step batch processing |
 | Containers | Apptainer/Singularity | Reproducible HPC execution |
 
 ### 14.1 Runtime libraries in `dkt_connectome.sif`
@@ -567,8 +788,15 @@ There is also no version of the pipeline in which these libraries alter a number
 | **DKT for both recon tools** | The only parcellation both can produce, so `--fastsurfer` changes runtime rather than the node set and a mixed cohort still pools (§2.6) |
 | **Deterministic Step 4 by default** | Bitwise-reproducible matrices; ~3.6× on Step 4 but only ~3% of a full per-subject run (§13.1) |
 | **Binaries staged from `qsirecon.sif`** | Step 4 uses the same MRtrix/ANTs as Step 3, removing version skew; the price is declaring runtime libraries by hand (§14.1) |
+| **Inpaint before Step 2, not after** | recon-all/FastSurfer's skull-strip, Talairach fit and parcellation all run on the T1w directly; fixing the lesion *before* Step 2 fixes all of them at once, versus patching each downstream artifact separately (§1.5.1) |
+| **Auto-on, mask-gated, never required** | Step 1.5 only fires when `*_T1w_label-lesion_roi.nii.gz` exists (`find_lesion_mask`), so every subject without a traced lesion is unaffected by default; `INPAINT_REQUIRE_MASK=1` exists for cohorts where a missing mask should be a hard failure instead of a silent skip |
+| **GPU-only in production** | 1000 DDPM reverse steps × 3 planes (2.5D) is minutes on GPU, impractically slow on CPU (§1.5.4); `INPAINT_DEVICE=cpu` is kept for debugging, not for a production run |
+| **`--fast-fs` bundles `--fsaparc`** | FastSurfer alone produces only DKT; `--fsaparc` reruns FreeSurfer-style `aparc`/`aseg` on FastSurfer's surfaces to also get DK-68, needed for DK-only Step 4 runs or ENIGMA-style DK workflows on FastSurfer subjects (§12) |
+| **Step 5 as a separate container/repo, not folded into Step 4** | No graph-theory/plotting stack in `dkt_connectome.sif`; keeping `nodestrength` separate means its math or report layout can change without rebuilding or re-validating the tractography container (§13.5) |
+| **Step 5 auto-detects the atlas from connectome shape, no config flag** | The connectome file already carries this information (78 vs. 84 columns); a separate `NODESTRENGTH_ATLAS` flag that could disagree with the actual file would be a second place to get it wrong (§13.5) |
+| **Step 5 auto-on whenever Step 4 ran** | Unlike Step 1.5 (GPU, minutes, gated on a rare lesion mask), Step 5 is CPU-only and ~20s/subject with no precondition — every subject with a connectome benefits, so there is no reason to make it opt-in |
 
-**Not recommended without validation:** `--seg_only` FastSurfer + ACT-HSVS (missing surfaces); DK connectome without **`mri_label2vol` + dwiref resample** (space mismatch silently corrupts matrices).
+**Not recommended without validation:** `--seg_only` FastSurfer + ACT-HSVS (missing surfaces); DK/DKT connectome without **`mri_label2vol` + dwiref resample** (space mismatch silently corrupts matrices); disabling Step 1.5 QC gating (`INPAINT_FAIL_ON_QC=0`, the default) for a cohort without spot-checking `inpainting_qc.json` across subjects first.
 
 ---
 
@@ -581,7 +809,13 @@ There is also no version of the pipeline in which these libraries alter a number
 5. Zhang Y, Brady M, Smith S. **Segmentation of brain MR images through a hidden Markov random field model and the expectation-maximization algorithm.** *IEEE TMI* 2001. (**FAST**)  
 6. Desikan RS et al. **An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest.** *NeuroImage* 2006. (**DK atlas**)  
 7. PennLINC **QSIPrep** / **QSIRecon** documentation — recon specs, `--fs-subjects-dir`, ACT workflows.  
-8. Henschel L, et al. **FastSurfer** — fast deep-learning cortical segmentation and surface reconstruction.
+8. Henschel L, et al. **FastSurfer** — fast deep-learning cortical segmentation and surface reconstruction.  
+9. Ho J, Jain A, Abbeel P. **Denoising Diffusion Probabilistic Models.** *NeurIPS* 2020. (**DDPM**)  
+10. Henschel L, et al. **FastSurferVINN** — voxel-size independent, resolution-agnostic deep neural networks for whole brain analysis. *Medical Image Analysis* 2022. (**VINN layers**, used by neuroLIT/LIT)  
+11. Lugmayr A, et al. **RePaint: Inpainting using Denoising Diffusion Probabilistic Models.** *CVPR* 2022. (Known-region resampling strategy used by DDPM-based inpainting)  
+12. **neuroLIT / FastSurfer-LIT** (`deepmi/lit` on Docker Hub) — the lesion-inpainting tool run in Step 1.5; see [`containers/lit/README.md`](containers/lit/README.md) for the exact CLI and container this pipeline invokes.  
+13. Piper RJ, Feng X, et al., Taylor PN. **Thalamocortical structural connectivity in children with focal epilepsy: A diffusion MRI, case–control study.** *Epilepsia* 67(4):1901–1915, 2026. DOI: [10.1002/epi.70099](https://doi.org/10.1002/epi.70099). (Node-strength/AI methodology implemented by Step 5's `nodestrength` container)  
+14. Rubinov M, Sporns O. **Complex network measures of brain connectivity: Uses and interpretations.** *NeuroImage* 2010. (**Brain Connectivity Toolbox**, `strengths_und`)
 
 ---
 
