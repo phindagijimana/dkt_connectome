@@ -16,6 +16,8 @@ This is written for someone who builds and operates neuroimaging pipelines and n
 
 Read the Foundation tier of every section first if you are new; the tiers are cumulative but each is self-contained enough to skip.
 
+Its companion is [`acquisition.md`](acquisition.md), which covers where the images come from: the physics of the signal, how space is encoded, and why diffusion EPI arrives distorted. This document covers what is *in* the images.
+
 **All imaging figures are rendered from public reference data**, never from study participants, by `scripts/make_brain_figures.py`. The volumes, label maps and surfaces come from FreeSurfer's **fsaverage** (an average of 40 subjects); the coordinate grids come from TemplateFlow's **MNI152NLin2009cAsym** (an average of 152). Because both are group averages, no figure depicts an individual and none can be traced to a person. Four panels are not measurements and say so in their captions: the contrast and lesion figures are schematic drawings, the 5TT figure is derived from the fsaverage segmentation rather than from `5ttgen hsvs`, and the connectome figure is modelled from parcel geometry rather than tractography. Nothing here is an AI-generated depiction of anatomy.
 
 > **Scope and safety.** This document supports *research engineering*: QC, method choice, and interpretation of automated output. It is not a clinical reference and must not be used for diagnosis or patient care. Radiological interpretation is the responsibility of a qualified radiologist.
