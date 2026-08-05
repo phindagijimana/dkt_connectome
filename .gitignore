@@ -151,3 +151,4 @@ dwi_pipeline/templateflow/
 dwi_pipeline/Inpainting/
 dwi_pipeline/ENIGMA.docx
 dwi_pipeline/config/bids_repair_phase2_rsfmap.json
+dwi_pipeline/workflow/config/config.local.yaml

@@ -8,9 +8,47 @@ inputs/outputs/params) joined into **one workflow** (the `Snakefile`, which
 computes the dependency graph from those declarations instead of a human
 tracing bash).
 
-Status: **production-ready via `submit.sh` / `array.sh` (default `PIPELINE_ENGINE=snakemake`).**
-The legacy `subject.sh` path remains available (`PIPELINE_ENGINE=bash`) for
-anything not yet ported (legacy dual-container connectome only).
+Status: **production-ready via `submit.sh` / `array.sh` (default `PIPELINE_ENGINE=snakemake`)**
+for single-subject and cohort array runs. The legacy `subject.sh` path remains
+available (`PIPELINE_ENGINE=bash`) for anything not yet ported (legacy
+dual-container connectome only).
+
+### Machine setup (required once per host)
+
+Committed `config.yaml` uses `/path/to/...` placeholders (safe for a public
+repo). Before the first real run, either:
+
+```bash
+cp workflow/config/config.local.yaml.example workflow/config/config.local.yaml
+# edit real container + FreeSurfer license paths
+```
+
+or export the same paths as env vars (`CONTAINER_QSIPREP`, …, `FS_LICENSE`) —
+`run_subject.sh` / `preflight.sh` honour both. `config.local.yaml` is gitignored.
+
+### Single subject
+
+```bash
+cd dwi_pipeline
+RESULTS_ROOT=/path/to/output BIDS_DIR=/path/to/bids \
+  bash workflow/run_subject.sh all SUBJECT001 --fastsurfer --dwi-select config/dwi_select_….json
+# or via Slurm (one array task):
+SUBJECT_LIST_USE_EXISTING=1 SUBJECT_LIST_FILE=subjects_one.txt \
+  bash submit.sh --fastsurfer --dwi-select config/dwi_select_….json
+```
+
+### Cohort (Slurm array)
+
+```bash
+# subjects.txt: one ID per line, no sub- prefix, on NFS (not /tmp)
+RESULTS_ROOT=/path/to/output BIDS_DIR=/path/to/bids \
+ARRAY_CONCURRENCY=5 \
+bash submit.sh --fastsurfer --dwi-select config/dwi_select_….json
+```
+
+One array task = one subject; plugins run sequentially inside the task.
+Snakemake skips finished markers/outputs on resume (e.g. after a mid-pipeline
+failure, re-submit the same `RESULTS_ROOT` — completed QSIPrep/recon are not redone).
 
 ## Layout
 
@@ -214,6 +252,9 @@ Both engines are kept in sync deliberately, not by accident:
   `inpaint.batch_size`) — same trade-off `subject.sh`'s docs already call
   out for `INPAINT_BATCH_SIZE`. Default `inpaint.batch_size` is now **4**.
 - Step 2 (recon) shell body matches `subject.sh`; wiring verified via dry-run.
-  A full multi-hour recon has not been run through Snakemake yet — use
-  `bash workflow/run_subject.sh recon SUBJECT --fast-fs` to validate on one
-  subject if desired before a large batch.
+  Full FastSurfer recon through Snakemake validated on live Slurm subjects
+  (Aug 2026).
+- **QSIRecon HSVS fix (Aug 2026):** `qsirecon.smk` built `--fs-subjects-dir`
+  into `recon_xtra` but never passed it to `apptainer` (unlike `subject.sh`).
+  That left `subject_freesurfer_path=None` and crashed HSVS workflow build.
+  Fixed: pass `"${recon_xtra[@]}"` and require `FS_SUBJECTS_DIR/sub-<id>`.

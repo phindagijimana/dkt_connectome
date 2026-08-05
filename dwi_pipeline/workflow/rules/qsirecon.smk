@@ -42,16 +42,24 @@ rule qsirecon:
 
         recon_binds=()
         recon_xtra=()
-        if [[ -d "{RECON_OUT}" ]]; then
-          recon_binds+=( -B "{RECON_OUT}":/freesurfer:ro )
+        # Prefer FS_SUBJECTS_DIR (same as subject.sh); falls back to RECON_OUT via common.smk.
+        if [[ -d "{FS_SUBJECTS_DIR}" ]]; then
+          recon_binds+=( -B "{FS_SUBJECTS_DIR}":/freesurfer:ro )
           recon_xtra+=( --fs-subjects-dir /freesurfer )
-          echo "QSIRecon: mounting FreeSurfer subjects dir {RECON_OUT}"
+          echo "QSIRecon: mounting FreeSurfer subjects dir {FS_SUBJECTS_DIR}"
+          [[ -d "{FS_SUBJECTS_DIR}/sub-${{SUBJECT}}" ]] || _pipeline_fail "qsirecon" \
+            "HSVS needs {FS_SUBJECTS_DIR}/sub-${{SUBJECT}} (run Step 2 recon first)"
         elif [[ "{QSIRECON_SPEC}" == *hsvs* ]]; then
-          _pipeline_fail "qsirecon" "spec {QSIRECON_SPEC} needs a FreeSurfer subjects dir, but {RECON_OUT} does not exist"
+          _pipeline_fail "qsirecon" "spec {QSIRECON_SPEC} needs a FreeSurfer subjects dir, but {FS_SUBJECTS_DIR} does not exist"
         fi
 
         echo "=== QSIRecon ({QSIRECON_SPEC}): sub-${{SUBJECT}} ==="
+        # Wipe prior/partial outputs for this subject so a resume replaces them
+        # instead of mixing old workdirs or half-written derivatives.
         rm -rf "{params.work}"
+        find "{QSIRECON_OUT}" -mindepth 1 \( -type d -name "sub-${{SUBJECT}}" \) \
+          -prune -exec rm -rf {{}} + 2>/dev/null || true
+        rm -f "{MARKERS_DIR}/sub-${{SUBJECT}}/qsirecon.done"
         mkdir -p "{params.work}" "{QSIRECON_OUT}/derivatives"
 
         apptainer run --cleanenv --containall \
@@ -72,6 +80,7 @@ rule qsirecon:
           --nthreads {NTHREADS} \
           --omp-nthreads {OMP_NTHREADS} \
           --output-resolution {OUTPUT_RES} \
+          "${{recon_xtra[@]}}" \
           {params.atlas_args}
 
         rm -rf "{params.work}"

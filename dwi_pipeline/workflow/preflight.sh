@@ -34,6 +34,34 @@ done
 BIDS_DIR="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
 RESULTS_ROOT="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
 CONFIG="${WORKFLOW_DIR}/config/config.yaml"
+LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
+
+read_config() {
+  python3 - "${CONFIG}" "${LOCAL_CONFIG}" "$1" <<'PY'
+import sys, yaml
+from pathlib import Path
+
+def merge(base, override):
+    for key, val in override.items():
+        if isinstance(val, dict) and isinstance(base.get(key), dict):
+            merge(base[key], val)
+        else:
+            base[key] = val
+
+cfg = yaml.safe_load(open(sys.argv[1])) or {}
+local = Path(sys.argv[2])
+if local.is_file():
+    merge(cfg, yaml.safe_load(local.open()) or {})
+key = sys.argv[3]
+node = cfg
+for part in key.split("."):
+    if not isinstance(node, dict):
+        node = None
+        break
+    node = node.get(part)
+print("" if node is None else node)
+PY
+}
 
 fail() { echo "ERROR [preflight]: $*" >&2; exit 1; }
 warn() { echo "WARNING [preflight]: $*" >&2; }
@@ -60,14 +88,9 @@ if [[ -n "${SUBJECT}" ]]; then
   [[ -d "${BIDS_DIR}/sub-${SUBJECT}" ]] || fail "subject missing: ${BIDS_DIR}/sub-${SUBJECT}"
 fi
 
-# Container paths from config.yaml defaults (override via env if set).
+# Container paths from merged config (config.yaml + optional config.local.yaml).
 read_container() {
-  python3 - "${CONFIG}" "$1" <<'PY'
-import sys, yaml
-cfg = yaml.safe_load(open(sys.argv[1]))
-key = sys.argv[2]
-print(cfg.get("containers", {}).get(key, ""))
-PY
+  read_config "containers.${1}"
 }
 
 need_qsiprep=0 need_qsirecon=0 need_recon=0 need_connectome=0 need_inpaint=0 need_nodestrength=0
@@ -88,6 +111,8 @@ case "${PIPELINE_MODE}" in
   *) fail "invalid PIPELINE_MODE=${PIPELINE_MODE}" ;;
 esac
 
+# Prefer subject.sh-style env overrides, then config.local.yaml / config.yaml.
+FS_LICENSE="${FS_LICENSE:-$(read_config fs_license)}"
 FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
 [[ -f "${FS_LICENSE}" ]] || fail "FreeSurfer license missing: ${FS_LICENSE}"
 
@@ -96,18 +121,46 @@ check_sif() {
   [[ -n "${path}" && -f "${path}" ]] || fail "container missing (${label}): ${path}"
 }
 
-((need_qsiprep)) && check_sif qsiprep "$(read_container qsiprep)"
-((need_qsirecon)) && check_sif qsirecon "$(read_container qsirecon)"
-((need_connectome)) && check_sif connectome "$(read_container connectome)"
-((need_inpaint)) && check_sif lit "$(read_container lit)"
-((need_nodestrength)) && check_sif nodestrength "$(read_container nodestrength)"
+container_path() {
+  local key="$1" env_name="$2"
+  local from_env="${!env_name:-}"
+  if [[ -n "${from_env}" ]]; then
+    echo "${from_env}"
+  else
+    read_container "${key}"
+  fi
+}
+
+((need_qsiprep)) && check_sif qsiprep "$(container_path qsiprep CONTAINER_QSIPREP)"
+((need_qsirecon)) && check_sif qsirecon "$(container_path qsirecon CONTAINER_QSIRECON)"
+((need_connectome)) && check_sif connectome "$(container_path connectome CONTAINER_CONNECTOME)"
+((need_inpaint)) && check_sif lit "$(container_path lit CONTAINER_LIT)"
+((need_nodestrength)) && check_sif nodestrength "$(container_path nodestrength CONTAINER_NODESTRENGTH)"
 
 if ((need_recon)); then
   case "${RECON_TOOL:-freesurfer}" in
-    freesurfer) check_sif freesurfer "$(read_container freesurfer)" ;;
-    fastsurfer) check_sif fastsurfer "$(read_container fastsurfer)" ;;
+    freesurfer) check_sif freesurfer "$(container_path freesurfer CONTAINER_FREESURFER)" ;;
+    fastsurfer) check_sif fastsurfer "$(container_path fastsurfer CONTAINER_FASTSURFER)" ;;
     *) fail "invalid RECON_TOOL=${RECON_TOOL:-}" ;;
   esac
+fi
+
+# HSVS specs need an existing FreeSurfer/FastSurfer subject tree once recon has run
+# (or been provided). Warn at submit-time; fail at per-subject preflight if missing
+# after recon is expected to already exist (qsirecon-only / connectome modes).
+QSIRECON_SPEC="${QSIRECON_SPEC:-$(read_config qsirecon.spec)}"
+QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
+FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-$(read_config fs_subjects_dir)}"
+FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT:-${RESULTS_ROOT}/freesurfer}}"
+if ((need_qsirecon)) && [[ "${QSIRECON_SPEC}" == *hsvs* ]]; then
+  if [[ -n "${SUBJECT}" ]]; then
+    if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
+      [[ -d "${FS_SUBJECTS_DIR}/sub-${SUBJECT}" ]] || fail \
+        "QSIRECON_SPEC=${QSIRECON_SPEC} needs ${FS_SUBJECTS_DIR}/sub-${SUBJECT} (run Step 2 first)"
+    elif [[ ! -d "${FS_SUBJECTS_DIR}/sub-${SUBJECT}" && "${RUN_RECON:-1}" == "0" ]]; then
+      fail "QSIRECON_SPEC=${QSIRECON_SPEC} needs FreeSurfer but RUN_RECON=0 and ${FS_SUBJECTS_DIR}/sub-${SUBJECT} missing"
+    fi
+  fi
 fi
 
 # QSIPrep SDC configuration sanity check (same rules as subject.sh).
