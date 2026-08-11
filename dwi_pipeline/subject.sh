@@ -111,8 +111,9 @@
 #   bash subject.sh qsirecon 014             # Step 3 only (QSIPrep must exist)
 #   bash subject.sh connectome 014           # Step 4 only (needs FS dir + .tck)
 #   bash subject.sh nodestrength 014         # Step 5 only (needs an existing connectome)
-#   bash subject.sh all 014 --syn            # no BIDS fmap -> --use-syn-sdc warn
+#   bash subject.sh all 014 --syn            # no BIDS fmap -> --use-syn-sdc error
 #   bash subject.sh all 014 --fmap-retry     # ignore measured fmaps, SyN SDC
+#   bash subject.sh all 014 --no-sdc         # skip SDC entirely (matches previous CIDUR GE runs)
 #   bash subject.sh all 014 --dwi-shell 1000 # default: acq-b1000 DWI + IntendedFor fmaps
 #   bash subject.sh all 014 --no-dwi-filter  # process all DWI/fmaps (legacy behavior)
 #   bash subject.sh all 014 --dwi-select /path/dwi_select_b3000.json
@@ -124,7 +125,7 @@
 #
 # SDC (QSIPrep) — strict: measured fmaps when dwi-select includes fmap; else require --syn or --fmap-retry.
 #
-# Outputs under RESULTS_ROOT (default: .../CIDUR_BIDS/dwi_test):
+# Outputs under RESULTS_ROOT (default: .../dwi_pipeline/dwi_test_TBI):
 #   inpainted/   qsiprep_single_run_output/   freesurfer/   qsirecon_single_run_output/   connectomes/   node_strength/
 #
 # Environment (optional overrides):
@@ -162,7 +163,8 @@
 #   CONNECTOME_DETERMINISTIC=0|1  pin ITK to 1 thread for a reproducible matrix (default 1)
 #   CONNECTOME_RESAMPLE_TO_DWI=0|1  resample the segmentation onto the DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
-#   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc warn (same as --fmap-retry)
+#   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc error (same as --fmap-retry)
+#   QSIPREP_NO_SDC=1       skip SDC entirely — no fmap, no SyN (same as --no-sdc; matches previous CIDUR GE runs)
 #   DWI_SHELL_B=1000         b-value for default dwi-select (config/dwi_select_b<SHELL>.json)
 #   DWI_SELECT_JSON=         explicit dwi-select config (overrides DWI_SHELL_B path)
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
@@ -238,6 +240,9 @@ while [[ $# -gt 0 ]]; do
     --fmap-retry)
       QSIPREP_FMAP_RETRY=1
       ;;
+    --no-sdc)
+      QSIPREP_NO_SDC=1
+      ;;
     --fastsurfer)
       RECON_TOOL=fastsurfer
       ;;
@@ -298,7 +303,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength, --strength-only, --no-report)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength, --strength-only, --no-report)"
       exit 1
       ;;
   esac
@@ -307,8 +312,8 @@ done
 
 # --- Paths: repo root, BIDS input, separate output tree for ACT/connectome ---
 TRACKTBI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-RESULTS_ROOT="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
-BIDS_DIR="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
+RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
+BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
 NTHREADS="${NTHREADS:-8}"
 OMP_NTHREADS="${OMP_NTHREADS:-8}"
 OUTPUT_RES="${OUTPUT_RES:-2}"
@@ -580,7 +585,7 @@ _configure_qsiprep_sdc() {
   local -n _out=$2
 
   if [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]]; then
-    _out+=(--ignore fieldmaps --use-syn-sdc warn)
+    _out+=(--ignore fieldmaps --use-syn-sdc error)
     echo "QSIPrep: sub-${SUBJECT}: explicit --fmap-retry -> SyN SDC"
     return 0
   fi
@@ -589,13 +594,18 @@ _configure_qsiprep_sdc() {
     return 0
   fi
   if [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]]; then
-    _out+=(--use-syn-sdc warn)
+    _out+=(--use-syn-sdc error)
     echo "QSIPrep: sub-${SUBJECT}: explicit --syn -> SyN SDC"
+    return 0
+  fi
+  if [[ "${QSIPREP_NO_SDC:-0}" == "1" ]]; then
+    echo "QSIPrep: sub-${SUBJECT}: explicit --no-sdc -> NO SDC (matches previous CIDUR GE runs)"
     return 0
   fi
   _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${SUBJECT}" \
     "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
-    "Or pass --syn (QSIPREP_USE_SYN_SDC=1) or --fmap-retry (QSIPREP_FMAP_RETRY=1)."
+    "Or pass --syn (QSIPREP_USE_SYN_SDC=1) or --fmap-retry (QSIPREP_FMAP_RETRY=1)." \
+    "Or pass --no-sdc (QSIPREP_NO_SDC=1) to explicitly skip SDC (matches previous CIDUR GE runs)."
 }
 
 # -----------------------------------------------------------------------------

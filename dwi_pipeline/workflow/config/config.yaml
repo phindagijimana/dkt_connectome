@@ -8,8 +8,8 @@
 # =============================================================================
 
 # --- Paths ---
-results_root: /path/to/CIDUR_BIDS/dwi_test
-bids_dir: /path/to/CIDUR_BIDS/data_bids
+results_root: /path/to/dwi_pipeline/dwi_test_TBI   # outputs; use a per-run subdir
+bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids  # local TBI test inputs
 templateflow_home: null   # default: <repo>/templateflow
 recon_out: null             # default: <results_root>/freesurfer  (RECON_OUT)
 fs_subjects_dir: null       # default: recon_out                 (FS_SUBJECTS_DIR)
@@ -36,6 +36,7 @@ fs_lut: null   # default: dirname(fs_license)/FreeSurferColorLUT.txt
 qsiprep:
   use_syn_sdc: false       # --syn / QSIPREP_USE_SYN_SDC=1
   fmap_retry: false        # --fmap-retry / QSIPREP_FMAP_RETRY=1
+  no_sdc: false            # --no-sdc / QSIPREP_NO_SDC=1 — skip SDC entirely (matches previous CIDUR GE runs)
   bids_filter: null        # static filter JSON (--bids-filter); mutually exclusive with dwi-select
 
 # --- DWI series selection (QSIPrep) ---

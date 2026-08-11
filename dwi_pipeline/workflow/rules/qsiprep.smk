@@ -1,8 +1,8 @@
 """
 qsiprep.smk — Step 1 plugin: denoise/correct DWI, register to T1w.
 
-Supports dwi-select (default), static --bids-filter, and --syn / --fmap-retry,
-matching subject.sh's QSIPrep behaviour.
+Supports dwi-select (default), static --bids-filter, and
+--syn / --fmap-retry / --no-sdc, matching subject.sh's QSIPrep behaviour.
 """
 
 QSIPREP_MARKER_PATTERN = f"{MARKERS_DIR}/sub-{{subject}}/qsiprep.done"
@@ -64,17 +64,20 @@ rule qsiprep:
         fi
 
         if [[ "{QSIPREP_FMAP_RETRY}" == "True" ]]; then
-          xtra+=(--ignore fieldmaps --use-syn-sdc warn)
+          xtra+=(--ignore fieldmaps --use-syn-sdc error)
           echo "QSIPrep: sub-${{SUBJECT}}: explicit fmap_retry -> SyN SDC"
         elif [[ "${{has_fmap}}" == "1" ]]; then
           echo "QSIPrep: sub-${{SUBJECT}}: filter includes fmap -> measured SDC"
         elif [[ "{QSIPREP_USE_SYN_SDC}" == "True" ]]; then
-          xtra+=(--use-syn-sdc warn)
+          xtra+=(--use-syn-sdc error)
           echo "QSIPrep: sub-${{SUBJECT}}: explicit use_syn_sdc -> SyN SDC"
+        elif [[ "{QSIPREP_NO_SDC}" == "True" ]]; then
+          echo "QSIPrep: sub-${{SUBJECT}}: explicit no_sdc -> NO SDC (matches previous CIDUR GE runs)"
         else
           _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${{SUBJECT}}" \
             "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
-            "Or set qsiprep.use_syn_sdc / qsiprep.fmap_retry in config."
+            "Or set qsiprep.use_syn_sdc / qsiprep.fmap_retry / qsiprep.no_sdc in config" \
+            "(equivalents: --syn, --fmap-retry, --no-sdc; env: QSIPREP_USE_SYN_SDC, QSIPREP_FMAP_RETRY, QSIPREP_NO_SDC)."
         fi
 
         apptainer run --cleanenv --containall \

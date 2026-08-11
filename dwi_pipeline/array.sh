@@ -83,6 +83,7 @@ esac
 SUBJECT_ARGS=()
 [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && SUBJECT_ARGS+=(--syn)
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && SUBJECT_ARGS+=(--fmap-retry)
+[[ "${QSIPREP_NO_SDC:-0}"      == "1" ]] && SUBJECT_ARGS+=(--no-sdc)
 [[ -n "${QSIPREP_BIDS_FILTER:-}" ]] && SUBJECT_ARGS+=(--bids-filter "${QSIPREP_BIDS_FILTER}")
 if [[ "${RECON_TOOL:-freesurfer}" == "fastsurfer" ]]; then
   if [[ "${RECON_FSAPARC:-0}" == "1" ]]; then

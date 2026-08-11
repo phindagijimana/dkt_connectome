@@ -19,6 +19,12 @@ For **atlas-only** connectomes (4S156 in QSIRecon, no Step 4), use [`dwi_connect
 Give each cohort, and each combination of settings, a separate `RESULTS_ROOT`,
 so that one run cannot overwrite another's outputs.
 
+**Local TBI test data** lives under [`dwi_pipeline/dwi_test_TBI/`](dwi_test_TBI/):
+BIDS inputs in `dwi_test_TBI/bids/`, and one `RESULTS_ROOT` subdirectory per
+subject/settings using `sub-<SUBJECT>_<recon>[_flags]` (e.g.
+`sub-TBI011011_fastsurfer_inpaint`). Keep large cohort archives (e.g.
+`CIDUR_BIDS`) separate from day-to-day pipeline I/O.
+
 ---
 
 ## Stages
@@ -43,9 +49,9 @@ was produced).
 ```bash
 cd /path/to/repo
 
-# Full pipeline
-export RESULTS_ROOT=/path/to/results
-export BIDS_DIR=/path/to/bids
+# Full pipeline — local TBI test tree under dwi_pipeline/dwi_test_TBI
+export BIDS_DIR=/path/to/dwi_pipeline/dwi_test_TBI/bids
+export RESULTS_ROOT=/path/to/dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint
 
 bash dwi_pipeline/subject.sh all SUBJ01
 ```
@@ -164,6 +170,7 @@ for the full CLI, output layout, and the underlying Piper et al. 2026 methodolog
 | `--dwi-select PATH` | Explicit dwi-select JSON |
 | `--syn` | SyN SDC when no fmap in filter |
 | `--fmap-retry` | Ignore fieldmaps, SyN SDC |
+| `--no-sdc` | Skip SDC entirely (reproduces previous CIDUR GE runs) |
 | `--fastsurfer` | FastSurfer instead of recon-all |
 | `--fast-fs` | FastSurfer + `--fsaparc` (adds a classic DK-68 aparc/ribbon alongside FastSurfer's native DKT) |
 | `--no-recon` | Skip Step 2 (requires ACT-fast spec or existing FS dir) |
@@ -182,7 +189,7 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 | Area | Behavior |
 |------|----------|
 | **FreeSurfer container** | Requires `freesurfer_7.4.1.sif`; **no** fallback to FastSurfer's trimmed FS |
-| **SDC** | Measured when fmap in dwi-select filter; else **must** pass `--syn` or `--fmap-retry` |
+| **SDC** | Measured when fmap in dwi-select filter; else **must** pass `--syn`, `--fmap-retry`, or `--no-sdc` |
 | **Recon** | If `aparc+aseg.mgz` exists, **fail** unless `RECON_SKIP_IF_EXISTS=1` |
 | **Step 4 inputs** | Exactly one tractogram, dwiref, desc-preproc T1w, BIDS T1w (session-coherent) |
 | **Step 4 space** | `CONNECTOME_RESAMPLE_TO_DWI=1` required; no FS-conformed-space shortcut |

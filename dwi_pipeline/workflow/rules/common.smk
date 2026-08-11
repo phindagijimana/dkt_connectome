@@ -65,6 +65,7 @@ MARKERS_DIR = f"{RESULTS_ROOT}/.snakemake_markers"
 _qsiprep_cfg = config.get("qsiprep", {})
 QSIPREP_USE_SYN_SDC = bool(_qsiprep_cfg.get("use_syn_sdc", False))
 QSIPREP_FMAP_RETRY = bool(_qsiprep_cfg.get("fmap_retry", False))
+QSIPREP_NO_SDC = bool(_qsiprep_cfg.get("no_sdc", False))
 QSIPREP_BIDS_FILTER = _qsiprep_cfg.get("bids_filter") or ""
 
 # --- dwi-select ---------------------------------------------------------------
