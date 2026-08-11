@@ -63,6 +63,7 @@ _apply_env() {
 }
 [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && _apply_env qsiprep.use_syn_sdc true
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && _apply_env qsiprep.fmap_retry true
+[[ "${QSIPREP_NO_SDC:-0}"      == "1" ]] && _apply_env qsiprep.no_sdc      true
 _apply_env qsiprep.bids_filter        "${QSIPREP_BIDS_FILTER:-}"
 _apply_env dwi_select.json            "${DWI_SELECT_JSON:-}"
 _apply_env dwi_select.shell_b         "${DWI_SHELL_B:-}"
@@ -110,6 +111,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true ;;
     --fmap-retry)          OVERRIDES[qsiprep.fmap_retry]=true ;;
+    --no-sdc)              OVERRIDES[qsiprep.no_sdc]=true ;;
     --bids-filter)         OVERRIDES[qsiprep.bids_filter]="${2:?Need path after --bids-filter}"; shift ;;
     --fastsurfer)          OVERRIDES[recon.tool]=fastsurfer ;;
     --freesurfer)          OVERRIDES[recon.tool]=freesurfer ;;
@@ -216,7 +218,7 @@ esac
 if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
   INPAINT_ENABLED="${OVERRIDES[inpaint.enabled]:-true}"
   if [[ "${INPAINT_ENABLED}" == "true" ]]; then
-    _results_root="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
+    _results_root="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
     _bids_dir="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"

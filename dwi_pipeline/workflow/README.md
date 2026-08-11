@@ -199,6 +199,54 @@ Both engines are kept in sync deliberately, not by accident:
 **Not yet ported** (use `PIPELINE_ENGINE=bash` / `subject.sh` for these):
 - The legacy dual-container connectome path (`CONNECTOME_LEGACY_DUAL_CONTAINER=1`).
 
+## SDC (Step 1 / QSIPrep) — four modes
+
+Both engines apply the same SDC decision, in this precedence order (first
+match wins):
+
+| Mode | Trigger (any of) | QSIPrep args added | When to use |
+|------|------------------|--------------------|-------------|
+| **`fmap-retry`** | `--fmap-retry` · `QSIPREP_FMAP_RETRY=1` · `qsiprep.fmap_retry: true` | `--ignore fieldmaps --use-syn-sdc error` | BIDS fmaps exist but are known to be broken; force SyN. |
+| **measured fmap** | dwi-select filter includes an `fmap` block | (none — QSIPrep uses the fmap it finds) | Default for subjects with a valid `fmap/` dir + `IntendedFor` → target DWI (all Siemens-with-fmap sessions). |
+| **`syn`** | `--syn` / `--use-syn-sdc` · `QSIPREP_USE_SYN_SDC=1` · `qsiprep.use_syn_sdc: true` | `--use-syn-sdc error` | No measured fmap on disk — best available fall-back. Uses ANTs SyN to register b0 → T1w with anatomical priors. |
+| **`no-sdc`** | `--no-sdc` · `QSIPREP_NO_SDC=1` · `qsiprep.no_sdc: true` | (none — SDC skipped) | Explicitly skip SDC (reproduces previous CIDUR GE runs, where no fmap was acquired and `--syn` was never passed). Grep-able as `"explicit no_sdc -> NO SDC"` in the QSIPrep log. |
+
+If none of the four fire, QSIPrep exits with a `_pipeline_fail` message
+listing all three overrides — the pipeline **never silently runs without
+SDC**; you have to say so.
+
+**Why `--use-syn-sdc error` and not `warn`?** QSIPrep's `--use-syn-sdc`
+takes an optional argument that controls what happens when SyN SDC cannot
+be estimated for a subject: `error` (strict — fail loudly) or `warn`
+(permissive — print a warning and proceed *without any SDC*). The name is
+misleading: `warn` is not a diagnostic mode, it is a *silent-skip-on-failure*
+switch. This pipeline uses `error` on both engines to match the rest of
+its fail-fast design. If SyN fails on a subject, you find out immediately
+instead of shipping an SDC-less subject that appears to have completed
+normally. If you genuinely want that subject to proceed without SDC, add
+`--no-sdc` explicitly.
+
+**Cohort split example — CIDUR**:
+
+```bash
+# Group 1: Siemens-with-fmap → default (measured SDC)
+while read s; do
+  bash dwi_pipeline/submit.sh --subject "$s" \
+       --dwi-select dwi_pipeline/config/dwi_select_cidur_64dirax.json
+done < dwi_pipeline/subject_list_cidur_fmap.txt
+
+# Group 2: GE + Siemens-no-fmap → --no-sdc (reproduces previous behavior)
+while read s; do
+  bash dwi_pipeline/submit.sh --subject "$s" \
+       --dwi-select dwi_pipeline/config/dwi_select_cidur_64dirax.json \
+       --no-sdc
+done < dwi_pipeline/subject_list_cidur_ge.txt
+```
+
+Ready-made lists sit at `dwi_pipeline/subject_list_cidur_{fmap,ge}.txt`.
+Both groups run through the default Snakemake engine — no
+`PIPELINE_ENGINE=bash` needed.
+
 **Behaviour changes, by design, not oversight:**
 - *Recon skip-if-exists is now the default*, not opt-in. `subject.sh` fails
   loudly if `aparc+aseg.mgz` exists unless you pass `RECON_SKIP_IF_EXISTS=1`;

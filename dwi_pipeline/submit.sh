@@ -22,8 +22,9 @@
 #   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV (skips Step 5 too)
 #   ./submit.sh --no-inpaint       # force-skip Step 1.5 even for subjects with a lesion mask
 #   ./submit.sh --no-node-strength # skip Step 5 only (keep the connectome CSV)
-#   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc warn
+#   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc error
 #   ./submit.sh --fmap-retry       # ignore measured fmaps, SyN SDC
+#   ./submit.sh --no-sdc           # skip SDC entirely (matches previous CIDUR GE runs)
 #   ./submit.sh --dwi-shell 1000     # default: acq-b1000 + IntendedFor fmaps for QSIPrep
 #   ./submit.sh --no-dwi-filter      # legacy: no series filter
 #
@@ -51,6 +52,7 @@
 #   FS_SUBJECTS_DIR=/path        # point Steps 3+4 at an external FS tree
 #   SUBJECT_LIST_ONLY_DWI=0      # include all sub-* folders, not only those with DWI
 #   QSIPREP_USE_SYN_SDC=1        # same as --syn
+#   QSIPREP_NO_SDC=1             # same as --no-sdc (skip SDC entirely)
 #   DWI_SHELL_B=1000             # b-value for default dwi-select config
 #   QSIPREP_NO_DWI_FILTER=1      # same as --no-dwi-filter
 #   EXCLUDE_NODES=smdodwork05    # comma-list passed to sbatch --exclude
@@ -73,6 +75,7 @@ set +H
 
 QSIPREP_USE_SYN_SDC="${QSIPREP_USE_SYN_SDC:-0}"
 QSIPREP_FMAP_RETRY="${QSIPREP_FMAP_RETRY:-0}"
+QSIPREP_NO_SDC="${QSIPREP_NO_SDC:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
 DWI_SHELL_B="${DWI_SHELL_B:-1000}"
@@ -96,6 +99,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --fmap-retry)
       QSIPREP_FMAP_RETRY=1
+      ;;
+    --no-sdc)
+      QSIPREP_NO_SDC=1
       ;;
     --fastsurfer)
       RECON_TOOL=fastsurfer
@@ -149,7 +155,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
       exit 1
       ;;
   esac
@@ -160,8 +166,8 @@ DWI_ROOT="$(cd "$(dirname "$0")" && pwd)"
 TRACKTBI_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
 
 # --- Defaults (override via environment before ./submit.sh) ---
-BIDS_DIR="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
-RESULTS_ROOT="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
+BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
+RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 SUBJECT_LIST_ONLY_DWI="${SUBJECT_LIST_ONLY_DWI:-1}"
 ARRAY_SCRIPT="${DWI_ROOT}/array.sh"
@@ -239,8 +245,9 @@ echo "  QSIRECON_SPEC: ${QSIRECON_SPEC}"
 if [[ -n "${QSIRECON_ATLASES}" ]]; then
   echo "  QSIRECON_ATLASES: ${QSIRECON_ATLASES}"
 fi
-echo "  QSIPrep SDC: measured when dwi-select includes fmap; else requires --syn or --fmap-retry"
-[[ "${QSIPREP_FMAP_RETRY}" == "1" ]] && echo "  QSIPREP_FMAP_RETRY=1 (--ignore fieldmaps --use-syn-sdc warn)"
+echo "  QSIPrep SDC: measured when dwi-select includes fmap; else requires --syn, --fmap-retry, or --no-sdc"
+[[ "${QSIPREP_FMAP_RETRY}" == "1" ]] && echo "  QSIPREP_FMAP_RETRY=1 (--ignore fieldmaps --use-syn-sdc error)"
+[[ "${QSIPREP_NO_SDC}"     == "1" ]] && echo "  QSIPREP_NO_SDC=1     (SDC skipped entirely — matches previous CIDUR GE runs)"
 if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
   echo "  dwi-select: off (--no-dwi-filter)"
 elif [[ -n "${DWI_SELECT_JSON}" ]]; then
@@ -287,7 +294,7 @@ fi
 # copy of the script, so array.sh cannot derive them on the compute node.
 export DWI_ROOT TRACKTBI_ROOT PIPELINE_ENGINE
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
-export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_BIDS_FILTER DWI_SELECT_JSON
+export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_NO_SDC QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
 export RUN_RECON RECON_TOOL RECON_FSAPARC RECON_OUT RUN_CONNECTOME RUN_INPAINT RUN_NODESTRENGTH FS_SUBJECTS_DIR
 export RECON_FASTSURFER_DEVICE RECON_SESSION
