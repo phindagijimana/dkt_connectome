@@ -31,8 +31,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-BIDS_DIR="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
-RESULTS_ROOT="${RESULTS_ROOT:-/path/to/CIDUR_BIDS/dwi_test}"
+BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
+RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
 CONFIG="${WORKFLOW_DIR}/config/config.yaml"
 LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
 
