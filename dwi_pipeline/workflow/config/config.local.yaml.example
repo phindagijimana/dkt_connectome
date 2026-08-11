@@ -7,6 +7,11 @@
 #   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_FASTSURFER,
 #   CONTAINER_FREESURFER, CONTAINER_CONNECTOME, CONTAINER_LIT,
 #   CONTAINER_NODESTRENGTH, FS_LICENSE
+#
+# Keep local TBI test BIDS + RESULTS_ROOT under dwi_pipeline/dwi_test_TBI/.
+#   bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids
+#   results_root: /path/to/dwi_pipeline/dwi_test_TBI/sub-<SUBJECT>_<recon>[_flags]
+#     e.g. sub-TBI011011_fastsurfer_inpaint
 
 containers:
   qsiprep: /path/to/others/containers/qsiprep.sif

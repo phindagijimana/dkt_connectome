@@ -38,6 +38,11 @@ slurm-*.err
 results/
 derivatives/
 
+# Local TBI test I/O (BIDS + RESULTS_ROOT under dwi_pipeline/dwi_test_TBI/).
+# Track only the layout README.
+/dwi_pipeline/dwi_test_TBI/**
+!/dwi_pipeline/dwi_test_TBI/README.md
+
 # --- Container images (huge, distributed separately) --------------------------
 *.sif
 *.img
