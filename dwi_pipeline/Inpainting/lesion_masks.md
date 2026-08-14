@@ -278,58 +278,163 @@ possible "we are sure this tract survived" statement.
   *Brain Connectivity* 2013 and follow-ups) is a parallel paradigm — not
   covered here, since it does not use the subject's own tractography.
 
-### Key papers cited (paper summaries)
+### Key papers cited (key ideas)
 
-**Griffis, Metcalf, Corbetta & Shulman (2019).** *Structural Disconnections
-Explain Brain Network Dysfunction after Stroke.* Cell Reports, 28(10),
-2527–2540.e9. DOI: 10.1016/j.celrep.2019.07.100.
-[Link](https://www.cell.com/cell-reports/fulltext/S2211-1247(19)31016-2)
+---
 
-Studied 114 stroke patients with diffusion MRI and resting-state fMRI.
-Rather than reading stroke effects off lesion voxel counts, they built
-subject-level *structural disconnectomes* (which edges of a normative
-white-matter atlas the lesion disrupts) and showed those disconnectome
-patterns explain resting-state functional connectivity abnormalities
-better than either the lesion itself or gray-matter damage alone. Their
-result is the main empirical argument for lesion-aware connectome methods
-in general (Options A/B/C in this document) — the point is that the
-lesion's effect on the *graph* is a more sensitive readout of stroke than
-the lesion's location. Uses parcellation-masking-style handling in the
-subject connectome pipeline.
+#### 1. Griffis, Metcalf, Corbetta & Shulman (2019)
 
-**Kuceyeski, Maruta, Relkin & Raj (2013).** *The Network Modification
-(NeMo) Tool: Elucidating the Effect of White Matter Integrity Changes on
-Cortical and Subcortical Structural Connectivity.* Brain Connectivity,
-3(5), 451–463.
-[Link](https://www.liebertpub.com/doi/abs/10.1089/brain.2013.0147)
+*Structural Disconnections Explain Brain Network Dysfunction after Stroke.*
+Cell Reports, 28(10), 2527–2540.e9.
+DOI: [10.1016/j.celrep.2019.07.100](https://doi.org/10.1016/j.celrep.2019.07.100).
+[Full text](https://www.cell.com/cell-reports/fulltext/S2211-1247(19)31016-2)
 
-Introduced the NeMo tool. Rather than reconstruct each subject's own
-connectome, take a large reference set of healthy tractograms, and mark
-every edge whose supporting streamlines pass through the subject's lesion
-mask as "disconnected." The output is a predicted per-edge / per-region
-change map, computed *without* using the subject's DWI at all. That is a
-parallel paradigm to the A/B/C excision methods here — useful when
-subject tractography is unreliable (very large lesions, degraded DWI, or
-pediatric acquisitions where template-based inference is preferred).
-NeMo has follow-up applications in stroke motor prognosis, TBI, and MCI;
-the 2013 paper is the founding reference.
+**Question the paper poses.** After a focal stroke, resting-state
+functional-connectivity abnormalities appear well beyond the lesion
+boundary. Are those abnormalities better predicted by *where the lesion
+sits* (the classical view — a voxel-map of damaged gray/white matter), or
+by *which network edges the lesion disconnects* (a graph view — the set
+of long-range fibres the lesion severs)?
 
-**Pustina, Coslett, Turkeltaub, Tustison, Schwartz & Avants (2016).*
+**Design.** 114 first-episode stroke patients scanned with T1w, dMRI,
+and resting-state fMRI at sub-acute (~2 weeks) and chronic (~3 months)
+time points. Manually traced lesion masks are the subject-level input.
+
+**Novel construct — the "structural disconnectome".** For each subject,
+the authors overlay the lesion on a normative streamline atlas built from
+healthy controls, count how many streamlines connecting each pair of
+regions pass through the lesion, and produce a subject-specific
+*disconnection matrix*. This is a graph representation of the injury: not
+"where the damage is" but "which pairs of regions can no longer
+communicate through direct WM."
+
+**Key finding 1.** A low-dimensional (2–3 component) axis of
+disconnection patterns explains a large fraction of the variance in
+resting-state functional connectivity abnormalities. The dominant
+component captures inter-hemispheric disconnection.
+
+**Key finding 2.** Disconnection patterns predict behavioural deficits
+across multiple domains (motor, language, memory, attention) *better than
+lesion location does*. Voxel-based lesion-symptom mapping is
+outperformed by a graph-based readout.
+
+**Key finding 3.** The prediction holds sub-acutely and chronically, and
+the disconnection-to-behaviour link is robust to whether the disconnection
+matrix is computed on the subject's own tractography or on a normative
+template.
+
+**Why this paper matters for dk_connectome.** It is the strongest
+empirical argument for the whole "lesion-aware connectome" family of
+methods. Reading a lesion as *voxel damage* under-uses the imaging;
+reading it as *edge disruption* on a graph is a better predictor of
+functional and behavioural outcome. Options A, B, and C in this document
+implement the subject-tractography variant of Griffis's disconnectome
+idea (excise / drop lesion-crossing streamlines from the subject's own
+connectome), so this paper is our primary motivating citation.
+
+---
+
+#### 2. Kuceyeski, Maruta, Relkin & Raj (2013)
+
+*The Network Modification (NeMo) Tool: Elucidating the Effect of White
+Matter Integrity Changes on Cortical and Subcortical Structural
+Connectivity.* Brain Connectivity, 3(5), 451–463.
+DOI: [10.1089/brain.2013.0147](https://doi.org/10.1089/brain.2013.0147).
+[Full text](https://www.liebertpub.com/doi/abs/10.1089/brain.2013.0147)
+
+**Question the paper poses.** How can we quantify the network-level
+consequences of white-matter damage in patients whose own diffusion MRI
+is missing, degraded, or too heavily lesioned for reliable tractography?
+
+**Idea.** *Virtual lesioning of a normative connectome.* Rather than
+reconstruct the subject's tractogram, take a large reference set of
+healthy tractograms, overlay the subject's WM-damage mask (from any
+imaging modality — T1w hyper-intensities, FLAIR, manual tracings), and
+mark every edge whose supporting streamlines in the reference set pass
+through the damaged region as "disconnected." The output is a predicted
+per-edge and per-region change map, computed *without using the subject's
+own DWI at all*.
+
+**Design.** The paper introduces the NeMo tool and demonstrates it on a
+mild-TBI cohort with white-matter hyper-intensities visible on T1w. Uses
+73 healthy tractograms as the normative base.
+
+**Key finding 1.** NeMo-predicted disconnection at the region level
+correlates with neurocognitive impairment across attention, memory, and
+processing-speed domains, even though no dMRI was collected on the
+patients.
+
+**Key finding 2.** The tool works across imaging modalities of the
+lesion mask (T1w hypo-intensity, FLAIR hyper-intensity, DTI FA maps),
+because only the mask geometry enters the calculation — not its imaging
+source.
+
+**Key finding 3.** Region-level disconnection scores are more
+reproducible across choices of the normative tractogram set than per-edge
+scores, so region-level readouts are the recommended primary output.
+
+**Why this paper matters for dk_connectome.** NeMo is a parallel paradigm
+to dk_connectome's Option A/B/C: same conceptual family (project the
+lesion onto a graph), different data path (normative vs. subject
+tractogram). We cite it as the "when subject tractography is unreliable"
+alternative for very large lesions, pediatric acquisitions with poor DWI,
+or retrospective cohorts without DTI. The 2013 paper is the founding
+reference; follow-ups have extended NeMo to stroke motor-outcome
+prediction and MCI progression.
+
+---
+
+#### 3. Pustina, Coslett, Turkeltaub, Tustison, Schwartz & Avants (2016)
+
 *Automated segmentation of chronic stroke lesions using LINDA: Lesion
-identification with neighborhood data analysis.* Human Brain Mapping.
-[Link](https://pubmed.ncbi.nlm.nih.gov/26756101/) ·
+Identification with Neighborhood Data Analysis.* Human Brain Mapping,
+37(4), 1405–1421.
+DOI: [10.1002/hbm.23110](https://doi.org/10.1002/hbm.23110). ·
+[PubMed](https://pubmed.ncbi.nlm.nih.gov/26756101/) ·
 [Software](https://github.com/dorianps/LINDA)
 
-Automated lesion segmentation for chronic stroke on a single T1w image,
-trained on 60 left-hemispheric chronic stroke patients. Uses hierarchical
-random-forest predictions from low → high resolution to converge on a
-final lesion mask (Dice ≈ 0.70 vs. manual tracings; volume correlation
-r ≈ 0.96). Distributed as an R package. LINDA's output is exactly the
-kind of file that feeds Options A/B/C — replacing the manual
-`_T1w_label-lesion_roi.nii.gz` this dataset currently uses, whenever
-manual tracings are unavailable. Note the training scope (chronic
-left-hemispheric stroke) is narrower than TBI oedema/core lesions, so
-LINDA is not a drop-in for TrackTBI without validation on TBI data.
+**Question the paper poses.** Manual lesion tracing on T1w is
+labour-intensive and rater-dependent, and it is the primary bottleneck in
+building lesion-connectome pipelines at cohort scale. Can a purely
+T1w-based, fully automated segmenter reach a level of agreement with
+expert raters that makes it viable as a drop-in replacement?
+
+**Idea.** A hierarchical multi-resolution random-forest classifier
+trained on 60 left-hemispheric chronic-stroke T1w images and their
+expert manual lesion masks. The novel component is *neighborhood data
+analysis*: at each voxel, the classifier's input features include not
+just the local intensity and its position but also the intensity pattern
+of surrounding voxels at multiple spatial scales, capturing the
+characteristic peri-lesional texture that chronic stroke lesions
+present.
+
+**Design.** Coarse-to-fine cascade: three random forests at
+progressively finer resolutions (4-mm, 2-mm, 1-mm iso). Each level's
+prediction becomes an input feature for the next level. Cross-validated
+on the training cohort; independently validated on an external test set.
+
+**Key finding 1.** Mean Dice overlap 0.696 ± 0.16 against manual
+tracings on cross-validation. Volumetric agreement between LINDA and
+manual r = 0.961. Median Hausdorff distance 17.9 mm; average boundary
+displacement 2.54 mm.
+
+**Key finding 2.** Accuracy holds for lesions ranging from ~5 mL to
+>400 mL, but small lesions (<10 mL) and lesions in atypical locations
+(e.g., cerebellum, which was under-represented in training) show
+degraded performance.
+
+**Key finding 3.** LINDA is distributed as an open-source R package,
+runs on a single T1w in ~10–20 min per subject on a laptop, and needs
+no atlas registration or manual initialization.
+
+**Why this paper matters for dk_connectome.** LINDA output is exactly
+the kind of file that feeds Options A/B/C or the primary Step 1.5
+inpainting — replacing the manual `_T1w_label-lesion_roi.nii.gz` this
+dataset currently uses whenever manual tracings are unavailable.
+Practical caveat: LINDA's training scope (chronic left-hemispheric
+stroke) is narrower than TBI oedema+core lesions, so it is not a
+validated drop-in for TrackTBI-style cohorts without at least a
+sanity-check validation on TBI T1w scans first.
 
 ### Risks
 
