@@ -1,0 +1,102 @@
+# Step 1.5 — Lesion inpainting (neuroLIT)
+
+**Theory and methods** for optional T1w lesion inpainting before cortical reconstruction. Operational details: [Pipeline steps § Step 1.5](../pipeline_steps.md#step-15-inpaint-optional) · [Lesion segmentation](../lesion_segmentation.md).
+
+---
+
+## Background
+
+FreeSurfer and FastSurfer are trained on **healthy anatomy**. Large lesions (hemorrhage, encephalomalacia, resection cavities) violate the tissue intensity relationships these tools expect, which can cause:
+
+- Local segmentation errors inside and around the lesion
+- Global registration drift (Talairach / template steps optimize over the whole brain)
+- Downstream connectome errors when parcellation labels are wrong
+
+Rather than excluding lesioned subjects or masking out tissue, the pipeline **synthesizes plausible anatomy inside the lesion** so reconstruction sees an image closer to its training distribution. The original lesion mask is preserved as metadata for disconnectome analysis (Step 4.5).
+
+---
+
+## Denoising diffusion probabilistic models (DDPM)
+
+[neuroLIT](https://github.com/Deep-MI/lit) (FastSurfer-LIT) frames lesion filling as **conditional image inpainting** with a DDPM (Ho et al. 2020):
+
+```text
+Forward  (fixed):   x₀ → x₁ → … → x_T   (add Gaussian noise)
+Reverse  (learned): x_T → … → x₀         (denoise one step at a time)
+```
+
+At inference, the model starts from noise **inside the lesion mask** and iteratively denoises. At each step, **known healthy voxels outside the mask are re-inserted unchanged** (RePaint-style resampling; Lugmayr et al. 2022), so surrounding anatomy guides what is synthesized inside the lesion.
+
+Default **`--dilate 2`** expands the mask slightly before inpainting, covering partial-volume margins and imperfect manual traces.
+
+---
+
+## VINN layers and `--keepgeom`
+
+Classical CNN segmenters require inputs conformed to a fixed 256³ grid. neuroLIT uses **Voxel-size Independent Neural Network (VINN)** layers (Henschel et al. 2022) parameterized in millimeters rather than voxels, so inference works across clinical voxel sizes without mandatory resampling.
+
+**`--keepgeom`** returns the inpainted volume on the **exact input T1w grid** (same shape, affine, voxel size as BIDS T1w). This makes the result a drop-in replacement for raw T1w in Steps 2 and 4.
+
+---
+
+## What DKT Connectome runs
+
+| Item | Value |
+|------|-------|
+| Container | `deepmi/lit:0.6.0` (`lit_0.6.0.sif`) |
+| Trigger | Sibling `*_T1w_label-lesion_roi.nii.gz` in BIDS (exactly one match) |
+| Skip | No mask (silent no-op), or `--no-inpaint` |
+| Device | GPU by default (`INPAINT_DEVICE=cpu` for debugging only) |
+
+### Processing sequence
+
+1. **`prepare_lesion_mask.py`** — resample mask to T1w grid, select labels (default: core + oedema), write `lesion_mask_prepared.nii.gz` + JSON provenance.
+2. **`lit-inpainting`** — DDPM fill with dilation and `--keepgeom`.
+3. **`check_inpainting.py`** — QC metrics (see below).
+4. **`inpainting.json`** — merged provenance and pass/fail status.
+
+### Inpainted T1w routing
+
+When Step 1.5 runs, **`INPAINTED_T1W`** replaces the raw BIDS T1w for:
+
+- Step 2 (FreeSurfer / FastSurfer input)
+- Step 4 (BIDS-side of the registration affine)
+
+**The DWI is never modified** — diffusion data processed in Steps 1 and 3 are unaffected by inpainting.
+
+---
+
+## Quality control
+
+`check_inpainting.py` verifies inpainting **only changed voxels inside (or near) the lesion**:
+
+| Metric | Meaning | Default gate |
+|--------|---------|--------------|
+| Outside-lesion correlation | Pearson *r* between original and inpainted outside mask | ≥ 0.995 |
+| Resampling control | Same correlation after conform/resample round-trip without inpainting | baseline |
+| Correlation drop | Control − outside correlation; large values mean network altered healthy tissue | ≤ 0.01 |
+| Regenerated voxels | Count of outside-lesion voxels changed beyond adaptive threshold | reported only |
+
+Set `INPAINT_FAIL_ON_QC=1` to fail the run on QC violation (default: warn and continue).
+
+---
+
+## References
+
+| Topic | Citation | Link |
+|-------|----------|------|
+| **neuroLIT (required when inpainting)** | Pollak TA, et al. FastSurfer-LIT. *Imaging Neuroscience* 2025 | [10.1162/imag_a_00446](https://doi.org/10.1162/imag_a_00446) |
+| DDPM foundation | Ho J, et al. *NeurIPS* 2020 | [arXiv:2006.11239](https://arxiv.org/abs/2006.11239) |
+| VINN layers | Henschel L, et al. *Medical Image Analysis* 2022 | [10.1016/j.media.2022.102313](https://doi.org/10.1016/j.media.2022.102313) |
+| Inpainting strategy | Lugmayr A, et al. RePaint. *CVPR* 2022 | [10.1109/CVPR52688.2022.01175](https://doi.org/10.1109/CVPR52688.2022.01175) |
+
+Full table: [References § Step 1.5](../references.md#step-15-neurolit-inpainting-optional).
+
+---
+
+## See also
+
+- [Lesion segmentation](../lesion_segmentation.md)
+- [Step 2 — Cortical reconstruction](step2_recon.md)
+- [Step 4.5 — Disconnectome](step4_5_disconnectome.md)
+- [Container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md)

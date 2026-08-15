@@ -1,6 +1,6 @@
 # Pipeline steps
 
-What happens inside each step of the DKT Connectome pipeline. For outputs, see [Outputs](outputs.md). For methods, see [Disconnectome](disconnectome.md) and [Lesion segmentation](lesion_segmentation.md). **Citations for each step:** [References by step](references.md).
+What happens inside each step of the DKT Connectome. For outputs, see [Outputs](outputs.md). For **theory, biology, and citations**, see the [Methods](methods/index.md) section (QSIPrep-style, one page per step). For citation tables only, see [References by step](references.md).
 
 ---
 
@@ -36,7 +36,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **SDC decision tree:** see [Preparing your data](preparing_data.md#sdc-decision-tree).
 
-**References:** [Step 1 — QSIPrep](references.md#step-1-qsiprep-preprocessing) (Cieslak et al. 2021; Andersson et al. 2003/2016).
+**References:** [Step 1 — QSIPrep (methods)](methods/step1_qsiprep.md) · [References table](references.md#step-1-qsiprep-preprocessing) (Cieslak et al. 2021; Andersson et al. 2003/2016).
 
 ---
 
@@ -54,7 +54,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Skip:** `--no-inpaint`, or no mask present (silent no-op)
 
-**References:** [Step 1.5 — neuroLIT](references.md#step-15-neurolit-inpainting-optional) (Pollak et al. 2025; Ho et al. 2020).
+**References:** [Step 1.5 — Inpainting (methods)](methods/step1_5_inpaint.md) · [References table](references.md#step-15-neurolit-inpainting-optional) (Pollak et al. 2025; Ho et al. 2020).
 
 ---
 
@@ -71,7 +71,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Key outputs:** `freesurfer/sub-<ID>/`
 
-**References:** [Step 2 — Recon](references.md#step-2-cortical-reconstruction-freesurfer-fastsurfer) (Fischl 2012; Henschel et al. 2020; Klein & Tourville 2012).
+**References:** [Step 2 — Recon (methods)](methods/step2_recon.md) · [References table](references.md#step-2-cortical-reconstruction-freesurfer-fastsurfer) (Fischl 2012; Henschel et al. 2020; Klein & Tourville 2012).
 
 ---
 
@@ -90,7 +90,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Requires:** FreeSurfer subject tree from Step 2 for ACT-HSVS
 
-**References:** [Step 3 — QSIRecon](references.md#step-3-qsirecon-tractography) (Cieslak et al. 2024; Tournier et al. 2019; Smith et al. 2012/2015/2020).
+**References:** [Step 3 — Tractography (methods)](methods/step3_qsirecon.md) · [References table](references.md#step-3-qsirecon-tractography) (Cieslak et al. 2024; Tournier et al. 2019; Smith et al. 2012/2015/2020).
 
 ---
 
@@ -106,7 +106,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Primary output:** `connectomes/sub-<ID>/dkt_connectome.csv`
 
-**References:** [Step 4 — Connectome](references.md#step-4-dkt-structural-connectome) (Tournier et al. 2019; Klein & Tourville 2012).
+**References:** [Step 4 — Connectome (methods)](methods/step4_connectome.md) · [References table](references.md#step-4-dkt-structural-connectome) (Tournier et al. 2019; Klein & Tourville 2012).
 
 ---
 
@@ -124,9 +124,9 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Skip:** omit `--disconnection` (default), `--no-disconnectome`, or no lesion mask
 
-Full method: [Disconnectome](disconnectome.md).
+Full method: [Disconnectome](disconnectome.md) · Theory: [Step 4.5 — Disconnectome (methods)](methods/step4_5_disconnectome.md).
 
-**References:** [Step 4.5 — Disconnectome](references.md#step-45-disconnectome-optional) (Griffis et al. 2019; Kuceyeski et al. 2013).
+**References:** [References table](references.md#step-45-disconnectome-optional) (Griffis et al. 2019; Kuceyeski et al. 2013).
 
 ---
 
@@ -144,7 +144,7 @@ Full method: [Disconnectome](disconnectome.md).
 
 **Skip:** `--no-node-strength`
 
-**References:** [Step 5 — Node strength](references.md#step-5-node-strength-report) (Rubinov & Sporns 2010; Piper et al. 2026).
+**References:** [Step 5 — Node strength (methods)](methods/step5_node_strength.md) · [References table](references.md#step-5-node-strength-report) (Rubinov & Sporns 2010; Piper et al. 2026).
 
 ---
 
