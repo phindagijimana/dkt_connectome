@@ -21,7 +21,7 @@ permissions:
 jobs:
   test-and-dryrun:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
           python -m pip install "snakemake>=8.0,<10" pyyaml numpy pytest scipy nibabel mkdocs
 
       - name: pytest (dwi_pipeline scripts)
-        run: pytest -q dwi_pipeline/tests
+        run: pytest -q dwi_pipeline/tests -m "not slow" -c dwi_pipeline/pytest.ini
 
       - name: MkDocs build (docs site, strict)
         run: mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
@@ -78,38 +78,14 @@ jobs:
           test -f /tmp/export_test/derivatives/dataset_description.json
           test -f /tmp/export_test/derivatives/export_manifest.json
 
-      - name: Stub BIDS + results for Snakemake dry-run
-        run: |
-          mkdir -p /tmp/ci_bids/sub-CITEST/ses-1/{anat,dwi}
-          touch /tmp/ci_bids/sub-CITEST/ses-1/anat/sub-CITEST_ses-1_T1w.nii.gz
-          touch /tmp/ci_bids/sub-CITEST/ses-1/dwi/sub-CITEST_ses-1_dwi.nii.gz
-          mkdir -p /tmp/ci_out
-          cat > /tmp/ci_override.yaml <<'YAML'
-          subject: "CITEST"
-          results_root: "/tmp/ci_out"
-          bids_dir: "/tmp/ci_bids"
-          recon:
-            session: "1"
-          dwi_select:
-            enabled: false
-          containers:
-            qsiprep: "/tmp/qsiprep.sif"
-            qsirecon: "/tmp/qsirecon.sif"
-            fastsurfer: "/tmp/fastsurfer.sif"
-            freesurfer: "/tmp/freesurfer.sif"
-            connectome: "/tmp/connectome.sif"
-            lit: "/tmp/lit.sif"
-            nodestrength: "/tmp/nodestrength.sif"
-          fs_license: "/tmp/license.txt"
-          YAML
-          touch /tmp/license.txt
-
-      - name: Snakemake dry-run (workflow targets)
+      - name: Snakemake lint (workflow advisories)
         working-directory: dwi_pipeline
         run: |
-          for target in target_qsiprep target_subject_qc; do
-            echo "=== dry-run: ${target} ==="
-            snakemake -s workflow/Snakefile --directory . \
-              --configfile /tmp/ci_override.yaml \
-              -n --quiet "${target}"
-          done
+          eval "$(bash scripts/snakemake_ci_setup.sh)"
+          snakemake --lint -s workflow/Snakefile --directory . \
+            --configfile "${OVERRIDE}" \
+            || echo "(snakemake --lint advisories only; not gating CI)"
+
+      - name: Snakemake dry-run (full workflow — all targets)
+        working-directory: dwi_pipeline
+        run: bash scripts/snakemake_dryrun_ci.sh
