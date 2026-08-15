@@ -17,7 +17,6 @@ from snakemake.exceptions import WorkflowError
 WORKFLOW_DIR = Path(workflow.basedir)          # dwi_pipeline/workflow
 DWI_PIPELINE_DIR = WORKFLOW_DIR.parent          # dwi_pipeline
 REPO_ROOT = DWI_PIPELINE_DIR.parent         # repo root
-TRACKTBI_ROOT = REPO_ROOT                    # deprecated alias
 
 LIB_DIR = WORKFLOW_DIR / "lib"
 COMMON_SH = LIB_DIR / "common.sh"

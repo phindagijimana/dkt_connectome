@@ -32,7 +32,6 @@ set +H
 # so deriving paths from $0 would write into /var/spool/slurmd (Permission denied).
 # Paths must be exported by submit.sh (Slurm spool copy of $0 cannot derive repo paths).
 : "${DWI_ROOT:?ERROR [array]: DWI_ROOT not set — run via submit.sh or export DWI_ROOT}"
-REPO_ROOT="${REPO_ROOT:-${TRACKTBI_ROOT:-}}"
 : "${REPO_ROOT:?ERROR [array]: REPO_ROOT not set — run via submit.sh or export REPO_ROOT}"
 [[ -d "${DWI_ROOT}" ]] || { echo "ERROR [array]: DWI_ROOT is not a directory: ${DWI_ROOT}"; exit 1; }
 

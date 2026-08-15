@@ -173,7 +173,6 @@ done
 
 DWI_ROOT="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
-TRACKTBI_ROOT="${REPO_ROOT}"  # deprecated alias
 
 # --- Defaults (override via environment before ./submit.sh) ---
 BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
@@ -304,7 +303,7 @@ fi
 # Passed through to array.sh -> run_subject.sh / subject.sh (sbatch --export=ALL)
 # DWI_ROOT/REPO_ROOT are critical: inside sbatch $0 points to Slurm's spool
 # copy of the script, so array.sh cannot derive them on the compute node.
-export DWI_ROOT REPO_ROOT TRACKTBI_ROOT PIPELINE_ENGINE
+export DWI_ROOT REPO_ROOT PIPELINE_ENGINE
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_NO_SDC QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export DWI_SHELL_B QSIPREP_NO_DWI_FILTER

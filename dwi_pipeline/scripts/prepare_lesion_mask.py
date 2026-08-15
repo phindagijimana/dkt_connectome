@@ -30,7 +30,7 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 
-# TrackTBI convention for this dataset's manually-traced masks. Any label not
+# Multi-label lesion mask convention used in several cohorts (1=core, 2=oedema). Any label not
 # in this table is reported by its number instead of a name.
 KNOWN_LABEL_NAMES = {1: "core", 2: "oedema"}
 

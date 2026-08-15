@@ -39,4 +39,4 @@ HowToAcknowledge: Cite QSIPrep, QSIRecon, FastSurfer/FreeSurfer, and Griffis et 
 
 ## Study cohorts and data use
 
-This pipeline is validated on **multi-site TrackTBI data (~14 centers)** and **URMC clinical MRI cohorts** (including CIDUR). Acknowledge your institutional data-use agreements and any study-specific requirements separately as required by your IRB and data-sharing policy.
+This pipeline is validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI cohorts** (including CIDUR). Acknowledge your institutional data-use agreements and any study-specific requirements separately as required by your IRB and data-sharing policy.

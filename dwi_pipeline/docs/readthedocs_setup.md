@@ -32,3 +32,19 @@ Update any bookmark to:
 **https://dkt-connectome.readthedocs.io/en/latest/**
 
 The BIDS Apps registry submission should use this URL as `Documentation` in `app.json` (already set).
+
+## Site still shows “TrackTBI Connectome Pipeline”?
+
+The product name is **DKT Connectome Pipeline** (`dwi_pipeline/mkdocs.yml` → `site_name`).
+
+If Read the Docs still shows the old title, the hosted build is stale (webhook missed or failed):
+
+1. Open [RTD dashboard → dkt-connectome → Builds](https://app.readthedocs.org/projects/dkt-connectome/builds/).
+2. Click **Build version** → choose `latest` / `main` → **Build**.
+3. Confirm the build commit is at or after the rebrand (`25f3740`+).
+
+Local check (should print `DKT Connectome Pipeline`):
+
+```bash
+cd dwi_pipeline && mkdocs build && grep -o '<title>.*</title>' site/index.html
+```

@@ -159,7 +159,7 @@ BIDS T1w + *_T1w_label-lesion_roi.nii.gz
         ▼
 scripts/prepare_lesion_mask.py
   • resample mask onto the T1w grid if it isn't already (nearest-neighbour)
-  • select labels (INPAINT_LABELS, default "all" — TrackTBI masks use 1=core, 2=oedema)
+  • select labels (INPAINT_LABELS, default "all" — cohort masks often use 1=core, 2=oedema)
   • optional --binarize (INPAINT_BINARIZE=1) if LIT should treat all selected labels alike
   • → lesion_mask_prepared.nii.gz + lesion_mask_prepared.json (provenance)
         │

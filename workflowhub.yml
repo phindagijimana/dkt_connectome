@@ -10,7 +10,7 @@ description: |
   Lesion-aware structural connectomics BIDS App (v0.2+). QSIPrep → optional
   neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS → DKT
   connectome → optional disconnectome → node-strength / ENIGMA report.
-  Validated on multi-site TrackTBI data (~14 centers) and URMC clinical MRI cohorts.
+  Validated on TRACK-TBI (~14 centers) and URMC clinical MRI cohorts.
 
 version: "0.2.0"
 license: Apache-2.0
