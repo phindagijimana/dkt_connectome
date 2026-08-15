@@ -1,0 +1,101 @@
+{
+  "name": "TrackTBI Connectome Pipeline",
+  "tool-version": "0.2.0",
+  "schema-version": "0.5",
+  "container-image": {
+    "image": "phindagijimana/tracktbi-connectome",
+    "index": "docker.io"
+  },
+  "command-line": "./run [bids_dir] [output_dir] [analysis_level] [participant_label] [session_filter] [n_cpus] [random_seed] [stop_on_first_crash] [extra_flags]",
+  "custom": {
+    "BIDSAppSpecVersion": "1.0",
+    "Documentation": "https://dkt-connectome.readthedocs.io/en/latest/",
+    "Source": "https://github.com/phindagijimana/dkt_connectome",
+    "License": "Apache-2.0",
+    "ContainerType": "docker-or-apptainer-orchestrator",
+    "OutputDataSpecification": ["NIFTI_GZ", "CSV", "JSON"]
+  },
+  "inputs": [
+    {
+      "id": "bids_dir",
+      "name": "BIDS dataset directory",
+      "description": "Root of the input BIDS dataset",
+      "value-key": "[bids_dir]",
+      "type": "File",
+      "optional": false
+    },
+    {
+      "id": "output_dir",
+      "name": "Output directory",
+      "description": "Derivatives / results root (RESULTS_ROOT)",
+      "value-key": "[output_dir]",
+      "type": "File",
+      "optional": false
+    },
+    {
+      "id": "analysis_level",
+      "name": "Analysis level",
+      "description": "participant or group",
+      "value-key": "[analysis_level]",
+      "type": "String",
+      "optional": false,
+      "value-choices": ["participant", "group"]
+    },
+    {
+      "id": "participant_label",
+      "name": "Participant labels",
+      "description": "One or more subject IDs (with or without sub- prefix)",
+      "value-key": "[participant_label]",
+      "type": "String",
+      "list": true,
+      "optional": true,
+      "command-line-flag": "--participant-label"
+    },
+    {
+      "id": "session_filter",
+      "name": "Session filter",
+      "description": "Limit to one BIDS session, e.g. ses-1",
+      "value-key": "[session_filter]",
+      "type": "String",
+      "optional": true,
+      "command-line-flag": "--session-filter"
+    },
+    {
+      "id": "n_cpus",
+      "name": "CPU threads",
+      "description": "Thread budget for Snakemake and tools",
+      "value-key": "[n_cpus]",
+      "type": "Number",
+      "optional": true,
+      "default-value": 8,
+      "command-line-flag": "--n-cpus"
+    },
+    {
+      "id": "random_seed",
+      "name": "Random seed",
+      "description": "Seed for pseudorandom number generators",
+      "value-key": "[random_seed]",
+      "type": "Number",
+      "optional": true,
+      "default-value": 0,
+      "command-line-flag": "--random-seed"
+    },
+    {
+      "id": "stop_on_first_crash",
+      "name": "Stop on first crash",
+      "description": "Abort multi-subject runs after the first failure",
+      "value-key": "[stop_on_first_crash]",
+      "type": "Flag",
+      "optional": true,
+      "command-line-flag": "--stop-on-first-crash"
+    }
+  ],
+  "output-files": [
+    {
+      "id": "derivatives",
+      "name": "Pipeline derivatives",
+      "description": "Connectome, disconnectome, QC, and optional BIDS Derivatives export",
+      "path-template": "[output_dir]/[file]"
+    }
+  ]
+}

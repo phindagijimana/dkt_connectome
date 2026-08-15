@@ -13,7 +13,9 @@ FROM python:3.11-slim-bookworm
 LABEL org.opencontainers.image.title="TrackTBI Connectome Pipeline"
 LABEL org.opencontainers.image.version="0.2.0"
 LABEL org.opencontainers.image.source="https://github.com/phindagijimana/dkt_connectome"
-LABEL org.opencontainers.image.description="Optional BIDS App orchestrator — HPC uses Apptainer + submit.sh instead"
+LABEL org.opencontainers.image.documentation="https://dkt-connectome.readthedocs.io/en/latest/"
+LABEL org.opencontainers.image.description="BIDS App orchestrator for lesion-aware structural connectomics (multi-container; mount step images at runtime)"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \

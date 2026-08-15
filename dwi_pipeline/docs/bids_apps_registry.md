@@ -1,0 +1,111 @@
+# BIDS Apps registry submission checklist
+
+Use this checklist when submitting **TrackTBI Connectome Pipeline v0.2.0** to the
+[BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
+
+## Repository requirements (done in this repo)
+
+| Item | Location |
+|------|----------|
+| BIDS App entrypoint `./run` | `dwi_pipeline/run` |
+| Machine-readable metadata | `dwi_pipeline/app.json` |
+| Boutiques descriptor | `dwi_pipeline/tracktbi_connectome.json` |
+| Human documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
+| Minimal public test dataset | `dwi_pipeline/tests/fixtures/bids_minimal/` |
+| CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
+| Docker orchestrator image | `dwi_pipeline/Dockerfile` → `phindagijimana/tracktbi-connectome:0.2.0` |
+
+## One-time maintainer steps
+
+### 1. Read the Docs
+
+1. Sign in at https://readthedocs.org/ with GitHub.
+2. Import `phindagijimana/dkt_connectome`.
+3. Project slug: **`dkt-connectome`**.
+4. Confirm build succeeds (uses `.readthedocs.yaml`).
+
+### 2. Docker Hub
+
+```bash
+# From repository root
+docker build -f dwi_pipeline/Dockerfile -t phindagijimana/tracktbi-connectome:0.2.0 .
+docker push phindagijimana/tracktbi-connectome:0.2.0
+docker tag phindagijimana/tracktbi-connectome:0.2.0 phindagijimana/tracktbi-connectome:latest
+docker push phindagijimana/tracktbi-connectome:latest
+```
+
+Set GitHub secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to enable automatic
+push on version tags (`.github/workflows/docker_publish.yml`).
+
+> **Note:** The Docker image is an **orchestrator** only. Step containers (QSIPrep,
+> FreeSurfer, etc.) must be provided at runtime via `CONTAINER_*` env vars or
+> bind-mounts — same as HPC Apptainer deployments.
+
+### 3. Git release
+
+```bash
+git tag v0.2.0
+git push origin main
+git push origin v0.2.0
+```
+
+### 4. Registry listing
+
+**Option A — Email BIDS maintainers**
+
+```
+To: bids.maintenance+apps@gmail.com
+Subject: BIDS App submission — TrackTBI Connectome Pipeline v0.2.0
+
+Name: TrackTBI Connectome Pipeline
+Version: 0.2.0
+GitHub: https://github.com/phindagijimana/dkt_connectome
+Documentation: https://dkt-connectome.readthedocs.io/en/latest/
+Docker Hub: docker.io/phindagijimana/tracktbi-connectome:0.2.0
+Test dataset: dwi_pipeline/tests/fixtures/bids_minimal/
+```
+
+**Option B — PR to bids-apps.github.io**
+
+Fork https://github.com/bids-apps/bids-apps.github.io and add to `_config.yml`:
+
+```yaml
+- name: tracktbi_connectome
+  url: https://github.com/phindagijimana/dkt_connectome
+  dockerhub: phindagijimana/tracktbi-connectome
+  docs: https://dkt-connectome.readthedocs.io/en/latest/
+  version: 0.2.0
+```
+
+### 5. Optional: bids-apps GitHub org
+
+For automatic CircleCI → Docker Hub under the `bids-apps` namespace, request a repo
+from the maintainers and mirror this pipeline layout.
+
+## Smoke test (local)
+
+```bash
+export BIDS_APP_CI=1
+export FS_LICENSE=/tmp/license.txt && touch /tmp/license.txt
+cd dwi_pipeline
+./run tests/fixtures/bids_minimal /tmp/out participant \
+  --participant-label EXAMPLE --session-filter ses-1 \
+  --dry-run --no-sdc --no-dwi-filter --random-seed 42
+pytest tests/test_bids_app.py -q
+```
+
+## Docker smoke test (local)
+
+```bash
+docker build -f dwi_pipeline/Dockerfile -t tracktbi-connectome:local .
+docker run --rm tracktbi-connectome:local --version
+docker run --rm \
+  -v "$PWD/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
+  -v /tmp/out:/out \
+  -e BIDS_APP_CI=1 \
+  -e FS_LICENSE=/tmp/license.txt \
+  tracktbi-connectome:local \
+  /data/bids /out participant \
+  --participant-label EXAMPLE --session-filter ses-1 \
+  --dry-run --no-sdc --no-dwi-filter
+```

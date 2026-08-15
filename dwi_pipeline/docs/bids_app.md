@@ -6,6 +6,7 @@ The pipeline implements the [BIDS Apps](https://bids-apps.neuroimaging.io/) spec
 |------|------|
 | [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | Executable entrypoint |
 | [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) | Machine-readable metadata |
+| [`tracktbi_connectome.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/tracktbi_connectome.json) | Boutiques / BIDS Exec descriptor |
 | [`docs/`](index.md) | Human-readable documentation (this site) |
 
 **Analysis levels:** `participant` (full pipeline), `group` (cohort QC + BIDS Derivatives export to `derivatives/`).
@@ -55,6 +56,8 @@ cd dwi_pipeline
 | `--session-filter SES` | auto | Single session, e.g. `ses-1` or `1` |
 | `--n-cpus N` | 8 | Thread budget (`NTHREADS`) |
 | `--mem-mb N` | — | Logged hint only (not enforced) |
+| `--random-seed N` | `0` | Seed for pseudorandom number generators |
+| `--stop-on-first-crash` | off | Abort multi-subject runs after first failure |
 | `--bids-validation` | off | Run `bids-validator` on `bids_dir` before processing |
 | `--ignore-warnings` | off | Pass through to bids-validator |
 | `--version` | — | Print pipeline version |
@@ -160,6 +163,9 @@ Submit to the [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/) with
 - **Name:** TrackTBI Connectome Pipeline  
 - **Version:** 0.2.0 (see `./run --version`)  
 - **Documentation:** https://dkt-connectome.readthedocs.io/en/latest/  
-- **ContainerType:** apptainer (multi-container orchestrator)
+- **Docker Hub:** `phindagijimana/tracktbi-connectome:0.2.0` (orchestrator; step images mounted at runtime)  
+- **Test dataset:** `dwi_pipeline/tests/fixtures/bids_minimal/`  
+
+Step-by-step checklist: [bids_apps_registry.md](bids_apps_registry.md).
 
 Full descriptor: [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json).

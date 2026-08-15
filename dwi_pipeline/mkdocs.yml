@@ -18,6 +18,7 @@ nav:
   - Quick start: quickstart.md
   - Usage: usage.md
   - BIDS App: bids_app.md
+  - BIDS Apps registry: bids_apps_registry.md
   - Configuration: configuration.md
   - Outputs: outputs.md
   - Derivatives: derivatives.md

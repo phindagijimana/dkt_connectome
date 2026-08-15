@@ -73,7 +73,9 @@ warn() { echo "WARNING [preflight]: $*" >&2; }
 echo "preflight: mode=${PIPELINE_MODE} engine=snakemake"
 
 command -v snakemake >/dev/null 2>&1 || fail "snakemake not found (pip install snakemake or module load)"
-command -v apptainer >/dev/null 2>&1 || fail "apptainer not found"
+if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
+  command -v apptainer >/dev/null 2>&1 || fail "apptainer not found"
+fi
 command -v python3 >/dev/null 2>&1 || fail "python3 not found"
 
 [[ -d "${BIDS_DIR}" ]] || fail "BIDS_DIR missing: ${BIDS_DIR}"
@@ -130,10 +132,13 @@ esac
 # Prefer subject.sh-style env overrides, then config.local.yaml / config.yaml.
 FS_LICENSE="${FS_LICENSE:-$(read_config fs_license)}"
 FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
-[[ -f "${FS_LICENSE}" ]] || fail "FreeSurfer license missing: ${FS_LICENSE}"
+if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
+  [[ -f "${FS_LICENSE}" ]] || fail "FreeSurfer license missing: ${FS_LICENSE}"
+fi
 
 check_sif() {
   local label="$1" path="$2"
+  [[ "${BIDS_APP_CI:-0}" == "1" ]] && return 0
   [[ -n "${path}" && -f "${path}" ]] || fail "container missing (${label}): ${path}"
 }
 

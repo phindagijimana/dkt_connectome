@@ -1,0 +1,62 @@
+name: Docker publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'workflow_dispatch' || github.ref_type == 'tag'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Extract version tag
+        id: meta
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.2.0-dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build orchestrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dwi_pipeline/Dockerfile
+          push: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+          tags: |
+            phindagijimana/tracktbi-connectome:${{ steps.meta.outputs.version }}
+            phindagijimana/tracktbi-connectome:latest
+          load: true
+
+      - name: Docker smoke test
+        run: |
+          docker run --rm phindagijimana/tracktbi-connectome:${{ steps.meta.outputs.version }} --version | grep -q 0.2.0
+          mkdir -p /tmp/docker_out
+          docker run --rm \
+            -v "${{ github.workspace }}/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
+            -v /tmp/docker_out:/out \
+            -e BIDS_APP_CI=1 \
+            -e FS_LICENSE=/tmp/license.txt \
+            phindagijimana/tracktbi-connectome:${{ steps.meta.outputs.version }} \
+            /data/bids /out participant \
+            --participant-label EXAMPLE --session-filter ses-1 \
+            --dry-run --no-sdc --no-dwi-filter --mode qsiprep

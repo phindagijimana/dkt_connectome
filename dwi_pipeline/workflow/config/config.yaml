@@ -15,6 +15,7 @@ nodestrength_out: null      # default: <results_root>/node_strength
 nthreads: 8
 omp_nthreads: 8
 output_res: 2
+random_seed: 0           # --random-seed / RANDOM_SEED
 
 # --- BIDS validation (opt-in; off by default) ---
 bids:

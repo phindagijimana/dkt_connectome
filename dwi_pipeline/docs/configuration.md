@@ -11,6 +11,7 @@ Full CLI + env table: [`flag.md` on GitHub](https://github.com/phindagijimana/dk
 | Key / variable | Default | Description |
 |----------------|---------|-------------|
 | `results_root` / `RESULTS_ROOT` | *(required)* | Output tree for all steps |
+| `random_seed` / `RANDOM_SEED` | `0` | Pseudorandom seed (`--random-seed`) |
 | `bids_dir` / `BIDS_DIR` | *(required)* | BIDS input root |
 | `recon_out` / `RECON_OUT` | `<results_root>/freesurfer` | FreeSurfer subjects dir |
 | `fs_subjects_dir` / `FS_SUBJECTS_DIR` | `recon_out` | FS tree read by QSIRecon / connectome |
