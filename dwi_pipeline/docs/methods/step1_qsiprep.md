@@ -51,6 +51,25 @@ These files feed Steps 3 (tractography grid) and 4 (registration target).
 
 When a BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) is present, QSIPrep can use **cost-function masking** during T1w–DWI registration so the lesion region does not dominate the fit. The mask does not alter the DWI intensities themselves.
 
+### What we pass through to QSIPrep
+
+The orchestrator builds a per-subject BIDS filter (`build_bids_filter.py` + `dwi_select_b*.json`) and forwards these pipeline decisions:
+
+| DKT Connectome flag | QSIPrep behavior |
+|---------------------|------------------|
+| *(default)* fmap in filter | Measured SDC (TOPUP / phasediff) |
+| `--syn` | `--use-syn-sdc warn` when no fmap |
+| `--fmap-retry` | `--ignore fieldmaps --use-syn-sdc warn` |
+| `--no-sdc` | Skip SDC |
+| `--bids-filter PATH` | Static `--bids-filter-file` |
+| `--dwi-select PATH` | Custom dwi-select → generated filter |
+
+Decision guide: [Decision tables § SDC](../decision_tables.md#susceptibility-distortion-correction-step-1). Sidecar repair: [BIDS metadata](../bids_metadata.md).
+
+### Denoising and motion (inside QSIPrep)
+
+QSIPrep applies MP-PCA denoising, Gibbs unringing (when configured), and FSL `eddy` motion correction as part of its default workflow. The DKT Connectome does not reimplement these — cite Cieslak et al. 2021 for preprocessing claims.
+
 ---
 
 ## Susceptibility distortion correction (SDC)

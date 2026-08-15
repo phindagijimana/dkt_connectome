@@ -91,6 +91,21 @@ qsirecon_single_run_output/sub-<ID>/ses-<Y>/dwi/
 
 Optional atlas connectomes (e.g. 4S156) run inside QSIRecon when `QSIRECON_ATLASES` is set — independent of Step 4's subject-native DKT connectome.
 
+### Building the reconstruction workflow
+
+QSIRecon assembles the MRtrix3 workflow from the spec name. Token breakdown:
+
+| Token | Meaning |
+|-------|---------|
+| `mrtrix` | MRtrix3 backend |
+| `singleshell` | One b-value shell (matches default b=1000 filter) |
+| `ss3t` | Single-shell 3-tissue CSD |
+| `ACT-hsvs` | ACT with HSVS 5TT (requires Step 2 surfaces) |
+
+**Alternative:** `mrtrix_singleshell_ss3t_ACT-fast` uses FSL FAST 5TT without FreeSurfer surfaces — not the pipeline default.
+
+Changing spec requires `QSIRECON_SPEC` in config and understanding ACT tissue priors — see [QSIRecon docs](https://qsirecon.readthedocs.io/).
+
 ---
 
 ## References

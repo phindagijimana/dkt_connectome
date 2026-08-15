@@ -10,6 +10,8 @@ The layout follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods pa
 
 Structural connectomics here means: preprocess diffusion MRI, reconstruct anatomy, trace white-matter pathways, assign streamlines to brain regions, and optionally quantify lesion-related disconnection.
 
+![Pipeline overview](../img/pipeline_overview.svg)
+
 ```text
 BIDS (T1w + DWI [+ fmap] [+ lesion mask])
         │

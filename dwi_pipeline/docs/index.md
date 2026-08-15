@@ -4,9 +4,11 @@
 
 The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with optional lesion masks. Primary validation cohorts include the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI** (including CIDUR); those are data sources, not the pipeline name.
 
-This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.io/) — installation, quick start, usage, outputs, and method-specific pages.
+This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.io/) — installation, tutorial, usage, methods, outputs, and validation pages.
 
 **Hosted site:** [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/)
+
+![DKT Connectome pipeline overview](img/pipeline_overview.svg)
 
 ---
 
@@ -38,14 +40,22 @@ This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIR
 | Page | Description |
 |------|-------------|
 | [Installation](installation.md) | Requirements, Apptainer images, licenses, config |
-| [Containers](containers.md) | All step `.sif` images and env vars |
+| [Tutorial](tutorial.md) | End-to-end walkthrough with test data |
 | [Quick start](quickstart.md) | First run in three commands |
 | [Usage](usage.md) | Full command-line reference (QSIPrep-style) |
+| [Decision tables](decision_tables.md) | When to use SDC, recon, weighting, disconnectome flags |
 | [Preparing your data](preparing_data.md) | BIDS inputs, SDC, lesion masks |
+| [BIDS metadata](bids_metadata.md) | Phase-encoding sidecars, TRT, IntendedFor |
+| [Field maps & SDC](fieldmaps_sdc.md) | TOPUP, SyN, dwi-select |
 | [Methods](methods/index.md) | Theory and citations for each step (QSIPrep-style) |
+| [Visual QC guide](visual_qc.md) | What to inspect in HTML QC reports |
+| [Validation](validation.md) | Benchmark subjects and integrity QC |
+| [Containers](containers.md) | All step `.sif` images and env vars |
+| [Contributing](contributing.md) | Development and pull requests |
+| [Schema reference](schema_reference.md) | JSON Schema for workflow config |
 | [Pipeline steps](pipeline_steps.md) | What happens in each step |
-| [Snakemake workflow](snakemake_workflow.md) | Full DAG engine (`workflow/Snakefile`, all `target_*` rules) |
 | [BIDS App](bids_app.md) | `./run <bids> <out> participant` — official entrypoint |
+| [Snakemake workflow](snakemake_workflow.md) | Full DAG engine (`workflow/Snakefile`, all `target_*` rules) |
 | [Configuration](configuration.md) | Config keys, env vars, container paths |
 | [Outputs](outputs.md) | Derivatives layout under `RESULTS_ROOT` |
 | [Derivatives policy](derivatives.md) | BIDS export, container pins, provenance |

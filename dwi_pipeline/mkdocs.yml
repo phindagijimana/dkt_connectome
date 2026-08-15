@@ -16,10 +16,14 @@ theme:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Containers: containers.md
+  - Tutorial: tutorial.md
   - Quick start: quickstart.md
   - Usage: usage.md
+  - Decision tables: decision_tables.md
+  - Configuration: configuration.md
   - Preparing your data: preparing_data.md
+  - BIDS metadata: bids_metadata.md
+  - Field maps & SDC: fieldmaps_sdc.md
   - Methods:
     - Overview: methods/index.md
     - Step 1 — QSIPrep: methods/step1_qsiprep.md
@@ -30,9 +34,11 @@ nav:
     - Step 4.5 — Disconnectome: methods/step4_5_disconnectome.md
     - Step 5 — Node strength: methods/step5_node_strength.md
   - Pipeline steps: pipeline_steps.md
+  - Visual QC guide: visual_qc.md
+  - Validation: validation.md
   - Snakemake workflow: snakemake_workflow.md
   - BIDS App: bids_app.md
-  - Configuration: configuration.md
+  - Containers: containers.md
   - Outputs: outputs.md
   - Derivatives: derivatives.md
   - QC dashboard: qc_dashboard.md
@@ -49,7 +55,13 @@ nav:
   - License information: license.md
   - Changelog: changelog.md
   - Getting help: getting_help.md
+  - Advanced:
+    - Theory deep dive: advanced/theory_deep_dive.md
+  - Developer:
+    - Contributing: contributing.md
+    - Schema reference: schema_reference.md
   - Maintainer:
+    - Publishing: maintainer/publishing.md
     - BIDS Apps registry: bids_apps_registry.md
     - Read the Docs setup: readthedocs_setup.md
 

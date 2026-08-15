@@ -131,6 +131,24 @@ Cohort index: `./run BIDS OUT group` → `disconnectome_cohort_qc.html`.
 
 ---
 
+## Implementation substeps
+
+Full specification: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md) · Developer index: [Theory deep dive](../advanced/theory_deep_dive.md).
+
+| Substep | Action | Output |
+|---------|--------|--------|
+| **4.5a** | Binary union of lesion labels on T1w | `lesion_binary.nii.gz` |
+| **4.5b** | Warp lesion → `dwiref` / `nodes.mif` grid | `lesion_in_dwi.mif` |
+| **4.5c** | ROI overlap metrics | `lesion_roi_metrics.csv` |
+| **4.5d** | Option A: parc excision + tck2connectome | `connectome_A.csv` |
+| **4.5e** | Option B: tckedit exclude + tck2connectome | `connectome_B.csv` |
+| **4.5f** | Option C: B tractogram + A parcellation | `connectome_C.csv` |
+| **4.5g** | D = 1 − spared/primary | `disconnection_matrix.csv` |
+
+The primary `dkt_connectome.csv` from Step 4 is **never modified**.
+
+---
+
 ## References
 
 | Topic | Citation | Link |
