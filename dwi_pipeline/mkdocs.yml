@@ -19,6 +19,7 @@ nav:
   - Usage: usage.md
   - Preparing your data: preparing_data.md
   - Pipeline steps: pipeline_steps.md
+  - Snakemake workflow: snakemake_workflow.md
   - BIDS App: bids_app.md
   - Configuration: configuration.md
   - Outputs: outputs.md

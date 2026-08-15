@@ -20,6 +20,7 @@ This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.i
 | [Usage](usage.md) | Full command-line reference (QSIPrep-style) |
 | [Preparing your data](preparing_data.md) | BIDS inputs, SDC, lesion masks |
 | [Pipeline steps](pipeline_steps.md) | What happens in each step |
+| [Snakemake workflow](snakemake_workflow.md) | Full DAG engine (`workflow/Snakefile`, all `target_*` rules) |
 | [BIDS App](bids_app.md) | `./run <bids> <out> participant` — official entrypoint |
 | [Configuration](configuration.md) | Config keys, env vars, container paths |
 | [Outputs](outputs.md) | Derivatives layout under `RESULTS_ROOT` |

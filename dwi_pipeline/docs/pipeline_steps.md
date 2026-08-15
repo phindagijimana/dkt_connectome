@@ -144,3 +144,14 @@ After each participant run, `./run` writes:
 Group level: `./run … group` → `cohort_qc.html` + BIDS Derivatives export.
 
 See [QC dashboard](qc_dashboard.md).
+
+---
+
+## Snakemake engine
+
+All steps above are implemented as Snakemake **plugin rules** under `dwi_pipeline/workflow/rules/`. The full DAG, targets, and HPC usage are documented in [Snakemake workflow](snakemake_workflow.md).
+
+```bash
+# Equivalent to ./run participant for sub-011
+snakemake -s workflow/Snakefile --cores 8 --config subject=011 -- all
+```

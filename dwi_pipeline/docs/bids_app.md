@@ -11,6 +11,8 @@ The pipeline implements the [BIDS Apps](https://bids-apps.neuroimaging.io/) spec
 
 **Analysis levels:** `participant` (full pipeline), `group` (cohort QC + BIDS Derivatives export to `derivatives/`).
 
+Under the hood, `./run` calls the **Snakemake workflow** in [`workflow/Snakefile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/Snakefile) via `run_subject.sh`. See [Snakemake workflow](snakemake_workflow.md) for direct `snakemake` usage and all plugin targets.
+
 ---
 
 ## Basic usage
