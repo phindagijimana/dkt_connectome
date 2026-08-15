@@ -1,0 +1,94 @@
+name: dwi_pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'dwi_pipeline/**'
+      - '.github/workflows/dwi_pipeline_ci.yml'
+      - '.readthedocs.yaml'
+  push:
+    branches: [main]
+    paths:
+      - 'dwi_pipeline/**'
+      - '.github/workflows/dwi_pipeline_ci.yml'
+      - '.readthedocs.yaml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-dryrun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "snakemake>=8.0,<10" pyyaml numpy pytest scipy nibabel mkdocs
+
+      - name: pytest (dwi_pipeline scripts)
+        run: pytest -q dwi_pipeline/tests
+
+      - name: MkDocs build (docs site, strict)
+        run: mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
+
+      - name: Validate ./run CLI
+        working-directory: dwi_pipeline
+        run: |
+          ./run --help | grep -q export-bids-derivatives
+          test "$(./run --version)" = "0.2.0"
+
+      - name: BIDS Derivatives export smoke test
+        run: |
+          mkdir -p /tmp/export_test/qsiprep_single_run_output/sub-X/ses-1/dwi
+          echo ok > /tmp/export_test/qsiprep_single_run_output/sub-X/ses-1/dwi/x.txt
+          mkdir -p /tmp/export_test/connectomes/sub-X
+          echo "0,1" > /tmp/export_test/connectomes/sub-X/dkt_connectome.csv
+          python dwi_pipeline/scripts/export_bids_derivatives.py --results-root /tmp/export_test
+          test -f /tmp/export_test/derivatives/dataset_description.json
+          test -f /tmp/export_test/derivatives/export_manifest.json
+
+      - name: Stub BIDS + results for Snakemake dry-run
+        run: |
+          mkdir -p /tmp/ci_bids/sub-CITEST/ses-1/{anat,dwi}
+          touch /tmp/ci_bids/sub-CITEST/ses-1/anat/sub-CITEST_ses-1_T1w.nii.gz
+          touch /tmp/ci_bids/sub-CITEST/ses-1/dwi/sub-CITEST_ses-1_dwi.nii.gz
+          mkdir -p /tmp/ci_out
+          cat > /tmp/ci_override.yaml <<'YAML'
+          subject: "CITEST"
+          results_root: "/tmp/ci_out"
+          bids_dir: "/tmp/ci_bids"
+          recon:
+            session: "1"
+          dwi_select:
+            enabled: false
+          containers:
+            qsiprep: "/tmp/qsiprep.sif"
+            qsirecon: "/tmp/qsirecon.sif"
+            fastsurfer: "/tmp/fastsurfer.sif"
+            freesurfer: "/tmp/freesurfer.sif"
+            connectome: "/tmp/connectome.sif"
+            lit: "/tmp/lit.sif"
+            nodestrength: "/tmp/nodestrength.sif"
+          fs_license: "/tmp/license.txt"
+          YAML
+          touch /tmp/license.txt
+
+      - name: Snakemake dry-run (workflow targets)
+        working-directory: dwi_pipeline
+        run: |
+          for target in target_qsiprep target_subject_qc; do
+            echo "=== dry-run: ${target} ==="
+            snakemake -s workflow/Snakefile --directory . \
+              --configfile /tmp/ci_override.yaml \
+              -n --quiet "${target}"
+          done

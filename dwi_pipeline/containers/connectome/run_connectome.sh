@@ -29,6 +29,7 @@ Optional:
                              pass mri/aparc.DKTatlas+aseg.mgz for DKT from recon-all)
   --fs-lut PATH              FreeSurferColorLUT.txt (default: $FREESURFER_HOME/FreeSurferColorLUT.txt)
   --mrtrix-lut PATH          MRtrix labelconvert LUT (default: fs_default.txt = DK)
+  --sift2-weights PATH       Optional SIFT2 streamline weights for tck2connectome
   --subject-id ID            Label for log messages only
   -h, --help
 
@@ -58,6 +59,7 @@ FS_LUT_PATH=""
 MRTRIX_LUT_PATH=""
 SEGMENTATION=""
 SUBJECT_ID=""
+SIFT2_WEIGHTS=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -70,6 +72,7 @@ while [[ $# -gt 0 ]]; do
     --fs-license) FS_LICENSE_PATH="$2"; shift 2 ;;
     --fs-lut) FS_LUT_PATH="$2"; shift 2 ;;
     --mrtrix-lut) MRTRIX_LUT_PATH="$2"; shift 2 ;;
+    --sift2-weights) SIFT2_WEIGHTS="$2"; shift 2 ;;
     --segmentation) SEGMENTATION="$2"; shift 2 ;;
     --subject-id) SUBJECT_ID="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
@@ -199,13 +202,22 @@ tckinfo "${tck_use}" | tee "${OUTDIR}/tracks.tckinfo.txt" | sed -n '1,30p'
 echo "[connectome] =================================="
 
 echo "[connectome] Step 4f: tck2connectome"
+tck_weights_args=()
+if [[ -n "${SIFT2_WEIGHTS}" ]]; then
+  [[ -f "${SIFT2_WEIGHTS}" ]] || fail "missing SIFT2 weights: ${SIFT2_WEIGHTS}"
+  tck_weights_args=(-tck_weights_in "${SIFT2_WEIGHTS}")
+  echo "Using SIFT2 weights: ${SIFT2_WEIGHTS}"
+else
+  echo "Using streamline counts (no SIFT2 weights)"
+fi
 tck2connectome -force \
   "${tck_use}" \
   "${OUTDIR}/nodes.mif" \
   "${OUTDIR}/connectome.csv" \
   -symmetric \
   -zero_diagonal \
-  -out_assignments "${OUTDIR}/assignments.csv"
+  -out_assignments "${OUTDIR}/assignments.csv" \
+  "${tck_weights_args[@]}"
 
 [[ -n "${tck_staged}" ]] && rm -f "${tck_staged}"
 

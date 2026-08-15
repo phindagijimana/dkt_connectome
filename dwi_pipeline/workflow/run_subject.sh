@@ -19,6 +19,7 @@
 #   bash run_subject.sh recon 014 --fastsurfer
 #   bash run_subject.sh qsirecon 014
 #   bash run_subject.sh connectome 014
+#   bash run_subject.sh disconnectome 014   # Step 4.5 (needs lesion mask + DKT connectome)
 #   bash run_subject.sh nodestrength 014
 #
 # Not yet ported from subject.sh (use subject.sh directly for these):
@@ -37,7 +38,7 @@ COMMON_SH="${WORKFLOW_DIR}/lib/common.sh"
 RESOLVE_SESSION_PY="${WORKFLOW_DIR}/lib/resolve_session.py"
 source "${COMMON_SH}"
 
-PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength}"
+PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength}"
 [[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
 SUBJECT="${2:?Need subject id}"
 SUBJECT="${SUBJECT#sub-}"
@@ -89,6 +90,11 @@ _apply_env connectome.parcellation    "${CONNECTOME_PARCELLATION:-}"
 _apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
+_apply_env disconnectome.enabled      "$([[ "${RUN_DISCONNECTOME:-1}" == "1" ]] && echo true || echo false)"
+_apply_env disconnectome.core_only    "$([[ "${DISCONNECTOME_CORE_ONLY:-0}" == "1" ]] && echo true || echo false)"
+_apply_env disconnectome.lesion_erode_voxels "${DISCONNECTOME_ERODE_VOXELS:-0}"
+_apply_env disconnectome.weighting    "${DISCONNECTOME_WEIGHTING:-${CONNECTOME_WEIGHTING:-count}}"
 _apply_env nodestrength.enabled       "$([[ "${RUN_NODESTRENGTH:-1}" == "1" ]] && echo true || echo false)"
 _apply_env nodestrength.strength_only "$([[ "${NODESTRENGTH_STRENGTH_ONLY:-0}" == "1" ]] && echo true || echo false)"
 _apply_env nodestrength.no_report     "$([[ "${NODESTRENGTH_NO_REPORT:-0}" == "1" ]] && echo true || echo false)"
@@ -128,6 +134,13 @@ while [[ $# -gt 0 ]]; do
     --dwi-select)          OVERRIDES[dwi_select.json]="${2:?Need path after --dwi-select}"; shift ;;
     --no-dwi-filter)       OVERRIDES[dwi_select.enabled]=false ;;
     --recon-session)       OVERRIDES[recon.session]="${2:?Need session after --recon-session}"; shift ;;
+    --session-filter)      OVERRIDES[recon.session]="${2:?Need session after --session-filter}"; shift ;;
+    --connectome-weighting) OVERRIDES[connectome.weighting]="${2:?Need count or sift2}"; shift ;;
+    --no-disconnectome)    OVERRIDES[disconnectome.enabled]=false ;;
+    --disconnectome)       OVERRIDES[disconnectome.enabled]=true ;;
+    --disconnectome-core-only) OVERRIDES[disconnectome.core_only]=true ;;
+    --disconnectome-erode-voxels) OVERRIDES[disconnectome.lesion_erode_voxels]="${2:?Need N after --disconnectome-erode-voxels}"; shift ;;
+    --disconnectome-weighting) OVERRIDES[disconnectome.weighting]="${2:?Need count or sift2}"; shift ;;
     --dry-run|-n)          DRY_RUN=1 ;;
     --)
       shift
@@ -204,10 +217,11 @@ case "${PIPELINE_MODE}" in
   recon)        TARGET="target_recon" ;;
   qsirecon)     TARGET="target_qsirecon" ;;
   connectome)   TARGET="target_connectome" ;;
+  disconnectome) TARGET="target_disconnectome" ;;
   nodestrength) TARGET="target_nodestrength" ;;
   inpaint)      TARGET="target_inpaint" ;;
   *)
-    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength)"
+    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength)"
     exit 1
     ;;
 esac
@@ -243,6 +257,38 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
       fi
       echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${_session} — skipping Step 1.5 (no-op, same as subject.sh)"
       exit 0
+    fi
+  fi
+fi
+
+# --- Step 4.5 no-op guard for standalone `disconnectome` mode ----------------
+if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
+  DISCONNECTOME_ENABLED="${OVERRIDES[disconnectome.enabled]:-true}"
+  if [[ "${DISCONNECTOME_ENABLED}" == "true" ]]; then
+    _results_root="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
+    _bids_dir="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
+    _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
+    mkdir -p "$(dirname "${_filter_cache}")"
+    _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
+    _dwi_select_json="${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-${DWI_PIPELINE_DIR}/config/dwi_select_b${_dwi_shell_b}.json}}"
+    _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
+    declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
+    if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
+      _resolve_session_args+=(--recon-session "${OVERRIDES[recon.session]:-${RECON_SESSION}}")
+    elif [[ -n "${_static_filter}" ]]; then
+      _resolve_session_args+=(--static-bids-filter "${_static_filter}")
+    else
+      _resolve_session_args+=(--dwi-select-json "${_dwi_select_json}")
+    fi
+    _session="$(python3 "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
+    _mask_prepared="${_results_root}/inpainted/sub-${SUBJECT}/ses-${_session}/lesion_mask_prepared.nii.gz"
+    _dkt_matrix="${_results_root}/connectomes/sub-${SUBJECT}/dkt_connectome.csv"
+    if [[ ! -f "${_mask_prepared}" ]]; then
+      echo "Disconnectome: no prepared lesion mask at ${_mask_prepared} — skipping Step 4.5 (no-op)"
+      exit 0
+    fi
+    if [[ ! -f "${_dkt_matrix}" ]]; then
+      _pipeline_fail "disconnectome" "missing DKT connectome: ${_dkt_matrix} (run Step 4 first)"
     fi
   fi
 fi

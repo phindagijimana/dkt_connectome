@@ -27,6 +27,8 @@ include: "rules/recon.smk"
 include: "rules/qsirecon.smk"
 include: "rules/connectome.smk"
 include: "rules/nodestrength.smk"
+include: "rules/disconnectome.smk"
+include: "rules/subject_qc.smk"
 
 
 def subject_targets(subject: str) -> list:
@@ -41,9 +43,17 @@ def subject_targets(subject: str) -> list:
     if not CONNECTOME_CFG.get("enabled", True):
         return targets
     targets.append(connectome_matrix(subject))
+    if disconnectome_enabled_for(subject):
+        targets.append(disconnectome_json(subject))
+        if DISCONNECTOME_QC_HTML:
+            targets.append(disconnectome_qc_html(subject))
     if not NODESTRENGTH_CFG.get("enabled", True):
+        if SUBJECT_QC_ENABLED:
+            targets.append(subject_qc_html(subject))
         return targets
     targets.append(nodestrength_strength_csv(subject))
+    if SUBJECT_QC_ENABLED:
+        targets.append(subject_qc_html(subject))
     return targets
 
 
@@ -95,3 +105,16 @@ rule target_connectome:
 rule target_nodestrength:
     input:
         lambda wc: nodestrength_strength_csv(_config_subject()),
+
+
+rule target_disconnectome:
+    input:
+        lambda wc: (
+            [disconnectome_json(_config_subject())]
+            + ([disconnectome_qc_html(_config_subject())] if DISCONNECTOME_QC_HTML else [])
+        ),
+
+
+rule target_subject_qc:
+    input:
+        lambda wc: subject_qc_html(_config_subject()),

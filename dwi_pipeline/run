@@ -1,0 +1,231 @@
+#!/usr/bin/env bash
+# BIDS App entrypoint for the TrackTBI / CIDUR dwi_pipeline.
+# Spec: https://bids-apps.neuroimaging.io/
+# Docs: https://dkt-connectome.readthedocs.io/en/latest/
+#
+#   ./run <bids_dir> <output_dir> <analysis_level> [options]
+#
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUN_SUBJECT="${SCRIPT_DIR}/workflow/run_subject.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: run <bids_dir> <output_dir> <analysis_level> [options]
+
+Positional:
+  bids_dir          BIDS dataset root
+  output_dir        Derivatives / results root (RESULTS_ROOT)
+  analysis_level    participant | group
+
+Options (BIDS App):
+  --participant-label ID [ID ...]   One or more subjects (with or without sub- prefix)
+  --session-filter SES              Limit to one BIDS session, e.g. ses-1 or 1
+  --n-cpus N                        Thread budget (default: 8)
+  --mem-mb N                        Informational memory hint (logged only)
+  --skip-bids-validation            Accepted (default: validation off)
+
+Validation / provenance:
+  --bids-validation                 Run bids-validator on bids_dir before processing
+  --ignore-warnings                 Pass --ignore-warnings to bids-validator
+
+Pipeline modes (--mode):
+  all | qsiprep | inpaint | recon | qsirecon | connectome | disconnectome | nodestrength
+
+Preprocessing / SDC:
+  --syn                 SyN SDC when no fmap in dwi-select filter
+  --fmap-retry          Ignore fieldmaps; use SyN SDC
+  --no-sdc              Skip SDC entirely
+  --dwi-shell N         Filter to b=N shell (default 1000)
+  --dwi-select PATH     Explicit dwi-select JSON
+  --no-dwi-filter       Process all DWI series
+  --bids-filter PATH    Static QSIPrep BIDS filter JSON
+
+Recon / connectome:
+  --fastsurfer          FastSurfer for Step 2
+  --fast-fs             FastSurfer + classic DK aparc
+  --freesurfer          recon-all (default)
+  --no-recon            Skip Step 2
+  --no-connectome       Skip Steps 4 and 5
+  --connectome-weighting count|sift2
+
+Lesion / disconnectome:
+  --inpaint / --no-inpaint
+  --no-disconnectome    Skip Step 4.5 even when lesion mask exists
+  --disconnectome-core-only
+  --disconnectome-erode-voxels N
+  --disconnectome-weighting count|sift2
+
+Node strength (Step 5):
+  --no-node-strength    Skip ENIGMA report
+  --strength-only       Skip volume/compare
+  --no-report           Skip PDF report
+
+Other:
+  --dry-run             Snakemake plan only (-n)
+  --export-bids-derivatives   Write RESULTS_ROOT/derivatives/ mirror after run
+  --export-copy         Copy files instead of symlinks for BIDS export
+  --version             Print pipeline version (app.json)
+
+Environment: FS_LICENSE, CONTAINER_*, TEMPLATEFLOW_HOME, ...
+
+Documentation:
+  https://dkt-connectome.readthedocs.io/en/latest/
+EOF
+}
+
+version() {
+  python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" "${SCRIPT_DIR}/app.json" 2>/dev/null || echo "0.2.0"
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --version|-v) version; exit 0 ;;
+  esac
+done
+
+if [[ $# -lt 3 ]]; then
+  usage
+  exit 2
+fi
+
+BIDS_DIR="$(cd "$1" && pwd)"
+OUTPUT_DIR="$(mkdir -p "$2" && cd "$2" && pwd)"
+ANALYSIS_LEVEL="$3"
+shift 3
+
+PARTICIPANTS=()
+SESSIONS=()
+N_CPUS="${NTHREADS:-8}"
+MEM_MB=""
+MODE="all"
+DRY_RUN=0
+BIDS_VALIDATE=0
+BIDS_IGNORE_WARNINGS=0
+EXPORT_BIDS_DERIVATIVES=0
+EXPORT_COPY=0
+EXTRA=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --participant-label)
+      shift
+      while [[ $# -gt 0 && "$1" != --* ]]; do
+        PARTICIPANTS+=("${1#sub-}")
+        shift
+      done
+      continue
+      ;;
+    --session-filter|--recon-session)
+      shift
+      while [[ $# -gt 0 && "$1" != --* ]]; do
+        SESSIONS+=("${1#ses-}")
+        shift
+      done
+      continue
+      ;;
+    --n-cpus) N_CPUS="$2"; shift 2 ;;
+    --mem-mb) MEM_MB="$2"; shift 2 ;;
+    --skip-bids-validation) shift ;;
+    --bids-validation) BIDS_VALIDATE=1 ;;
+    --ignore-warnings) BIDS_IGNORE_WARNINGS=1 ;;
+    --mode) MODE="$2"; shift 2 ;;
+    --connectome-weighting) export CONNECTOME_WEIGHTING="$2"; EXTRA+=(--connectome-weighting "$2"); shift 2 ;;
+    --disconnectome-weighting) EXTRA+=(--disconnectome-weighting "$2"); shift 2 ;;
+    --dwi-shell) EXTRA+=(--dwi-shell "$2"); shift 2 ;;
+    --dwi-select) EXTRA+=(--dwi-select "$2"); shift 2 ;;
+    --bids-filter) EXTRA+=(--bids-filter "$2"); shift 2 ;;
+    --disconnectome-erode-voxels) EXTRA+=(--disconnectome-erode-voxels "$2"); shift 2 ;;
+    --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
+      EXTRA+=("$1") ;;
+    --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnectome)
+      EXTRA+=("$1") ;;
+    --disconnectome-core-only|--no-node-strength|--node-strength|--strength-only|--no-report)
+      EXTRA+=("$1") ;;
+    --dry-run|-n) DRY_RUN=1 ;;
+    --export-bids-derivatives) EXPORT_BIDS_DERIVATIVES=1 ;;
+    --export-copy) EXPORT_COPY=1; EXPORT_BIDS_DERIVATIVES=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage; exit 2 ;;
+  esac
+done
+
+if [[ "${ANALYSIS_LEVEL}" == "group" ]]; then
+  echo "[run] group-level: building cohort QC indexes"
+  python3 "${SCRIPT_DIR}/scripts/render_cohort_qc.py" \
+    --results-root "${OUTPUT_DIR}" \
+    --write-subject-reports || exit 1
+  python3 "${SCRIPT_DIR}/scripts/render_disconnectome_cohort_qc.py" \
+    --results-root "${OUTPUT_DIR}" \
+    --write-subject-reports || exit 1
+  python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
+    --results-root "${OUTPUT_DIR}" \
+    --bids-dir "${BIDS_DIR}" || exit 1
+  export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
+  ((EXPORT_COPY)) && export_args+=(--copy)
+  python3 "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit 1
+  echo "[run] cohort QC: ${OUTPUT_DIR}/cohort_qc.html"
+  echo "[run] disconnectome cohort QC: ${OUTPUT_DIR}/disconnectome_cohort_qc.html"
+  echo "[run] BIDS Derivatives export: ${OUTPUT_DIR}/derivatives/"
+  exit 0
+fi
+
+if [[ "${ANALYSIS_LEVEL}" != "participant" ]]; then
+  echo "ERROR: analysis_level must be participant or group (got: ${ANALYSIS_LEVEL})" >&2
+  exit 2
+fi
+
+if [[ ${#PARTICIPANTS[@]} -eq 0 ]]; then
+  echo "ERROR: --participant-label required for participant-level runs" >&2
+  exit 2
+fi
+
+if [[ ${#SESSIONS[@]} -gt 1 ]]; then
+  echo "ERROR: only one --session-filter per invocation" >&2
+  exit 2
+fi
+
+export BIDS_DIR="${BIDS_DIR}"
+export RESULTS_ROOT="${OUTPUT_DIR}"
+export NTHREADS="${N_CPUS}"
+[[ -n "${MEM_MB}" ]] && echo "[run] mem-mb hint: ${MEM_MB} (informational)"
+
+PREFLIGHT=(bash "${SCRIPT_DIR}/workflow/preflight.sh" --mode "${MODE}" --quick)
+((BIDS_VALIDATE)) && PREFLIGHT+=(--bids-validation)
+((BIDS_IGNORE_WARNINGS)) && PREFLIGHT+=(--ignore-warnings)
+export BIDS_VALIDATE
+"${PREFLIGHT[@]}" || exit 1
+
+SESSION_ARG=()
+[[ ${#SESSIONS[@]} -eq 1 ]] && SESSION_ARG=(--session-filter "${SESSIONS[0]}")
+
+DRY_FLAG=()
+[[ "${DRY_RUN}" -eq 1 ]] && DRY_FLAG=(--dry-run)
+
+exit_code=0
+for sub in "${PARTICIPANTS[@]}"; do
+  echo "[run] subject=sub-${sub} mode=${MODE} session=${SESSIONS[0]:-auto}"
+  if ! bash "${RUN_SUBJECT}" "${MODE}" "${sub}" "${SESSION_ARG[@]}" "${EXTRA[@]}" "${DRY_FLAG[@]}"; then
+    exit_code=1
+  fi
+done
+
+python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
+  --results-root "${OUTPUT_DIR}" \
+  --bids-dir "${BIDS_DIR}" || exit_code=1
+
+for sub in "${PARTICIPANTS[@]}"; do
+  python3 "${SCRIPT_DIR}/scripts/render_subject_qc.py" \
+    --results-root "${OUTPUT_DIR}" \
+    --subject "${sub}" || exit_code=1
+done
+
+if ((EXPORT_BIDS_DERIVATIVES)); then
+  export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
+  ((EXPORT_COPY)) && export_args+=(--copy)
+  python3 "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit_code=1
+fi
+
+exit "${exit_code}"

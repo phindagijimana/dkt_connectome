@@ -17,12 +17,16 @@ TRACKTBI_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
 PIPELINE_MODE="${PIPELINE_MODE:-all}"
 SUBJECT=""
 QUICK=0
+BIDS_VALIDATE="${BIDS_VALIDATE:-0}"
+BIDS_IGNORE_WARNINGS=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mode) PIPELINE_MODE="${2:?}"; shift 2 ;;
     --subject) SUBJECT="${2:?}"; shift 2; SUBJECT="${SUBJECT#sub-}" ;;
     --quick) QUICK=1; shift ;;
+    --bids-validation) BIDS_VALIDATE=1; shift ;;
+    --ignore-warnings) BIDS_IGNORE_WARNINGS=1; shift ;;
     -h|--help)
       sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
@@ -73,6 +77,17 @@ command -v apptainer >/dev/null 2>&1 || fail "apptainer not found"
 command -v python3 >/dev/null 2>&1 || fail "python3 not found"
 
 [[ -d "${BIDS_DIR}" ]] || fail "BIDS_DIR missing: ${BIDS_DIR}"
+[[ -f "${BIDS_DIR}/dataset_description.json" ]] || warn "BIDS root missing dataset_description.json"
+
+if [[ "${BIDS_VALIDATE}" == "1" ]] || [[ "$(read_config bids.validate)" =~ ^([Tt]rue|1|yes|on)$ ]]; then
+  echo "preflight: running bids-validator on ${BIDS_DIR} ..."
+  validator_args=()
+  ((BIDS_IGNORE_WARNINGS)) && validator_args+=(--ignore-warnings)
+  [[ "$(read_config bids.ignore_warnings)" =~ ^([Tt]rue|1|yes|on)$ ]] && validator_args+=(--ignore-warnings)
+  bash "${DWI_PIPELINE_DIR}/scripts/run_bids_validator.sh" "${BIDS_DIR}" "${validator_args[@]}" \
+    || fail "BIDS validation failed (fix BIDS or omit --bids-validation)"
+fi
+
 [[ -d "${WORKFLOW_DIR}" ]] || fail "workflow dir missing: ${WORKFLOW_DIR}"
 [[ -f "${CONFIG}" ]] || fail "config missing: ${CONFIG}"
 [[ -f "${WORKFLOW_DIR}/Snakefile" ]] || fail "Snakefile missing"
@@ -107,6 +122,7 @@ case "${PIPELINE_MODE}" in
   recon) need_recon=1 ;;
   qsirecon) need_qsirecon=1 ;;
   connectome) need_connectome=1 ;;
+  disconnectome) need_connectome=1 ;;
   nodestrength) need_nodestrength=1 ;;
   *) fail "invalid PIPELINE_MODE=${PIPELINE_MODE}" ;;
 esac

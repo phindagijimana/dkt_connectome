@@ -170,6 +170,9 @@
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
 #   RECON_SESSION=2WK         override session for recon T1w (default: from dwi-select filter)
 #   RUN_NODESTRENGTH=0|1   Step 5 in mode=all/connectome (default 1 when Step 4 ran)
+#   RUN_DISCONNECTOME=0|1  Step 4.5 in mode=all/connectome (default 1; auto-skips without lesion mask)
+#   DISCONNECTOME_CORE_ONLY=0|1
+#   DISCONNECTOME_ERODE_VOXELS=N   default 0
 #   NODESTRENGTH_OUT       Step 5 output dir (default: RESULTS_ROOT/node_strength; cohort-shared,
 #                          not per-subject, since the container itself groups by --include)
 #   NODESTRENGTH_STRENGTH_ONLY=1  same as --strength-only (skip volume/ and compare/)
@@ -226,7 +229,7 @@ _renamed_var DK_LEGACY_DUAL_CONTAINER       CONNECTOME_LEGACY_DUAL_CONTAINER
 _renamed_var DK_CONNECTOME_BIND_ENTRYPOINT  CONNECTOME_BIND_ENTRYPOINT
 
 # --- CLI: mode, subject ID, optional flags ---
-PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength}"
+PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength}"
 # Step 4 used to be called "dk"; keep the old mode name working.
 [[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
 SUBJECT="${2:?Need subject id}"
@@ -296,6 +299,36 @@ while [[ $# -gt 0 ]]; do
     --no-dwi-filter)
       QSIPREP_NO_DWI_FILTER=1
       ;;
+    --session-filter|--recon-session)
+      RECON_SESSION="${2:?Need session after $1}"
+      RECON_SESSION="${RECON_SESSION#ses-}"
+      shift 2
+      continue
+      ;;
+    --connectome-weighting)
+      CONNECTOME_WEIGHTING="${2:?Need count or sift2 after --connectome-weighting}"
+      shift 2
+      continue
+      ;;
+    --no-disconnectome)
+      RUN_DISCONNECTOME=0
+      ;;
+    --disconnectome)
+      RUN_DISCONNECTOME=1
+      ;;
+    --disconnectome-core-only)
+      DISCONNECTOME_CORE_ONLY=1
+      ;;
+    --disconnectome-erode-voxels)
+      DISCONNECTOME_ERODE_VOXELS="${2:?Need N after --disconnectome-erode-voxels}"
+      shift 2
+      continue
+      ;;
+    --disconnectome-weighting)
+      DISCONNECTOME_WEIGHTING="${2:?Need count or sift2 after --disconnectome-weighting}"
+      shift 2
+      continue
+      ;;
     -h|--help)
       # Print the header from "Usage:" to its closing rule, so the help text
       # cannot drift out of sync with a hardcoded line range.
@@ -303,7 +336,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength, --strength-only, --no-report)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --no-disconnectome, --disconnectome-core-only, --node-strength, --no-node-strength, --strength-only, --no-report)"
       exit 1
       ;;
   esac
@@ -407,6 +440,12 @@ RUN_CONNECTOME="${RUN_CONNECTOME:-1}"
 # on -- every subject with a connectome gets a report. --no-node-strength /
 # RUN_NODESTRENGTH=0 to skip.
 RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
+# Step 4.5 runs after Step 4 when a prepared lesion mask exists; silent no-op otherwise.
+RUN_DISCONNECTOME="${RUN_DISCONNECTOME:-1}"
+DISCONNECTOME_CORE_ONLY="${DISCONNECTOME_CORE_ONLY:-0}"
+DISCONNECTOME_ERODE_VOXELS="${DISCONNECTOME_ERODE_VOXELS:-0}"
+DISCONNECTOME_WEIGHTING="${DISCONNECTOME_WEIGHTING:-${CONNECTOME_WEIGHTING:-count}}"
+RUN_DISCONNECTOME_SCRIPT="${TRACKTBI_ROOT}/dwi_pipeline/scripts/run_disconnectome.py"
 NODESTRENGTH_STRENGTH_ONLY="${NODESTRENGTH_STRENGTH_ONLY:-0}"
 NODESTRENGTH_NO_REPORT="${NODESTRENGTH_NO_REPORT:-0}"
 NODESTRENGTH_SKIP_IF_EXISTS="${NODESTRENGTH_SKIP_IF_EXISTS:-1}"
@@ -439,6 +478,7 @@ CONNECTOME_FAIL_ON_EMPTY_NODES="${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}"
 # shift a handful of streamline assignments. Pin ITK to one thread so the
 # connectome is reproducible; set 0 to trade reproducibility for speed.
 CONNECTOME_DETERMINISTIC="${CONNECTOME_DETERMINISTIC:-1}"
+CONNECTOME_WEIGHTING="${CONNECTOME_WEIGHTING:-count}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
@@ -1411,6 +1451,19 @@ run_connectome() {
   [[ -n "${preproc_t1w}" ]] && echo "Using QSIPrep T1w reference: ${preproc_t1w}"
   [[ -n "${bids_t1w}"     ]] && echo "Using BIDS T1w (affine reg source): ${bids_t1w}"
   echo "Space handling: ${space_note}"
+  echo "Connectome weighting: ${CONNECTOME_WEIGHTING}"
+
+  local sift2_weights="" sift2_args=()
+  if [[ "${CONNECTOME_WEIGHTING}" == "sift2" ]]; then
+    sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
+      find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
+        -name '*model-sift2_streamlineweights.csv')"
+    local w_rel="${sift2_weights#${QSIRECON_OUT}/}"
+    sift2_args=(--sift2-weights "/qsirecon/${w_rel}")
+    echo "Using SIFT2 weights: ${sift2_weights}"
+  elif [[ "${CONNECTOME_WEIGHTING}" != "count" ]]; then
+    _pipeline_fail "connectome" "invalid CONNECTOME_WEIGHTING=${CONNECTOME_WEIGHTING} (use count or sift2)"
+  fi
 
   if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
     echo "[connectome] Using legacy dual-container path (CONNECTOME_LEGACY_DUAL_CONTAINER=1)"
@@ -1469,6 +1522,7 @@ run_connectome() {
       --bids-t1w "${bids_t1w_in_container}" \
       --output-dir /out \
       --fs-license /opt/freesurfer/license.txt \
+      "${sift2_args[@]}" \
       "${lut_args[@]}" \
       --subject-id "sub-${SUBJECT}"
   fi
@@ -1530,7 +1584,49 @@ EOF
   echo "Parcellation provenance: ${outdir}/parcellation.json"
   echo "Space diagnostic: ${outdir}/nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
 
+  run_disconnectome
   run_nodestrength
+}
+
+_DISCONNECTOME_ATTEMPTED=0
+
+run_disconnectome() {
+  ((_DISCONNECTOME_ATTEMPTED)) && return 0
+  _DISCONNECTOME_ATTEMPTED=1
+
+  if [[ "${RUN_DISCONNECTOME}" != "1" ]]; then
+    echo "Disconnectome (Step 4.5): skipped (RUN_DISCONNECTOME=0 / --no-disconnectome)"
+    return 0
+  fi
+
+  local target_ses mask_prepared dkt_matrix
+  target_ses="$(_resolve_target_session)" || return 0
+  mask_prepared="${INPAINT_OUT}/sub-${SUBJECT}/ses-${target_ses}/lesion_mask_prepared.nii.gz"
+  dkt_matrix="${CONNECTOME_OUT}/sub-${SUBJECT}/dkt_connectome.csv"
+
+  if [[ ! -f "${mask_prepared}" ]]; then
+    echo "Disconnectome (Step 4.5): no prepared lesion mask — skipping (no lesion or inpaint did not run)"
+    return 0
+  fi
+  if [[ ! -f "${dkt_matrix}" ]]; then
+    _pipeline_fail "disconnectome" "missing ${dkt_matrix}" "Run Step 4 (connectome) first."
+  fi
+
+  echo "=== Disconnectome (Step 4.5): sub-${SUBJECT} ses-${target_ses} ==="
+
+  local -a extra_args=(--connectome-weighting "${DISCONNECTOME_WEIGHTING}")
+  [[ "${DISCONNECTOME_CORE_ONLY}" == "1" ]] && extra_args+=(--core-only)
+  ((DISCONNECTOME_ERODE_VOXELS > 0)) && extra_args+=(--lesion-erode-voxels "${DISCONNECTOME_ERODE_VOXELS}")
+
+  python3 "${RUN_DISCONNECTOME_SCRIPT}" \
+    --results-root "${RESULTS_ROOT}" \
+    --subject "${SUBJECT}" \
+    --session "${target_ses}" \
+    --container "${CONTAINER_CONNECTOME}" \
+    --lut "${CONNECTOME_LUT_DKT}" \
+    "${extra_args[@]}"
+
+  echo "Disconnectome: ${CONNECTOME_OUT}/sub-${SUBJECT}/disconnectome/disconnection_matrix.csv"
 }
 
 _NODESTRENGTH_ATTEMPTED=0
@@ -1631,9 +1727,10 @@ case "${PIPELINE_MODE}" in
   recon)        run_recon ;;
   qsirecon)     run_qsirecon ;;
   connectome)   run_connectome ;;
+  disconnectome) run_disconnectome ;;
   nodestrength) run_nodestrength ;;
   *)
-    echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, or nodestrength)"
+    echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength)"
     exit 1
     ;;
 esac

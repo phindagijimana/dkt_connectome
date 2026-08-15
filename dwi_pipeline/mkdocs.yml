@@ -1,0 +1,42 @@
+site_name: TrackTBI Connectome Pipeline
+site_description: BIDS App for lesion-aware structural connectomics (QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome)
+site_url: https://dkt-connectome.readthedocs.io/
+repo_url: https://github.com/phindagijimana/dkt_connectome
+repo_name: phindagijimana/dkt_connectome
+edit_uri: edit/main/dwi_pipeline/docs/
+
+docs_dir: docs
+
+theme:
+  name: readthedocs
+  navigation_depth: 3
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Containers: containers.md
+  - Quick start: quickstart.md
+  - Usage: usage.md
+  - BIDS App: bids_app.md
+  - Configuration: configuration.md
+  - Outputs: outputs.md
+  - Derivatives: derivatives.md
+  - QC dashboard: qc_dashboard.md
+  - Preprocessing: preprocessing.md
+  - Disconnectome: disconnectome.md
+  - Lesion segmentation: lesion_segmentation.md
+  - Integrity QC: integrity_qc.md
+  - FAQ: faq.md
+  - Troubleshooting: troubleshooting.md
+  - Legacy workflow: legacy_workflow.md
+  - Citation: citation.md
+  - Changelog: changelog.md
+  - Read the Docs setup: readthedocs_setup.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code
+
+strict: true

@@ -1,10 +1,7 @@
 # =============================================================================
 # config.yaml — Default configuration for the Snakemake plugin/workflow engine
 # =============================================================================
-# Every value here has the same default as the corresponding env var in
-# subject.sh, and can be overridden the same way you'd override that env var,
-# just via --config key=value (or a --configfile) instead of exporting it.
-# See dwi_pipeline/workflow/README.md for the mapping table.
+# PipelineVersion: 0.2.0 (see CHANGELOG.md, app.json)
 # =============================================================================
 
 # --- Paths ---
@@ -19,7 +16,22 @@ nthreads: 8
 omp_nthreads: 8
 output_res: 2
 
-# --- Containers ---
+# --- BIDS validation (opt-in; off by default) ---
+bids:
+  validate: false            # true or --bids-validation on ./run / preflight
+  ignore_warnings: false     # pass --ignore-warnings to bids-validator
+
+# --- Recommended upstream container tags (pin in config.local.yaml) ---
+container_pins:
+  qsiprep: pennlinc/qsiprep:1.0.0
+  qsirecon: pennlinc/qsirecon:1.2.1
+  freesurfer: freesurfer/freesurfer:7.4.1
+  fastsurfer: deepmi/fastsurfer:latest
+  connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
+  lit: deepmi/lit:0.6.0
+  nodestrength: ghcr.io/phindagijimana/nodestrength:0.1.0
+
+# --- Containers (local Apptainer .sif paths) ---
 containers:
   qsiprep: /path/to/others/containers/qsiprep.sif
   qsirecon: /path/to/others/containers/qsirecon.sif
@@ -79,6 +91,30 @@ connectome:
   fail_on_empty_nodes: false
   deterministic: true
   resample_to_dwi: true
+  weighting: count          # count | sift2 — must match Step 4.5 disconnectome weighting
+
+# --- Step 4.5: Disconnectome (auto when lesion mask + DKT connectome) ---
+disconnectome:
+  enabled: true
+  weighting: null           # default: connectome.weighting
+  core_only: false
+  lesion_erode_voxels: 0
+  disconnection_spared: C    # A | B | C
+  option_a: true
+  option_b: true
+  option_c: true
+  qc_html: true              # write disconnectome_qc.html after Step 4.5
+
+# --- Unified QC dashboard (Steps 1-5) ----------------------------------------
+qc:
+  enabled: true
+  subject_html: true         # RESULTS_ROOT/qc/sub-<ID>/subject_qc.html
+
+# --- BIDS Derivatives export (symlink mirror under RESULTS_ROOT/derivatives) --
+derivatives:
+  export_enabled: true       # run export on ./run group (and --export-bids-derivatives)
+  export_dir: null           # default: RESULTS_ROOT/derivatives
+  export_copy: false         # true = copy files; false = symlinks (default)
 
 # --- Step 5: Node strength / ENIGMA report ---
 nodestrength:

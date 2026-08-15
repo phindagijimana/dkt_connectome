@@ -17,7 +17,23 @@
 version: 1.2
 
 workflows:
-  - subclass: SMK                              # Snakemake
+  - subclass: SMK
+    name: tracktbi_connectome
+    publish: true
+    primaryDescriptorPath: /dwi_pipeline/workflow/Snakefile
+    readMePath: /dwi_pipeline/README.md
+    authors:
+      - name: Phind Ndagijimana
+        orcid: ""
+    testParameterFiles:
+      - /dwi_pipeline/workflow/config/config.yaml
+    topic: "TrackTBI BIDS App — QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome → node strength"
+    categories:
+      - Connectomics
+      - Diffusion MRI
+      - BIDS
+
+  - subclass: SMK                              # Snakemake (legacy 4-stage)
     name: dk_connectome
     publish: true
     primaryDescriptorPath: /Snakefile
@@ -27,7 +43,7 @@ workflows:
         orcid: ""                              # add ORCID iD when available
     testParameterFiles:
       - /config/config.yaml
-    topic: "BIDS DWI -> QSIPrep -> QSIRecon -> Desikan-Killiany structural connectome"
+    topic: "LEGACY: BIDS DWI -> QSIPrep -> QSIRecon -> Desikan-Killiany connectome (use tracktbi_connectome)"
     categories:
       - Connectomics
       - Diffusion MRI
