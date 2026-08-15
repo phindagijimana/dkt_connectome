@@ -154,3 +154,42 @@ and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
 ## Study cohorts and data use
 
 Validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI cohorts** (including CIDUR). Acknowledge institutional data-use agreements and study-specific requirements as required by your IRB.
+
+---
+
+## Sample tutorial data (IDEAS II)
+
+The recommended **public sample** for tutorials and smoke tests is a two-subject subset of **IDEAS II** ([OpenNeuro ds007401](https://openneuro.org/datasets/ds007401)). Download: [`scripts/download_ideas_sample.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/download_ideas_sample.sh).
+
+If you publish results derived from these volumes (or redistribute derivatives), cite:
+
+1. **IDEAS II paper** — Taylor PN, Hall G, Horsley J, Wang Y, Vos SB, Winston GP, McEvoy AW, Miserocchi A, de Tisi J, Duncan JS. Open diffusion magnetic resonance imaging and connectivity data for epilepsy and surgery: The IDEAS II release. *Epilepsia* 2026;67(6):2912–2923. [doi:10.1002/epi.70186](https://doi.org/10.1002/epi.70186)
+2. **OpenNeuro dataset** — [doi:10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0)
+3. **IDEAS I** (T1w/FLAIR clinical metadata aligned with the same subject IDs) — Taylor PN, et al. *Epilepsia* 2025. [doi:10.1111/epi.18192](https://doi.org/10.1111/epi.18192) (when referencing non-DWI IDEAS fields)
+
+```bibtex
+@article{Taylor2026IDEASII,
+  author  = {Taylor, Peter N. and Hall, Gerard and Horsley, Jonathan and
+             Wang, Yujiang and Vos, Sjoerd B. and Winston, Gavin P. and
+             McEvoy, Andrew W. and Miserocchi, Anna and de Tisi, Jane and
+             Duncan, John S.},
+  title   = {Open diffusion magnetic resonance imaging and connectivity data for epilepsy and surgery: The {IDEAS II} release},
+  journal = {Epilepsia},
+  volume  = {67},
+  number  = {6},
+  pages   = {2912--2923},
+  year    = {2026},
+  doi     = {10.1002/epi.70186}
+}
+
+@misc{OpenNeuroIDEASII,
+  author       = {Taylor, Peter N. and others},
+  title        = {Open diffusion {MRI} and connectivity data for epilepsy and surgery: The {IDEAS II} release},
+  year         = {2026},
+  publisher    = {OpenNeuro},
+  doi          = {10.18112/openneuro.ds007401.v1.0.0},
+  url          = {https://openneuro.org/datasets/ds007401}
+}
+```
+
+Full sample-data guide: [datasets/ideas.md](datasets/ideas.md).

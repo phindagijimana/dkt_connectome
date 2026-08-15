@@ -19,6 +19,21 @@ Clinical TBI connectivity background: Hayes et al. 2016 ([10.1017/S1355617715000
 
 ---
 
+## Public sample dataset (IDEAS II)
+
+Two-subject BIDS subset for tutorials and external smoke tests — **not** a validation cohort for TBI claims, but the recommended public data for trying the pipeline:
+
+| Resource | Link |
+|----------|------|
+| Download | `bash dwi_pipeline/scripts/download_ideas_sample.sh` |
+| Subjects | `sub-1`, `sub-6` (`ses-1`: T1w, FLAIR, DWI) |
+| OpenNeuro | [ds007401](https://openneuro.org/datasets/ds007401) |
+| Docs | [Sample data (IDEAS II)](datasets/ideas.md) |
+
+**Cite when using these data:** Taylor PN, et al. *Epilepsia* 2026. [10.1002/epi.70186](https://doi.org/10.1002/epi.70186) and OpenNeuro dataset [10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0).
+
+---
+
 ## Bundled test subjects
 
 Under [`dwi_test_TBI/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/dwi_test_TBI):

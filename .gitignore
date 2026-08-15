@@ -47,6 +47,7 @@ derivatives/
 /dwi_pipeline/sample_data/ideas/bids/**
 !/dwi_pipeline/sample_data/ideas/README.md
 !/dwi_pipeline/sample_data/ideas/SUBJECTS.md
+!/dwi_pipeline/sample_data/README.md
 
 # --- Container images (huge, distributed separately) --------------------------
 *.sif

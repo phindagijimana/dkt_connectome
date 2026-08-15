@@ -141,6 +141,21 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
+## Sample tutorial data — IDEAS II (OpenNeuro)
+
+**What we ship:** a two-subject BIDS subset (`sub-1`, `sub-6`) downloaded from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401) via [`scripts/download_ideas_sample.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/download_ideas_sample.sh). NIfTI files are gitignored; provenance READMEs are tracked under `sample_data/ideas/`.
+
+| Topic | Reference | DOI / link |
+|-------|-----------|------------|
+| **IDEAS II (required when using sample DWI)** | Taylor PN, Hall G, Horsley J, Wang Y, Vos SB, Winston GP, McEvoy AW, Miserocchi A, de Tisi J, Duncan JS. Open diffusion magnetic resonance imaging and connectivity data for epilepsy and surgery: The IDEAS II release. *Epilepsia* 2026;67(6):2912–2923. | [10.1002/epi.70186](https://doi.org/10.1002/epi.70186) |
+| OpenNeuro dataset record | Same release on OpenNeuro (ds007401) | [10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0) |
+| IDEAS I (T1w/FLAIR + outcomes; same subject IDs) | Taylor PN, et al. Open MRI data for epilepsy and surgery: The IDEAS release. *Epilepsia* 2025. | [10.1111/epi.18192](https://doi.org/10.1111/epi.18192) |
+| CNNP Lab data index | IDEAS / IDEAS II landing page | [CNNP Lab IDEAS data](https://sites.google.com/view/cnnp-lab//ideas-data) |
+
+**Docs:** [Sample data (IDEAS II)](datasets/ideas.md) · [Tutorial](tutorial.md)
+
+---
+
 ## TBI / clinical context (optional)
 
 These resources informed cohort design and QC; cite separately when discussing TBI outcomes or study populations.

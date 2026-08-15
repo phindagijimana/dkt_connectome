@@ -4,6 +4,31 @@ Minimal examples to run the pipeline on one participant. For installation prereq
 
 ---
 
+## 0. Try with IDEAS II sample data (recommended)
+
+Public two-subject BIDS subset from the **IDEAS II** epilepsy diffusion release ([OpenNeuro ds007401](https://openneuro.org/datasets/ds007401)):
+
+```bash
+bash dwi_pipeline/scripts/download_ideas_sample.sh
+export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
+export FS_LICENSE=/path/to/license.txt
+
+cd dwi_pipeline
+./run "${BIDS_DIR}" /tmp/ideas_out participant \
+  --participant-label 1 \
+  --session-filter ses-1 \
+  --fastsurfer \
+  --syn \
+  --n-cpus 8 \
+  --dry-run
+```
+
+Use **`--syn`** (no fieldmaps in the default b=1000 dwi-select filter). Remove `--dry-run` for a full run.
+
+**Citation:** Taylor PN, et al. Open diffusion MRI and connectivity data for epilepsy and surgery: The IDEAS II release. *Epilepsia* 2026. [doi:10.1002/epi.70186](https://doi.org/10.1002/epi.70186) · OpenNeuro [doi:10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0). Full details: [Sample data (IDEAS II)](datasets/ideas.md).
+
+---
+
 ## 1. Prepare BIDS inputs
 
 Your dataset should follow [BIDS](https://bids-specification.readthedocs.io/) with at least:
