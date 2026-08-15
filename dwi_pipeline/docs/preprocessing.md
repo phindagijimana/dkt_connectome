@@ -33,7 +33,7 @@ Reference: [bids.md](https://github.com/phindagijimana/dkt_connectome/blob/main/
 | `--syn` | SyN distortion correction |
 | `--no-sdc` | Skip SDC (legacy compatibility) |
 
-Details: [fmaps.md](https://github.com/phindagijimana/dkt_connectome/blob/main/fmaps.md).
+Details: [Field maps & SDC](fieldmaps_sdc.md) · [BIDS metadata](bids_metadata.md).
 
 ---
 

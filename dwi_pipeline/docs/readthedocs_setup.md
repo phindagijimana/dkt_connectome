@@ -1,5 +1,7 @@
 # Read the Docs — one-time setup
 
+**Maintainer checklist:** see [Publishing](maintainer/publishing.md) for the full deploy workflow and live-site verification.
+
 The documentation site is built from this repository automatically once connected.
 
 ## Connect Read the Docs

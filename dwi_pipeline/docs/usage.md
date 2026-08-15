@@ -2,7 +2,7 @@
 
 Command-line reference for the DKT Connectome BIDS App (`./run`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
 
-For a minimal example, see [Quick start](quickstart.md). For config keys and env vars, see [Configuration](configuration.md).
+For a minimal example, see [Quick start](quickstart.md). For **when to use which flag**, see [Decision tables](decision_tables.md). For config keys and env vars, see [Configuration](configuration.md).
 
 ---
 
@@ -215,8 +215,12 @@ bash dwi_pipeline/scripts/batch_postprocess.sh
 
 ## See also
 
+- [Decision tables](decision_tables.md) — when to use SDC, recon, weighting, disconnectome flags
 - [Pipeline steps](pipeline_steps.md) — what happens inside each step
+- [Methods](methods/index.md) — theory and citations per step
 - [Preparing your data](preparing_data.md) — BIDS sidecars, fieldmaps, lesion masks
+- [BIDS metadata](bids_metadata.md) · [Field maps & SDC](fieldmaps_sdc.md)
 - [Outputs](outputs.md) — derivative file layout
+- [Tutorial](tutorial.md) — end-to-end walkthrough
 - [Troubleshooting](troubleshooting.md) — common errors
 - [FAQ](faq.md)
