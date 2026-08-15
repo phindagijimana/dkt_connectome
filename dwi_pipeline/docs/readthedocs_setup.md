@@ -35,16 +35,25 @@ The BIDS Apps registry submission should use this URL as `Documentation` in `app
 
 ## Site still shows “TrackTBI Connectome Pipeline”?
 
-The product name is **DKT Connectome Pipeline** (`dwi_pipeline/mkdocs.yml` → `site_name`).
+The product name is **DKT Connectome Pipeline** (`dwi_pipeline/mkdocs.yml` → `site_name`). The GitHub source is already correct; the hosted site is **stale** because Read the Docs has not rebuilt since the rebrand (no GitHub webhook is configured on the repo).
 
-If Read the Docs still shows the old title, the hosted build is stale (webhook missed or failed):
+### Fix now (manual, ~1 minute)
 
-1. Open [RTD dashboard → dkt-connectome → Builds](https://app.readthedocs.org/projects/dkt-connectome/builds/).
-2. Click **Build version** → choose `latest` / `main` → **Build**.
-3. Confirm the build commit is at or after the rebrand (`25f3740`+).
+1. Open [RTD → dkt-connectome → Versions](https://app.readthedocs.org/projects/dkt-connectome/versions/).
+2. Click **latest** → open the build link (or use **Integrations** to connect GitHub for automatic builds).
+3. On the version row, use the menu (⋮) → **Build version** if available, or go to [Settings → Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) → **Add integration** → **GitHub incoming webhook** / connect repository.
+4. Alternatively: [Builds](https://app.readthedocs.org/projects/dkt-connectome/builds/) → trigger a new build for `latest`.
 
-Local check (should print `DKT Connectome Pipeline`):
+Confirm the new build uses commit **`42c10ec`** or later.
 
-```bash
-cd dwi_pipeline && mkdocs build && grep -o '<title>.*</title>' site/index.html
-```
+### Fix permanently (automatic rebuilds on push)
+
+**Option A — GitHub Actions (recommended)**
+
+1. Create a token at https://readthedocs.org/accounts/tokens/
+2. Add GitHub secret **`READTHEDOCS_TOKEN`** on `phindagijimana/dkt_connectome`
+3. Workflow `.github/workflows/readthedocs.yml` triggers RTD on every docs push
+
+**Option B — RTD GitHub integration**
+
+Connect the repo under [Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) so pushes to `main` rebuild automatically (no token in GitHub required).
