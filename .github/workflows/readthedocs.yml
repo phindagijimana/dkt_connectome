@@ -25,6 +25,8 @@ jobs:
   trigger-rtd:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Trigger Read the Docs build (latest)
         env:
           READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
