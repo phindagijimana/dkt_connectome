@@ -69,11 +69,15 @@ See also: [Tutorial](../tutorial.md).
 
 ## Citation
 
-If you use these data, cite IDEAS II:
+If you use these data, cite **IDEAS II** and the **OpenNeuro dataset**:
 
-> Taylor PN, et al. Open diffusion MRI and connectivity data for epilepsy and surgery: The IDEAS II release. *Epilepsia* 2026. https://doi.org/10.1002/epi.70186
+> Taylor PN, Hall G, Horsley J, Wang Y, Vos SB, Winston GP, McEvoy AW, Miserocchi A, de Tisi J, Duncan JS. Open diffusion magnetic resonance imaging and connectivity data for epilepsy and surgery: The IDEAS II release. *Epilepsia* 2026;67(6):2912–2923. https://doi.org/10.1002/epi.70186
 
-IDEAS I (T1w/FLAIR only): Taylor PN, et al. *Epilepsia* 2025. https://doi.org/10.1111/epi.18192
+> OpenNeuro dataset ds007401. https://doi.org/10.18112/openneuro.ds007401.v1.0.0
+
+**IDEAS I** (T1w/FLAIR + clinical metadata, same subject IDs): Taylor PN, et al. *Epilepsia* 2025. https://doi.org/10.1111/epi.18192
+
+BibTeX and acknowledgment templates: [Citation](../citation.md#sample-tutorial-data-ideas-ii) · [References](../references.md#sample-tutorial-data-ideas-ii-openneuro).
 
 ---
 

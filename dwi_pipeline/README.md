@@ -24,6 +24,15 @@ For **atlas-only** connectomes (4S156 in QSIRecon, no Step 4), use [`dwi_connect
 Give each cohort, and each combination of settings, a separate `RESULTS_ROOT`,
 so that one run cannot overwrite another's outputs.
 
+**Public sample data (IDEAS II)** — two subjects from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401) for tutorials and smoke tests:
+
+```bash
+bash dwi_pipeline/scripts/download_ideas_sample.sh
+export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
+```
+
+See [`sample_data/ideas/README.md`](sample_data/ideas/README.md) and [docs/datasets/ideas.md](docs/datasets/ideas.md). **Cite Taylor et al. 2026** (*Epilepsia*) when using these data.
+
 **Local TBI test data** lives under [`dwi_pipeline/dwi_test_TBI/`](dwi_test_TBI/):
 BIDS inputs in `dwi_test_TBI/bids/`, and one `RESULTS_ROOT` subdirectory per
 subject/settings using `sub-<SUBJECT>_<recon>[_flags]` (e.g.

@@ -41,6 +41,7 @@ This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIR
 |------|-------------|
 | [Installation](installation.md) | Requirements, Apptainer images, licenses, config |
 | [Tutorial](tutorial.md) | End-to-end walkthrough with test data |
+| [Sample data (IDEAS II)](datasets/ideas.md) | Public two-subject BIDS sample + citations |
 | [Quick start](quickstart.md) | First run in three commands |
 | [Usage](usage.md) | Full command-line reference (QSIPrep-style) |
 | [Decision tables](decision_tables.md) | When to use SDC, recon, weighting, disconnectome flags |

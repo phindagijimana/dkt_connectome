@@ -137,10 +137,10 @@ while [[ $# -gt 0 ]]; do
     --omp-nthreads) OMP_THREADS="$2"; shift 2 ;;
     --mem-mb|--mem) MEM_MB="$2"; shift 2 ;;
     --random-seed) RANDOM_SEED="$2"; shift 2 ;;
-    --stop-on-first-crash) STOP_ON_FIRST_CRASH=1 ;;
+    --stop-on-first-crash) STOP_ON_FIRST_CRASH=1; shift ;;
     --skip-bids-validation) shift ;;
-    --bids-validation) BIDS_VALIDATE=1 ;;
-    --ignore-warnings) BIDS_IGNORE_WARNINGS=1 ;;
+    --bids-validation) BIDS_VALIDATE=1; shift ;;
+    --ignore-warnings) BIDS_IGNORE_WARNINGS=1; shift ;;
     --mode) MODE="$2"; shift 2 ;;
     --connectome-weighting) export CONNECTOME_WEIGHTING="$2"; EXTRA+=(--connectome-weighting "$2"); shift 2 ;;
     --disconnectome-weighting) EXTRA+=(--disconnectome-weighting "$2"); shift 2 ;;
@@ -149,14 +149,14 @@ while [[ $# -gt 0 ]]; do
     --bids-filter|--bids-filter-file) EXTRA+=(--bids-filter "$2"); shift 2 ;;
     --disconnectome-erode-voxels) EXTRA+=(--disconnectome-erode-voxels "$2"); shift 2 ;;
     --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
-      EXTRA+=("$1") ;;
+      EXTRA+=("$1"); shift ;;
     --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnection|--disconnectome)
-      EXTRA+=("$1") ;;
+      EXTRA+=("$1"); shift ;;
     --disconnectome-core-only|--no-node-strength|--node-strength|--strength-only|--no-report)
-      EXTRA+=("$1") ;;
-    --dry-run|-n) DRY_RUN=1 ;;
-    --export-bids-derivatives) EXPORT_BIDS_DERIVATIVES=1 ;;
-    --export-copy) EXPORT_COPY=1; EXPORT_BIDS_DERIVATIVES=1 ;;
+      EXTRA+=("$1"); shift ;;
+    --dry-run|-n) DRY_RUN=1; shift ;;
+    --export-bids-derivatives) EXPORT_BIDS_DERIVATIVES=1; shift ;;
+    --export-copy) EXPORT_COPY=1; EXPORT_BIDS_DERIVATIVES=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 2 ;;
   esac

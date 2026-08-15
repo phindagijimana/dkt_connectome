@@ -27,3 +27,4 @@ done
 echo "[ideas] done. BIDS root: ${OUT}"
 echo "[ideas] subjects: ${SUBJECTS[*]}"
 du -sh "${OUT}" 2>/dev/null || true
+echo "[ideas] cite: Taylor et al. 2026 Epilepsia doi:10.1002/epi.70186 + OpenNeuro doi:10.18112/openneuro.ds007401.v1.0.0"
