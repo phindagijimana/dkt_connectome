@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and optionally push the TrackTBI BIDS App orchestrator Docker image.
+# Build and optionally push the DKT Connectome BIDS App orchestrator Docker image.
 # Step containers (QSIPrep, FreeSurfer, etc.) are NOT included — mount at runtime.
 #
 # Usage:
@@ -11,7 +11,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "${SCRIPT_DIR}")"
 VERSION="$(python3 -c "import json; print(json.load(open('${SCRIPT_DIR}/../app.json'))['PipelineVersion'])")"
-IMAGE="phindagijimana/tracktbi-connectome"
+IMAGE="phindagijimana/dkt-connectome"
 PUSH=0
 
 while [[ $# -gt 0 ]]; do

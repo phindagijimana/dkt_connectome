@@ -1,6 +1,6 @@
 # Legacy root workflow (4-stage dk_connectome)
 
-The **canonical TrackTBI pipeline** (Steps 1–5 + optional 4.5 disconnectome + inpainting) lives under:
+The **canonical DKT Connectome Pipeline** (Steps 1–5 + optional 4.5 disconnectome + inpainting) lives under:
 
 **[`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow)**
 
@@ -18,8 +18,8 @@ Use:
 |------|---------|
 | [`Snakefile`](https://github.com/phindagijimana/dkt_connectome/blob/main/Snakefile) | Original **4-stage** plugin workflow (qsiprep → recon → qsirecon → connectome) |
 | [`plugins/`](https://github.com/phindagijimana/dkt_connectome/tree/main/plugins) | Stage plugins for the root Snakefile |
-| [`.dockstore.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.dockstore.yml) | Registers the **root** 4-stage workflow |
-| [`workflowhub.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/workflowhub.yml) | WorkflowHub metadata for root workflow |
+| [`.dockstore.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.dockstore.yml) | Registers both canonical and legacy workflows |
+| [`workflowhub.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/workflowhub.yml) | WorkflowHub metadata |
 
 This stack does **not** include:
 
@@ -32,13 +32,13 @@ This stack does **not** include:
 
 ## Migration
 
-For new TrackTBI / CIDUR work, use [index.md](index.md).
+For new cohort work, use [index.md](index.md).
 
-The root workflow remains for backward compatibility with published `dk-connectome` container demos and Dockstore entries. **Dockstore** now registers both workflows:
+The root workflow remains for backward compatibility with published `dk-connectome` container demos and Dockstore entries. **Dockstore** registers both workflows:
 
 | Dockstore name | Snakefile | Status |
 |----------------|-----------|--------|
-| `tracktbi_connectome` | `dwi_pipeline/workflow/Snakefile` | **Primary** |
+| `dkt_connectome` | `dwi_pipeline/workflow/Snakefile` | **Primary** |
 | `dk_connectome` | root `Snakefile` | Legacy |
 
 See [`.dockstore.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.dockstore.yml) and [`workflowhub.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/workflowhub.yml).

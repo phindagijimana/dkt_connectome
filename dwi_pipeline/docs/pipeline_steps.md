@@ -1,6 +1,6 @@
 # Pipeline steps
 
-What happens inside each step of the TrackTBI Connectome pipeline. For outputs, see [Outputs](outputs.md). For methods, see [Disconnectome](disconnectome.md) and [Lesion segmentation](lesion_segmentation.md).
+What happens inside each step of the DKT Connectome pipeline. For outputs, see [Outputs](outputs.md). For methods, see [Disconnectome](disconnectome.md) and [Lesion segmentation](lesion_segmentation.md).
 
 ---
 

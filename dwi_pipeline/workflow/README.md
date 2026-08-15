@@ -82,13 +82,13 @@ NeuroInsight model this was modeled after.
 
 ### Slurm array (recommended)
 
-`submit.sh` now defaults to the Snakemake engine. Example for a TrackTBI
+`submit.sh` now defaults to the Snakemake engine. Example for a multi-site cohort
 subject with lesion inpainting:
 
 ```bash
 cd dwi_pipeline
 RESULTS_ROOT=/path/to/output \
-BIDS_DIR=/path/to/TrackTBI \
+BIDS_DIR=/path/to/BIDS \
 SUBJECT_LIST_USE_EXISTING=1 \
 SUBJECT_LIST_FILE=<(echo SUBJECT001) \
 bash submit.sh --syn \

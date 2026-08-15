@@ -1,6 +1,6 @@
 # BIDS Apps registry submission checklist
 
-Use this checklist when submitting **TrackTBI Connectome Pipeline v0.2.0** to the
+Use this checklist when submitting **DKT Connectome Pipeline v0.2.0** to the
 [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
 
 ## Repository requirements (done in this repo)
@@ -9,11 +9,11 @@ Use this checklist when submitting **TrackTBI Connectome Pipeline v0.2.0** to th
 |------|----------|
 | BIDS App entrypoint `./run` | `dwi_pipeline/run` |
 | Machine-readable metadata | `dwi_pipeline/app.json` |
-| Boutiques descriptor | `dwi_pipeline/tracktbi_connectome.json` |
+| Boutiques descriptor | `dwi_pipeline/dkt_connectome_bids_app.json` |
 | Human documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Minimal public test dataset | `dwi_pipeline/tests/fixtures/bids_minimal/` |
 | CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
-| Docker orchestrator image | `dwi_pipeline/Dockerfile` → `phindagijimana/tracktbi-connectome:0.2.0` |
+| Docker orchestrator image | `dwi_pipeline/Dockerfile` → `phindagijimana/dkt-connectome:0.2.0` |
 
 ## One-time maintainer steps
 
@@ -28,10 +28,10 @@ Use this checklist when submitting **TrackTBI Connectome Pipeline v0.2.0** to th
 
 ```bash
 # From repository root
-docker build -f dwi_pipeline/Dockerfile -t phindagijimana/tracktbi-connectome:0.2.0 .
-docker push phindagijimana/tracktbi-connectome:0.2.0
-docker tag phindagijimana/tracktbi-connectome:0.2.0 phindagijimana/tracktbi-connectome:latest
-docker push phindagijimana/tracktbi-connectome:latest
+docker build -f dwi_pipeline/Dockerfile -t phindagijimana/dkt-connectome:0.2.0 .
+docker push phindagijimana/dkt-connectome:0.2.0
+docker tag phindagijimana/dkt-connectome:0.2.0 phindagijimana/dkt-connectome:latest
+docker push phindagijimana/dkt-connectome:latest
 ```
 
 Set GitHub secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to enable automatic
@@ -55,13 +55,13 @@ git push origin v0.2.0
 
 ```
 To: bids.maintenance+apps@gmail.com
-Subject: BIDS App submission — TrackTBI Connectome Pipeline v0.2.0
+Subject: BIDS App submission — DKT Connectome Pipeline v0.2.0
 
-Name: TrackTBI Connectome Pipeline
+Name: DKT Connectome Pipeline
 Version: 0.2.0
 GitHub: https://github.com/phindagijimana/dkt_connectome
 Documentation: https://dkt-connectome.readthedocs.io/en/latest/
-Docker Hub: docker.io/phindagijimana/tracktbi-connectome:0.2.0
+Docker Hub: docker.io/phindagijimana/dkt-connectome:0.2.0
 Test dataset: dwi_pipeline/tests/fixtures/bids_minimal/
 ```
 
@@ -70,9 +70,9 @@ Test dataset: dwi_pipeline/tests/fixtures/bids_minimal/
 Fork https://github.com/bids-apps/bids-apps.github.io and add to `_config.yml`:
 
 ```yaml
-- name: tracktbi_connectome
+- name: dkt_connectome
   url: https://github.com/phindagijimana/dkt_connectome
-  dockerhub: phindagijimana/tracktbi-connectome
+  dockerhub: phindagijimana/dkt-connectome
   docs: https://dkt-connectome.readthedocs.io/en/latest/
   version: 0.2.0
 ```
@@ -97,14 +97,14 @@ pytest tests/test_bids_app.py -q
 ## Docker smoke test (local)
 
 ```bash
-docker build -f dwi_pipeline/Dockerfile -t tracktbi-connectome:local .
-docker run --rm tracktbi-connectome:local --version
+docker build -f dwi_pipeline/Dockerfile -t dkt-connectome:local .
+docker run --rm dkt-connectome:local --version
 docker run --rm \
   -v "$PWD/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
   -v /tmp/out:/out \
   -e BIDS_APP_CI=1 \
   -e FS_LICENSE=/tmp/license.txt \
-  tracktbi-connectome:local \
+  dkt-connectome:local \
   /data/bids /out participant \
   --participant-label EXAMPLE --session-filter ses-1 \
   --dry-run --no-sdc --no-dwi-filter

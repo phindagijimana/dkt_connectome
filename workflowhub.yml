@@ -1,15 +1,16 @@
 # =============================================================================
-# WorkflowHub registration metadata for tracktbi_connectome
+# WorkflowHub registration metadata for dkt_connectome
 # =============================================================================
 # Canonical pipeline: dwi_pipeline/run (BIDS App) + dwi_pipeline/workflow/
 # Legacy 4-stage root workflow: Snakefile (deprecated)
 # =============================================================================
 
-name: tracktbi_connectome
+name: dkt_connectome
 description: |
-  Canonical TrackTBI / CIDUR BIDS App pipeline (v0.2+). QSIPrep → optional
+  Lesion-aware structural connectomics BIDS App (v0.2+). QSIPrep → optional
   neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS → DKT
   connectome → optional disconnectome → node-strength / ENIGMA report.
+  Validated on multi-site TrackTBI data (~14 centers) and URMC clinical MRI cohorts.
 
 version: "0.2.0"
 license: Apache-2.0

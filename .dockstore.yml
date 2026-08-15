@@ -18,7 +18,7 @@ version: 1.2
 
 workflows:
   - subclass: SMK
-    name: tracktbi_connectome
+    name: dkt_connectome
     publish: true
     primaryDescriptorPath: /dwi_pipeline/workflow/Snakefile
     readMePath: /dwi_pipeline/README.md
@@ -27,7 +27,7 @@ workflows:
         orcid: ""
     testParameterFiles:
       - /dwi_pipeline/workflow/config/config.yaml
-    topic: "TrackTBI BIDS App — QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome → node strength"
+    topic: "DKT Connectome BIDS App — QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome → node strength"
     categories:
       - Connectomics
       - Diffusion MRI
@@ -43,7 +43,7 @@ workflows:
         orcid: ""                              # add ORCID iD when available
     testParameterFiles:
       - /config/config.yaml
-    topic: "LEGACY: BIDS DWI -> QSIPrep -> QSIRecon -> Desikan-Killiany connectome (use tracktbi_connectome)"
+    topic: "LEGACY: BIDS DWI -> QSIPrep -> QSIRecon -> Desikan-Killiany connectome (use dkt_connectome)"
     categories:
       - Connectomics
       - Diffusion MRI

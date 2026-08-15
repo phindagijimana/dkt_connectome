@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the **TrackTBI Connectome Pipeline** (`dwi_pipeline/`) are documented here.
+All notable changes to the **DKT Connectome Pipeline** (`dwi_pipeline/`) are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning aligns with [`app.json`](app.json) `PipelineVersion`.
 
@@ -21,7 +21,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Unified subject QC dashboard** (`qc/sub-<ID>/subject_qc.html`, cohort index `cohort_qc.html`)
 - **BIDS Derivatives export** (`derivatives/` symlink mirror, `export_bids_derivatives.py`)
 - **ReadTheDocs** config (`.readthedocs.yaml`, `mkdocs.yml`)
-- **Dockstore / WorkflowHub** repointed to `tracktbi_connectome` (legacy root workflow retained)
+- **Dockstore / WorkflowHub** repointed to `dkt_connectome` (legacy root workflow retained)
 - **batch_postprocess.sh** for cohort NAS post-processing (QC + BIDS export)
 - **Expanded CI** (MkDocs build, BIDS export smoke test, Snakemake QC target dry-run)
 - Optional local-only `Dockerfile` (orchestrator — **not** required on HPC; not published)

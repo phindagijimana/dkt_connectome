@@ -1,7 +1,7 @@
 # =============================================================================
 # dk_connectome — LEGACY Snakemake entry point (4-stage root workflow)
 # =============================================================================
-# DEPRECATED for new TrackTBI / CIDUR work. Use the canonical pipeline:
+# DEPRECATED for new work. Use the canonical pipeline:
 #   dwi_pipeline/run              (BIDS App)
 #   dwi_pipeline/workflow/        (Snakemake)
 # See dwi_pipeline/docs/legacy_workflow.md

@@ -59,7 +59,7 @@ cd dwi_pipeline
   --participant-label SUBJ01 --session-filter ses-1 --n-cpus 8
 ```
 
-**HPC / Slurm** (TrackTBI production — Apptainer, no Docker orchestrator):
+**HPC / Slurm** (URMC production — Apptainer, no Docker orchestrator):
 
 ```bash
 export RESULTS_ROOT=/path/to/results

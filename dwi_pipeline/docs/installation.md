@@ -96,7 +96,7 @@ bash dwi_pipeline/containers/connectome/build_connectome.sh
 
 Details: [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
 
-> **HPC (recommended):** use [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) with Apptainer `.sif` images — no Docker orchestrator required. An optional [`Dockerfile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Dockerfile) exists for cloud/docker-only experiments; it is not published and not part of the TrackTBI production path.
+> **HPC (recommended):** use [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) with Apptainer `.sif` images — no Docker orchestrator required. An optional [`Dockerfile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Dockerfile) exists for cloud/docker-only experiments; it is not published and not part of the URMC HPC production path.
 
 ---
 
