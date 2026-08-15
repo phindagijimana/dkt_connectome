@@ -3,12 +3,12 @@ message: >-
   If you use this software in published work, please cite the upstream tools
   that do the heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs);
   this pipeline only orchestrates them. See README.md for citation guidance.
-title: "dk_connectome — A Snakemake workflow for Desikan-Killiany structural connectomes"
+title: "DKT Connectome Pipeline — lesion-aware structural connectomics BIDS App"
 authors:
   - family-names: Ndagijimana
     given-names: Phind
 type: software
-repository-code: "https://github.com/phindagijimana/dk_connectome"
+repository-code: "https://github.com/phindagijimana/dkt_connectome"
 license: Apache-2.0
 keywords:
   - diffusion-mri
