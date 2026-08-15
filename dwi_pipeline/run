@@ -24,6 +24,8 @@ Options (BIDS App):
   --session-filter SES              Limit to one BIDS session, e.g. ses-1 or 1
   --n-cpus N                        Thread budget (default: 8)
   --mem-mb N                        Informational memory hint (logged only)
+  --random-seed N                   Seed for pseudorandom number generators (default: 0)
+  --stop-on-first-crash             Stop after the first subject failure (default: off)
   --skip-bids-validation            Accepted (default: validation off)
 
 Validation / provenance:
@@ -100,6 +102,8 @@ PARTICIPANTS=()
 SESSIONS=()
 N_CPUS="${NTHREADS:-8}"
 MEM_MB=""
+RANDOM_SEED="${RANDOM_SEED:-0}"
+STOP_ON_FIRST_CRASH=0
 MODE="all"
 DRY_RUN=0
 BIDS_VALIDATE=0
@@ -128,6 +132,8 @@ while [[ $# -gt 0 ]]; do
       ;;
     --n-cpus) N_CPUS="$2"; shift 2 ;;
     --mem-mb) MEM_MB="$2"; shift 2 ;;
+    --random-seed) RANDOM_SEED="$2"; shift 2 ;;
+    --stop-on-first-crash) STOP_ON_FIRST_CRASH=1 ;;
     --skip-bids-validation) shift ;;
     --bids-validation) BIDS_VALIDATE=1 ;;
     --ignore-warnings) BIDS_IGNORE_WARNINGS=1 ;;
@@ -190,7 +196,10 @@ fi
 export BIDS_DIR="${BIDS_DIR}"
 export RESULTS_ROOT="${OUTPUT_DIR}"
 export NTHREADS="${N_CPUS}"
+export RANDOM_SEED="${RANDOM_SEED}"
+export STOP_ON_FIRST_CRASH="${STOP_ON_FIRST_CRASH}"
 [[ -n "${MEM_MB}" ]] && echo "[run] mem-mb hint: ${MEM_MB} (informational)"
+[[ -n "${RANDOM_SEED}" ]] && echo "[run] random-seed: ${RANDOM_SEED}"
 
 PREFLIGHT=(bash "${SCRIPT_DIR}/workflow/preflight.sh" --mode "${MODE}" --quick)
 ((BIDS_VALIDATE)) && PREFLIGHT+=(--bids-validation)
@@ -209,8 +218,16 @@ for sub in "${PARTICIPANTS[@]}"; do
   echo "[run] subject=sub-${sub} mode=${MODE} session=${SESSIONS[0]:-auto}"
   if ! bash "${RUN_SUBJECT}" "${MODE}" "${sub}" "${SESSION_ARG[@]}" "${EXTRA[@]}" "${DRY_FLAG[@]}"; then
     exit_code=1
+    if [[ "${STOP_ON_FIRST_CRASH}" == "1" ]]; then
+      echo "[run] stop-on-first-crash: aborting after sub-${sub}" >&2
+      break
+    fi
   fi
 done
+
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+  exit "${exit_code}"
+fi
 
 python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
   --results-root "${OUTPUT_DIR}" \

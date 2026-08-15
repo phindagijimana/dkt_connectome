@@ -11,6 +11,8 @@
   "Source": "https://github.com/phindagijimana/dkt_connectome",
   "Documentation": "https://dkt-connectome.readthedocs.io/en/latest/",
   "HowToAcknowledge": "Please cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon, FreeSurfer/FastSurfer, MRtrix3, and Griffis et al. 2019 (Cell Reports) for disconnectome methods. See dwi_pipeline/docs/citation.md.",
-  "ContainerType": "apptainer",
-  "CommandLineArguments": "./run <bids_dir> <output_dir> <analysis_level> --participant-label <label> [--session-filter <ses>] [--n-cpus <n>] [--mode all|qsiprep|inpaint|recon|qsirecon|connectome|disconnectome|nodestrength] [--fastsurfer] [--no-inpaint] [--no-disconnectome] [--connectome-weighting count|sift2]"
+  "ContainerType": "docker-or-apptainer-orchestrator",
+  "DockerHub": "phindagijimana/tracktbi-connectome",
+  "TestDataset": "dwi_pipeline/tests/fixtures/bids_minimal",
+  "CommandLineArguments": "./run <bids_dir> <output_dir> <analysis_level> --participant-label <label> [--session-filter <ses>] [--n-cpus <n>] [--random-seed <n>] [--stop-on-first-crash] [--mode all|qsiprep|inpaint|recon|qsirecon|connectome|disconnectome|nodestrength] [--fastsurfer] [--no-inpaint] [--no-disconnectome] [--connectome-weighting count|sift2]"
 }

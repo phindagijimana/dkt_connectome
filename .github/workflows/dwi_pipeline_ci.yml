@@ -11,6 +11,7 @@ on:
     paths:
       - 'dwi_pipeline/**'
       - '.github/workflows/dwi_pipeline_ci.yml'
+      - '.github/workflows/docker_publish.yml'
       - '.readthedocs.yaml'
   workflow_dispatch: {}
 
@@ -45,7 +46,27 @@ jobs:
         working-directory: dwi_pipeline
         run: |
           ./run --help | grep -q export-bids-derivatives
+          ./run --help | grep -q random-seed
+          ./run --help | grep -q stop-on-first-crash
           test "$(./run --version)" = "0.2.0"
+
+      - name: BIDS App smoke test (minimal fixture, dry-run)
+        working-directory: dwi_pipeline
+        env:
+          BIDS_APP_CI: "1"
+          FS_LICENSE: /tmp/license.txt
+          BIDS_DIR: ${{ github.workspace }}/dwi_pipeline/tests/fixtures/bids_minimal
+          RESULTS_ROOT: /tmp/bids_app_out
+        run: |
+          touch /tmp/license.txt
+          mkdir -p /tmp/bids_app_out
+          for c in qsiprep qsirecon freesurfer connectome lit nodestrength; do
+            touch "/tmp/${c}.sif"
+            export "CONTAINER_${c^^}=/tmp/${c}.sif"
+          done
+          bash workflow/preflight.sh --mode qsiprep --subject EXAMPLE --quick
+          bash workflow/run_subject.sh qsiprep EXAMPLE \
+            --session-filter ses-1 --dry-run --no-sdc --no-dwi-filter
 
       - name: BIDS Derivatives export smoke test
         run: |

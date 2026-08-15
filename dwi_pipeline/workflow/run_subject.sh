@@ -98,6 +98,7 @@ _apply_env disconnectome.weighting    "${DISCONNECTOME_WEIGHTING:-${CONNECTOME_W
 _apply_env nodestrength.enabled       "$([[ "${RUN_NODESTRENGTH:-1}" == "1" ]] && echo true || echo false)"
 _apply_env nodestrength.strength_only "$([[ "${NODESTRENGTH_STRENGTH_ONLY:-0}" == "1" ]] && echo true || echo false)"
 _apply_env nodestrength.no_report     "$([[ "${NODESTRENGTH_NO_REPORT:-0}" == "1" ]] && echo true || echo false)"
+_apply_env random_seed                 "${RANDOM_SEED:-0}"
 _apply_env qsirecon.spec              "${QSIRECON_SPEC:-}"
 if [[ -n "${QSIRECON_ATLASES:-}" ]]; then
   _apply_env qsirecon.atlases         "${QSIRECON_ATLASES}"

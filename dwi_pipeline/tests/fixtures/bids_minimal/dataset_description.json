@@ -1,0 +1,9 @@
+{
+  "Name": "TrackTBI Connectome minimal example",
+  "BIDSVersion": "1.8.0",
+  "DatasetType": "raw",
+  "Authors": [
+    "TrackTBI / CIDUR"
+  ],
+  "License": "CC0"
+}
