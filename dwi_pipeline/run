@@ -21,8 +21,9 @@ Positional:
 
 Options (BIDS App):
   --participant-label ID [ID ...]   One or more subjects (with or without sub- prefix)
-  --session-filter SES              Limit to one BIDS session, e.g. ses-1 or 1
-  --n-cpus N                        Thread budget (default: 8)
+  --session-filter SES              Limit to one BIDS session (alias: --session-id)
+  --n-cpus N                        Thread budget (alias: --nprocs; default: 8)
+  --omp-nthreads N                  OpenMP threads (default: same as --n-cpus)
   --mem-mb N                        Informational memory hint (logged only)
   --random-seed N                   Seed for pseudorandom number generators (default: 0)
   --stop-on-first-crash             Stop after the first subject failure (default: off)
@@ -42,7 +43,7 @@ Preprocessing / SDC:
   --dwi-shell N         Filter to b=N shell (default 1000)
   --dwi-select PATH     Explicit dwi-select JSON
   --no-dwi-filter       Process all DWI series
-  --bids-filter PATH    Static QSIPrep BIDS filter JSON
+  --bids-filter PATH    Static QSIPrep BIDS filter JSON (alias: --bids-filter-file)
 
 Recon / connectome:
   --fastsurfer          FastSurfer for Step 2
@@ -101,6 +102,7 @@ shift 3
 PARTICIPANTS=()
 SESSIONS=()
 N_CPUS="${NTHREADS:-8}"
+OMP_THREADS="${OMP_NTHREADS:-}"
 MEM_MB=""
 RANDOM_SEED="${RANDOM_SEED:-0}"
 STOP_ON_FIRST_CRASH=0
@@ -122,7 +124,7 @@ while [[ $# -gt 0 ]]; do
       done
       continue
       ;;
-    --session-filter|--recon-session)
+    --session-filter|--session-id|--recon-session)
       shift
       while [[ $# -gt 0 && "$1" != --* ]]; do
         SESSIONS+=("${1#ses-}")
@@ -130,8 +132,9 @@ while [[ $# -gt 0 ]]; do
       done
       continue
       ;;
-    --n-cpus) N_CPUS="$2"; shift 2 ;;
-    --mem-mb) MEM_MB="$2"; shift 2 ;;
+    --n-cpus|--nprocs) N_CPUS="$2"; shift 2 ;;
+    --omp-nthreads) OMP_THREADS="$2"; shift 2 ;;
+    --mem-mb|--mem) MEM_MB="$2"; shift 2 ;;
     --random-seed) RANDOM_SEED="$2"; shift 2 ;;
     --stop-on-first-crash) STOP_ON_FIRST_CRASH=1 ;;
     --skip-bids-validation) shift ;;
@@ -142,7 +145,7 @@ while [[ $# -gt 0 ]]; do
     --disconnectome-weighting) EXTRA+=(--disconnectome-weighting "$2"); shift 2 ;;
     --dwi-shell) EXTRA+=(--dwi-shell "$2"); shift 2 ;;
     --dwi-select) EXTRA+=(--dwi-select "$2"); shift 2 ;;
-    --bids-filter) EXTRA+=(--bids-filter "$2"); shift 2 ;;
+    --bids-filter|--bids-filter-file) EXTRA+=(--bids-filter "$2"); shift 2 ;;
     --disconnectome-erode-voxels) EXTRA+=(--disconnectome-erode-voxels "$2"); shift 2 ;;
     --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
       EXTRA+=("$1") ;;
@@ -189,13 +192,14 @@ if [[ ${#PARTICIPANTS[@]} -eq 0 ]]; then
 fi
 
 if [[ ${#SESSIONS[@]} -gt 1 ]]; then
-  echo "ERROR: only one --session-filter per invocation" >&2
+  echo "ERROR: only one --session-filter / --session-id per invocation" >&2
   exit 2
 fi
 
 export BIDS_DIR="${BIDS_DIR}"
 export RESULTS_ROOT="${OUTPUT_DIR}"
 export NTHREADS="${N_CPUS}"
+export OMP_NTHREADS="${OMP_THREADS:-${N_CPUS}}"
 export RANDOM_SEED="${RANDOM_SEED}"
 export STOP_ON_FIRST_CRASH="${STOP_ON_FIRST_CRASH}"
 [[ -n "${MEM_MB}" ]] && echo "[run] mem-mb hint: ${MEM_MB} (informational)"

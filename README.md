@@ -4,11 +4,11 @@
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.0-brightgreen.svg)](https://snakemake.readthedocs.io)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![BIDS App](https://img.shields.io/badge/BIDS--App-compatible-blue.svg)](https://bids-apps.neuroimaging.io/)
-[![Documentation](https://img.shields.io/badge/docs-dwi__pipeline-blue)](dwi_pipeline/docs/index.md)
+[![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
+[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 [![Container image](https://img.shields.io/badge/ghcr.io-dk--connectome-blue?logo=github)](https://github.com/phindagijimana/dk_connectome/pkgs/container/dk-connectome)
 
-**📖 TrackTBI pipeline (canonical):** [dwi_pipeline/docs/index.md](dwi_pipeline/docs/index.md) — Steps 1–5 + disconnectome, [BIDS App `./run`](dwi_pipeline/docs/bids_app.md).  
+**📖 TrackTBI pipeline (canonical):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) — Steps 1–5 + disconnectome, BIDS App [`./run`](dwi_pipeline/run).
 **Legacy 4-stage workflow:** [dwi_pipeline/docs/legacy_workflow.md](dwi_pipeline/docs/legacy_workflow.md).
 
 The workflow is an **orchestration of four containers**, one per stage:
