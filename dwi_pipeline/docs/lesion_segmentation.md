@@ -34,7 +34,7 @@ Format details: [Inpainting/bids_mask_format.md](https://github.com/phindagijima
 | **1.5 — Inpaint** | Auto when mask found | neuroLIT fills lesion on T1w before recon |
 | **4.5 — Disconnectome** | Manual post-hoc | Binary union excision + disconnection matrix |
 
-Subjects **without** a mask skip Steps 1.5 and 4.5 silently. See [Inpainting/no_mask_behavior.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/no_mask_behavior.md).
+Subjects **without** a mask skip Steps 1.5 and 4.5. Step 4.5 additionally requires **`--disconnection`**. See [Inpainting/no_mask_behavior.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/no_mask_behavior.md).
 
 ---
 
@@ -54,6 +54,8 @@ QC: `scripts/check_inpainting.py` — see [Inpainting/pipeline_usage.md](https:/
 ---
 
 ## Step 4.5 (disconnectome)
+
+**Opt-in:** pass `--disconnection` on a full pipeline run, or use `--mode disconnectome` / `subject.sh disconnectome`.
 
 **Primary lesion definition:** binary union of core + oedema, **no erosion**.
 

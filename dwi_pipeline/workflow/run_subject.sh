@@ -91,7 +91,7 @@ _apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODE
 _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
-_apply_env disconnectome.enabled      "$([[ "${RUN_DISCONNECTOME:-1}" == "1" ]] && echo true || echo false)"
+_apply_env disconnectome.enabled      "$([[ "${RUN_DISCONNECTOME:-0}" == "1" ]] && echo true || echo false)"
 _apply_env disconnectome.core_only    "$([[ "${DISCONNECTOME_CORE_ONLY:-0}" == "1" ]] && echo true || echo false)"
 _apply_env disconnectome.lesion_erode_voxels "${DISCONNECTOME_ERODE_VOXELS:-0}"
 _apply_env disconnectome.weighting    "${DISCONNECTOME_WEIGHTING:-${CONNECTOME_WEIGHTING:-count}}"
@@ -138,7 +138,7 @@ while [[ $# -gt 0 ]]; do
     --session-filter)      OVERRIDES[recon.session]="${2:?Need session after --session-filter}"; shift ;;
     --connectome-weighting) OVERRIDES[connectome.weighting]="${2:?Need count or sift2}"; shift ;;
     --no-disconnectome)    OVERRIDES[disconnectome.enabled]=false ;;
-    --disconnectome)       OVERRIDES[disconnectome.enabled]=true ;;
+    --disconnection|--disconnectome) OVERRIDES[disconnectome.enabled]=true ;;
     --disconnectome-core-only) OVERRIDES[disconnectome.core_only]=true ;;
     --disconnectome-erode-voxels) OVERRIDES[disconnectome.lesion_erode_voxels]="${2:?Need N after --disconnectome-erode-voxels}"; shift ;;
     --disconnectome-weighting) OVERRIDES[disconnectome.weighting]="${2:?Need count or sift2}"; shift ;;

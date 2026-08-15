@@ -170,7 +170,7 @@
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
 #   RECON_SESSION=2WK         override session for recon T1w (default: from dwi-select filter)
 #   RUN_NODESTRENGTH=0|1   Step 5 in mode=all/connectome (default 1 when Step 4 ran)
-#   RUN_DISCONNECTOME=0|1  Step 4.5 in mode=all/connectome (default 1; auto-skips without lesion mask)
+#   RUN_DISCONNECTOME=0|1  Step 4.5 in mode=all/connectome (default 0; pass --disconnection)
 #   DISCONNECTOME_CORE_ONLY=0|1
 #   DISCONNECTOME_ERODE_VOXELS=N   default 0
 #   NODESTRENGTH_OUT       Step 5 output dir (default: RESULTS_ROOT/node_strength; cohort-shared,
@@ -313,7 +313,7 @@ while [[ $# -gt 0 ]]; do
     --no-disconnectome)
       RUN_DISCONNECTOME=0
       ;;
-    --disconnectome)
+    --disconnection|--disconnectome)
       RUN_DISCONNECTOME=1
       ;;
     --disconnectome-core-only)
@@ -336,7 +336,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --no-disconnectome, --disconnectome-core-only, --node-strength, --no-node-strength, --strength-only, --no-report)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --disconnection, --no-disconnectome, --disconnectome-core-only, --node-strength, --no-node-strength, --strength-only, --no-report)"
       exit 1
       ;;
   esac
@@ -440,8 +440,8 @@ RUN_CONNECTOME="${RUN_CONNECTOME:-1}"
 # on -- every subject with a connectome gets a report. --no-node-strength /
 # RUN_NODESTRENGTH=0 to skip.
 RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
-# Step 4.5 runs after Step 4 when a prepared lesion mask exists; silent no-op otherwise.
-RUN_DISCONNECTOME="${RUN_DISCONNECTOME:-1}"
+# Step 4.5 (disconnectome) is opt-in via --disconnection; still under validation.
+RUN_DISCONNECTOME="${RUN_DISCONNECTOME:-0}"
 DISCONNECTOME_CORE_ONLY="${DISCONNECTOME_CORE_ONLY:-0}"
 DISCONNECTOME_ERODE_VOXELS="${DISCONNECTOME_ERODE_VOXELS:-0}"
 DISCONNECTOME_WEIGHTING="${DISCONNECTOME_WEIGHTING:-${CONNECTOME_WEIGHTING:-count}}"
@@ -1595,8 +1595,12 @@ run_disconnectome() {
   _DISCONNECTOME_ATTEMPTED=1
 
   if [[ "${RUN_DISCONNECTOME}" != "1" ]]; then
-    echo "Disconnectome (Step 4.5): skipped (RUN_DISCONNECTOME=0 / --no-disconnectome)"
-    return 0
+    if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
+      RUN_DISCONNECTOME=1
+    else
+      echo "Disconnectome (Step 4.5): skipped (pass --disconnection to opt in; method still under validation)"
+      return 0
+    fi
   fi
 
   local target_ses mask_prepared dkt_matrix

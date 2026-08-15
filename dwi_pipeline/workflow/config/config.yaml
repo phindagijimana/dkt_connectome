@@ -94,9 +94,9 @@ connectome:
   resample_to_dwi: true
   weighting: count          # count | sift2 — must match Step 4.5 disconnectome weighting
 
-# --- Step 4.5: Disconnectome (auto when lesion mask + DKT connectome) ---
+# --- Step 4.5: Disconnectome (opt-in via --disconnection / disconnectome.enabled) ---
 disconnectome:
-  enabled: true
+  enabled: false
   weighting: null           # default: connectome.weighting
   core_only: false
   lesion_erode_voxels: 0

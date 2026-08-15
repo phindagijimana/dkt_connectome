@@ -12,7 +12,7 @@ DISCONNECTOME_DKT_CONNECTOME = f"{CONNECTOME_OUT}/sub-{{subject}}/dkt_connectome
 RUN_DISCONNECTOME = DWI_PIPELINE_DIR / "scripts" / "run_disconnectome.py"
 
 DISCONNECTOME_CFG = config.get("disconnectome", {})
-DISCONNECTOME_ENABLED = bool(DISCONNECTOME_CFG.get("enabled", True))
+DISCONNECTOME_ENABLED = bool(DISCONNECTOME_CFG.get("enabled", False))
 DISCONNECTOME_CORE_ONLY = bool(DISCONNECTOME_CFG.get("core_only", False))
 DISCONNECTOME_ERODE = int(DISCONNECTOME_CFG.get("lesion_erode_voxels", 0))
 DISCONNECTOME_SPARED = str(DISCONNECTOME_CFG.get("disconnection_spared", "C")).upper()

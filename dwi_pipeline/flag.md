@@ -14,6 +14,7 @@ CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow
 | `recon` | Step 2 only |
 | `qsirecon` | Step 3 only (needs QSIPrep) |
 | `connectome` | Step 4 only (needs QSIRecon + FS tree) |
+| `disconnectome` | Step 4.5 only (needs lesion mask + DKT connectome) |
 | `nodestrength` | Step 5 only (needs connectome CSV) |
 | `dk` | Alias for `connectome` (legacy) |
 
@@ -65,6 +66,19 @@ Both `--syn` and `--fmap-retry` pass QSIPrep `--use-syn-sdc error` (strict): if 
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--no-connectome` / `--no-dk` | `RUN_CONNECTOME=0` | Skip Step 4 (and Step 5 with it in `all` mode). `--no-dk` is the legacy name. |
+
+### Disconnectome (Step 4.5)
+
+| Flag | Env equivalent | What it does |
+|------|----------------|--------------|
+| `--disconnection` | `RUN_DISCONNECTOME=1` | Opt in to Step 4.5 disconnectome (default **off**; method under validation). Requires lesion mask + DKT connectome. |
+| `--disconnectome` | `RUN_DISCONNECTOME=1` | Alias for `--disconnection`. |
+| `--no-disconnectome` | `RUN_DISCONNECTOME=0` | Explicitly skip Step 4.5. |
+| `--disconnectome-core-only` | `DISCONNECTOME_CORE_ONLY=1` | Sensitivity: core lesion label only. |
+| `--disconnectome-erode-voxels N` | `DISCONNECTOME_ERODE_VOXELS=N` | Erode lesion mask by N voxels before excision. |
+| `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Edge weighting for Step 4.5 (must match Step 4). |
+
+Standalone: `subject.sh disconnectome <ID>` or `--mode disconnectome` (does not require `--disconnection`).
 
 ### Node strength (Step 5)
 

@@ -75,14 +75,16 @@ cd dwi_pipeline
 | `--fastsurfer` | off | FastSurfer for Step 2 |
 | `--no-inpaint` | off | Skip Step 1.5 even if lesion mask exists |
 | `--no-recon` | off | Skip Step 2 |
-| `--no-disconnectome` | off | Skip Step 4.5 |
+| `--disconnection` | off | Opt in to Step 4.5 disconnectome |
+| `--no-disconnectome` | — | Explicitly skip Step 4.5 |
+| `--disconnectome` | — | Alias for `--disconnection` |
 | `--disconnectome-core-only` | off | Sensitivity: core label only |
 | `--disconnectome-erode-voxels N` | 0 | Sensitivity: erode lesion N voxels |
 | `--connectome-weighting` | `count` | Step 4 + 4.5 edge weights |
 | `--dry-run` | off | Snakemake plan only |
 
-Step 4.5 disconnectome runs **automatically** after Step 4 when a prepared lesion
-mask exists (DKT connectome). Skip with `--no-disconnectome`.
+Step 4.5 disconnectome runs **only when** you pass **`--disconnection`** (or `--mode disconnectome`)
+and a prepared lesion mask + DKT connectome exist. Off by default while the method is validated.
 
 Modes: `all`, `qsiprep`, `inpaint`, `recon`, `qsirecon`, `connectome`, **`disconnectome`**, `nodestrength`.
 

@@ -100,9 +100,12 @@ Full layout: [Outputs](outputs.md).
 
 ## 5. Optional: disconnectome (Step 4.5)
 
-Runs **automatically** after Step 4 when a prepared lesion mask exists. Standalone:
+Step 4.5 is **off by default** (method still under validation). Pass **`--disconnection`** on a full run, or use standalone mode:
 
 ```bash
+./run /path/to/BIDS /path/to/derivatives participant \
+  --participant-label 009 --session-filter ses-1 --disconnection
+
 bash dwi_pipeline/subject.sh disconnectome 009
 # or
 ./run /path/to/derivatives /path/to/derivatives participant --participant-label 009 --mode disconnectome

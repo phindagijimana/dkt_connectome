@@ -14,5 +14,5 @@
   "ContainerType": "docker-or-apptainer-orchestrator",
   "DockerHub": "phindagijimana/dkt-connectome",
   "TestDataset": "dwi_pipeline/tests/fixtures/bids_minimal",
-  "CommandLineArguments": "./run <bids_dir> <output_dir> <analysis_level> --participant-label <label> [--session-filter <ses>] [--n-cpus <n>] [--random-seed <n>] [--stop-on-first-crash] [--mode all|qsiprep|inpaint|recon|qsirecon|connectome|disconnectome|nodestrength] [--fastsurfer] [--no-inpaint] [--no-disconnectome] [--connectome-weighting count|sift2]"
+  "CommandLineArguments": "./run <bids_dir> <output_dir> <analysis_level> --participant-label <label> [--session-filter <ses>] [--n-cpus <n>] [--random-seed <n>] [--stop-on-first-crash] [--mode all|qsiprep|inpaint|recon|qsirecon|connectome|disconnectome|nodestrength] [--fastsurfer] [--no-inpaint] [--disconnection] [--connectome-weighting count|sift2]"
 }

@@ -13,6 +13,7 @@ on:
     paths:
       - 'dwi_pipeline/docs/**'
       - 'dwi_pipeline/mkdocs.yml'
+      - 'dwi_pipeline/overrides/**'
       - '.readthedocs.yaml'
       - '.github/workflows/readthedocs.yml'
   workflow_dispatch: {}
@@ -47,3 +48,5 @@ jobs:
           pip install mkdocs
           mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
           grep -q 'DKT Connectome Pipeline' dwi_pipeline/site/index.html
+          ! grep -qi 'TrackTBI Connectome Pipeline' dwi_pipeline/site/index.html
+          grep -q 'img/favicon.ico' dwi_pipeline/site/index.html

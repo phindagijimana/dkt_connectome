@@ -67,7 +67,7 @@ workflow/
     recon.smk                  # Step 2  (plugin: freesurfer_7.4.1.sif or fastsurfer_latest.sif)
     qsirecon.smk                # Step 3  (plugin: qsirecon.sif)
     connectome.smk                # Step 4  (plugin: dkt_connectome.sif)
-    disconnectome.smk             # Step 4.5 (auto when lesion mask + DKT connectome)
+    disconnectome.smk             # Step 4.5 (opt-in via --disconnection)
     nodestrength.smk               # Step 5  (plugin: nodestrength_0.1.0.sif)
 ```
 

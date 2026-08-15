@@ -98,7 +98,9 @@ See [Preparing your data](preparing_data.md) for fieldmaps, Siemens sidecars, an
 | `--no-connectome` / `--no-dk` | Skip Steps 4 and 5 |
 | `--no-node-strength` | Skip Step 5 only |
 | `--no-inpaint` / `--inpaint` | Force skip / enable Step 1.5 |
-| `--no-disconnectome` | Skip Step 4.5 |
+| `--disconnection` | Opt in to Step 4.5 disconnectome (default: off) |
+| `--no-disconnectome` | Explicitly skip Step 4.5 |
+| `--disconnectome` | Alias for `--disconnection` |
 
 What each step does: [Pipeline steps](pipeline_steps.md).
 

@@ -37,6 +37,13 @@ The BIDS Apps registry submission should use this URL as `Documentation` in `app
 
 The product name is **DKT Connectome Pipeline** (`dwi_pipeline/mkdocs.yml` → `site_name`). The GitHub source is already correct; the hosted site is **stale** because Read the Docs has not rebuilt since the rebrand (no GitHub webhook is configured on the repo).
 
+Also check the RTD **project display name** (separate from `site_name`):
+
+1. [Admin → Settings → Project name](https://app.readthedocs.org/dashboard/dkt-connectome/edit/) → set to **DKT Connectome Pipeline** (not TrackTBI Connectome Pipeline).
+2. Save and rebuild **latest**.
+
+After a successful rebuild, the browser tab title, sidebar header, and search box area should all read **DKT Connectome Pipeline**.
+
 ### Fix now (manual, ~1 minute)
 
 1. Open [RTD → dkt-connectome → Versions](https://app.readthedocs.org/projects/dkt-connectome/versions/).
@@ -44,7 +51,24 @@ The product name is **DKT Connectome Pipeline** (`dwi_pipeline/mkdocs.yml` → `
 3. On the version row, use the menu (⋮) → **Build version** if available, or go to [Settings → Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) → **Add integration** → **GitHub incoming webhook** / connect repository.
 4. Alternatively: [Builds](https://app.readthedocs.org/projects/dkt-connectome/builds/) → trigger a new build for `latest`.
 
-Confirm the new build uses commit **`42c10ec`** or later.
+Confirm the new build uses commit **`9c52d48`** or later (must include `site_name: DKT Connectome Pipeline` in `dwi_pipeline/mkdocs.yml`).
+
+### Browser favicon (QSIPrep-style)
+
+QSIPrep uses the default **sphinx-rtd-theme** favicon (Read the Docs book icon). MkDocs `readthedocs` theme ships the same icon at build time (`img/favicon.ico` in the built site).
+
+If the tab icon looks wrong:
+
+1. Rebuild **latest** on RTD (stale builds cache old assets).
+2. In [RTD Admin → Settings](https://app.readthedocs.org/dashboard/dkt-connectome/edit/), clear any custom **Project image / favicon** override if set.
+3. Hard-refresh the browser (Ctrl+Shift+R).
+
+Optional: copy the theme favicon into the repo for a pinned asset:
+
+```bash
+python3 dwi_pipeline/scripts/fetch_docs_favicon.py
+# then set site_favicon: img/favicon.ico in mkdocs.yml
+```
 
 ### Fix permanently (automatic rebuilds on push)
 

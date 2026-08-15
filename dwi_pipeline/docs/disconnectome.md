@@ -9,7 +9,8 @@ Part of the [DKT Connectome Pipeline documentation](index.md).
 - **A/B/C** all built by default; skip with `--skip-option-a` etc.
 - **D default spared = C** (`--disconnection-spared C`)
 - **Weighting default = count** (matches Step 4); optional `--connectome-weighting sift2`
-- **Auto-run** after Step 4 when `lesion_mask_prepared.nii.gz` exists (Snakemake / `./run` / `subject.sh`)
+- **Opt-in** via `--disconnection` on `./run` / `subject.sh all` (off by default; method under validation)
+- Standalone: `--mode disconnectome` or `subject.sh disconnectome` (requires `lesion_mask_prepared.nii.gz` from Step 1.5)
 - **SIFT1 is not used** in this pipeline
 
 ## Lesion definition (primary)

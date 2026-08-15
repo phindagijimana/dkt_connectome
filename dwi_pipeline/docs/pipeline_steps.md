@@ -12,7 +12,7 @@ Step 1.5  Inpaint           neuroLIT lesion fill (auto when BIDS lesion mask)
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
 Step 4    Connectome        DKT 78-node matrix (default: streamline counts)
-Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (auto when lesion mask)
+Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 ```
 
@@ -112,7 +112,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 ## Step 4.5 — Disconnectome (optional)
 
-**Trigger:** prepared lesion mask + DKT connectome from Steps 1.5 and 4
+**Trigger:** `--disconnection` flag + prepared lesion mask + DKT connectome from Steps 1.5 and 4
 
 **Processing:**
 
@@ -122,7 +122,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 4. Option C: both A and B
 5. Disconnection matrix D = 1 − spared/primary
 
-**Skip:** `--no-disconnectome`, or no lesion mask
+**Skip:** omit `--disconnection` (default), `--no-disconnectome`, or no lesion mask
 
 Full method: [Disconnectome](disconnectome.md).
 
