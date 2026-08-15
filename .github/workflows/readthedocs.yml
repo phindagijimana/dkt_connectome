@@ -1,0 +1,49 @@
+name: Read the Docs
+
+# RTD is not receiving GitHub webhooks for this repo (0 hooks configured).
+# This workflow triggers a Read the Docs rebuild on every docs-related push.
+#
+# Setup (one-time):
+#   1. https://readthedocs.org/accounts/tokens/ → create token
+#   2. GitHub repo → Settings → Secrets → READTHEDOCS_TOKEN
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dwi_pipeline/docs/**'
+      - 'dwi_pipeline/mkdocs.yml'
+      - '.readthedocs.yaml'
+      - '.github/workflows/readthedocs.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-rtd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Read the Docs build (latest)
+        env:
+          READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
+        run: |
+          if [[ -z "${READTHEDOCS_TOKEN}" ]]; then
+            echo "::warning::READTHEDOCS_TOKEN not set — skipping RTD API trigger."
+            echo "Add a token from https://readthedocs.org/accounts/tokens/ to repo secrets."
+            exit 0
+          fi
+          for version in latest stable; do
+            echo "Triggering RTD build for version: ${version}"
+            curl -fsS -X POST \
+              -H "Authorization: token ${READTHEDOCS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              "https://app.readthedocs.org/api/v3/projects/dkt-connectome/versions/${version}/builds/" \
+              -d '{}'
+          done
+
+      - name: Verify mkdocs title (local sanity check)
+        run: |
+          pip install mkdocs
+          mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
+          grep -q 'DKT Connectome Pipeline' dwi_pipeline/site/index.html
