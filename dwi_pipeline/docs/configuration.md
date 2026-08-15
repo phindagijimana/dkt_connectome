@@ -107,7 +107,7 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 
 | Key | CLI | Default |
 |-----|-----|---------|
-| `enabled` | `--no-disconnectome` | true (when lesion mask + DKT) |
+| `enabled` | `--disconnection` / `--disconnectome` | false (opt-in) |
 | `lesion_erode_voxels` | `--disconnectome-erode-voxels N` | 0 |
 | `core_only` | `--disconnectome-core-only` | false |
 | `disconnection_spared` | — | `C` |

@@ -20,7 +20,7 @@ The DKT Connectome Pipeline is a **BIDS App orchestrator** for lesion-aware stru
 4. **Cortical reconstruction** — FreeSurfer `recon-all` or FastSurfer → DKT parcellation for connectome nodes.
 5. **QSIRecon tractography** — single-shell SS3T-CSD with ACT-HSVS and SIFT2 weights (`mrtrix_singleshell_ss3t_ACT-hsvs`).
 6. **DKT structural connectome** — 78-node matrix (default: streamline counts).
-7. **Optional disconnectome (Step 4.5)** — parcellation excision, streamline exclusion, and disconnection matrix when a lesion mask exists.
+7. **Optional disconnectome (Step 4.5)** — parcellation excision, streamline exclusion, and disconnection matrix when `--disconnection` is passed and a lesion mask exists.
 8. **Node-strength report** — graph metrics and ENIGMA-style cortical/subcortical panel.
 
 Validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI** cohorts; the pipeline itself is study-agnostic.
@@ -73,7 +73,7 @@ Step 1.5  Inpaint (auto)    neuroLIT lesion fill when BIDS lesion mask exists
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
 Step 4    Connectome        DKT 78-node matrix (default: streamline counts)
-Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (auto when lesion mask)
+Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (--disconnection flag)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 ```
 

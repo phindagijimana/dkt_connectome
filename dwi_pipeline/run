@@ -55,7 +55,8 @@ Recon / connectome:
 
 Lesion / disconnectome:
   --inpaint / --no-inpaint
-  --no-disconnectome    Skip Step 4.5 even when lesion mask exists
+  --disconnection       Opt in to Step 4.5 disconnectome (off by default; under validation)
+  --no-disconnectome    Explicitly skip Step 4.5 (default without --disconnection)
   --disconnectome-core-only
   --disconnectome-erode-voxels N
   --disconnectome-weighting count|sift2
@@ -149,7 +150,7 @@ while [[ $# -gt 0 ]]; do
     --disconnectome-erode-voxels) EXTRA+=(--disconnectome-erode-voxels "$2"); shift 2 ;;
     --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
       EXTRA+=("$1") ;;
-    --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnectome)
+    --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnection|--disconnectome)
       EXTRA+=("$1") ;;
     --disconnectome-core-only|--no-node-strength|--node-strength|--strength-only|--no-report)
       EXTRA+=("$1") ;;

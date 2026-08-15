@@ -20,7 +20,7 @@ Use `PIPELINE_ENGINE=snakemake` (default). See [Usage](usage.md).
 
 ### Do I need a lesion mask?
 
-**No** for the standard connectome pipeline. Step 1.5 (inpaint) and Step 4.5 (disconnectome) run **only when** `*_T1w_label-lesion_roi.nii.gz` exists for the session. All other subjects follow the standard path.
+**No** for the standard connectome pipeline. Step 1.5 (inpaint) runs **only when** `*_T1w_label-lesion_roi.nii.gz` exists. Step 4.5 (disconnectome) is **opt-in** via `--disconnection` (off by default while under validation).
 
 ### Which connectome should I use — DKT or DK?
 
