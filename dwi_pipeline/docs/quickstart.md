@@ -133,3 +133,22 @@ Local TBI examples under [`dwi_test_TBI/`](https://github.com/phindagijimana/dkt
 | TBI011204 | `dwi_test_TBI/sub-TBI011204_fastsurfer_inpaint/` |
 
 Both have validated Step 4.5 disconnectome outputs — see [Integrity QC](integrity_qc.md).
+
+---
+
+## What is happening?
+
+While the pipeline runs, terminal output shows **which step and container** is active. Examples:
+
+```text
+[Step 1] QSIPrep — sub-009 ses-1
+[Step 2] recon-all — sub-009
+[Step 3] QSIRecon — mrtrix_singleshell_ss3t_ACT-hsvs
+[Step 4] DKT connectome — sub-009
+```
+
+With Snakemake (`PIPELINE_ENGINE=snakemake`, the default), you will also see rule names such as `qsiprep`, `inpaint`, `recon`, `qsirecon`, `connectome`, and `disconnectome`. Each rule maps to one pipeline step — see [Snakemake workflow](snakemake_workflow.md) for the full DAG and `target_*` goals.
+
+Logs are written under `RESULTS_ROOT/logs/`. If a step fails, check the step-specific log there before re-running with `--mode <step>` or a Snakemake `target_*` rule.
+
+For what each step does scientifically, see [Pipeline steps](pipeline_steps.md) and [References by step](references.md).

@@ -1,6 +1,6 @@
 # Pipeline steps
 
-What happens inside each step of the DKT Connectome pipeline. For outputs, see [Outputs](outputs.md). For methods, see [Disconnectome](disconnectome.md) and [Lesion segmentation](lesion_segmentation.md).
+What happens inside each step of the DKT Connectome pipeline. For outputs, see [Outputs](outputs.md). For methods, see [Disconnectome](disconnectome.md) and [Lesion segmentation](lesion_segmentation.md). **Citations for each step:** [References by step](references.md).
 
 ---
 
@@ -36,6 +36,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **SDC decision tree:** see [Preparing your data](preparing_data.md#sdc-decision-tree).
 
+**References:** [Step 1 — QSIPrep](references.md#step-1-qsiprep-preprocessing) (Cieslak et al. 2021; Andersson et al. 2003/2016).
+
 ---
 
 ## Step 1.5 — Inpaint (optional)
@@ -52,6 +54,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Skip:** `--no-inpaint`, or no mask present (silent no-op)
 
+**References:** [Step 1.5 — neuroLIT](references.md#step-15-neurolit-inpainting-optional) (Pollak et al. 2025; Ho et al. 2020).
+
 ---
 
 ## Step 2 — Recon
@@ -66,6 +70,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 2. DKT atlas labels (`aparc.DKTatlas+aseg.mgz`) for Step 4
 
 **Key outputs:** `freesurfer/sub-<ID>/`
+
+**References:** [Step 2 — Recon](references.md#step-2-cortical-reconstruction-freesurfer-fastsurfer) (Fischl 2012; Henschel et al. 2020; Klein & Tourville 2012).
 
 ---
 
@@ -84,6 +90,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Requires:** FreeSurfer subject tree from Step 2 for ACT-HSVS
 
+**References:** [Step 3 — QSIRecon](references.md#step-3-qsirecon-tractography) (Cieslak et al. 2024; Tournier et al. 2019; Smith et al. 2012/2015/2020).
+
 ---
 
 ## Step 4 — Connectome
@@ -97,6 +105,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 3. Write connectome matrix (default: **streamline counts**)
 
 **Primary output:** `connectomes/sub-<ID>/dkt_connectome.csv`
+
+**References:** [Step 4 — Connectome](references.md#step-4-dkt-structural-connectome) (Tournier et al. 2019; Klein & Tourville 2012).
 
 ---
 
@@ -116,6 +126,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 Full method: [Disconnectome](disconnectome.md).
 
+**References:** [Step 4.5 — Disconnectome](references.md#step-45-disconnectome-optional) (Griffis et al. 2019; Kuceyeski et al. 2013).
+
 ---
 
 ## Step 5 — Node strength
@@ -131,6 +143,8 @@ Full method: [Disconnectome](disconnectome.md).
 3. PDF report
 
 **Skip:** `--no-node-strength`
+
+**References:** [Step 5 — Node strength](references.md#step-5-node-strength-report) (Rubinov & Sporns 2010; Piper et al. 2026).
 
 ---
 
@@ -150,6 +164,8 @@ See [QC dashboard](qc_dashboard.md).
 ## Snakemake engine
 
 All steps above are implemented as Snakemake **plugin rules** under `dwi_pipeline/workflow/rules/`. The full DAG, targets, and HPC usage are documented in [Snakemake workflow](snakemake_workflow.md).
+
+**Framework references:** [Data standards and workflow](references.md#data-standards-and-workflow-framework) (Gorgolewski et al. 2016/2017; Köster & Rahmann 2012).
 
 ```bash
 # Equivalent to ./run participant for sub-011

@@ -27,10 +27,13 @@ When opening an issue, include:
 
 ## Community forums
 
-For general BIDS / diffusion questions (tag appropriately):
+For general BIDS / diffusion questions, search or post on [NeuroStars](https://neurostars.org/):
 
-- [NeuroStars](https://neurostars.org/) — search for QSIPrep, QSIRecon, MRtrix3, FreeSurfer
-- [BIDS Slack](https://bids-standard.github.io/bids-starter-kit/)
+- Tag **`qsiprep`** or **`qsirecon`** for preprocessing and tractography questions (Steps 1 and 3)
+- Tag **`freesurfer`** or **`mrtrix`** for recon and connectome questions (Steps 2 and 4)
+- Include **`dkt-connectome`** or a link to this repo when the question is specific to this orchestrator
+
+Also: [BIDS Slack](https://bids-standard.github.io/bids-starter-kit/)
 
 This pipeline builds on QSIPrep and QSIRecon; many preprocessing questions are answered in their docs:
 
