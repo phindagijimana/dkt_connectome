@@ -3,7 +3,7 @@ message: >-
   If you use this software in published work, please cite the upstream tools
   that do the heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs);
   this pipeline only orchestrates them. See README.md for citation guidance.
-title: "DKT Connectome Pipeline — lesion-aware structural connectomics BIDS App"
+title: "DKT Connectome — lesion-aware structural connectomics BIDS App"
 authors:
   - family-names: Ndagijimana
     given-names: Phind

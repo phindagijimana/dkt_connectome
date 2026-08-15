@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# BIDS App entrypoint for the DKT Connectome Pipeline (dwi_pipeline/).
+# BIDS App entrypoint for the DKT Connectome (dwi_pipeline/).
 # Spec: https://bids-apps.neuroimaging.io/
 # Docs: https://dkt-connectome.readthedocs.io/en/latest/
 #

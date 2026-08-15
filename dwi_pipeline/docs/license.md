@@ -1,6 +1,6 @@
 # License information
 
-The DKT Connectome Pipeline orchestrator is released under the **Apache License 2.0**; the full license may be found in the [LICENSE](https://github.com/phindagijimana/dkt_connectome/blob/main/LICENSE) file in the repository root.
+The DKT Connectome orchestrator is released under the **Apache License 2.0**; the full license may be found in the [LICENSE](https://github.com/phindagijimana/dkt_connectome/blob/main/LICENSE) file in the repository root.
 
 All trademarks referenced herein are property of their respective holders.
 

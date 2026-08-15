@@ -1,6 +1,6 @@
 # Comparisons to other pipelines
 
-How the DKT Connectome Pipeline relates to other BIDS Apps and connectome tools.
+How the DKT Connectome relates to other BIDS Apps and connectome tools.
 
 ---
 

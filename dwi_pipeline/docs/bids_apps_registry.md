@@ -1,6 +1,6 @@
 # BIDS Apps registry submission checklist
 
-Use this checklist when submitting **DKT Connectome Pipeline v0.2.0** to the
+Use this checklist when submitting **DKT Connectome v0.2.0** to the
 [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
 
 ## Repository requirements (done in this repo)
@@ -55,9 +55,9 @@ git push origin v0.2.0
 
 ```
 To: bids.maintenance+apps@gmail.com
-Subject: BIDS App submission — DKT Connectome Pipeline v0.2.0
+Subject: BIDS App submission — DKT Connectome v0.2.0
 
-Name: DKT Connectome Pipeline
+Name: DKT Connectome
 Version: 0.2.0
 GitHub: https://github.com/phindagijimana/dkt_connectome
 Documentation: https://dkt-connectome.readthedocs.io/en/latest/

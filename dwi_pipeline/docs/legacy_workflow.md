@@ -1,6 +1,6 @@
 # Legacy root workflow (4-stage dk_connectome)
 
-The **canonical DKT Connectome Pipeline** (Steps 1–5 + optional 4.5 disconnectome + inpainting) lives under:
+The **canonical DKT Connectome** (Steps 1–5 + optional 4.5 disconnectome + inpainting) lives under:
 
 **[`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow)**
 

@@ -19,7 +19,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-PIPELINE_NAME = "DKT Connectome Pipeline"
+PIPELINE_NAME = "DKT Connectome"
 PIPELINE_VERSION = "0.2.0"
 CODE_URL = "https://github.com/phindagijimana/dkt_connectome"
 
@@ -220,8 +220,8 @@ def write_dataset_descriptions(out_root: Path, bids_dir: Path | None) -> None:
     (out_root / "dataset_description.json").write_text(
         json.dumps(
             _dataset_description(
-                "DKT Connectome Pipeline derivatives export",
-                "Aggregated BIDS Derivatives export from DKT Connectome Pipeline",
+                "DKT Connectome derivatives export",
+                "Aggregated BIDS Derivatives export from DKT Connectome",
                 extra=root_extra,
             ),
             indent=2,

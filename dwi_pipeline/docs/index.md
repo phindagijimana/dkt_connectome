@@ -1,4 +1,4 @@
-# DKT Connectome Pipeline
+# DKT Connectome
 
 **BIDS App** for lesion-aware structural connectomics: QSIPrep → optional neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS tractography → DKT connectome → optional disconnectome → node-strength report.
 
@@ -12,7 +12,7 @@ This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.i
 
 ## About
 
-The DKT Connectome Pipeline is a **BIDS App orchestrator** for lesion-aware structural connectomics. Main features:
+The DKT Connectome is a **BIDS App orchestrator** for lesion-aware structural connectomics. Main features:
 
 1. **BIDS-native workflow** — participant-level runs from standard `dwi/`, `anat/T1w`, and optional `fmap/` inputs.
 2. **QSIPrep preprocessing** — motion correction, denoising, brain extraction, T1w–DWI coregistration, and susceptibility distortion correction (fieldmap TOPUP or SyN).

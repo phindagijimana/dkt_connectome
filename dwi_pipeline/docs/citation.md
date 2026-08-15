@@ -1,12 +1,12 @@
 # Citation
 
-How to acknowledge the DKT Connectome Pipeline and the upstream tools it orchestrates. Structure follows the [QSIPrep citing page](https://qsiprep.readthedocs.io/en/0.22.1/citing.html).
+How to acknowledge the DKT Connectome and the upstream tools it orchestrates. Structure follows the [QSIPrep citing page](https://qsiprep.readthedocs.io/en/0.22.1/citing.html).
 
 ---
 
 ## Citing this pipeline
 
-The DKT Connectome Pipeline is a **BIDS App orchestrator** — it does not replace QSIPrep, QSIRecon, FreeSurfer, MRtrix3, or neuroLIT. In publications:
+The DKT Connectome is a **BIDS App orchestrator** — it does not replace QSIPrep, QSIRecon, FreeSurfer, MRtrix3, or neuroLIT. In publications:
 
 1. **Cite every upstream tool** whose methods you report (see [References by step](references.md)).
 2. **Name the pipeline** and point readers to this documentation site and the GitHub repository.
@@ -14,7 +14,7 @@ The DKT Connectome Pipeline is a **BIDS App orchestrator** — it does not repla
 
 Suggested prose (Methods or Acknowledgements):
 
-> Structural connectomes were derived with the DKT Connectome Pipeline (BIDS App v0.2.0; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
+> Structural connectomes were derived with the DKT Connectome (BIDS App v0.2.0; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
 
 Replace superscripts with numbered references from [References by step](references.md).
 
