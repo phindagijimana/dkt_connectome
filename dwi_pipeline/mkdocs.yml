@@ -4,12 +4,14 @@ site_url: https://dkt-connectome.readthedocs.io/
 repo_url: https://github.com/phindagijimana/dkt_connectome
 repo_name: phindagijimana/dkt_connectome
 edit_uri: edit/main/dwi_pipeline/docs/
+copyright: Copyright &copy; 2026 Phind Ndagijimana and contributors. All rights reserved.
 
 docs_dir: docs
 
 theme:
   name: readthedocs
   navigation_depth: 4
+  custom_dir: overrides
 
 nav:
   - Home: index.md
@@ -33,8 +35,9 @@ nav:
   - Troubleshooting: troubleshooting.md
   - Comparisons: comparisons.md
   - Legacy workflow: legacy_workflow.md
+  - References by step: references.md
   - Citation: citation.md
-  - License: license.md
+  - License information: license.md
   - Changelog: changelog.md
   - Getting help: getting_help.md
   - Maintainer:

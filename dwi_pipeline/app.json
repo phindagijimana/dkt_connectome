@@ -10,7 +10,7 @@
   "License": "Apache-2.0",
   "Source": "https://github.com/phindagijimana/dkt_connectome",
   "Documentation": "https://dkt-connectome.readthedocs.io/en/latest/",
-  "HowToAcknowledge": "Please cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon, FreeSurfer/FastSurfer, MRtrix3, and Griffis et al. 2019 (Cell Reports) for disconnectome methods. See dwi_pipeline/docs/citation.md.",
+  "HowToAcknowledge": "Please cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon (Cieslak et al., bioRxiv 2024), FreeSurfer/FastSurfer, MRtrix3, Pollak et al. 2025 (neuroLIT) when inpainting, Griffis et al. 2019 (Cell Reports) for disconnectome, and Gorgolewski et al. 2016 (BIDS). Full per-step references: https://dkt-connectome.readthedocs.io/en/latest/references/",
   "ContainerType": "docker-or-apptainer-orchestrator",
   "DockerHub": "phindagijimana/dkt-connectome",
   "TestDataset": "dwi_pipeline/tests/fixtures/bids_minimal",

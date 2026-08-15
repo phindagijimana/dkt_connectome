@@ -10,6 +10,29 @@ This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.i
 
 ---
 
+## About
+
+The DKT Connectome Pipeline is a **BIDS App orchestrator** for lesion-aware structural connectomics. Main features:
+
+1. **BIDS-native workflow** — participant-level runs from standard `dwi/`, `anat/T1w`, and optional `fmap/` inputs.
+2. **QSIPrep preprocessing** — motion correction, denoising, brain extraction, T1w–DWI coregistration, and susceptibility distortion correction (fieldmap TOPUP or SyN).
+3. **Optional lesion inpainting (Step 1.5)** — neuroLIT fills lesion regions on T1w before cortical reconstruction when a BIDS lesion mask is present.
+4. **Cortical reconstruction** — FreeSurfer `recon-all` or FastSurfer → DKT parcellation for connectome nodes.
+5. **QSIRecon tractography** — single-shell SS3T-CSD with ACT-HSVS and SIFT2 weights (`mrtrix_singleshell_ss3t_ACT-hsvs`).
+6. **DKT structural connectome** — 78-node matrix (default: streamline counts).
+7. **Optional disconnectome (Step 4.5)** — parcellation excision, streamline exclusion, and disconnection matrix when a lesion mask exists.
+8. **Node-strength report** — graph metrics and ENIGMA-style cortical/subcortical panel.
+
+Validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI** cohorts; the pipeline itself is study-agnostic.
+
+---
+
+## Note
+
+This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, neuroLIT, and other upstream tools. Similarities in workflow design or documentation layout **do not imply** that PennLINC, Deep-MI, FreeSurfer, or any upstream authors endorse this software or its processing choices. Always cite the primary method papers — see [References by step](references.md).
+
+---
+
 ## Contents
 
 | Page | Description |
@@ -34,8 +57,9 @@ This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.i
 | [Integrity QC](integrity_qc.md) | Connectome / disconnectome sanity checks |
 | [Legacy root workflow](legacy_workflow.md) | Root 4-stage Snakefile vs `dwi_pipeline/workflow` |
 | [Comparisons](comparisons.md) | vs QSIPrep, MRtrix3_connectome, micapipe |
-| [Citation](citation.md) | Acknowledgements and references |
-| [License](license.md) | Apache 2.0 |
+| [References by step](references.md) | Papers and resources for each pipeline step |
+| [Citation](citation.md) | Acknowledgements, BibTeX, and how to cite |
+| [License](license.md) | Apache 2.0 and upstream licenses |
 | [Changelog](changelog.md) | Version history (v0.2.0) |
 | [Getting help](getting_help.md) | GitHub issues, NeuroStars, upstream docs |
 
