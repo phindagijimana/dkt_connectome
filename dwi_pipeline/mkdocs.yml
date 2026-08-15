@@ -17,6 +17,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Tutorial: tutorial.md
+  - Sample data (IDEAS): datasets/ideas.md
   - Quick start: quickstart.md
   - Usage: usage.md
   - Decision tables: decision_tables.md
