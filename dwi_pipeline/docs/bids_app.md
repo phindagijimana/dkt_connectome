@@ -6,7 +6,7 @@ The pipeline implements the [BIDS Apps](https://bids-apps.neuroimaging.io/) spec
 |------|------|
 | [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | Executable entrypoint |
 | [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) | Machine-readable metadata |
-| [`tracktbi_connectome.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/tracktbi_connectome.json) | Boutiques / BIDS Exec descriptor |
+| [`dkt_connectome_bids_app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/dkt_connectome_bids_app.json) | Boutiques / BIDS Exec descriptor |
 | [`docs/`](index.md) | Human-readable documentation (this site) |
 
 **Analysis levels:** `participant` (full pipeline), `group` (cohort QC + BIDS Derivatives export to `derivatives/`).
@@ -161,10 +161,10 @@ Multiple `--session-filter` values are rejected — run separate jobs per sessio
 
 Submit to the [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/) with:
 
-- **Name:** TrackTBI Connectome Pipeline  
+- **Name:** DKT Connectome Pipeline  
 - **Version:** 0.2.0 (see `./run --version`)  
 - **Documentation:** https://dkt-connectome.readthedocs.io/en/latest/  
-- **Docker Hub:** `phindagijimana/tracktbi-connectome:0.2.0` (orchestrator; step images mounted at runtime)  
+- **Docker Hub:** `phindagijimana/dkt-connectome:0.2.0` (orchestrator; step images mounted at runtime)  
 - **Test dataset:** `dwi_pipeline/tests/fixtures/bids_minimal/`  
 
 Step-by-step checklist: [bids_apps_registry.md](bids_apps_registry.md).

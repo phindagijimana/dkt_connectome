@@ -52,8 +52,8 @@ declare -A OVERRIDES=()   # dotted-path -> YAML scalar value
 [[ -n "${RECON_SESSION:-}" ]] && OVERRIDES[recon.session]="${RECON_SESSION}"
 declare -a SNAKEMAKE_PASSTHROUGH=()
 
-TRACKTBI_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${TRACKTBI_ROOT}/.cache}"
+REPO_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
 mkdir -p "${XDG_CACHE_HOME}"
 
 # Apply subject.sh-equivalent env vars when CLI flags did not already set them.

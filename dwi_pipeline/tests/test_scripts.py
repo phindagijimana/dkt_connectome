@@ -150,5 +150,5 @@ def test_export_bids_derivatives_symlinks(tmp_path):
     assert (export_root / "dataset_description.json").is_file()
     assert (export_root / "export_manifest.json").is_file()
     assert (export_root / "qsiprep" / "sub-test").is_symlink()
-    assert (export_root / "tracktbi-connectome" / "sub-test" / "dkt_connectome.csv").exists()
+    assert (export_root / "dkt-connectome" / "sub-test" / "dkt_connectome.csv").exists()
     assert payload["mode"] == "symlink"

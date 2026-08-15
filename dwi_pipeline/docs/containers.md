@@ -1,6 +1,6 @@
 # Container images
 
-The TrackTBI pipeline orchestrates **multiple Apptainer `.sif` images** on HPC — not a single published Docker image. Configure paths in `workflow/config/config.local.yaml` or via `CONTAINER_*` environment variables (see [Configuration](configuration.md)).
+The DKT Connectome pipeline orchestrates **multiple Apptainer `.sif` images** on HPC — not a single published Docker image. Configure paths in `workflow/config/config.local.yaml` or via `CONTAINER_*` environment variables (see [Configuration](configuration.md)).
 
 ---
 
@@ -38,7 +38,7 @@ Reference upstream tags with `container_pins:` in config — see [Derivatives po
 
 **Production (recommended):** [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) + Apptainer on Slurm. No orchestrator container required.
 
-An optional [`Dockerfile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Dockerfile) exists for local/docker-only experiments; it is **not published** and is not part of the TrackTBI HPC path.
+An optional [`Dockerfile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Dockerfile) exists for local/docker-only experiments; it is **not published** and is not part of the multi-site HPC path.
 
 ---
 

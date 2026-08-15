@@ -1,5 +1,5 @@
-site_name: TrackTBI Connectome Pipeline
-site_description: BIDS App for lesion-aware structural connectomics (QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome)
+site_name: DKT Connectome Pipeline
+site_description: Lesion-aware structural connectomics BIDS App (QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome)
 site_url: https://dkt-connectome.readthedocs.io/
 repo_url: https://github.com/phindagijimana/dkt_connectome
 repo_name: phindagijimana/dkt_connectome

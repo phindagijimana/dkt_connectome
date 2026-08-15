@@ -2,7 +2,7 @@
 
 See [`Inpainting/disconnection.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md) for the full method specification.
 
-Part of the [TrackTBI Connectome Pipeline documentation](index.md).
+Part of the [DKT Connectome Pipeline documentation](index.md).
 
 ## Defaults
 

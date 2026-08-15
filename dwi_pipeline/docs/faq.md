@@ -6,7 +6,7 @@
 
 ### Is this a single Docker image like QSIPrep?
 
-No. The BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). This matches TrackTBI HPC deployments where images are cached on shared storage. See [Installation](installation.md).
+No. The BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). This matches multi-site HPC deployments where images are cached on shared storage. See [Installation](installation.md).
 
 ### What is the recommended way to run on URMC HPC?
 

@@ -27,10 +27,10 @@ def main() -> None:
     (ROOT / "dataset_description.json").write_text(
         json.dumps(
             {
-                "Name": "TrackTBI Connectome minimal example",
+                "Name": "DKT Connectome minimal example",
                 "BIDSVersion": "1.8.0",
                 "DatasetType": "raw",
-                "Authors": ["TrackTBI / CIDUR"],
+                "Authors": ["University of Rochester Medical Center"],
                 "License": "CC0",
             },
             indent=2,

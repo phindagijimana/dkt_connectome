@@ -1,6 +1,6 @@
 # Usage
 
-Command-line reference for the TrackTBI Connectome BIDS App (`./run`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
+Command-line reference for the DKT Connectome BIDS App (`./run`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
 
 For a minimal example, see [Quick start](quickstart.md). For config keys and env vars, see [Configuration](configuration.md).
 
@@ -24,7 +24,7 @@ docker run --rm \
   -v /path/to/out:/out \
   -v /path/to/license.txt:/opt/freesurfer/license.txt:ro \
   -e FS_LICENSE=/opt/freesurfer/license.txt \
-  phindagijimana/tracktbi-connectome:0.2.0 \
+  phindagijimana/dkt-connectome:0.2.0 \
   /data/bids /out participant \
   --participant-label 001 --session-id ses-1
 ```

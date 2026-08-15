@@ -1,6 +1,6 @@
 # License
 
-TrackTBI Connectome Pipeline is released under the **Apache License 2.0**.
+DKT Connectome Pipeline is released under the **Apache License 2.0**.
 
 - Full text: [LICENSE](https://github.com/phindagijimana/dkt_connectome/blob/main/LICENSE) in the repository root
 - SPDX identifier: `Apache-2.0`

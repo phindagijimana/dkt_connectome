@@ -344,7 +344,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # --- Paths: repo root, BIDS input, separate output tree for ACT/connectome ---
-TRACKTBI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
 BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
 NTHREADS="${NTHREADS:-8}"
@@ -375,7 +375,7 @@ CONTAINER_LIT="${CONTAINER_LIT:-/path/to/others/containers/lit_0.6.0.sif}"
 # Step 5 (nodestrength / dwi-AI). Standalone repo+container, not built from
 # dwi_pipeline; see /path/to/node_strength.
 CONTAINER_NODESTRENGTH="${CONTAINER_NODESTRENGTH:-/path/to/node_strength/containers/nodestrength_0.1.0.sif}"
-TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${TRACKTBI_ROOT}/templateflow}"
+TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${REPO_ROOT}/templateflow}"
 FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
 # FreeSurferColorLUT.txt — qsirecon.sif's trimmed FreeSurfer doesn't ship this
 # file, but labelconvert needs it in Step 4. Default to the LUT shipped
@@ -399,8 +399,8 @@ INPAINT_MIN_OUTSIDE_CORR="${INPAINT_MIN_OUTSIDE_CORR:-0.995}"
 INPAINT_MAX_CORR_DROP="${INPAINT_MAX_CORR_DROP:-0.01}"
 INPAINT_FAIL_ON_QC="${INPAINT_FAIL_ON_QC:-0}"
 INPAINT_SKIP_IF_EXISTS="${INPAINT_SKIP_IF_EXISTS:-1}"
-PREPARE_LESION_MASK="${TRACKTBI_ROOT}/dwi_pipeline/scripts/prepare_lesion_mask.py"
-CHECK_INPAINTING="${TRACKTBI_ROOT}/dwi_pipeline/scripts/check_inpainting.py"
+PREPARE_LESION_MASK="${REPO_ROOT}/dwi_pipeline/scripts/prepare_lesion_mask.py"
+CHECK_INPAINTING="${REPO_ROOT}/dwi_pipeline/scripts/check_inpainting.py"
 # Set by run_inpaint() when it actually ran and produced a result; consumed by
 # run_recon() and run_connectome() in place of the raw BIDS T1w. Empty means
 # "no inpainting for this subject/session -- behave exactly as before".
@@ -445,7 +445,7 @@ RUN_DISCONNECTOME="${RUN_DISCONNECTOME:-1}"
 DISCONNECTOME_CORE_ONLY="${DISCONNECTOME_CORE_ONLY:-0}"
 DISCONNECTOME_ERODE_VOXELS="${DISCONNECTOME_ERODE_VOXELS:-0}"
 DISCONNECTOME_WEIGHTING="${DISCONNECTOME_WEIGHTING:-${CONNECTOME_WEIGHTING:-count}}"
-RUN_DISCONNECTOME_SCRIPT="${TRACKTBI_ROOT}/dwi_pipeline/scripts/run_disconnectome.py"
+RUN_DISCONNECTOME_SCRIPT="${REPO_ROOT}/dwi_pipeline/scripts/run_disconnectome.py"
 NODESTRENGTH_STRENGTH_ONLY="${NODESTRENGTH_STRENGTH_ONLY:-0}"
 NODESTRENGTH_NO_REPORT="${NODESTRENGTH_NO_REPORT:-0}"
 NODESTRENGTH_SKIP_IF_EXISTS="${NODESTRENGTH_SKIP_IF_EXISTS:-1}"
@@ -467,7 +467,7 @@ NODESTRENGTH_SKIP_IF_EXISTS="${NODESTRENGTH_SKIP_IF_EXISTS:-1}"
 # LUT yields 6 all-zero rows/columns, so the LUT has to follow the segmentation.
 _CONNECTOME_PARCELLATION_EXPLICIT=$([[ -n "${CONNECTOME_PARCELLATION:-}" ]] && echo 1 || echo 0)
 CONNECTOME_PARCELLATION="${CONNECTOME_PARCELLATION:-dkt}"
-CONNECTOME_LUT_DKT="${CONNECTOME_LUT_DKT:-${TRACKTBI_ROOT}/dwi_pipeline/containers/connectome/mrtrix_lut/fs_dkt.txt}"
+CONNECTOME_LUT_DKT="${CONNECTOME_LUT_DKT:-${REPO_ROOT}/dwi_pipeline/containers/connectome/mrtrix_lut/fs_dkt.txt}"
 # Empty nodes normally mean the LUT does not match the segmentation, but they can
 # also be genuine in severe pathology (resection, large lesion), so warn by
 # default and let callers escalate.
@@ -484,8 +484,8 @@ QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
 DWI_SHELL_B="${DWI_SHELL_B:-1000}"
 QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
-BUILD_BIDS_FILTER="${TRACKTBI_ROOT}/dwi_pipeline/scripts/build_bids_filter.py"
-MAKE_DWI_SELECT_CONFIG="${TRACKTBI_ROOT}/dwi_pipeline/scripts/make_dwi_select_config.py"
+BUILD_BIDS_FILTER="${REPO_ROOT}/dwi_pipeline/scripts/build_bids_filter.py"
+MAKE_DWI_SELECT_CONFIG="${REPO_ROOT}/dwi_pipeline/scripts/make_dwi_select_config.py"
 
 resolve_dwi_select_config() {
   if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
@@ -494,7 +494,7 @@ resolve_dwi_select_config() {
   fi
   [[ -n "${QSIPREP_BIDS_FILTER}" ]] && return 0
   if [[ -z "${DWI_SELECT_JSON}" ]]; then
-    DWI_SELECT_JSON="${TRACKTBI_ROOT}/dwi_pipeline/config/dwi_select_b${DWI_SHELL_B}.json"
+    DWI_SELECT_JSON="${REPO_ROOT}/dwi_pipeline/config/dwi_select_b${DWI_SHELL_B}.json"
   fi
   if [[ ! -f "${DWI_SELECT_JSON}" ]]; then
     _pipeline_fail "dwi-select" "missing config ${DWI_SELECT_JSON}" \
@@ -1482,7 +1482,7 @@ run_connectome() {
 
     local -a binds=()
     if [[ "${CONNECTOME_BIND_ENTRYPOINT:-0}" == "1" ]]; then
-      binds+=(-B "${TRACKTBI_ROOT}/dwi_pipeline/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro)
+      binds+=(-B "${REPO_ROOT}/dwi_pipeline/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro)
     fi
 
     # The image only ships fs_default.txt, so a DKT run binds its LUT in.

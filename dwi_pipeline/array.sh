@@ -32,7 +32,8 @@ set +H
 # so deriving paths from $0 would write into /var/spool/slurmd (Permission denied).
 # Paths must be exported by submit.sh (Slurm spool copy of $0 cannot derive repo paths).
 : "${DWI_ROOT:?ERROR [array]: DWI_ROOT not set — run via submit.sh or export DWI_ROOT}"
-: "${TRACKTBI_ROOT:?ERROR [array]: TRACKTBI_ROOT not set — run via submit.sh or export TRACKTBI_ROOT}"
+REPO_ROOT="${REPO_ROOT:-${TRACKTBI_ROOT:-}}"
+: "${REPO_ROOT:?ERROR [array]: REPO_ROOT not set — run via submit.sh or export REPO_ROOT}"
 [[ -d "${DWI_ROOT}" ]] || { echo "ERROR [array]: DWI_ROOT is not a directory: ${DWI_ROOT}"; exit 1; }
 
 PIPELINE_ENGINE="${PIPELINE_ENGINE:-snakemake}"
@@ -42,7 +43,7 @@ case "${PIPELINE_ENGINE}" in
     ;;
   snakemake|workflow|run_subject)
     PIPELINE="${PIPELINE:-${DWI_ROOT}/workflow/run_subject.sh}"
-    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${TRACKTBI_ROOT}/.cache}"
+    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
     mkdir -p "${XDG_CACHE_HOME}"
     ;;
   *)
@@ -57,7 +58,7 @@ SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 export NTHREADS="${NTHREADS:-4}"
 export OMP_NTHREADS="${OMP_NTHREADS:-4}"
 
-mkdir -p "${TRACKTBI_ROOT}/logs"
+mkdir -p "${REPO_ROOT}/logs"
 
 [[ -f "${PIPELINE}" ]] || { echo "Missing ${PIPELINE}"; exit 1; }
 [[ -f "${SUBJECT_LIST_FILE}" ]] || { echo "Missing subject list: ${SUBJECT_LIST_FILE}"; exit 1; }

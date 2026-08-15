@@ -12,7 +12,7 @@ set -euo pipefail
 
 WORKFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DWI_PIPELINE_DIR="$(dirname "${WORKFLOW_DIR}")"
-TRACKTBI_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
+REPO_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
 
 PIPELINE_MODE="${PIPELINE_MODE:-all}"
 SUBJECT=""
@@ -98,7 +98,7 @@ fi
 mkdir -p "${RESULTS_ROOT}" "${RESULTS_ROOT}/logs"
 
 # Snakemake cache must live on writable storage (not $HOME on some nodes).
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${TRACKTBI_ROOT}/.cache}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
 mkdir -p "${XDG_CACHE_HOME}"
 
 if [[ -n "${SUBJECT}" ]]; then

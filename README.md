@@ -8,7 +8,7 @@
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 [![Container image](https://img.shields.io/badge/ghcr.io-dk--connectome-blue?logo=github)](https://github.com/phindagijimana/dk_connectome/pkgs/container/dk-connectome)
 
-**📖 TrackTBI pipeline (canonical):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) — Steps 1–5 + disconnectome, BIDS App [`./run`](dwi_pipeline/run).
+**📖 DKT Connectome Pipeline (canonical):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) — Steps 1–5 + disconnectome, BIDS App [`./run`](dwi_pipeline/run).
 **Legacy 4-stage workflow:** [dwi_pipeline/docs/legacy_workflow.md](dwi_pipeline/docs/legacy_workflow.md).
 
 The workflow is an **orchestration of four containers**, one per stage:

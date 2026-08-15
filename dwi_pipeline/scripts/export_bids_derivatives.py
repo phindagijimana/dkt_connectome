@@ -19,17 +19,17 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-PIPELINE_NAME = "TrackTBI Connectome Pipeline"
+PIPELINE_NAME = "DKT Connectome Pipeline"
 PIPELINE_VERSION = "0.2.0"
 CODE_URL = "https://github.com/phindagijimana/dkt_connectome"
 
 DERIVATIVE_PIPELINES = (
     "qsiprep",
     "qsirecon",
-    "tracktbi-inpaint",
-    "tracktbi-connectome",
-    "tracktbi-qc",
-    "tracktbi-nodestrength",
+    "dkt-inpaint",
+    "dkt-connectome",
+    "dkt-qc",
+    "dkt-nodestrength",
 )
 
 
@@ -139,7 +139,7 @@ def export_qsirecon(results_root: Path, out_root: Path, subjects: list[str], *, 
 
 
 def export_inpaint(results_root: Path, out_root: Path, subjects: list[str], *, copy: bool, manifest: list) -> None:
-    pipeline_root = out_root / "tracktbi-inpaint"
+    pipeline_root = out_root / "dkt-inpaint"
     src_base = results_root / "inpainted"
     if not src_base.is_dir():
         return
@@ -149,11 +149,11 @@ def export_inpaint(results_root: Path, out_root: Path, subjects: list[str], *, c
             continue
         dst_sub = pipeline_root / subject_id
         _link_or_copy(src_sub, dst_sub, copy=copy)
-        manifest.append({"pipeline": "tracktbi-inpaint", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"})
+        manifest.append({"pipeline": "dkt-inpaint", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"})
 
 
 def export_connectome(results_root: Path, out_root: Path, subjects: list[str], *, copy: bool, manifest: list) -> None:
-    pipeline_root = out_root / "tracktbi-connectome"
+    pipeline_root = out_root / "dkt-connectome"
     src_base = results_root / "connectomes"
     if not src_base.is_dir():
         return
@@ -163,11 +163,11 @@ def export_connectome(results_root: Path, out_root: Path, subjects: list[str], *
             continue
         dst_sub = pipeline_root / subject_id
         _link_or_copy(src_sub, dst_sub, copy=copy)
-        manifest.append({"pipeline": "tracktbi-connectome", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"})
+        manifest.append({"pipeline": "dkt-connectome", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"})
 
 
 def export_qc(results_root: Path, out_root: Path, subjects: list[str], *, copy: bool, manifest: list) -> None:
-    pipeline_root = out_root / "tracktbi-qc"
+    pipeline_root = out_root / "dkt-qc"
     src_base = results_root / "qc"
     if not src_base.is_dir():
         return
@@ -177,17 +177,17 @@ def export_qc(results_root: Path, out_root: Path, subjects: list[str], *, copy: 
             continue
         dst_sub = pipeline_root / subject_id
         _link_or_copy(src_sub, dst_sub, copy=copy)
-        manifest.append({"pipeline": "tracktbi-qc", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"})
+        manifest.append({"pipeline": "dkt-qc", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"})
     for cohort_file in ("cohort_qc.html", "cohort_qc.json", "disconnectome_cohort_qc.html", "disconnectome_cohort_qc.json"):
         src = results_root / cohort_file
         if src.is_file():
             dst = pipeline_root / cohort_file
             _link_or_copy(src, dst, copy=copy)
-            manifest.append({"pipeline": "tracktbi-qc", "src": str(src), "dst": str(dst), "type": "file"})
+            manifest.append({"pipeline": "dkt-qc", "src": str(src), "dst": str(dst), "type": "file"})
 
 
 def export_nodestrength(results_root: Path, out_root: Path, subjects: list[str], *, copy: bool, manifest: list) -> None:
-    pipeline_root = out_root / "tracktbi-nodestrength"
+    pipeline_root = out_root / "dkt-nodestrength"
     src_base = results_root / "node_strength"
     if not src_base.is_dir():
         return
@@ -196,7 +196,7 @@ def export_nodestrength(results_root: Path, out_root: Path, subjects: list[str],
         if src.exists():
             dst = pipeline_root / name
             _link_or_copy(src, dst, copy=copy)
-            manifest.append({"pipeline": "tracktbi-nodestrength", "src": str(src), "dst": str(dst), "type": "dir" if src.is_dir() else "file"})
+            manifest.append({"pipeline": "dkt-nodestrength", "src": str(src), "dst": str(dst), "type": "dir" if src.is_dir() else "file"})
     reports = src_base / "reports"
     if reports.is_dir():
         for subject_id in subjects:
@@ -205,7 +205,7 @@ def export_nodestrength(results_root: Path, out_root: Path, subjects: list[str],
                 dst_sub = pipeline_root / "reports" / subject_id
                 _link_or_copy(src_sub, dst_sub, copy=copy)
                 manifest.append(
-                    {"pipeline": "tracktbi-nodestrength", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"}
+                    {"pipeline": "dkt-nodestrength", "src": str(src_sub), "dst": str(dst_sub), "type": "dir"}
                 )
 
 
@@ -220,8 +220,8 @@ def write_dataset_descriptions(out_root: Path, bids_dir: Path | None) -> None:
     (out_root / "dataset_description.json").write_text(
         json.dumps(
             _dataset_description(
-                "TrackTBI Connectome Pipeline derivatives export",
-                "Aggregated BIDS Derivatives export from TrackTBI Connectome Pipeline",
+                "DKT Connectome Pipeline derivatives export",
+                "Aggregated BIDS Derivatives export from DKT Connectome Pipeline",
                 extra=root_extra,
             ),
             indent=2,
@@ -232,16 +232,16 @@ def write_dataset_descriptions(out_root: Path, bids_dir: Path | None) -> None:
     descriptions = {
         "qsiprep": "QSIPrep preprocessed anatomical and diffusion MRI",
         "qsirecon": "QSIRecon diffusion reconstruction and tractography",
-        "tracktbi-inpaint": "Lesion inpainting (neuroLIT) outputs and QC sidecars",
-        "tracktbi-connectome": "DKT structural connectome and disconnectome matrices",
-        "tracktbi-qc": "Unified HTML QC dashboards and cohort indexes",
-        "tracktbi-nodestrength": "Node strength tables and ENIGMA-style reports",
+        "dkt-inpaint": "Lesion inpainting (neuroLIT) outputs and QC sidecars",
+        "dkt-connectome": "DKT structural connectome and disconnectome matrices",
+        "dkt-qc": "Unified HTML QC dashboards and cohort indexes",
+        "dkt-nodestrength": "Node strength tables and ENIGMA-style reports",
     }
     for pipeline, desc in descriptions.items():
         pdir = out_root / pipeline
         if pdir.exists():
             (pdir / "dataset_description.json").write_text(
-                json.dumps(_dataset_description(f"TrackTBI — {pipeline}", desc), indent=2) + "\n"
+                json.dumps(_dataset_description(f"DKT Connectome — {pipeline}", desc), indent=2) + "\n"
             )
 
 

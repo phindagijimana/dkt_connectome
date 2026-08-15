@@ -172,7 +172,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 DWI_ROOT="$(cd "$(dirname "$0")" && pwd)"
-TRACKTBI_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
+REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
+TRACKTBI_ROOT="${REPO_ROOT}"  # deprecated alias
 
 # --- Defaults (override via environment before ./submit.sh) ---
 BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
@@ -204,7 +205,7 @@ if [[ -n "${QSIPREP_BIDS_FILTER}" && -n "${DWI_SELECT_JSON}" ]]; then
   echo "ERROR: use only one of --bids-filter or --dwi-select"; exit 1
 fi
 
-mkdir -p "${TRACKTBI_ROOT}/logs" "${RESULTS_ROOT}"
+mkdir -p "${REPO_ROOT}/logs" "${RESULTS_ROOT}"
 
 # --- Build subjects.txt (skip if SUBJECT_LIST_USE_EXISTING=1 and file already has entries) ---
 if [[ "${SUBJECT_LIST_USE_EXISTING:-0}" == "1" && -s "${SUBJECT_LIST_FILE}" ]]; then
@@ -301,9 +302,9 @@ if [[ "${PIPELINE_ENGINE}" != "bash" ]]; then
 fi
 
 # Passed through to array.sh -> run_subject.sh / subject.sh (sbatch --export=ALL)
-# DWI_ROOT/TRACKTBI_ROOT are critical: inside sbatch $0 points to Slurm's spool
+# DWI_ROOT/REPO_ROOT are critical: inside sbatch $0 points to Slurm's spool
 # copy of the script, so array.sh cannot derive them on the compute node.
-export DWI_ROOT TRACKTBI_ROOT PIPELINE_ENGINE
+export DWI_ROOT REPO_ROOT TRACKTBI_ROOT PIPELINE_ENGINE
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_NO_SDC QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
@@ -333,7 +334,7 @@ SBATCH_EXTRA=()
 [[ -n "${SBATCH_MEM:-}"       ]] && SBATCH_EXTRA+=(--mem="${SBATCH_MEM}")
 if [[ -n "${SBATCH_JOB_NAME:-}" ]]; then
   SBATCH_EXTRA+=(--job-name="${SBATCH_JOB_NAME}"
-                 --output="${TRACKTBI_ROOT}/logs/${SBATCH_JOB_NAME}_%A_%a.out"
-                 --error="${TRACKTBI_ROOT}/logs/${SBATCH_JOB_NAME}_%A_%a.err")
+                 --output="${REPO_ROOT}/logs/${SBATCH_JOB_NAME}_%A_%a.out"
+                 --error="${REPO_ROOT}/logs/${SBATCH_JOB_NAME}_%A_%a.err")
 fi
 exec sbatch --array="1-${N}%${ARRAY_CONCURRENCY}" --export=ALL "${SBATCH_EXTRA[@]}" "${ARRAY_SCRIPT}"

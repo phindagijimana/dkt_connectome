@@ -37,6 +37,6 @@ HowToAcknowledge: Cite QSIPrep, QSIRecon, FastSurfer/FreeSurfer, and Griffis et 
 - **GitHub:** [github.com/phindagijimana/dkt_connectome](https://github.com/phindagijimana/dkt_connectome)
 - **BIDS Apps:** [bids-apps.neuroimaging.io](https://bids-apps.neuroimaging.io/)
 
-## TrackTBI / CIDUR
+## Study cohorts and data use
 
-Acknowledge your institutional data-use agreements and the TrackTBI/CIDUR study separately as required by your IRB and data-sharing policy.
+This pipeline is validated on **multi-site TrackTBI data (~14 centers)** and **URMC clinical MRI cohorts** (including CIDUR). Acknowledge your institutional data-use agreements and any study-specific requirements separately as required by your IRB and data-sharing policy.
