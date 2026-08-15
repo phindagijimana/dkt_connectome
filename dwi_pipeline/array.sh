@@ -106,8 +106,10 @@ fi
 [[ -n "${RECON_SESSION:-}" ]] && SUBJECT_ARGS+=(--recon-session "${RECON_SESSION}")
 
 if [[ "${PIPELINE_ENGINE}" != "bash" && "${PIPELINE_ENGINE}" != "subject" && "${PIPELINE_ENGINE}" != "subject.sh" ]]; then
-  bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --subject "${SUBJECT}" --quick \
-    || exit 1
+  preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --subject "${SUBJECT}" --quick)
+  ((BIDS_VALIDATE)) && preflight_args+=(--bids-validation)
+  ((BIDS_IGNORE_WARNINGS)) && preflight_args+=(--ignore-warnings)
+  "${preflight_args[@]}" || exit 1
 fi
 
 echo "ACT array task ${SLURM_ARRAY_TASK_ID}: sub-${SUBJECT} mode=${PIPELINE_MODE} engine=${PIPELINE_ENGINE} \

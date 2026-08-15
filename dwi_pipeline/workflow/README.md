@@ -67,6 +67,7 @@ workflow/
     recon.smk                  # Step 2  (plugin: freesurfer_7.4.1.sif or fastsurfer_latest.sif)
     qsirecon.smk                # Step 3  (plugin: qsirecon.sif)
     connectome.smk                # Step 4  (plugin: dkt_connectome.sif)
+    disconnectome.smk             # Step 4.5 (auto when lesion mask + DKT connectome)
     nodestrength.smk               # Step 5  (plugin: nodestrength_0.1.0.sif)
 ```
 
@@ -131,6 +132,7 @@ bash workflow/run_subject.sh inpaint 014                 #   (no-op if no lesion
 bash workflow/run_subject.sh recon 014 --fastsurfer
 bash workflow/run_subject.sh qsirecon 014
 bash workflow/run_subject.sh connectome 014
+bash workflow/run_subject.sh disconnectome 014   # Step 4.5 only (lesion subjects)
 bash workflow/run_subject.sh nodestrength 014
 bash workflow/run_subject.sh all 014 --dry-run            # show the plan, run nothing (-n)
 ```

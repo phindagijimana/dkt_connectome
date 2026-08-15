@@ -27,6 +27,7 @@
 #   ./submit.sh --no-sdc           # skip SDC entirely (matches previous CIDUR GE runs)
 #   ./submit.sh --dwi-shell 1000     # default: acq-b1000 + IntendedFor fmaps for QSIPrep
 #   ./submit.sh --no-dwi-filter      # legacy: no series filter
+#   ./submit.sh --bids-validation    # run bids-validator on BIDS_DIR before submit
 #
 # Common overrides:
 #   PIPELINE_ENGINE=snakemake     # default; use bash for legacy subject.sh path
@@ -91,6 +92,8 @@ PIPELINE_ENGINE="${PIPELINE_ENGINE:-snakemake}"
 RECON_FASTSURFER_DEVICE="${RECON_FASTSURFER_DEVICE:-cpu}"
 INPAINT_DEVICE="${INPAINT_DEVICE:-auto}"
 INPAINT_BATCH_SIZE="${INPAINT_BATCH_SIZE:-4}"
+BIDS_VALIDATE="${BIDS_VALIDATE:-0}"
+BIDS_IGNORE_WARNINGS="${BIDS_IGNORE_WARNINGS:-0}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -149,6 +152,12 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-dwi-filter)
       QSIPREP_NO_DWI_FILTER=1
+      ;;
+    --bids-validation)
+      BIDS_VALIDATE=1
+      ;;
+    --ignore-warnings)
+      BIDS_IGNORE_WARNINGS=1
       ;;
     -h|--help)
       sed -n '11,63p' "$0"
@@ -285,8 +294,10 @@ if [[ -z "${SBATCH_GRES:-}" ]]; then
 fi
 
 if [[ "${PIPELINE_ENGINE}" != "bash" ]]; then
-  bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --quick \
-    || exit 1
+  preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --quick)
+  ((BIDS_VALIDATE)) && preflight_args+=(--bids-validation)
+  ((BIDS_IGNORE_WARNINGS)) && preflight_args+=(--ignore-warnings)
+  "${preflight_args[@]}" || exit 1
 fi
 
 # Passed through to array.sh -> run_subject.sh / subject.sh (sbatch --export=ALL)
@@ -304,6 +315,7 @@ export NODESTRENGTH_STRENGTH_ONLY NODESTRENGTH_NO_REPORT NODESTRENGTH_OUT
 # Optional container/license overrides (else workflow/config/config.local.yaml)
 export CONTAINER_QSIPREP CONTAINER_QSIRECON CONTAINER_FASTSURFER CONTAINER_FREESURFER
 export CONTAINER_CONNECTOME CONTAINER_LIT CONTAINER_NODESTRENGTH FS_LICENSE TEMPLATEFLOW_HOME
+export BIDS_VALIDATE BIDS_IGNORE_WARNINGS
 
 SBATCH_EXTRA=()
 [[ -n "${EXCLUDE_NODES}" ]] && SBATCH_EXTRA+=(--exclude="${EXCLUDE_NODES}")

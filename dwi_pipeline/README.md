@@ -1,5 +1,10 @@
 # dwi_pipeline — QSIPrep → Inpaint → Recon → QSIRecon → connectome → node strength
 
+[![BIDS App](https://img.shields.io/badge/BIDS--App-compatible-blue.svg)](https://bids-apps.neuroimaging.io/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub-blue)](docs/index.md)
+
+**📖 Documentation (QSIPrep-style):** [**docs/index.md**](docs/index.md) · [Quick start](docs/quickstart.md) · [BIDS App `./run`](docs/bids_app.md) · [Installation](docs/installation.md) · [Outputs](docs/outputs.md) · [Disconnectome](docs/disconnectome.md)
+
 Full **anatomically constrained tractography** pipeline with a post-hoc anatomical connectome step,
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.
 
@@ -46,24 +51,32 @@ was produced).
 
 ## Quick start
 
+**BIDS App** (recommended):
+
 ```bash
-cd /path/to/repo
-
-# Full pipeline — local TBI test tree under dwi_pipeline/dwi_test_TBI
-export BIDS_DIR=/path/to/dwi_pipeline/dwi_test_TBI/bids
-export RESULTS_ROOT=/path/to/dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint
-
-bash dwi_pipeline/subject.sh all SUBJ01
+cd dwi_pipeline
+./run /path/to/BIDS /path/to/derivatives participant \
+  --participant-label SUBJ01 --session-filter ses-1 --n-cpus 8
 ```
 
-Slurm array:
+**HPC / Slurm** (TrackTBI production — Apptainer, no Docker orchestrator):
 
 ```bash
 export RESULTS_ROOT=/path/to/results
 export BIDS_DIR=/path/to/bids
-export SUBJECT_LIST_FILE=dwi_pipeline/subjects.txt
+export PIPELINE_ENGINE=snakemake   # default
 ./dwi_pipeline/submit.sh
 ```
+
+**Single subject / `subject.sh`:**
+
+```bash
+export BIDS_DIR=/path/to/bids
+export RESULTS_ROOT=/path/to/out
+bash dwi_pipeline/subject.sh all SUBJ01
+```
+
+More examples: [docs/quickstart.md](docs/quickstart.md).
 
 ---
 
@@ -329,6 +342,7 @@ The **matrix filename stays parcellation-specific** — `dkt_connectome.csv` or
 
 ## Further reading
 
+- **[docs/index.md](docs/index.md)** — BIDS App documentation hub (installation, usage, outputs)
 - [`DWI_Connectivity_Pipeline_Documentation.md`](../DWI_Connectivity_Pipeline_Documentation.md) — step-by-step technical reference (warp chain, QC)
 - [`pipeline_science.md`](pipeline_science.md) — the science behind each step
 - [`acquisition.md`](acquisition.md) — how the images are acquired, and why they need the corrections this pipeline applies

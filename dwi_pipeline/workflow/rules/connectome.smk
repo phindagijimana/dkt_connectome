@@ -26,6 +26,7 @@ CONNECTOME_PARCELLATION_CFG = str(CONNECTOME_CFG.get("parcellation", "dkt"))
 CONNECTOME_DETERMINISTIC = bool(CONNECTOME_CFG.get("deterministic", True))
 CONNECTOME_FAIL_ON_EMPTY_NODES = bool(CONNECTOME_CFG.get("fail_on_empty_nodes", False))
 CONNECTOME_RESAMPLE_TO_DWI = bool(CONNECTOME_CFG.get("resample_to_dwi", True))
+CONNECTOME_WEIGHTING = str(CONNECTOME_CFG.get("weighting", "count")).lower()
 
 
 @functools.lru_cache(maxsize=None)
@@ -118,6 +119,7 @@ rule connectome:
         lut_dkt=CONNECTOME_LUT_DKT,
         deterministic="1" if CONNECTOME_DETERMINISTIC else "0",
         fail_on_empty="1" if CONNECTOME_FAIL_ON_EMPTY_NODES else "0",
+        weighting=CONNECTOME_WEIGHTING,
     shell:
         r"""
         exec > {log} 2>&1
@@ -186,6 +188,15 @@ rule connectome:
         echo "Using aparc+aseg: ${{aparc}}"
         echo "Using DWI reference: ${{dwiref}}"
         echo "Using BIDS T1w (affine reg source): ${{bids_t1w}}"
+        echo "Connectome weighting: {params.weighting}"
+
+        sift2_weights=""
+        if [[ "{params.weighting}" == "sift2" ]]; then
+          sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
+            find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+              -name '*model-sift2_streamlineweights.csv')"
+          echo "Using SIFT2 weights: ${{sift2_weights}}"
+        fi
 
         binds=()
         lut_args=()
@@ -198,6 +209,12 @@ rule connectome:
         env_args=()
         if [[ "{params.deterministic}" == "1" ]]; then
           env_args+=(--env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1" --env "ANTS_RANDOM_SEED=1")
+        fi
+
+        sift2_args=()
+        if [[ -n "${{sift2_weights}}" ]]; then
+          w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
+          sift2_args=(--sift2-weights "/qsirecon/${{w_rel}}")
         fi
 
         apptainer run --cleanenv --containall \
@@ -221,6 +238,7 @@ rule connectome:
           --bids-t1w "${{bids_t1w_in_container}}" \
           --output-dir /out \
           --fs-license /opt/freesurfer/license.txt \
+          "${{sift2_args[@]}}" \
           "${{lut_args[@]}}" \
           --subject-id "sub-${{SUBJECT}}"
 

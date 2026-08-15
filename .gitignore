@@ -152,6 +152,9 @@ backups/
 # TemplateFlow cache (download at runtime; do not commit)
 dwi_pipeline/templateflow/
 
+# MkDocs build output (regenerate with mkdocs build)
+dwi_pipeline/site/
+
 # Local reference papers / repair configs with real subject IDs (never commit)
 dwi_pipeline/Inpainting/
 dwi_pipeline/ENIGMA.docx

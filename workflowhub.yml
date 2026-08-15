@@ -1,37 +1,27 @@
 # =============================================================================
-# WorkflowHub registration metadata for dk_connectome
+# WorkflowHub registration metadata for tracktbi_connectome
 # =============================================================================
-# WorkflowHub (https://workflowhub.eu) is the EU/ELIXIR workflow registry.
-# It accepts Workflow RO-Crate submissions and renders the metadata you
-# define here into the public landing page.
-#
-# Recommended publishing flow (one-time):
-#   1. `./connectome start` to completion -> emits ro-crate-metadata.json
-#      under <results_root>/.
-#   2. `zip -r dk_connectome-crate.zip <results_root>` and submit at
-#      https://workflowhub.eu/workflows/new
-#   3. Reference this file's metadata when filling in the upload form.
-#
-# This file is also discoverable by harvesters that crawl repo roots for
-# WorkflowHub metadata (e.g. EOSC-Life Workflow Registry, ELIXIR RIR).
+# Canonical pipeline: dwi_pipeline/run (BIDS App) + dwi_pipeline/workflow/
+# Legacy 4-stage root workflow: Snakefile (deprecated)
 # =============================================================================
 
-name: dk_connectome
+name: tracktbi_connectome
 description: |
-  Reproducible BIDS DWI processing pipeline. Wraps QSIPrep, FreeSurfer /
-  FastSurfer, QSIRecon, and an Apptainer container of MRtrix3 + ANTs to
-  build 84x84 Desikan-Killiany structural connectivity matrices. Designed
-  to run on a single workstation, an HPC Slurm cluster, or Kubernetes /
-  AWS Batch / Google Batch profiles.
+  Canonical TrackTBI / CIDUR BIDS App pipeline (v0.2+). QSIPrep → optional
+  neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS → DKT
+  connectome → optional disconnectome → node-strength / ENIGMA report.
 
-version: "0.1.0"
-license: MIT
-homepage: https://github.com/phindagijimana/dk_connectome
-repository: https://github.com/phindagijimana/dk_connectome.git
-issue_tracker: https://github.com/phindagijimana/dk_connectome/issues
+version: "0.2.0"
+license: Apache-2.0
+homepage: https://github.com/phindagijimana/dkt_connectome
+repository: https://github.com/phindagijimana/dkt_connectome.git
+issue_tracker: https://github.com/phindagijimana/dkt_connectome/issues
 
-main_workflow_file: Snakefile
+main_workflow_file: dwi_pipeline/workflow/Snakefile
 workflow_language: Snakemake
+
+legacy_workflow_file: Snakefile
+legacy_workflow_note: "Root 4-stage dk_connectome — retained for backward compatibility only."
 
 categories:
   - Connectomics
@@ -44,10 +34,12 @@ tags:
   - QSIPrep
   - QSIRecon
   - FreeSurfer
+  - FastSurfer
   - MRtrix3
-  - ANTs
   - structural-connectome
-  - Desikan-Killiany
+  - Desikan-Killiany-Tourville
+  - disconnectome
+  - TBI
   - reproducibility
   - Apptainer
   - Snakemake
@@ -68,19 +60,16 @@ containers:
   - name: dk_connectome
     source: docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
     description: |
-      In-house image bundling MRtrix3 (mrconvert, labelconvert, tck2connectome,
-      mrinfo, tckinfo) + ANTs (antsApplyTransforms) + FreeSurferColorLUT.txt.
-      Build recipe in containers/Dockerfile.dk_connectome and
-      containers/Apptainer.dk_connectome.def.
+      Step 4 connectome image (MRtrix3 + ANTs). Build recipe in
+      containers/Dockerfile.dk_connectome. HPC uses Apptainer .sif instead.
 
 executors:
   - local
   - slurm
+  - docker
   - kubernetes
-  - aws-batch
-  - google-batch
 
 provenance:
-  ro_crate_path: ro-crate-metadata.json        # emitted by onsuccess handler
+  ro_crate_path: ro-crate-metadata.json
 
 cite_as: CITATION.cff

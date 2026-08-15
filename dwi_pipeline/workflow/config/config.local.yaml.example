@@ -3,15 +3,14 @@
 #
 #   cp config.local.yaml.example config.local.yaml
 #
-# Alternatively, export the same paths as subject.sh env vars before submit:
-#   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_FASTSURFER,
-#   CONTAINER_FREESURFER, CONTAINER_CONNECTOME, CONTAINER_LIT,
-#   CONTAINER_NODESTRENGTH, FS_LICENSE
-#
-# Keep local TBI test BIDS + RESULTS_ROOT under dwi_pipeline/dwi_test_TBI/.
-#   bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids
-#   results_root: /path/to/dwi_pipeline/dwi_test_TBI/sub-<SUBJECT>_<recon>[_flags]
-#     e.g. sub-TBI011011_fastsurfer_inpaint
+# Pin containers to tested upstream tags (build/pull .sif from these):
+container_pins:
+  qsiprep: pennlinc/qsiprep:1.0.0
+  qsirecon: pennlinc/qsirecon:1.2.1
+  freesurfer: freesurfer/freesurfer:7.4.1
+  fastsurfer: deepmi/fastsurfer:latest
+  connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
+  lit: deepmi/lit:0.6.0
 
 containers:
   qsiprep: /path/to/others/containers/qsiprep.sif
@@ -23,3 +22,11 @@ containers:
   nodestrength: /path/to/node_strength/containers/nodestrength_0.1.0.sif
 
 fs_license: /path/to/others/data_mining/freesurfer/license.txt
+
+# Optional: validate BIDS before every run
+# bids:
+#   validate: true
+
+# Local TBI test layout example:
+# bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids
+# results_root: /path/to/dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint
