@@ -15,7 +15,9 @@ This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.i
 | [Installation](installation.md) | Requirements, Apptainer images, licenses, config |
 | [Containers](containers.md) | All step `.sif` images and env vars |
 | [Quick start](quickstart.md) | First run in three commands |
-| [Usage](usage.md) | `subject.sh`, Snakemake, Slurm, CLI flags |
+| [Usage](usage.md) | Full command-line reference (QSIPrep-style) |
+| [Preparing your data](preparing_data.md) | BIDS inputs, SDC, lesion masks |
+| [Pipeline steps](pipeline_steps.md) | What happens in each step |
 | [BIDS App](bids_app.md) | `./run <bids> <out> participant` — official entrypoint |
 | [Configuration](configuration.md) | Config keys, env vars, container paths |
 | [Outputs](outputs.md) | Derivatives layout under `RESULTS_ROOT` |
@@ -28,8 +30,11 @@ This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.i
 | [Lesion segmentation](lesion_segmentation.md) | Manual masks, inpainting, excision index |
 | [Integrity QC](integrity_qc.md) | Connectome / disconnectome sanity checks |
 | [Legacy root workflow](legacy_workflow.md) | Root 4-stage Snakefile vs `dwi_pipeline/workflow` |
+| [Comparisons](comparisons.md) | vs QSIPrep, MRtrix3_connectome, micapipe |
 | [Citation](citation.md) | Acknowledgements and references |
+| [License](license.md) | Apache 2.0 |
 | [Changelog](changelog.md) | Version history (v0.2.0) |
+| [Getting help](getting_help.md) | GitHub issues, NeuroStars, upstream docs |
 
 ---
 

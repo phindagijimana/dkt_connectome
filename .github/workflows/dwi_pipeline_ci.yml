@@ -46,8 +46,8 @@ jobs:
         working-directory: dwi_pipeline
         run: |
           ./run --help | grep -q export-bids-derivatives
-          ./run --help | grep -q random-seed
-          ./run --help | grep -q stop-on-first-crash
+          ./run --help | grep -q session-id
+          ./run --help | grep -q nprocs
           test "$(./run --version)" = "0.2.0"
 
       - name: BIDS App smoke test (minimal fixture, dry-run)

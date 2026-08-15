@@ -1,9 +1,9 @@
 # dwi_pipeline — QSIPrep → Inpaint → Recon → QSIRecon → connectome → node strength
 
-[![BIDS App](https://img.shields.io/badge/BIDS--App-compatible-blue.svg)](https://bids-apps.neuroimaging.io/)
-[![Documentation](https://img.shields.io/badge/docs-GitHub-blue)](docs/index.md)
+[![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
+[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
-**📖 Documentation (QSIPrep-style):** [**docs/index.md**](docs/index.md) · [Quick start](docs/quickstart.md) · [BIDS App `./run`](docs/bids_app.md) · [Installation](docs/installation.md) · [Outputs](docs/outputs.md) · [Disconnectome](docs/disconnectome.md)
+**📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Quick start](docs/quickstart.md) · [BIDS App `./run`](docs/bids_app.md) · [Installation](docs/installation.md)
 
 Full **anatomically constrained tractography** pipeline with a post-hoc anatomical connectome step,
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.

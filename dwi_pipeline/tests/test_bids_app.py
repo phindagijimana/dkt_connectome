@@ -45,7 +45,15 @@ def test_run_version():
 
 def test_run_help_has_bids_app_flags():
     help_text = subprocess.check_output([str(RUN), "--help"], text=True)
-    for flag in ("--random-seed", "--stop-on-first-crash", "--participant-label"):
+    for flag in (
+        "--random-seed",
+        "--stop-on-first-crash",
+        "--participant-label",
+        "--session-id",
+        "--nprocs",
+        "--bids-filter-file",
+        "--omp-nthreads",
+    ):
         assert flag in help_text
 
 

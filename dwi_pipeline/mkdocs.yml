@@ -9,7 +9,7 @@ docs_dir: docs
 
 theme:
   name: readthedocs
-  navigation_depth: 3
+  navigation_depth: 4
 
 nav:
   - Home: index.md
@@ -17,8 +17,9 @@ nav:
   - Containers: containers.md
   - Quick start: quickstart.md
   - Usage: usage.md
+  - Preparing your data: preparing_data.md
+  - Pipeline steps: pipeline_steps.md
   - BIDS App: bids_app.md
-  - BIDS Apps registry: bids_apps_registry.md
   - Configuration: configuration.md
   - Outputs: outputs.md
   - Derivatives: derivatives.md
@@ -29,10 +30,15 @@ nav:
   - Integrity QC: integrity_qc.md
   - FAQ: faq.md
   - Troubleshooting: troubleshooting.md
+  - Comparisons: comparisons.md
   - Legacy workflow: legacy_workflow.md
   - Citation: citation.md
+  - License: license.md
   - Changelog: changelog.md
-  - Read the Docs setup: readthedocs_setup.md
+  - Getting help: getting_help.md
+  - Maintainer:
+    - BIDS Apps registry: bids_apps_registry.md
+    - Read the Docs setup: readthedocs_setup.md
 
 markdown_extensions:
   - toc:
