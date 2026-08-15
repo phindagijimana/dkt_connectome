@@ -1,5 +1,7 @@
 # Disconnectome
 
+Theory and biological rationale: [Step 4.5 — Disconnectome (methods)](methods/step4_5_disconnectome.md).
+
 See [`Inpainting/disconnection.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md) for the full method specification.
 
 Part of the [DKT Connectome documentation](index.md).

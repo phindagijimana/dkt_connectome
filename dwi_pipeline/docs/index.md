@@ -42,6 +42,7 @@ This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIR
 | [Quick start](quickstart.md) | First run in three commands |
 | [Usage](usage.md) | Full command-line reference (QSIPrep-style) |
 | [Preparing your data](preparing_data.md) | BIDS inputs, SDC, lesion masks |
+| [Methods](methods/index.md) | Theory and citations for each step (QSIPrep-style) |
 | [Pipeline steps](pipeline_steps.md) | What happens in each step |
 | [Snakemake workflow](snakemake_workflow.md) | Full DAG engine (`workflow/Snakefile`, all `target_*` rules) |
 | [BIDS App](bids_app.md) | `./run <bids> <out> participant` — official entrypoint |

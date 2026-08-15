@@ -20,6 +20,15 @@ nav:
   - Quick start: quickstart.md
   - Usage: usage.md
   - Preparing your data: preparing_data.md
+  - Methods:
+    - Overview: methods/index.md
+    - Step 1 — QSIPrep: methods/step1_qsiprep.md
+    - Step 1.5 — Inpainting: methods/step1_5_inpaint.md
+    - Step 2 — Recon: methods/step2_recon.md
+    - Step 3 — Tractography: methods/step3_qsirecon.md
+    - Step 4 — Connectome: methods/step4_connectome.md
+    - Step 4.5 — Disconnectome: methods/step4_5_disconnectome.md
+    - Step 5 — Node strength: methods/step5_node_strength.md
   - Pipeline steps: pipeline_steps.md
   - Snakemake workflow: snakemake_workflow.md
   - BIDS App: bids_app.md

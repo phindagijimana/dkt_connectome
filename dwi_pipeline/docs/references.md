@@ -1,6 +1,6 @@
 # Methods references
 
-Peer-reviewed papers and credible resources underpinning each step of the DKT Connectome. For copy-paste BibTeX and acknowledgment text, see [Citation](citation.md).
+Peer-reviewed papers and credible resources underpinning each step of the DKT Connectome. For **theory and rationale** per step, see the [Methods](methods/index.md) section. For copy-paste BibTeX and acknowledgment text, see [Citation](citation.md).
 
 Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22.1/citing.html): cite the **primary method paper** for every tool that contributes to your scientific claim.
 
@@ -33,7 +33,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Eddy/motion (via QSIPrep) | Andersson JLR, Sotiropoulos SN. An integrated approach to correction for off-resonance effects and subject movement in diffusion MR imaging. *NeuroImage* 2016;125:1063–1078. | [10.1016/j.neuroimage.2015.10.019](https://doi.org/10.1016/j.neuroimage.2015.10.019) |
 | Brain extraction (FAST) | Zhang Y, Brady M, Smith S. Segmentation of brain MR images through a hidden Markov random field model and the expectation-maximization algorithm. *IEEE TMI* 2001;20(1):45–57. | [10.1109/42.906424](https://doi.org/10.1109/42.906424) |
 
-**Docs:** [QSIPrep documentation](https://qsiprep.readthedocs.io/) · [Step 1 details](pipeline_steps.md#step-1-qsiprep)
+**Docs:** [QSIPrep documentation](https://qsiprep.readthedocs.io/) · [Step 1 theory](methods/step1_qsiprep.md) · [Step 1 operations](pipeline_steps.md#step-1-qsiprep)
 
 ---
 
@@ -48,7 +48,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | VINN layers (resolution-agnostic) | Henschel L, et al. FastSurferVINN: Building resolution-independent deep segmentation networks. *Medical Image Analysis* 2022. | [10.1016/j.media.2022.102313](https://doi.org/10.1016/j.media.2022.102313) |
 | Inpainting strategy | Lugmayr A, et al. RePaint: Inpainting using denoising diffusion probabilistic models. *CVPR* 2022. | [10.1109/CVPR52688.2022.01175](https://doi.org/10.1109/CVPR52688.2022.01175) |
 
-**Docs:** [containers/lit/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md) · [Lesion segmentation](lesion_segmentation.md)
+**Docs:** [Step 1.5 theory](methods/step1_5_inpaint.md) · [Lesion segmentation](lesion_segmentation.md)
 
 ---
 
@@ -64,7 +64,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | **DKT atlas (78 nodes)** | Klein A, Tourville J. 101 labeled brain images and a consistent human cortical labeling protocol. *Frontiers in Neuroscience* 2012;6:171. | [10.3389/fnins.2012.00171](https://doi.org/10.3389/fnins.2012.00171) |
 | DK atlas (84 nodes, optional) | Desikan RS, et al. An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. *NeuroImage* 2006;31(3):968–980. | [10.1016/j.neuroimage.2006.01.021](https://doi.org/10.1016/j.neuroimage.2006.01.021) |
 
-**Docs:** [Step 2 details](pipeline_steps.md#step-2-recon)
+**Docs:** [Step 2 theory](methods/step2_recon.md) · [Step 2 operations](pipeline_steps.md#step-2-recon)
 
 ---
 
@@ -81,7 +81,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | HSVS segmentation | Smith RE, et al. Hybrid surface/volume segmentation for improved cortical gray matter classification in single voxel diffusion analysis. *NeuroImage* 2020;223:117345. | [10.1016/j.neuroimage.2020.117345](https://doi.org/10.1016/j.neuroimage.2020.117345) |
 | **SIFT2 weights** | Smith RE, et al. SIFT2: Enabling dense quantitative assessment of brain white matter connectivity using streamlines tractography. *NeuroImage* 2015;119:338–351. | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
 
-**Docs:** [QSIRecon documentation](https://qsirecon.readthedocs.io/) · [Step 3 details](pipeline_steps.md#step-3-qsirecon)
+**Docs:** [QSIRecon documentation](https://qsirecon.readthedocs.io/) · [Step 3 theory](methods/step3_qsirecon.md) · [Step 3 operations](pipeline_steps.md#step-3-qsirecon)
 
 ---
 
@@ -97,7 +97,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Registration (ANTs) | Avants BB, et al. A reproducible evaluation of ANTs similarity metric performance in brain image registration. *NeuroImage* 2011;54(3):2033–2044. | [10.1016/j.neuroimage.2010.09.025](https://doi.org/10.1016/j.neuroimage.2010.09.025) |
 | FreeSurfer label volume | Fischl B, et al. Automatically parcellating the human cerebral cortex. *Cerebral Cortex* 2004;14(1):11–22. | [10.1093/cercor/bhg087](https://doi.org/10.1093/cercor/bhg087) |
 
-**Docs:** [Outputs](outputs.md) · [Step 4 details](pipeline_steps.md#step-4-connectome)
+**Docs:** [Step 4 theory](methods/step4_connectome.md) · [Outputs](outputs.md) · [Step 4 operations](pipeline_steps.md#step-4-connectome)
 
 ---
 
@@ -111,7 +111,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Virtual lesion / disconnection index | Kuceyeski R, et al. The Network Modification (NeMo) Tool: a structural connectivity-based tool for lesion localization. *NeuroImage: Clinical* 2013;2:1–8. | [10.1016/j.nicl.2012.10.003](https://doi.org/10.1016/j.nicl.2012.10.003) |
 | Connectome excision literature | Internal synthesis | [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md) |
 
-**Docs:** [Disconnectome](disconnectome.md) · [Integrity QC](integrity_qc.md)
+**Docs:** [Step 4.5 theory](methods/step4_5_disconnectome.md) · [Disconnectome](disconnectome.md) · [Integrity QC](integrity_qc.md)
 
 ---
 
@@ -125,7 +125,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Clinical connectomics report (method basis) | Piper RJ, Feng X, et al., Taylor PN. Thalamocortical structural connectivity in children with focal epilepsy. *Epilepsia* 2026;67(4):1901–1915. | [10.1002/epi.70099](https://doi.org/10.1002/epi.70099) |
 | ENIGMA consortium (normative context) | Thompson PM, et al. ENIGMA and the individual: Predicting factors that affect the brain in 35 countries worldwide. *NeuroImage* 2020;215:116689. | [10.1016/j.neuroimage.2020.116689](https://doi.org/10.1016/j.neuroimage.2020.116689) |
 
-**Docs:** [Step 5 details](pipeline_steps.md#step-5-node-strength)
+**Docs:** [Step 5 theory](methods/step5_node_strength.md) · [Step 5 operations](pipeline_steps.md#step-5-node-strength)
 
 ---
 

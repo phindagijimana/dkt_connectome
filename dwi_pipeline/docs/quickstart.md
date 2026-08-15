@@ -154,4 +154,4 @@ With Snakemake (`PIPELINE_ENGINE=snakemake`, the default), you will also see rul
 
 Logs are written under `RESULTS_ROOT/logs/`. If a step fails, check the step-specific log there before re-running with `--mode <step>` or a Snakemake `target_*` rule.
 
-For what each step does scientifically, see [Pipeline steps](pipeline_steps.md) and [References by step](references.md).
+For what each step does scientifically, see [Methods](methods/index.md) (theory + papers) and [Pipeline steps](pipeline_steps.md) (operational reference).
