@@ -12,6 +12,8 @@ wildcard_constraints:
 
 INPAINT_RESULT_PATTERN = f"{INPAINT_OUT}/sub-{{subject}}/ses-{{session}}/inpainting_volumes/inpainting_result.nii.gz"
 INPAINT_JSON_PATTERN = f"{INPAINT_OUT}/sub-{{subject}}/ses-{{session}}/inpainting.json"
+INPAINT_MASK_PREPARED_PATTERN = f"{INPAINT_OUT}/sub-{{subject}}/ses-{{session}}/lesion_mask_prepared.nii.gz"
+INPAINT_MASK_JSON_PATTERN = f"{INPAINT_OUT}/sub-{{subject}}/ses-{{session}}/lesion_mask_prepared.json"
 
 INPAINT_BINARIZE = bool(INPAINT_CFG.get("binarize", False))
 INPAINT_LABELS = str(INPAINT_CFG.get("labels", "all"))
@@ -31,8 +33,8 @@ def inpaint_paths(subject: str) -> dict:
         "outdir": outdir,
         "result": INPAINT_RESULT_PATTERN.format(subject=subject, session=session),
         "final_json": INPAINT_JSON_PATTERN.format(subject=subject, session=session),
-        "mask_prepared": f"{outdir}/lesion_mask_prepared.nii.gz",
-        "mask_json": f"{outdir}/lesion_mask_prepared.json",
+        "mask_prepared": INPAINT_MASK_PREPARED_PATTERN.format(subject=subject, session=session),
+        "mask_json": INPAINT_MASK_JSON_PATTERN.format(subject=subject, session=session),
         "qc_json": f"{outdir}/inpainting_qc.json",
     }
 
@@ -64,6 +66,8 @@ rule inpaint:
     output:
         result=INPAINT_RESULT_PATTERN,
         final_json=INPAINT_JSON_PATTERN,
+        mask_prepared=INPAINT_MASK_PREPARED_PATTERN,
+        mask_json=INPAINT_MASK_JSON_PATTERN,
     threads: 4
     resources:
         gpu=1,
@@ -71,8 +75,6 @@ rule inpaint:
         f"{RESULTS_ROOT}/logs/sub-{{subject}}_ses-{{session}}_inpaint.log",
     params:
         outdir=lambda wc: f"{INPAINT_OUT}/sub-{wc.subject}/ses-{wc.session}",
-        mask_prepared=lambda wc: f"{INPAINT_OUT}/sub-{wc.subject}/ses-{wc.session}/lesion_mask_prepared.nii.gz",
-        mask_json=lambda wc: f"{INPAINT_OUT}/sub-{wc.subject}/ses-{wc.session}/lesion_mask_prepared.json",
         qc_json=lambda wc: f"{INPAINT_OUT}/sub-{wc.subject}/ses-{wc.session}/inpainting_qc.json",
         session=lambda wc: wc.session,
         binarize_flag="--binarize" if INPAINT_BINARIZE else "",
@@ -89,13 +91,13 @@ rule inpaint:
 
         python3 "{PREPARE_LESION_MASK}" \
           --t1w "{input.t1w}" --mask "{input.mask}" \
-          --out "{params.mask_prepared}" --json "{params.mask_json}" \
+          --out "{output.mask_prepared}" --json "{output.mask_json}" \
           --labels "{INPAINT_LABELS}" \
           {params.binarize_flag}
 
         apptainer exec {params.nv_flag} --cleanenv --containall \
           -B "$(dirname "{input.t1w}")":/t1w_input:ro \
-          -B "{params.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+          -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
           -B "{params.outdir}":/out \
           "{CONTAINER_LIT}" \
           lit-inpainting \
@@ -111,7 +113,7 @@ rule inpaint:
           "lit-inpainting finished but {output.result} was not produced"
 
         python3 "{CHECK_INPAINTING}" \
-          --original "{input.t1w}" --inpainted "{output.result}" --mask "{params.mask_prepared}" \
+          --original "{input.t1w}" --inpainted "{output.result}" --mask "{output.mask_prepared}" \
           --json "{params.qc_json}" \
           --min-outside-corr {INPAINT_MIN_OUTSIDE_CORR} \
           --max-corr-drop {INPAINT_MAX_CORR_DROP}
@@ -124,8 +126,8 @@ rule inpaint:
           fi
         fi
 
-        python3 - "{input.t1w}" "{input.mask}" "{params.mask_prepared}" "{output.result}" \
-          "{params.mask_json}" "{params.qc_json}" "{output.final_json}" \
+        python3 - "{input.t1w}" "{input.mask}" "{output.mask_prepared}" "{output.result}" \
+          "{output.mask_json}" "{params.qc_json}" "{output.final_json}" \
           "sub-${{SUBJECT}}" "ses-{params.session}" "{CONTAINER_LIT}" "{INPAINT_LABELS}" \
           {INPAINT_DILATE} {INPAINT_DEVICE} {INPAINT_BATCH_SIZE} <<'PY'
 import json, sys
