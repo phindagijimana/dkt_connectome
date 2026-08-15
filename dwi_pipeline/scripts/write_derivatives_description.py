@@ -13,7 +13,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-PIPELINE_NAME = "DKT Connectome Pipeline"
+PIPELINE_NAME = "DKT Connectome"
 PIPELINE_VERSION = "0.2.0"
 CODE_URL = "https://github.com/phindagijimana/dkt_connectome"
 

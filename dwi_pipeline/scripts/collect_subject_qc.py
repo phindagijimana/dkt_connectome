@@ -291,7 +291,7 @@ def collect_subject_qc(results_root: Path, subject: str) -> dict:
     overall = _worst_status([s["status"] for s in steps])
 
     return {
-        "pipeline": "DKT Connectome Pipeline",
+        "pipeline": "DKT Connectome",
         "subject": subject_id,
         "results_root": str(results_root),
         "generated_at": datetime.now(timezone.utc).isoformat(),

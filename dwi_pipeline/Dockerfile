@@ -1,4 +1,4 @@
-# DKT Connectome Pipeline — OPTIONAL Docker orchestrator (not used on HPC).
+# DKT Connectome — OPTIONAL Docker orchestrator (not used on HPC).
 #
 # Production on URMC HPC: use submit.sh + Apptainer .sif files (see docs/installation.md).
 # This Dockerfile is for cloud/docker-only deployments if needed later.
@@ -10,7 +10,7 @@
 
 FROM python:3.11-slim-bookworm
 
-LABEL org.opencontainers.image.title="DKT Connectome Pipeline"
+LABEL org.opencontainers.image.title="DKT Connectome"
 LABEL org.opencontainers.image.version="0.2.0"
 LABEL org.opencontainers.image.source="https://github.com/phindagijimana/dkt_connectome"
 LABEL org.opencontainers.image.documentation="https://dkt-connectome.readthedocs.io/en/latest/"

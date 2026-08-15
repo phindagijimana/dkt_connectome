@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the **DKT Connectome Pipeline** (`dwi_pipeline/`) are documented here.
+All notable changes to the **DKT Connectome** (`dwi_pipeline/`) are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning aligns with [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) `PipelineVersion`.
 

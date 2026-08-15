@@ -33,16 +33,16 @@ Update any bookmark to:
 
 The BIDS Apps registry submission should use this URL as `Documentation` in `app.json` (already set).
 
-## Site still shows “TrackTBI Connectome Pipeline”?
+## Site still shows “TrackTBI Connectome” (or old “Pipeline” name)?
 
-The product name is **DKT Connectome Pipeline** (`dwi_pipeline/mkdocs.yml` → `site_name`). The GitHub source is already correct; the hosted site is **stale** because Read the Docs has not rebuilt since the rebrand (no GitHub webhook is configured on the repo).
+The product name is **DKT Connectome** (`dwi_pipeline/mkdocs.yml` → `site_name`). The GitHub source is already correct; the hosted site is **stale** because Read the Docs has not rebuilt since the rebrand (no GitHub webhook is configured on the repo).
 
 Also check the RTD **project display name** (separate from `site_name`):
 
-1. [Admin → Settings → Project name](https://app.readthedocs.org/dashboard/dkt-connectome/edit/) → set to **DKT Connectome Pipeline** (not TrackTBI Connectome Pipeline).
+1. [Admin → Settings → Project name](https://app.readthedocs.org/dashboard/dkt-connectome/edit/) → set to **DKT Connectome** (not TrackTBI Connectome Pipeline).
 2. Save and rebuild **latest**.
 
-After a successful rebuild, the browser tab title, sidebar header, and search box area should all read **DKT Connectome Pipeline**.
+After a successful rebuild, the browser tab title, sidebar header, and search box area should all read **DKT Connectome**.
 
 ### Fix now (manual, ~1 minute)
 
@@ -51,7 +51,7 @@ After a successful rebuild, the browser tab title, sidebar header, and search bo
 3. On the version row, use the menu (⋮) → **Build version** if available, or go to [Settings → Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) → **Add integration** → **GitHub incoming webhook** / connect repository.
 4. Alternatively: [Builds](https://app.readthedocs.org/projects/dkt-connectome/builds/) → trigger a new build for `latest`.
 
-Confirm the new build uses commit **`9c52d48`** or later (must include `site_name: DKT Connectome Pipeline` in `dwi_pipeline/mkdocs.yml`).
+Confirm the new build uses commit **`9c52d48`** or later (must include `site_name: DKT Connectome` in `dwi_pipeline/mkdocs.yml`).
 
 ### Browser favicon (QSIPrep-style)
 

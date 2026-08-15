@@ -1,6 +1,6 @@
 # Snakemake workflow
 
-The **canonical execution engine** for the DKT Connectome Pipeline is the Snakemake workflow under [`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow).
+The **canonical execution engine** for the DKT Connectome is the Snakemake workflow under [`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow).
 
 Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, connectome, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — the same dependency chain as the legacy `subject.sh` bash path, but declarative and resumable.
 

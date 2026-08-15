@@ -165,7 +165,7 @@ Multiple `--session-filter` values are rejected — run separate jobs per sessio
 
 Submit to the [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/) with:
 
-- **Name:** DKT Connectome Pipeline  
+- **Name:** DKT Connectome  
 - **Version:** 0.2.0 (see `./run --version`)  
 - **Documentation:** https://dkt-connectome.readthedocs.io/en/latest/  
 - **Docker Hub:** `phindagijimana/dkt-connectome:0.2.0` (orchestrator; step images mounted at runtime)  

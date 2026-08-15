@@ -1,5 +1,5 @@
 {
-  "name": "DKT Connectome Pipeline",
+  "name": "DKT Connectome",
   "tool-version": "0.2.0",
   "schema-version": "0.5",
   "container-image": {

@@ -1,6 +1,6 @@
 # Methods references
 
-Peer-reviewed papers and credible resources underpinning each step of the DKT Connectome Pipeline. For copy-paste BibTeX and acknowledgment text, see [Citation](citation.md).
+Peer-reviewed papers and credible resources underpinning each step of the DKT Connectome. For copy-paste BibTeX and acknowledgment text, see [Citation](citation.md).
 
 Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22.1/citing.html): cite the **primary method paper** for every tool that contributes to your scientific claim.
 

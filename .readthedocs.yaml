@@ -1,6 +1,6 @@
 # Read the Docs configuration
 # https://docs.readthedocs.io/en/stable/config-file/v2.html
-# Project display name: DKT Connectome Pipeline (see dwi_pipeline/mkdocs.yml site_name)
+# Project display name: DKT Connectome (see dwi_pipeline/mkdocs.yml site_name)
 
 version: 2
 
