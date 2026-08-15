@@ -43,6 +43,11 @@ derivatives/
 /dwi_pipeline/dwi_test_TBI/**
 !/dwi_pipeline/dwi_test_TBI/README.md
 
+# IDEAS II sample BIDS (OpenNeuro ds007401) — downloaded NIfTI, not committed.
+/dwi_pipeline/sample_data/ideas/bids/**
+!/dwi_pipeline/sample_data/ideas/README.md
+!/dwi_pipeline/sample_data/ideas/SUBJECTS.md
+
 # --- Container images (huge, distributed separately) --------------------------
 *.sif
 *.img

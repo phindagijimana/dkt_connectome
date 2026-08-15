@@ -17,6 +17,17 @@ End-to-end walkthrough using the bundled TBI example layout. For theory, see [Me
 
 ## 1. Layout
 
+**Option A — IDEAS II sample (recommended, public data):**
+
+```bash
+bash dwi_pipeline/scripts/download_ideas_sample.sh
+export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
+```
+
+Two subjects (`sub-1`, `sub-6`) from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401). See [IDEAS sample data](datasets/ideas.md).
+
+**Option B — local TBI test tree:**
+
 ```text
 dwi_pipeline/dwi_test_TBI/
   bids/                              # BIDS inputs (gitignored — you provide)

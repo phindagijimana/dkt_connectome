@@ -1,0 +1,84 @@
+# IDEAS II sample dataset
+
+Public BIDS subset for tutorials and smoke tests — **two subjects** from the IDEAS II epilepsy diffusion release.
+
+**Download script:** [`scripts/download_ideas_sample.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/download_ideas_sample.sh)
+
+**Local path after download:** `dwi_pipeline/sample_data/ideas/bids/` (gitignored NIfTI; README tracked)
+
+---
+
+## Source
+
+| Resource | Link |
+|----------|------|
+| **OpenNeuro** | [openneuro.org/datasets/ds007401](https://openneuro.org/datasets/ds007401) |
+| **DOI** | [10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0) |
+| **CNNP Lab index** | [IDEAS data page](https://sites.google.com/view/cnnp-lab//ideas-data) |
+| **Paper** | [Taylor et al. 2026, *Epilepsia*](https://doi.org/10.1002/epi.70186) |
+
+We pull from **OpenNeuro S3** (`s3://openneuro.org/ds007401/`) rather than Figshare bundles — same IDEAS II BIDS release, easier partial subject download.
+
+---
+
+## Included subjects
+
+| ID | Session | Modalities |
+|----|---------|------------|
+| `sub-1` | `ses-1` | T1w, FLAIR, DWI |
+| `sub-6` | `ses-1` | T1w, FLAIR, DWI |
+
+No resection masks are bundled in this two-subject sample. For RAMPS resection masks, see the [Figshare resection bundle](https://figshare.com/s/476b37fd883c14f50324) on the CNNP Lab page.
+
+---
+
+## Download
+
+```bash
+bash dwi_pipeline/scripts/download_ideas_sample.sh
+```
+
+Requires AWS CLI (public read-only S3 — no credentials needed).
+
+---
+
+## Example run
+
+```bash
+export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
+export FS_LICENSE=/path/to/license.txt
+
+cd dwi_pipeline
+./run "${BIDS_DIR}" /tmp/ideas_out participant \
+  --participant-label 1 \
+  --session-filter ses-1 \
+  --fastsurfer \
+  --syn \
+  --n-cpus 8
+```
+
+**Notes:**
+
+- Pass **`--syn`** when no fieldmap is in the dwi-select filter (default b=1000 shell).
+- Participant label is **`1`** or **`6`** (with or without `sub-` prefix).
+- Full pipeline takes hours; use **`--dry-run`** first.
+
+See also: [Tutorial](../tutorial.md).
+
+---
+
+## Citation
+
+If you use these data, cite IDEAS II:
+
+> Taylor PN, et al. Open diffusion MRI and connectivity data for epilepsy and surgery: The IDEAS II release. *Epilepsia* 2026. https://doi.org/10.1002/epi.70186
+
+IDEAS I (T1w/FLAIR only): Taylor PN, et al. *Epilepsia* 2025. https://doi.org/10.1111/epi.18192
+
+---
+
+## See also
+
+- [sample_data/ideas/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/ideas/README.md)
+- [Validation](../validation.md)
+- [Preparing your data](../preparing_data.md)
