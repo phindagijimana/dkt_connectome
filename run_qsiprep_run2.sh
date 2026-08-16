@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=qsiprep_run2
-#SBATCH --output=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs/qsiprep_run2_%j.out
-#SBATCH --error=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs/qsiprep_run2_%j.err
+#SBATCH --output=logs/qsiprep_run2_%j.out
+#SBATCH --error=logs/qsiprep_run2_%j.err
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
@@ -9,36 +9,34 @@
 
 set +H  # disable history expansion
 
-# Create output and work directories if not exist
-mkdir -p /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/qsiprep_run2_output
-mkdir -p /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/intermediate_results_run2
-mkdir -p /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
-# Define paths
-CONTAINER_PATH=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/containers/qsiprep.sif
-TEMPLATEFLOW_HOME=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/templateflow
-BIDS_DIR="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids"
-OUTPUT_DIR=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/qsiprep_run2_output
-WORK_DIR=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/intermediate_results_run2
-FS_LICENSE=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/data_mining/freesurfer/license.txt
-BIDS_FILTER=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/bids_filter_run2.json
+# Create output and work directories if not exist
+mkdir -p "${PROJECT_ROOT}/qsiprep_run2_output"
+mkdir -p "${PROJECT_ROOT}/intermediate_results_run2"
+mkdir -p "${PROJECT_ROOT}/logs"
+
+# Define paths (override via environment before submit)
+CONTAINER_PATH="${CONTAINER_QSIPREP:-/path/to/containers/qsiprep.sif}"
+TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${PROJECT_ROOT}/templateflow}"
+BIDS_DIR="${BIDS_DIR:-/path/to/BIDS}"
+OUTPUT_DIR="${OUTPUT_DIR:-${PROJECT_ROOT}/qsiprep_run2_output}"
+WORK_DIR="${WORK_DIR:-${PROJECT_ROOT}/intermediate_results_run2}"
+FS_LICENSE="${FS_LICENSE:-/path/to/license.txt}"
+BIDS_FILTER="${BIDS_FILTER:-${PROJECT_ROOT}/bids_filter_run2.json}"
 
 # Subject to process (without 'sub-' prefix). Real study IDs are kept out of
 # this repository, so override it: SUBJECT=<id> bash run_qsiprep_run2.sh
 SUBJECT="${SUBJECT:-SUBJ03}"
 
 # Create TemplateFlow directory
-mkdir -p $TEMPLATEFLOW_HOME
+mkdir -p "${TEMPLATEFLOW_HOME}"
 
 # Download QSIPrep container if it doesn't exist
-if [ ! -f "$CONTAINER_PATH" ]; then
-    echo "QSIPrep container not found. Downloading..."
-    cd /mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/containers
-    apptainer pull docker://pennbbl/qsiprep:0.23.0
-    mv qsiprep_0.23.0.sif qsiprep.sif
-    echo "Download complete."
-else
-    echo "QSIPrep container found at $CONTAINER_PATH"
+if [ ! -f "${CONTAINER_PATH}" ]; then
+    echo "QSIPrep container not found at ${CONTAINER_PATH}"
+    echo "Set CONTAINER_QSIPREP or pull qsiprep.sif before running."
+    exit 1
 fi
 
 # Export TemplateFlow home for this session
@@ -82,7 +80,7 @@ apptainer run --cleanenv --containall \
   -B "${TEMPLATEFLOW_HOME}":/templateflow \
   -B "${BIDS_FILTER}":/bids_filter.json:ro \
   --env "TEMPLATEFLOW_HOME=/templateflow" \
-  $CONTAINER_PATH \
+  "${CONTAINER_PATH}" \
   /bids_input /output participant \
   --participant-label ${SUBJECT} \
   --fs-license-file /opt/freesurfer/license.txt \

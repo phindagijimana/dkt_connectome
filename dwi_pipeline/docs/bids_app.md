@@ -28,7 +28,7 @@ cd dwi_pipeline
 ### Example
 
 ```bash
-./run /data/CIDUR_BIDS/data_bids /data/derivatives participant \
+./run /data/bids /data/derivatives participant \
   --participant-label 009 \
   --session-filter ses-1 \
   --n-cpus 8

@@ -55,7 +55,7 @@ Custom filter:
 
 ```bash
 ./run BIDS OUT participant --participant-label 001 \
-  --dwi-select config/dwi_select_cidur_50dirax.json
+  --dwi-select config/dwi_select_50dirax_no_fmap.json
 ```
 
 Disable filtering (all DWI series):
@@ -74,14 +74,14 @@ Fieldmap in dwi-select filter with IntendedFor?
   └─ NO  → Must pass one of:
             --syn          SyN synthetic SDC (recommended for GE / no fmap)
             --fmap-retry   Ignore bad fmaps, force SyN
-            --no-sdc       Skip SDC (legacy CIDUR compatibility only)
+            --no-sdc       Skip SDC (legacy no-fieldmap compatibility only)
 ```
 
 Details: [fmaps.md](https://github.com/phindagijimana/dkt_connectome/blob/main/fmaps.md).
 
 ---
 
-## Lesion masks (TBI / CIDUR)
+## Lesion masks (TBI)
 
 Place next to session T1w:
 

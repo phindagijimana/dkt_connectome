@@ -11,7 +11,7 @@ The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with opti
 | Cohort | Role |
 |--------|------|
 | **TRACK-TBI** (~14 centers) | Multi-site TBI diffusion MRI |
-| **URMC clinical MRI** (incl. CIDUR) | Local acquisition variants, lesion masks |
+| **URMC clinical MRI** | Local acquisition variants, lesion masks |
 
 Cite cohort data use separately from pipeline software — see [Citation](citation.md).
 

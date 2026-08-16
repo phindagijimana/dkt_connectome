@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PIPELINE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-CONTAINER="${DISCONNECTOME_CONTAINER:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif}"
+CONTAINER="${DISCONNECTOME_CONTAINER:-${CONTAINER_CONNECTOME:-/path/to/dkt_connectome.sif}}"
 
 usage() {
   cat <<EOF

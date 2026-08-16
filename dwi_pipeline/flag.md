@@ -30,7 +30,7 @@ Pass after `./submit.sh …` or `bash subject.sh <mode> <subject> …` / `bash r
 |------|----------------|--------------|
 | `--syn` / `--use-syn-sdc` | `QSIPREP_USE_SYN_SDC=1` | Use SyN synthetic SDC (`--use-syn-sdc error`) when there is no measured fieldmap in the dwi-select filter. Recommended for GE / no-fmap subjects when you want a real distortion correction. |
 | `--fmap-retry` | `QSIPREP_FMAP_RETRY=1` | Ignore BIDS fieldmaps and force SyN SDC (`--ignore fieldmaps --use-syn-sdc error`). Use when fmaps exist but are bad. |
-| `--no-sdc` | `QSIPREP_NO_SDC=1` | Skip SDC entirely — no fmap, no SyN. Reproduces the previous CIDUR GE runs (log line: `explicit no_sdc -> NO SDC`). Use only for reproducibility of prior no-SDC outputs; prefer `--syn` for new cohort processing. |
+| `--no-sdc` | `QSIPREP_NO_SDC=1` | Skip SDC entirely — no fmap, no SyN. Reproduces legacy no-fieldmap GE runs (log line: `explicit no_sdc -> NO SDC`). Use only for reproducibility of prior no-SDC outputs; prefer `--syn` for new cohort processing. |
 
 Without measured fmaps in the filter, the pipeline **fails** unless `--syn`, `--fmap-retry`, or `--no-sdc` is set.
 

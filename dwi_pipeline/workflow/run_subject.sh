@@ -234,7 +234,7 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
   INPAINT_ENABLED="${OVERRIDES[inpaint.enabled]:-true}"
   if [[ "${INPAINT_ENABLED}" == "true" ]]; then
     _results_root="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
-    _bids_dir="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
+    _bids_dir="${BIDS_DIR:-/path/to/BIDS}"
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"
     _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
@@ -267,7 +267,7 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
   DISCONNECTOME_ENABLED="${OVERRIDES[disconnectome.enabled]:-true}"
   if [[ "${DISCONNECTOME_ENABLED}" == "true" ]]; then
     _results_root="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
-    _bids_dir="${BIDS_DIR:-/path/to/CIDUR_BIDS/data_bids}"
+    _bids_dir="${BIDS_DIR:-/path/to/BIDS}"
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"
     _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"

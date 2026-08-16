@@ -37,7 +37,7 @@ See [`sample_data/ideas/README.md`](sample_data/ideas/README.md) and [docs/datas
 BIDS inputs in `dwi_test_TBI/bids/`, and one `RESULTS_ROOT` subdirectory per
 subject/settings using `sub-<SUBJECT>_<recon>[_flags]` (e.g.
 `sub-TBI011011_fastsurfer_inpaint`). Keep large cohort archives (e.g.
-`CIDUR_BIDS`) separate from day-to-day pipeline I/O.
+local BIDS archives) separate from day-to-day pipeline I/O.
 
 ---
 
@@ -192,7 +192,7 @@ for the full CLI, output layout, and the underlying Piper et al. 2026 methodolog
 | `--dwi-select PATH` | Explicit dwi-select JSON |
 | `--syn` | SyN SDC when no fmap in filter |
 | `--fmap-retry` | Ignore fieldmaps, SyN SDC |
-| `--no-sdc` | Skip SDC entirely (reproduces previous CIDUR GE runs) |
+| `--no-sdc` | Skip SDC entirely (reproduces legacy no-fieldmap GE runs) |
 | `--fastsurfer` | FastSurfer instead of recon-all |
 | `--fast-fs` | FastSurfer + `--fsaparc` (adds a classic DK-68 aparc/ribbon alongside FastSurfer's native DKT) |
 | `--no-recon` | Skip Step 2 (requires ACT-fast spec or existing FS dir) |

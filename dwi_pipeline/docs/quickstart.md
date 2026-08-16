@@ -100,7 +100,7 @@ Slurm array over a subject list:
 ```bash
 export BIDS_DIR=/path/to/BIDS
 export RESULTS_ROOT=/path/to/derivatives
-export SUBJECT_LIST_FILE=dwi_pipeline/subject_list_cidur_fmap.txt
+export SUBJECT_LIST_FILE=dwi_pipeline/subject_list_urmc_with_fmap.txt  # local copy from .example.txt
 bash dwi_pipeline/submit.sh
 ```
 

@@ -113,7 +113,7 @@
 #   bash subject.sh nodestrength 014         # Step 5 only (needs an existing connectome)
 #   bash subject.sh all 014 --syn            # no BIDS fmap -> --use-syn-sdc error
 #   bash subject.sh all 014 --fmap-retry     # ignore measured fmaps, SyN SDC
-#   bash subject.sh all 014 --no-sdc         # skip SDC entirely (matches previous CIDUR GE runs)
+#   bash subject.sh all 014 --no-sdc         # skip SDC entirely (matches previous no-fieldmap GE runs)
 #   bash subject.sh all 014 --dwi-shell 1000 # default: acq-b1000 DWI + IntendedFor fmaps
 #   bash subject.sh all 014 --no-dwi-filter  # process all DWI/fmaps (legacy behavior)
 #   bash subject.sh all 014 --dwi-select /path/dwi_select_b3000.json
@@ -164,7 +164,7 @@
 #   CONNECTOME_RESAMPLE_TO_DWI=0|1  resample the segmentation onto the DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
 #   QSIPREP_FMAP_RETRY=1   --ignore fieldmaps --use-syn-sdc error (same as --fmap-retry)
-#   QSIPREP_NO_SDC=1       skip SDC entirely — no fmap, no SyN (same as --no-sdc; matches previous CIDUR GE runs)
+#   QSIPREP_NO_SDC=1       skip SDC entirely — no fmap, no SyN (same as --no-sdc; matches previous no-fieldmap GE runs)
 #   DWI_SHELL_B=1000         b-value for default dwi-select (config/dwi_select_b<SHELL>.json)
 #   DWI_SELECT_JSON=         explicit dwi-select config (overrides DWI_SHELL_B path)
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
@@ -639,13 +639,13 @@ _configure_qsiprep_sdc() {
     return 0
   fi
   if [[ "${QSIPREP_NO_SDC:-0}" == "1" ]]; then
-    echo "QSIPrep: sub-${SUBJECT}: explicit --no-sdc -> NO SDC (matches previous CIDUR GE runs)"
+    echo "QSIPrep: sub-${SUBJECT}: explicit --no-sdc -> NO SDC (matches previous no-fieldmap GE runs)"
     return 0
   fi
   _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${SUBJECT}" \
     "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
     "Or pass --syn (QSIPREP_USE_SYN_SDC=1) or --fmap-retry (QSIPREP_FMAP_RETRY=1)." \
-    "Or pass --no-sdc (QSIPREP_NO_SDC=1) to explicitly skip SDC (matches previous CIDUR GE runs)."
+    "Or pass --no-sdc (QSIPREP_NO_SDC=1) to explicitly skip SDC (matches previous no-fieldmap GE runs)."
 }
 
 # -----------------------------------------------------------------------------

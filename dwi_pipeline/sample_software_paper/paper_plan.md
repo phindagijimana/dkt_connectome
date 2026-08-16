@@ -1,7 +1,7 @@
 # Paper plan — TrackTBI-Sub DWI pipeline
 
 Target venue and plan of record for the software paper describing the
-lesion-aware DWI connectome pipeline developed for the TrackTBI / CIDUR
+lesion-aware DWI connectome pipeline developed for the TrackTBI / URMC clinical MRI
 cohorts.
 
 ---
@@ -73,12 +73,12 @@ expert clinical review) as early as possible.
 
 | Weeks | Milestone | Owner(s) |
 |-------|-----------|----------|
-| 1–2 | Freeze pipeline v1.0. Push containers to public registry with pinned digests. CI (unit tests + Snakemake dry-run + `bash -n` + linting). Backfill markers on the 61 previously-completed CIDUR subjects. | Philbert |
+| 1–2 | Freeze pipeline v1.0. Push containers to public registry with pinned digests. CI (unit tests + Snakemake dry-run + `bash -n` + linting). Backfill markers on the 61 previously-completed URMC clinical cohort subjects. | Philbert |
 | 1–2 | Draft comparison table against QSIPrep-standalone, TractoFlow, PreQual, NeMo, Elikopy. | Nishant + Philbert |
-| 3–6 | Process 61 CIDUR subjects end-to-end under the new pipeline (Group 1 fmap + Group 2 no-sdc). Produce per-subject inpainting QC + DKT connectome CSV + peri-lesional node lists. | Daniel + Philbert |
+| 3–6 | Process 61 URMC clinical cohort subjects end-to-end under the new pipeline (Group 1 fmap + Group 2 no-sdc). Produce per-subject inpainting QC + DKT connectome CSV + peri-lesional node lists. | Daniel + Philbert |
 | 3–6 | Healthy-baseline validation: 10 HCP-YA subjects through TrackTBI-Sub vs. QSIPrep + QSIRecon + MRtrix baseline. Report per-edge Pearson r, per-node strength difference, global-metric agreement. | Daniel |
 | 5–7 | Expert clinical review: James inspects a stratified sample (20 subjects: 10 lesion + 10 non-lesion). Rate parcellation face-validity, inpainting quality, tractography plausibility. | James |
-| 6–8 | Peri-lesional analysis: on the CIDUR lesion subjects, quantify inpainted vs. `--no-inpaint` DKT differences (peri-lesional vs. non-peri-lesional edges); optionally excise-connectome (Option C) sensitivity view per `lesion_masks.md`. | Daniel |
+| 6–8 | Peri-lesional analysis: on the URMC lesion subjects, quantify inpainted vs. `--no-inpaint` DKT differences (peri-lesional vs. non-peri-lesional edges); optionally excise-connectome (Option C) sensitivity view per `lesion_masks.md`. | Daniel |
 | 7–9 | Draft methods (Philbert), results (Daniel), clinical relevance (James), intro/discussion (Nishant). | All |
 | 9–10 | First figures + tables ready; per-section internal review. | All |
 | 11–12 | Full-draft internal review, figure polish, comparison-table sign-off, cover letter. | All |
@@ -139,7 +139,7 @@ resumability, container digests, `.dockstore.yml` and `workflowhub.yml`
 registration.
 
 **5.3.7 Cohorts.**
-- CIDUR: 76 TBI patients, 82 subject-sessions from two scanners (Siemens
+- URMC clinical cohort: 76 TBI patients, 82 subject-sessions from two scanners (Siemens
   Skyra/Vida-Fit *n*=34 sessions with fmaps; GE Signa Premier/Artist
   *n*=46 without fmaps).
 - HCP-YA subset: 10 healthy young adults for baseline validation.
@@ -149,9 +149,9 @@ registration.
 - *Baseline comparison.* On HCP-YA subset, compare TrackTBI-Sub DKT
   connectomes against QSIPrep + QSIRecon + MRtrix reference by per-edge
   Pearson r, per-node strength agreement, and global metric equivalence.
-- *Cross-manufacturer.* On CIDUR, quantify residual manufacturer effect
+- *Cross-manufacturer.* On the URMC clinical cohort, quantify residual manufacturer effect
   after processing under matched SDC modes.
-- *Lesion analysis.* Inpainted vs. `--no-inpaint` DKT connectomes on CIDUR
+- *Lesion analysis.* Inpainted vs. `--no-inpaint` DKT connectomes on the URMC clinical cohort
   lesion subjects; report per-edge magnitude of change stratified by
   peri-lesional vs. non-peri-lesional.
 - *Expert clinical review.* Radiological review protocol (§5.4).
@@ -160,7 +160,7 @@ registration.
 
 Following the iEEG-recon Stein-review template.
 
-- **Sample.** 20 CIDUR subjects stratified: 10 with lesion mask (all
+- **Sample.** 20 URMC clinical cohort subjects stratified: 10 with lesion mask (all
   processed with inpaint on), 10 without lesion mask.
 - **Rater.** James (MD, Neurology), blinded to subject metadata beyond
   what is necessary.
@@ -179,7 +179,7 @@ Following the iEEG-recon Stein-review template.
 - **5.5.1 Baseline agreement with reference pipeline.** Report per-edge r,
   per-node strength difference, global metric agreement. Expect r ≥ 0.95
   for the majority of edges, similar to iEEG-recon's r=0.96 finding.
-- **5.5.2 CIDUR cohort processing outcomes.** Successful completion rates
+- **5.5.2 URMC clinical cohort processing outcomes.** Successful completion rates
   per SDC mode; QC pass/fail counts; runtime distributions per step.
 - **5.5.3 Cross-manufacturer effect.** Manufacturer-stratified plots of
   global efficiency, mean node strength, mean streamline count.
@@ -253,12 +253,12 @@ reviewers will ask about; columns are the pipelines. Green (yes) / yellow
 - **Figure 7 — Clinical review outcomes.** Bar/heatmap of James's Likert
   ratings across 20 reviewed subjects.
 
-Supplementary figures: per-subject inpainting QC panels, example CIDUR
+Supplementary figures: per-subject inpainting QC panels, example URMC
 subject connectome trees, resource usage per step.
 
 ## 8. Supplement
 
-- **S1** — Full CIDUR cohort demographics + per-subject SDC mode + QC
+- **S1** — Full URMC clinical cohort demographics + per-subject SDC mode + QC
   metrics table.
 - **S2** — Runtime and resource benchmarks per step, per container.
 - **S3** — Snakemake DAG figure (auto-generated).
@@ -276,8 +276,8 @@ subject connectome trees, resource usage per step.
 - **Workflow registration.** Dockstore + WorkflowHub (already scaffolded
   via `.dockstore.yml` and `workflowhub.yml`).
 - **Config + subject lists.** In-repo, versioned. `dwi_select_*.json`,
-  `subject_list_cidur_{fmap,ge}.txt` cited as reproducible artifacts.
-- **CIDUR data.** IRB permitting, deposit derivatives (connectomes, QC
+  `subject_list_urmc_{with_fmap,no_fmap}.txt` cited as reproducible artifacts.
+- **URMC clinical data.** IRB permitting, deposit derivatives (connectomes, QC
   reports) on OpenNeuro or a controlled-access repo; raw imaging typically
   restricted.
 - **HCP-YA validation subjects.** Publicly available; list of subject IDs +
@@ -287,13 +287,13 @@ subject connectome trees, resource usage per step.
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| CIDUR processing surfaces per-subject failures we haven't seen | med | med | Buffer weeks 4–6; retry with targeted fixes; document failures as part of methods. |
+| URMC cohort processing surfaces per-subject failures we haven't seen | med | med | Buffer weeks 4–6; retry with targeted fixes; document failures as part of methods. |
 | SyN estimation fails on some GE subjects under new `error` gate | med | low | Fall-back to `--no-sdc` explicitly + document. |
 | Reference-baseline r on HCP-YA is lower than expected (< 0.9 per-edge) | low | high | Investigate whether it's a spec/parameter mismatch; adjust config or discuss honestly in limitations. |
 | Neuroradiologist review turnaround slower than 2 weeks | high | med | Send stratified sample early (week 5); accept written notes vs. formal rubric if time-constrained. |
 | Journal returns "insufficient novelty" (algorithm-not-new critique) | med | high | Reframe as integration + validation paper explicitly (iEEG-recon template); pre-empt in cover letter. |
 | Container publication requires org-approval process delays | low | med | Start container-push workflow in week 1; parallel to writing. |
-| Reviewer asks for external-cohort validation beyond CIDUR | med | med | Have OpenNeuro TBI subset ready as a supplementary analysis; reference in cover letter if needed. |
+| Reviewer asks for external-cohort validation beyond the URMC cohort | med | med | Have OpenNeuro TBI subset ready as a supplementary analysis; reference in cover letter if needed. |
 
 ## 11. Pre-submission checklist
 
@@ -301,7 +301,7 @@ subject connectome trees, resource usage per step.
   modes.
 - [ ] Container digests pinned + published; digest table in supplement.
 - [ ] Automated tests + CI green on main branch.
-- [ ] CIDUR n=61 processed end-to-end with per-subject QC in a summary CSV.
+- [ ] URMC cohort n=61 processed end-to-end with per-subject QC in a summary CSV.
 - [ ] HCP-YA n=10 baseline comparison run + statistics table computed.
 - [ ] James's radiological review complete with rubric filled per subject.
 - [ ] Comparison table (Table 1) reviewed by Nishant with each cell defended
