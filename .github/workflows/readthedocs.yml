@@ -51,7 +51,7 @@ jobs:
           mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
           grep -q 'DKT Connectome' dwi_pipeline/site/index.html
           ! grep -qi 'TrackTBI Connectome' dwi_pipeline/site/index.html
-          grep -q 'img/favicon.ico' dwi_pipeline/site/index.html
+          grep -qE 'favicon\.(png|ico)|assets/images/favicon' dwi_pipeline/site/index.html
           test -f dwi_pipeline/site/img/pipeline_overview.svg
 
       - name: Verify live Read the Docs branding (informational)
