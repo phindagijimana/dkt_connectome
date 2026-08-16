@@ -6,17 +6,13 @@ How GitHub Actions exercises **real** Apptainer pulls and (optionally) `./run`. 
 
 ## FreeSurfer license — per user, not per repo
 
-Each site and user must obtain their own FreeSurfer license (free registration):
-
-[https://surfer.nmr.mgh.harvard.edu/registration.html](https://surfer.nmr.mgh.harvard.edu/registration.html)
+Each site and user must obtain their own FreeSurfer license (free registration). **Public user instructions:** [Installation → FreeSurfer license](../installation.md#freesurfer-license-you-must-obtain-this) · [FAQ](../faq.md#do-i-need-a-freesurfer-license-who-provides-it).
 
 At runtime:
 
 ```bash
 export FS_LICENSE=/path/to/your/license.txt
 ```
-
-Documented in [Installation](../installation.md), [Usage](../usage.md), and [Troubleshooting](../troubleshooting.md).
 
 **The project does not ship or centralize licenses.** Do not commit `license.txt` to git.
 

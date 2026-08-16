@@ -54,12 +54,18 @@ See [dwi_test_TBI README](https://github.com/phindagijimana/dkt_connectome/blob/
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
-
-export FS_LICENSE=/path/to/license.txt
-# Apptainer images pulled per installation.md
 ```
 
-Install details: [Installation](installation.md).
+**FreeSurfer license (required before real runs):** register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), download `license.txt`, then:
+
+```bash
+export FS_LICENSE=/path/to/your/license.txt
+./run doctor
+```
+
+The project does not provide a shared license — each user obtains their own. Details: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
+
+Apptainer images: [Installation → Auto-install](installation.md#auto-install-recommended).
 
 ---
 

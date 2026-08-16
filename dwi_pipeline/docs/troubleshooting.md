@@ -9,7 +9,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | `bids-validator` errors | BIDS layout issues | `bash scripts/run_bids_validator.sh BIDS_DIR`; fix sidecars |
-| `FS_LICENSE` missing | No FreeSurfer license | [FreeSurfer registration](https://surfer.nmr.mgh.harvard.edu/registration.html); export path |
+| `FS_LICENSE` missing | No FreeSurfer license on your machine | Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html); `export FS_LICENSE=/path/to/your/license.txt` — [Installation](installation.md#freesurfer-license-you-must-obtain-this) |
 | Container not found | Wrong `.sif` path | Set `CONTAINER_*` or `config.local.yaml` → [Configuration](configuration.md) |
 | `snakemake not found` | Missing on PATH | `pip install snakemake` or `module load` |
 
