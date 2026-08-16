@@ -99,5 +99,6 @@ Be respectful in issues and reviews. Neuroimaging software serves diverse clinic
 ## See also
 
 - [Schema reference](schema_reference.md)
-- [BIDS App submission](BIDS_App.md)
+- [Maintainer one-shot tasks](maintainer/maintainer_tasks.md) — release, Docker Hub, RTD, Dockstore, WorkflowHub
+- [BIDS App submission (optional)](BIDS_App.md)
 - [License information](license.md)

@@ -1,6 +1,8 @@
 # BIDS Apps registry — quick checklist
 
-> **Full submission guide:** [BIDS_App.md](BIDS_App.md) — email template, PR steps, verification commands, FAQ.
+> **Optional** — listing on bids-apps.neuroimaging.io is not required for release.  
+> **Full submission guide (if needed):** [BIDS_App.md](BIDS_App.md)  
+> **Release, Docker, RTD, Dockstore, WorkflowHub:** [Maintainer one-shot tasks](maintainer/maintainer_tasks.md)
 
 Use this page as a short checklist when submitting **DKT Connectome v0.2.0** to the
 [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
@@ -19,22 +21,11 @@ Full prioritized backlog: [Readiness checklist](maintainer/readiness_checklist.m
 | CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
 | Docker orchestrator image | `dwi_pipeline/Dockerfile` → `phindagijimana321/dkt-connectome:0.2.0` |
 
-## Submit
+## Submit *(optional)*
 
-Follow **[BIDS_App.md](BIDS_App.md)** for:
+Follow **[BIDS_App.md](BIDS_App.md)** only if you want a public registry listing.
 
-1. Pre-submission verification commands  
-2. **Option A** — email to `bids.maintenance+apps@gmail.com`  
-3. **Option B** — PR to `bids-standard/bids-website` → `data/tools/apps.yml`  
-
-## One-time maintainer steps (before listing)
-
-| Step | Doc section |
-|------|-------------|
-| Read the Docs live | [BIDS_App.md § Prerequisites](BIDS_App.md#prerequisites-complete-before-submitting) |
-| Docker Hub pull works | [BIDS_App.md § Pre-submission](BIDS_App.md#pre-submission-verification-run-locally) |
-| GitHub Release | [Publishing](maintainer/publishing.md) |
-| Registry PR or email | [BIDS_App.md](BIDS_App.md) |
+For **release and infrastructure** (GitHub Release, Docker Hub, RTD, Dockstore, WorkflowHub), use **[Maintainer one-shot tasks](maintainer/maintainer_tasks.md)**.
 
 ## Smoke test (local)
 

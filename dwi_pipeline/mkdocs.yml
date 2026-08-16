@@ -81,7 +81,8 @@ nav:
     - Configuration catalog: config_catalog.md
     - Schema reference: schema_reference.md
   - Maintainer:
-    - BIDS App submission: BIDS_App.md
+    - One-shot tasks (release, Docker, RTD): maintainer/maintainer_tasks.md
+    - BIDS App submission (optional): BIDS_App.md
     - Readiness checklist: maintainer/readiness_checklist.md
     - Publishing: maintainer/publishing.md
     - BIDS Apps registry (checklist): bids_apps_registry.md
