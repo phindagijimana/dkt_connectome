@@ -406,30 +406,41 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
     return 0
 
 
-def verify_pins(*, require_network: bool = True) -> int:
-    """HTTP-check that primary and fallback registry references exist (no pull)."""
-    import urllib.error
-    import urllib.request
+def verify_pins(*, require_network: bool = True, mode: str | None = None) -> int:
+    """HTTP-check registry references (no pull).
 
+    For each key, at least one URI (primary or fallback) must be reachable.
+    """
     cfg = _load_merged_config()
     pins = cfg.get("container_pins") or {}
+    keys = resolve_keys(mode, None) if mode else DEFAULT_KEYS
     errors: list[str] = []
+    warnings: list[str] = []
     checked = 0
-    for key in DEFAULT_KEYS:
+    for key in keys:
         pin = pins.get(key)
         if not pin:
             continue
-        for uri in pull_uris_for_key(key, pin):
+        uris = pull_uris_for_key(key, pin)
+        key_ok = False
+        for i, uri in enumerate(uris):
             checked += 1
             ok, detail = _registry_reachable(uri)
             status = "OK" if ok else "FAIL"
-            print(f"verify\t{key}\t{status}\t{uri}\t{detail}")
-            if not ok and require_network:
-                errors.append(f"{key}: {uri} ({detail})")
+            label = "primary" if i == 0 else "fallback"
+            print(f"verify\t{key}\t{status}\t{label}\t{uri}\t{detail}")
+            if ok:
+                key_ok = True
+            elif i > 0:
+                warnings.append(f"{key} fallback unreachable: {uri} ({detail})")
+        if not key_ok and require_network:
+            errors.append(f"{key}: no reachable URI among {len(uris)} candidates")
+    for w in warnings:
+        print(f"WARNING [verify]: {w}")
     if errors:
-        print(f"\nverify: {len(errors)} unreachable of {checked} URIs", file=sys.stderr)
+        print(f"\nverify: {len(errors)} keys with no reachable URI ({checked} checks)", file=sys.stderr)
         return 1
-    print(f"verify: OK ({checked} URIs)")
+    print(f"verify: OK ({checked} checks, {len(keys)} keys)")
     return 0
 
 
@@ -494,7 +505,9 @@ def cmd_doctor(args: argparse.Namespace) -> None:
 
 
 def cmd_verify(args: argparse.Namespace) -> None:
-    raise SystemExit(verify_pins(require_network=not args.offline))
+    raise SystemExit(
+        verify_pins(require_network=not args.offline, mode=args.mode)
+    )
 
 
 def main() -> None:
@@ -539,6 +552,7 @@ def main() -> None:
     p_doc.set_defaults(func=cmd_doctor)
 
     p_verify = sub.add_parser("verify", help="HTTP-check container_pins registries (no pull)")
+    p_verify.add_argument("--mode", default=None, help="Check keys for pipeline mode (qsiprep, all, ...)")
     p_verify.add_argument(
         "--offline",
         action="store_true",
