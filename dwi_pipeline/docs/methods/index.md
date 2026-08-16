@@ -1,8 +1,8 @@
 # Methods overview
 
-This section describes the **scientific theory and design rationale** behind each step of the DKT Connectome, with citations to the primary method papers. For operational details (CLI flags, file paths, troubleshooting), see [Pipeline steps](../pipeline_steps.md). For BibTeX and acknowledgment text, see [Citation](../citation.md).
+Per-step **theory, biology, and citations** for the DKT Connectome. For a single landing page that explains the scientific rationale end-to-end, start with **[Science overview](../science_overview.md)**.
 
-The layout follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods page per major processing stage, each linking to [References by step](../references.md).
+This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods page per major processing stage, each linking to [References by step](../references.md). For operational details (CLI flags, file paths), see [Pipeline steps](../pipeline_steps.md).
 
 ---
 
@@ -79,7 +79,7 @@ Step 4 performs a three-stage warp chain (FreeSurfer conformed → native T1w �
 | Disconnectome | Off (`--disconnection` to enable) | Method under validation |
 | Inpainting | Auto when BIDS lesion mask present | Improves recon quality around lesions |
 
-Alternatives and trade-offs: [Comparisons](../comparisons.md) · Developer deep-dive: [pipeline_science.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md).
+Alternatives and trade-offs: [Comparisons](../comparisons.md) · [Science overview](../science_overview.md) · Developer deep-dive: [pipeline_science.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md).
 
 ---
 
