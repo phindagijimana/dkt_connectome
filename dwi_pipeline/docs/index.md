@@ -26,22 +26,6 @@ New here? Start with **why** the workflow is built this way — lesion inpaintin
 
 ---
 
-## What the pipeline does (summary)
-
-```text
-Step 1    QSIPrep           Motion, SDC, denoising, T1w–DWI alignment
-Step 1.5  Inpaint (auto)    neuroLIT lesion fill when BIDS lesion mask exists
-Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation (78 nodes)
-Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
-Step 4    Connectome        DKT structural connectome (default: streamline counts)
-Step 4.5  Disconnectome     Optional — pass --disconnection + lesion mask
-Step 5    Node strength     Graph metrics + ENIGMA-style report
-```
-
-**Design principle:** tractography and connectome counting share one **tractography grid** (`dwiref`); FreeSurfer labels are warped onto that grid in Step 4. Details: [Science overview → end-to-end flow](science_overview.md#end-to-end-flow-conceptual).
-
----
-
 ## Before your first run
 
 **FreeSurfer license (required):** This pipeline does not ship a license. Each user registers at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), saves `license.txt`, and exports:
