@@ -167,6 +167,6 @@ Full reference: [Usage](usage.md) · [Decision tables](decision_tables.md).
 
 ## See also
 
-- [Quick start](quickstart.md)
+- [Usage](usage.md)
 - [Validation](validation.md)
 - [Troubleshooting](troubleshooting.md)

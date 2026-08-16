@@ -86,7 +86,7 @@ Fixtures: `dwi_pipeline/tests/fixtures/`.
 ## Issues and help
 
 - [GitHub Issues](https://github.com/phindagijimana/dkt_connectome/issues)
-- [Getting help](getting_help.md) — NeuroStars tags, upstream docs
+- [GitHub Issues](https://github.com/phindagijimana/dkt_connectome/issues) · [FAQ](faq.md)
 
 ---
 

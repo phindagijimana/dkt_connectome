@@ -20,7 +20,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **QSIPrep-style docs** under `dwi_pipeline/docs/` with GitHub-navigable links
 - **CI** workflow `.github/workflows/dwi_pipeline_ci.yml` (pytest + Snakemake dry-run)
 - **Unit tests** in `dwi_pipeline/tests/`
-- **Legacy workflow guide** [legacy_workflow.md](legacy_workflow.md)
+- **Legacy workflow note** — [Comparisons § Legacy root dk_connectome](comparisons.md#vs-legacy-root-dk_connectome-this-repo)
 - **Opt-in BIDS validation** (`--bids-validation`, `scripts/run_bids_validator.sh`)
 - **Derivatives provenance** (`dataset_description.json` via `write_derivatives_description.py`)
 - **Container pin reference** in `config.yaml` and [derivatives.md](derivatives.md)

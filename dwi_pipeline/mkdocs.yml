@@ -26,6 +26,7 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
+    - navigation.sections
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -33,17 +34,21 @@ theme:
 
 nav:
   - Home: index.md
-  - Installation: installation.md
-  - Tutorial: tutorial.md
-  - Sample data (IDEAS): datasets/ideas.md
-  - Quick start: quickstart.md
-  - Usage: usage.md
-  - Decision tables: decision_tables.md
-  - Configuration: configuration.md
-  - Configuration catalog: config_catalog.md
-  - Preparing your data: preparing_data.md
-  - BIDS metadata: bids_metadata.md
-  - Field maps & SDC: fieldmaps_sdc.md
+  - Getting started:
+    - Installation: installation.md
+    - Tutorial: tutorial.md
+    - Sample data (IDEAS): datasets/ideas.md
+    - Cloud & group deployment: cloud_deployment.md
+  - Using the pipeline:
+    - Usage: usage.md
+    - Decision tables: decision_tables.md
+    - BIDS App: bids_app.md
+    - Containers: containers.md
+  - Your data:
+    - Preparing your data: preparing_data.md
+    - BIDS metadata & repair: bids_metadata.md
+    - Field maps & SDC: fieldmaps_sdc.md
+    - Lesion masks: lesion_segmentation.md
   - Methods:
     - Overview: methods/index.md
     - Step 1 — QSIPrep: methods/step1_qsiprep.md
@@ -53,38 +58,39 @@ nav:
     - Step 4 — Connectome: methods/step4_connectome.md
     - Step 4.5 — Disconnectome: methods/step4_5_disconnectome.md
     - Step 5 — Node strength: methods/step5_node_strength.md
-  - Pipeline steps: pipeline_steps.md
-  - Visual QC guide: visual_qc.md
-  - Validation: validation.md
-  - Snakemake workflow: snakemake_workflow.md
-  - BIDS App: bids_app.md
-  - Containers: containers.md
-  - Cloud & group deployment: cloud_deployment.md
-  - Outputs: outputs.md
-  - Derivatives: derivatives.md
-  - QC dashboard: qc_dashboard.md
-  - Preprocessing: preprocessing.md
-  - Disconnectome: disconnectome.md
-  - Lesion segmentation: lesion_segmentation.md
-  - Integrity QC: integrity_qc.md
-  - FAQ: faq.md
-  - Troubleshooting: troubleshooting.md
-  - Comparisons: comparisons.md
-  - Legacy workflow: legacy_workflow.md
-  - References by step: references.md
-  - Citation: citation.md
-  - License information: license.md
-  - Changelog: changelog.md
-  - Getting help: getting_help.md
-  - Advanced:
-    - Theory deep dive: advanced/theory_deep_dive.md
+  - Outputs & QC:
+    - Outputs: outputs.md
+    - Derivatives export: derivatives.md
+    - Visual QC guide: visual_qc.md
+    - QC dashboard: qc_dashboard.md
+    - Disconnectome: disconnectome.md
+  - Reference:
+    - Configuration: configuration.md
+    - Pipeline steps: pipeline_steps.md
+    - Validation: validation.md
+    - FAQ: faq.md
+    - Troubleshooting: troubleshooting.md
+    - Comparisons: comparisons.md
+    - References by step: references.md
+    - Citation: citation.md
+    - License: license.md
+    - Changelog: changelog.md
   - Developer:
     - Contributing: contributing.md
+    - Snakemake workflow: snakemake_workflow.md
+    - Configuration catalog: config_catalog.md
     - Schema reference: schema_reference.md
   - Maintainer:
     - Publishing: maintainer/publishing.md
     - BIDS Apps registry: bids_apps_registry.md
     - Read the Docs setup: readthedocs_setup.md
+  - Redirects:
+    - Quick start: quickstart.md
+    - Preprocessing inputs: preprocessing.md
+    - Integrity QC: integrity_qc.md
+    - Legacy workflow: legacy_workflow.md
+    - Getting help: getting_help.md
+    - Theory deep dive: advanced/theory_deep_dive.md
 
 markdown_extensions:
   - toc:

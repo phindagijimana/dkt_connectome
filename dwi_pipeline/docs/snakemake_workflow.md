@@ -103,4 +103,4 @@ GitHub Actions runs the same script on every push to `main` (`.github/workflows/
 
 [`subject.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/subject.sh) remains for sites that have not migrated. New work should use Snakemake (`PIPELINE_ENGINE=snakemake`, the default in `submit.sh`).
 
-See [Legacy workflow](legacy_workflow.md) for the root 4-stage Snakefile.
+See [Comparisons § Legacy root dk_connectome](comparisons.md#vs-legacy-root-dk_connectome-this-repo) for the root 4-stage Snakefile.

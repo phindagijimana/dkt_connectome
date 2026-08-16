@@ -125,7 +125,7 @@ Inpainting and disconnectome address **different questions**: inpainting improve
 
 Per-subject HTML: `connectomes/sub-<ID>/disconnectome/disconnectome_qc.html`
 
-Checks include matrix symmetry, non-negativity, disconnection bounds [0,1], and comparison against validated TBI test subjects. See [Integrity QC](../integrity_qc.md).
+Checks include matrix symmetry, non-negativity, disconnection bounds [0,1], and comparison against validated TBI test subjects. See [Disconnectome § Integrity QC](../disconnectome.md#integrity-qc).
 
 Cohort index: `./run BIDS OUT group` → `disconnectome_cohort_qc.html`.
 
@@ -133,7 +133,7 @@ Cohort index: `./run BIDS OUT group` → `disconnectome_cohort_qc.html`.
 
 ## Implementation substeps
 
-Full specification: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md) · Developer index: [Theory deep dive](../advanced/theory_deep_dive.md).
+Full specification: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md) · Developer notes: [pipeline_science.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md).
 
 | Substep | Action | Output |
 |---------|--------|--------|

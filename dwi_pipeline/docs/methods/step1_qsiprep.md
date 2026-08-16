@@ -82,7 +82,7 @@ EPI-based DWI suffers from **susceptibility-induced geometric distortion** along
 | **SyN SDC** | No usable fieldmap; pass `--syn` | Andersson et al. 2016 |
 | **No SDC** | Legacy only; pass `--no-sdc` | — |
 
-Decision tree: [Preparing your data § SDC](../preparing_data.md#sdc-decision-tree) · Sidecar repair: [Preprocessing inputs](../preprocessing.md).
+Decision tree: [Preparing your data § SDC](../preparing_data.md#sdc-decision-tree) · Sidecar repair: [BIDS metadata](../bids_metadata.md).
 
 ---
 
@@ -109,5 +109,5 @@ Full table: [References § Step 1](../references.md#step-1-qsiprep-preprocessing
 ## See also
 
 - [Step 1.5 — Lesion inpainting](step1_5_inpaint.md)
-- [Preprocessing inputs](../preprocessing.md)
+- [Preparing your data](../preparing_data.md)
 - [QSIPrep documentation](https://qsiprep.readthedocs.io/)
