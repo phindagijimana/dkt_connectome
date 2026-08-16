@@ -26,7 +26,13 @@ docker run --rm \
   --participant-label 001 --session-filter ses-1 --syn
 ```
 
-`DKT_AUTO_INSTALL=1` pulls cached Apptainer/SIF step images into the container cache on first use. For air-gapped sites, pre-populate `CONTAINER_*` paths instead — see [Containers](containers.md).
+`DKT_AUTO_INSTALL=1` pulls pinned Apptainer `.sif` step images into `DKT_CONTAINER_CACHE` on first container start. The orchestrator **Docker image includes Apptainer** for cloud use; on HPC, use `bash scripts/install.sh` directly instead.
+
+**Requirements:** network egress to container registries; FreeSurfer license at `FS_LICENSE`; sufficient disk (~20 GB for full stack, ~4 GB for QSIPrep-only).
+
+**Verify auto-install in CI:** workflow `docker_auto_install_smoke.yml` (weekly + on Dockerfile changes).
+
+For air-gapped sites, pre-populate `CONTAINER_*` paths instead — see [Containers](containers.md).
 
 **Compose:** [`docker-compose.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docker-compose.yml) wraps the same image with volume mounts for local smoke tests.
 

@@ -20,6 +20,12 @@ LABEL org.opencontainers.image.licenses="Apache-2.0"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     git \
+    wget \
+    ca-certificates \
+    && wget -q -O /tmp/apptainer.deb \
+      https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer_1.3.4_amd64.deb \
+    && (dpkg -i /tmp/apptainer.deb || apt-get install -f -y) \
+    && rm -f /tmp/apptainer.deb \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/dkt-connectome

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import re
 import shutil
@@ -444,6 +445,80 @@ def verify_pins(*, require_network: bool = True, mode: str | None = None) -> int
     return 0
 
 
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def digest_rows(cache: Path, keys: tuple[str, ...]) -> list[dict]:
+    rows: list[dict] = []
+    for row in list_plan(cache, keys):
+        path = row.get("path")
+        digest = ""
+        size_mb = ""
+        if path and Path(path).is_file():
+            p = Path(path)
+            digest = sha256_file(p)
+            size_mb = f"{p.stat().st_size / (1024 * 1024):.1f}"
+        rows.append(
+            {
+                "key": row["key"],
+                "pin": row.get("pin") or "",
+                "sif": row.get("sif") or "",
+                "path": path or "",
+                "sha256": digest or "(not cached)",
+                "size_mb": size_mb or "-",
+            }
+        )
+    return rows
+
+
+def format_digests_markdown(rows: list[dict], *, version: str) -> str:
+    lines = [
+        "# Container digest table",
+        "",
+        f"**Pipeline version:** {version}  ",
+        "**Regenerate:** `python3 dwi_pipeline/scripts/generate_container_digests_md.py` after `bash dwi_pipeline/scripts/install.sh --mode all`.",
+        "",
+        "| Step | Pin | SIF file | Size (MB) | SHA256 |",
+        "|------|-----|----------|-----------|--------|",
+    ]
+    for r in rows:
+        sha = r["sha256"]
+        if len(sha) > 16 and sha != "(not cached)":
+            sha = f"`{sha[:16]}…`"
+        else:
+            sha = f"`{sha}`"
+        lines.append(
+            f"| {r['key']} | `{r['pin']}` | `{r['sif']}` | {r['size_mb']} | {sha} |"
+        )
+    lines.extend(
+        [
+            "",
+            "Primary pins live in [`workflow/config/config.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/config/config.yaml).",
+            "Paper supplement: copy this table to Supplementary Table S4 when cutting v1.0.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def cmd_digests(args: argparse.Namespace) -> None:
+    cache = Path(args.cache).expanduser()
+    keys = resolve_keys(args.mode, args.only)
+    rows = digest_rows(cache, keys)
+    if args.format == "markdown":
+        print(format_digests_markdown(rows, version=args.version))
+        return
+    for r in rows:
+        print(
+            f"{r['key']}\t{r['pin']}\t{r['sha256']}\t{r['size_mb']}\t{r['path']}"
+        )
+
+
 def _registry_reachable(uri: str) -> tuple[bool, str]:
     """Best-effort registry probe (Docker Hub tags API or HEAD)."""
     import urllib.error
@@ -559,6 +634,14 @@ def main() -> None:
         help="Do not fail when registries are unreachable",
     )
     p_verify.set_defaults(func=cmd_verify)
+
+    p_dig = sub.add_parser("digests", help="SHA256 digests of cached .sif files")
+    p_dig.add_argument("--cache", default=str(default_cache()))
+    p_dig.add_argument("--mode", default="all")
+    p_dig.add_argument("--only", default=None)
+    p_dig.add_argument("--format", choices=("tsv", "markdown"), default="tsv")
+    p_dig.add_argument("--version", default="0.2.0", help="Pipeline version for markdown header")
+    p_dig.set_defaults(func=cmd_digests)
 
     args = parser.parse_args()
     args.func(args)
