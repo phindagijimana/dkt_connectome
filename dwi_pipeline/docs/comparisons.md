@@ -41,8 +41,35 @@ This pipeline **uses** QSIPrep and QSIRecon as Steps 1 and 3.
 
 ## vs legacy root `dk_connectome` (this repo)
 
-The repository root [4-stage Snakefile](legacy_workflow.md) predates Steps 1.5, 4.5, and 5.  
-Use `dwi_pipeline/` for all new cohort work.
+The **canonical** pipeline lives under [`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow). Use it for all new cohort work:
+
+- BIDS App: [`dwi_pipeline/run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run)
+- Snakemake: [`workflow/Snakefile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/Snakefile)
+- HPC: [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh)
+
+The **repository root** still contains the original **4-stage** plugin workflow:
+
+| Path | Purpose |
+|------|---------|
+| [`Snakefile`](https://github.com/phindagijimana/dkt_connectome/blob/main/Snakefile) | qsiprep → recon → qsirecon → connectome only |
+| [`plugins/`](https://github.com/phindagijimana/dkt_connectome/tree/main/plugins) | Stage plugins for the root Snakefile |
+| [`.dockstore.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.dockstore.yml) | Registers both canonical and legacy workflows |
+
+The root stack does **not** include Step 1.5 inpainting, Step 5 node strength, Step 4.5 disconnectome, or the full `./run` BIDS App surface.
+
+**Dockstore / WorkflowHub:**
+
+| Name | Snakefile | Status |
+|------|-----------|--------|
+| `dkt_connectome` | `dwi_pipeline/workflow/Snakefile` | **Primary** |
+| `dk_connectome` | root `Snakefile` | Legacy |
+
+After Slurm array jobs on an existing `RESULTS_ROOT`, cohort QC + BIDS export without reprocessing:
+
+```bash
+bash dwi_pipeline/scripts/batch_postprocess.sh
+# same as: ./run BIDS OUT group
+```
 
 ---
 

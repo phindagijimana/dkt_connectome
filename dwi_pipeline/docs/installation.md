@@ -23,7 +23,7 @@ cd dkt_connectome/dwi_pipeline
 chmod +x run install
 ```
 
-Documentation: [index.md](index.md) · Quick start: [quickstart.md](quickstart.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
+Documentation: [index.md](index.md) · Tutorial: [tutorial.md](tutorial.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
 
 ---
 
@@ -208,4 +208,4 @@ export FS_LICENSE=/path/to/license.txt
   --participant-label 009 --dry-run
 ```
 
-Next: [Quick start](quickstart.md) · [BIDS App](bids_app.md).
+Next: [Tutorial](tutorial.md) · [BIDS App](bids_app.md).

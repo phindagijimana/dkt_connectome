@@ -114,5 +114,5 @@ Full table: [References § Step 4](../references.md#step-4-dkt-structural-connec
 
 - [Step 3 — Tractography](step3_qsirecon.md)
 - [Step 4.5 — Disconnectome](step4_5_disconnectome.md)
-- [Integrity QC](../integrity_qc.md)
+- [Disconnectome § Integrity QC](../disconnectome.md#integrity-qc)
 - [Container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md)

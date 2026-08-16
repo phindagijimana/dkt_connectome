@@ -114,7 +114,7 @@ Cohort-level directory `node_strength/` with per-subject subfolders under `repor
 
 ## Weighting consistency
 
-Step 4 and Step 4.5 must use the same edge weighting (`count` by default). Mismatch invalidates the disconnection matrix — see [Integrity QC](integrity_qc.md).
+Step 4 and Step 4.5 must use the same edge weighting (`count` by default). Mismatch invalidates the disconnection matrix — see [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
 
 ---
 

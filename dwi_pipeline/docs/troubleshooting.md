@@ -19,7 +19,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 
 | Error / symptom | Fix |
 |-----------------|-----|
-| `KeyError: 'TotalReadoutTime'` | Repair DWI JSON sidecars — [Preprocessing inputs](preprocessing.md) |
+| `KeyError: 'TotalReadoutTime'` | Repair DWI JSON sidecars — [Preparing your data](preparing_data.md) |
 | SDC failure, no fieldmap | Add `--syn`, `--fmap-retry`, or `--no-sdc` |
 | Wrong DWI series processed | Check `--dwi-shell` / `--dwi-select`; use `--session-filter` |
 | Multiple sessions ambiguous | Pass `--session-filter ses-X` |
@@ -74,7 +74,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | Option A **WARN** in QC | Expected with count weighting (parcellation excision artifact); B/C are primary |
 | `spared > primary` on edges | Re-run Step 4 and 4.5 with **`--connectome-weighting count`** |
 | Invalid mean D | Step 4 used counts but 4.5 used sift2 — align weighting |
-| Integrity **FAIL** | Run `evaluate_disconnectome_integrity.py`; see [Integrity QC](integrity_qc.md) |
+| Integrity **FAIL** | Run `evaluate_disconnectome_integrity.py`; see [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) |
 
 ---
 

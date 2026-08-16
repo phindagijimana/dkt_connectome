@@ -1,6 +1,6 @@
 # Preparing your data
 
-Input requirements and preprocessing decisions before running `./run`. Consolidates guidance from [Preprocessing inputs](preprocessing.md) and BIDS repair scripts.
+Input requirements and preprocessing decisions before running `./run`.
 
 ---
 

@@ -111,7 +111,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Virtual lesion / disconnection index | Kuceyeski R, et al. The Network Modification (NeMo) Tool: a structural connectivity-based tool for lesion localization. *NeuroImage: Clinical* 2013;2:1–8. | [10.1016/j.nicl.2012.10.003](https://doi.org/10.1016/j.nicl.2012.10.003) |
 | Connectome excision literature | Internal synthesis | [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md) |
 
-**Docs:** [Step 4.5 theory](methods/step4_5_disconnectome.md) · [Disconnectome](disconnectome.md) · [Integrity QC](integrity_qc.md)
+**Docs:** [Step 4.5 theory](methods/step4_5_disconnectome.md) · [Disconnectome](disconnectome.md)
 
 ---
 

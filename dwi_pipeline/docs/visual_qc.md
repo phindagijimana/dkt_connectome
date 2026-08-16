@@ -125,5 +125,5 @@ firefox dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/qc/sub-TBI011
 ## See also
 
 - [QC dashboard](qc_dashboard.md) — how reports are generated
-- [Integrity QC](integrity_qc.md) — automated disconnectome checks
+- [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) — automated disconnectome checks
 - [Outputs](outputs.md) — full file layout

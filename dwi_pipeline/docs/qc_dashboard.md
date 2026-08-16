@@ -58,5 +58,5 @@ Disable with `qc.subject_html: false` in `config.local.yaml` or omit from Snakem
 ## Related
 
 - [disconnectome.md](disconnectome.md) — Step 4.5 detail QC
-- [integrity_qc.md](integrity_qc.md) — integrity check definitions
+- [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) — integrity check definitions
 - [outputs.md](outputs.md) — full derivatives layout

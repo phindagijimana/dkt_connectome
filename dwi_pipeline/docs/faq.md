@@ -8,15 +8,15 @@
 
 No. The BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). This matches multi-site HPC deployments where images are cached on shared storage. See [Installation](installation.md).
 
-### What is the recommended way to run on URMC HPC?
+### What is the recommended way to run on Slurm HPC?
 
 ```bash
 export BIDS_DIR=/path/to/BIDS
 export RESULTS_ROOT=/path/to/out
-./dwi_pipeline/submit.sh
+bash dwi_pipeline/submit.sh
 ```
 
-Use `PIPELINE_ENGINE=snakemake` (default). See [Usage](usage.md).
+Use `PIPELINE_ENGINE=snakemake` (default). See [Usage](usage.md) and [Cloud & group deployment](cloud_deployment.md).
 
 ### Do I need a lesion mask?
 
@@ -72,7 +72,7 @@ Run separate jobs per session.
 
 ### GE scanners without fieldmaps?
 
-Use `--syn` (SyN SDC) or `--no-sdc` to match legacy no-SDC runs. See [Preprocessing inputs](preprocessing.md).
+Use `--syn` (SyN SDC) or `--no-sdc` to match legacy no-SDC runs. See [Preparing your data](preparing_data.md).
 
 ---
 

@@ -80,7 +80,7 @@ Script: `scripts/evaluate_disconnectome_integrity.py`
 | `disconnection_matrix.csv` | Matches spared option C (default) |
 | D values | In [0, 1]; symmetric |
 
-Full spec: [Integrity QC](integrity_qc.md) · [Methods § Step 4.5](methods/step4_5_disconnectome.md).
+Full spec: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) · [Methods § Step 4.5](methods/step4_5_disconnectome.md).
 
 ---
 
@@ -132,5 +132,5 @@ Maintainers: re-run integrity scripts after changing connectome or disconnectome
 ## See also
 
 - [Visual QC guide](visual_qc.md)
-- [Integrity QC](integrity_qc.md)
+- [Disconnectome § Integrity QC](disconnectome.md#integrity-qc)
 - [Tutorial](tutorial.md)
