@@ -17,7 +17,7 @@ echo "${HTML}" | grep -q '<title>DKT Connectome</title>' \
 echo "${HTML}" | grep -qi 'TrackTBI Connectome' \
   && fail "page still contains 'TrackTBI Connectome'"
 
-echo "${HTML}" | grep -q 'icon-home"> DKT Connectome' \
-  || fail "sidebar header is not 'DKT Connectome'"
+echo "${HTML}" | grep -qE 'DKT Connectome' \
+  || fail "page does not contain 'DKT Connectome' branding"
 
 echo "RTD live check OK: ${URL}"

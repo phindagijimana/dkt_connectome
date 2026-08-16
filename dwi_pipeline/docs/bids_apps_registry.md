@@ -75,16 +75,24 @@ Docker Hub: docker.io/phindagijimana321/dkt-connectome:0.2.0
 Test dataset: dwi_pipeline/tests/fixtures/bids_minimal/
 ```
 
-**Option B — PR to bids-apps.github.io**
+**Option B — PR to [bids-standard/bids-website](https://github.com/bids-standard/bids-website)**
 
-Fork https://github.com/bids-apps/bids-apps.github.io and add to `_config.yml`:
+Fork and add an entry to `data/tools/apps.yml`:
 
 ```yaml
-- name: dkt_connectome
-  url: https://github.com/phindagijimana/dkt_connectome
-  dockerhub: phindagijimana321/dkt-connectome
-  docs: https://dkt-connectome.readthedocs.io/en/latest/
-  version: 0.2.0
+- gh: phindagijimana/dkt_connectome
+  status: active
+  dh: phindagijimana321/dkt-connectome
+  ci: gh
+  branch: main
+  workflow: dwi_pipeline
+  ds_type:
+    - raw
+    - derivative
+  datatype:
+    - anat
+    - dwi
+  description: Lesion-aware Desikan-Killiany structural connectomics (QSIPrep → recon → QSIRecon → connectome → disconnectome).
 ```
 
 ### 5. Optional: bids-apps GitHub org
