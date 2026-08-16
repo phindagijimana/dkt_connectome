@@ -82,6 +82,9 @@ nav:
     - Schema reference: schema_reference.md
   - Maintainer:
     - One-shot tasks (release, Docker, RTD): maintainer/maintainer_tasks.md
+    - Integration CI (real containers): maintainer/integration_ci.md
+    - v1.0 science track: maintainer/v1_science_track.md
+    - Container digests (S4): maintainer/container_digests.md
     - BIDS App submission (optional): BIDS_App.md
     - Readiness checklist: maintainer/readiness_checklist.md
     - Publishing: maintainer/publishing.md

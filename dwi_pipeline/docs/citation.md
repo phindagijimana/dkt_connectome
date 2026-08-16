@@ -140,14 +140,30 @@ and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
 
 ---
 
-## Repository and documentation
+## Repository, Zenodo, and documentation
 
 | Resource | URL |
 |----------|-----|
 | Documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Source code | https://github.com/phindagijimana/dkt_connectome |
-| BIDS Apps registry | https://bids-apps.neuroimaging.io/ |
+| GitHub Releases | https://github.com/phindagijimana/dkt_connectome/releases |
+| Zenodo archive | *(enable GitHub integration — see [Maintainer §17](maintainer/maintainer_tasks.md#17-zenodo-archive-doi))* |
 | CITATION.cff | https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff |
+
+After the first Zenodo release, add the software DOI here and in `CITATION.cff`:
+
+```bibtex
+@software{Ndagijimana2026DKTConnectome,
+  author    = {Ndagijimana, Philbert},
+  title     = {{DKT Connectome} — lesion-aware structural connectomics {BIDS App}}},
+  year      = {2026},
+  version   = {0.2.0},
+  url       = {https://github.com/phindagijimana/dkt_connectome},
+  doi       = {10.5281/zenodo.xxxxx}
+}
+```
+
+Replace `10.5281/zenodo.xxxxx` with the DOI from your Zenodo record.
 
 ---
 

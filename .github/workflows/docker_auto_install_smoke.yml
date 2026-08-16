@@ -1,0 +1,60 @@
+name: Docker auto-install smoke
+
+# Verifies DKT_AUTO_INSTALL=1 inside the orchestrator image (Apptainer + qsiprep pull).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - 'dwi_pipeline/Dockerfile'
+      - 'dwi_pipeline/docker-entrypoint.sh'
+      - 'dwi_pipeline/scripts/install.sh'
+      - '.github/workflows/docker_auto_install_smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  auto-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build orchestrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dwi_pipeline/Dockerfile
+          load: true
+          tags: dkt-connectome:ci-smoke
+
+      - name: Auto-install qsiprep + dry-run
+        run: |
+          mkdir -p /tmp/docker_out /tmp/license.txt
+          touch /tmp/license.txt
+          docker run --rm \
+            -v "${{ github.workspace }}/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
+            -v /tmp/docker_out:/out \
+            -e FS_LICENSE=/tmp/license.txt \
+            -e BIDS_APP_CI=0 \
+            -e DKT_AUTO_INSTALL=1 \
+            -e DKT_CONTAINER_CACHE=/opt/dkt-connectome/containers \
+            dkt-connectome:ci-smoke \
+            /data/bids /out participant \
+            --participant-label EXAMPLE --session-filter baseline \
+            --mode qsiprep --dry-run --no-sdc --no-dwi-filter
+
+      - name: List cached SIFs inside container
+        run: |
+          docker run --rm \
+            -e DKT_AUTO_INSTALL=0 \
+            dkt-connectome:ci-smoke \
+            bash -lc 'ls -lh "${DKT_CONTAINER_CACHE}" 2>/dev/null || echo "(empty cache on fresh container)"'

@@ -8,8 +8,11 @@ authors:
   - family-names: Ndagijimana
     given-names: Philbert
 type: software
+version: 0.2.0
 repository-code: "https://github.com/phindagijimana/dkt_connectome"
 license: Apache-2.0
+# After Zenodo GitHub integration + Release, set:
+# doi: 10.5281/zenodo.xxxxx
 keywords:
   - diffusion-mri
   - connectome

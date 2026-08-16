@@ -21,6 +21,8 @@ Runbook for **credential-based, out-of-repo steps** that complete v0.2.0 publish
 | 14 | RTD auto-rebuild | RTD token or GitHub integration | [§14 Read the Docs](#14-read-the-docs-auto-rebuild) |
 | 15 | Dockstore GitHub link | Dockstore account | [§15 Dockstore](#15-dockstore-github-link) |
 | 16 | WorkflowHub RO-Crate | WorkflowHub account | [§16 WorkflowHub](#16-workflowhub-ro-crate-upload) |
+| 17 | Zenodo archive + DOI | Zenodo + GitHub | [§17 Zenodo](#17-zenodo-archive-doi) |
+| 18 | Integration CI secrets | `FS_LICENSE` repo secret | [§18 Integration CI](#18-integration-ci-secrets) |
 
 ---
 
@@ -284,6 +286,66 @@ WorkflowHub expects a **Workflow RO-Crate** (zip). Options:
 
 - Workflow appears in search
 - Container pins in `workflowhub.yml` match current tags (orchestrator `phindagijimana321/dkt-connectome:0.2.0`, connectome `ghcr.io/phindagijimana/dk-connectome:0.2.0`)
+
+---
+
+## 17. Zenodo archive + DOI
+
+**Goal:** Immutable software DOI for citations (P2.2). Required before v1.0 paper claims.
+
+### One-time setup
+
+1. Log in at [zenodo.org](https://zenodo.org) with GitHub.
+2. **Account → GitHub** → enable access → toggle **`phindagijimana/dkt_connectome`** ON.
+3. Zenodo creates a draft on each **GitHub Release** you publish.
+
+### Per release (v0.2.0 now, v1.0 later)
+
+```bash
+# After tag + release exist (§10):
+gh release create v1.0.0 --title "DKT Connectome 1.0.0" --notes-file dwi_pipeline/RELEASE_NOTES.md
+# Wait for Zenodo webhook → open Zenodo record → Publish → copy DOI
+```
+
+### Wire DOI into the repo
+
+1. **`CITATION.cff`** — set `version` and `doi: 10.5281/zenodo.xxxxx`
+2. **`dwi_pipeline/app.json`** — `HowToAcknowledge` URL with DOI
+3. **`dwi_pipeline/docs/citation.md`** — BibTeX `@software` entry
+4. **GitHub Release** — edit notes: “Archived at https://doi.org/10.5281/zenodo.xxxxx”
+5. **Manuscript** — replace `[Zenodo DOI]` in `sample_software_paper/manuscript.md`
+
+### Verify
+
+- https://doi.org/10.5281/zenodo.xxxxx resolves
+- Zenodo zip matches the git tag commit
+- `CITATION.cff` validates: `cffconvert -i CITATION.cff` (optional)
+
+---
+
+## 18. Integration CI secrets
+
+**Goal:** Enable real-container workflows (P1.1).
+
+### Steps
+
+1. GitHub → **Settings → Secrets and variables → Actions**
+2. **New repository secret:** `FS_LICENSE` = full FreeSurfer license text
+3. Trigger smoke:
+
+   ```bash
+   gh workflow run integration_qsiprep.yml -f skip_pipeline_run=true
+   gh workflow run integration_qsiprep.yml
+   ```
+
+4. *(Optional)* Self-hosted runner for full DAG — see [Integration CI](integration_ci.md).
+
+### Verify
+
+- Actions → **Integration (QSIPrep real container)** → green
+- Weekly schedule enabled (Sundays 08:00 UTC)
+
+Full runbook: [integration_ci.md](integration_ci.md) · v1.0 science: [v1_science_track.md](v1_science_track.md).
 
 ---
 

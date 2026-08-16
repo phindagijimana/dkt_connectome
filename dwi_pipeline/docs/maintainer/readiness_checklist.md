@@ -36,13 +36,13 @@ Closes the largest gaps vs mature BIDS Apps: CI confidence, spec completeness, a
 
 | # | Task | Status | Effort | Notes / path |
 |---|------|--------|--------|--------------|
-| P1.1 | **Add real-container integration test in CI** | Open | High | Today: stub `.sif` + Snakemake `-n` only. Target: QSIPrep (or full DAG) on `tests/fixtures/bids_minimal` with FS license secret. |
-| P1.2 | **Run `bids-validator` on minimal fixture in CI** | **Done** | Low | Regenerate fixture + validate in `.github/workflows/dwi_pipeline_ci.yml`. |
-| P1.3 | **Schedule `install_smoke.yml`** | **Done** | Low | Weekly cron + `release: published`; default mode `qsiprep`. |
-| P1.4 | **Expand `app.json` + Boutiques flag surface** | **Done** | Medium | `app.json` `CommandLineArguments` expanded to match `./run` help. |
-| P1.5 | **Implement or remove `--mem-mb`** | **Done** | Low | Exported as `MEM_MB` when set; documented in `run`, `usage.md`, `bids_app.md`. |
-| P1.6 | **Docker “quick start” that auto-pulls step images** | Open | Medium | Document and test `DKT_AUTO_INSTALL=1` end-to-end in [cloud_deployment.md](../cloud_deployment.md) + CI smoke. |
-| P1.7 | **IDEAS golden run in CI (optional slow job)** | Open | High | OpenNeuro ds007401 via `scripts/download_ideas_sample.sh`. |
+| P1.1 | **Add real-container integration test in CI** | **Scaffolded** | Workflows: `integration_qsiprep.yml`, `integration_ideas.yml`. **Needs:** repo secret `FS_LICENSE` — [Integration CI](integration_ci.md). |
+| P1.2 | **Run `bids-validator` on minimal fixture in CI** | **Done** | Regenerate fixture + validate in `.github/workflows/dwi_pipeline_ci.yml`. |
+| P1.3 | **Schedule `install_smoke.yml`** | **Done** | Weekly cron + `release: published`; default mode `qsiprep`. |
+| P1.4 | **Expand `app.json` + Boutiques flag surface** | **Done** | `app.json` `CommandLineArguments` expanded to match `./run` help. |
+| P1.5 | **Implement or remove `--mem-mb`** | **Done** | Exported as `MEM_MB` when set; documented in `run`, `usage.md`, `bids_app.md`. |
+| P1.6 | **Docker “quick start” that auto-pulls step images** | **Scaffolded** | Apptainer in `Dockerfile`; CI `docker_auto_install_smoke.yml`; docs [cloud_deployment.md](../cloud_deployment.md). |
+| P1.7 | **IDEAS golden run in CI (optional slow job)** | **Scaffolded** | `integration_ideas.yml` (monthly + manual); dry-run default. |
 | P1.8 | **Deprecate root `./connectome bids` in registry docs** | **Done** | Low | Root [`README.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md), [`REGISTRY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/REGISTRY.md), [`USER_GUIDE.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/USER_GUIDE.md) point to `dwi_pipeline/run`. |
 
 **Exit criterion:** CI runs at least one real container step; bids-validator green; external reviewer can `docker pull` + run tutorial without reading HPC docs.
@@ -56,7 +56,7 @@ Most user-facing docs are done (~49 pages). Remaining cleanup is consistency and
 | # | Task | Notes / path |
 |---|------|--------------|
 | P2.1 | **Align version story (0.2.0 vs 1.0)** | App is 0.2.0; paper plan targets v1.0. Decide when to bump — [paper_plan.md §11](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md). |
-| P2.2 | **Zenodo archive + DOI** | Wire into `CITATION.cff`, `app.json` HowToAcknowledge, [citation.md](../citation.md). |
+| P2.2 | **Zenodo archive + DOI** | Runbook [Maintainer §17](maintainer_tasks.md#17-zenodo-archive-doi); `CITATION.cff` has `version` + DOI placeholder. |
 | P2.3 | **Formal BIDS Derivatives output spec page** | Internal layout is custom; export is optional — make policy obvious in [derivatives.md](../derivatives.md) + [outputs.md](../outputs.md). |
 | P2.4 | **Refresh root vs `dwi_pipeline/` doc split** | **Done** | Root README / REGISTRY / USER_GUIDE banner + canonical `dwi_pipeline/run` links. |
 | P2.5 | **Update manuscript / paper_plan container digests** | Manuscript still references older image names in places — [`manuscript.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/manuscript.md). |
@@ -86,8 +86,8 @@ From [paper_plan.md §11](https://github.com/phindagijimana/dkt_connectome/blob/
 
 | # | Task |
 |---|------|
-| P4.1 | Freeze pipeline **v1.0** with release note listing all four SDC modes |
-| P4.2 | Container digests pinned + published; digest table in supplement |
+| P4.1 | Freeze pipeline **v1.0** with release note listing all four SDC modes | Runbook: [v1_science_track.md](v1_science_track.md) |
+| P4.2 | Container digests pinned + published; digest table in supplement | `scripts/generate_container_digests_md.py` → [container_digests.md](container_digests.md) |
 | P4.3 | URMC cohort **n=61** end-to-end + per-subject QC summary CSV |
 | P4.4 | HCP-YA **n=10** baseline comparison + statistics table |
 | P4.5 | Radiological review (James) with rubric per subject |
@@ -140,9 +140,9 @@ Only if cloud-only / BIDS Apps reviewers demand single-image UX.
 ```text
 Week 1 (P0):  registry PR · GitHub Release · Docker verify · RTD webhook · push doc trim
 Week 2 (P1):  bids-validator CI · app.json flags · install_smoke schedule
-Week 3+ (P1): real-container CI job (start with QSIPrep-only on bids_minimal)
-Parallel (P4): URMC 61 + HCP 10 cohort runs (paper track)
-Before v1.0:   P3 legacy code removal · P4 checklist · Zenodo · version bump
+Week 3+ (P1): integration_qsiprep.yml + FS_LICENSE secret → green weekly run
+Parallel (P4): URMC 61 + HCP 10 — [v1_science_track.md](v1_science_track.md)
+Before v1.0:   Zenodo DOI · digest table · P4 checklist · version bump
 ```
 
 ---

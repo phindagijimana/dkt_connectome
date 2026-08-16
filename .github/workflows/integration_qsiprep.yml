@@ -1,0 +1,128 @@
+name: Integration (QSIPrep real container)
+
+# Real Apptainer pull + QSIPrep on bids_minimal. Not PR-gating (slow, needs FS license).
+# Add repository secret FS_LICENSE (full license.txt contents).
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_pipeline_run:
+        description: Pull + version smoke only (skip ./run)
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 8 * * 0"
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  qsiprep-real:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require FS_LICENSE secret
+        env:
+          FS_LICENSE_SECRET: ${{ secrets.FS_LICENSE }}
+        run: |
+          if [[ -z "${FS_LICENSE_SECRET}" ]]; then
+            echo "::error::Set repository secret FS_LICENSE (full FreeSurfer license.txt text)."
+            echo "See dwi_pipeline/docs/maintainer/integration_ci.md"
+            exit 1
+          fi
+
+      - name: Install Apptainer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget -q -O /tmp/apptainer.deb \
+            https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer_1.3.4_amd64.deb
+          sudo dpkg -i /tmp/apptainer.deb || sudo apt-get install -f -y
+          apptainer --version
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "snakemake>=8.0,<10" pyyaml numpy scipy nibabel
+
+      - name: Write FreeSurfer license
+        env:
+          FS_LICENSE_SECRET: ${{ secrets.FS_LICENSE }}
+        run: |
+          printf '%s' "${FS_LICENSE_SECRET}" > /tmp/license.txt
+          test -s /tmp/license.txt
+
+      - name: Regenerate minimal BIDS fixture
+        run: python3 dwi_pipeline/tests/fixtures/generate_bids_fixture.py
+
+      - name: Pull QSIPrep container
+        working-directory: dwi_pipeline
+        env:
+          DKT_CONTAINER_CACHE: ${{ runner.temp }}/dkt_containers
+          APPTAINER_TMPDIR: ${{ runner.temp }}/apptainer_tmp
+        run: |
+          mkdir -p "${APPTAINER_TMPDIR}"
+          python3 scripts/container_install.py pull \
+            --cache "${DKT_CONTAINER_CACHE}" \
+            --mode qsiprep \
+            --write-config \
+            --quiet
+          python3 scripts/container_install.py list --cache "${DKT_CONTAINER_CACHE}" --mode qsiprep
+
+      - name: QSIPrep container version smoke
+        working-directory: dwi_pipeline
+        env:
+          DKT_CONTAINER_CACHE: ${{ runner.temp }}/dkt_containers
+        run: |
+          QSIF="$(python3 -c "
+          import yaml
+          from pathlib import Path
+          cfg = yaml.safe_load(Path('workflow/config/config.local.yaml').read_text())
+          print(cfg['containers']['qsiprep'])
+          ")"
+          apptainer exec "${QSIF}" qsiprep --version
+
+      - name: Real QSIPrep run (bids_minimal)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_pipeline_run != true }}
+        working-directory: dwi_pipeline
+        env:
+          FS_LICENSE: /tmp/license.txt
+          DKT_CONTAINER_CACHE: ${{ runner.temp }}/dkt_containers
+          APPTAINER_TMPDIR: ${{ runner.temp }}/apptainer_tmp
+          TEMPLATEFLOW_HOME: ${{ runner.temp }}/templateflow
+          RESULTS_ROOT: ${{ runner.temp }}/integration_out
+        run: |
+          mkdir -p "${TEMPLATEFLOW_HOME}" "${RESULTS_ROOT}"
+          ./run tests/fixtures/bids_minimal "${RESULTS_ROOT}" participant \
+            --participant-label EXAMPLE \
+            --session-filter baseline \
+            --mode qsiprep \
+            --no-sdc \
+            --no-dwi-filter \
+            --n-cpus 2 \
+            --random-seed 42
+
+      - name: Verify QSIPrep outputs
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_pipeline_run != true }}
+        run: |
+          bash dwi_pipeline/scripts/integration_verify_qsiprep.sh \
+            "${{ runner.temp }}/integration_out" EXAMPLE
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## QSIPrep integration"
+            echo "- Workflow: \`integration_qsiprep.yml\`"
+            echo "- Fixture: \`dwi_pipeline/tests/fixtures/bids_minimal\`"
+            echo "- Docs: [integration_ci.md](dwi_pipeline/docs/maintainer/integration_ci.md)"
+          } >> "$GITHUB_STEP_SUMMARY"

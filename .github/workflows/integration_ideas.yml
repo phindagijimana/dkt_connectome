@@ -1,0 +1,115 @@
+name: Integration (IDEAS golden)
+
+# Optional slow job: OpenNeuro ds007401 (IDEAS II) QSIPrep dry-run or real run.
+# Requires: FS_LICENSE, AWS credentials (default GITHUB_ACTIONS role or AWS_ACCESS_KEY_ID/SECRET).
+
+on:
+  workflow_dispatch:
+    inputs:
+      analysis:
+        description: dry-run | qsiprep-only
+        type: choice
+        options:
+          - dry-run
+          - qsiprep-only
+        default: dry-run
+      subject:
+        description: Participant label (without sub-)
+        type: string
+        default: "1"
+      session:
+        description: Session (without ses- prefix)
+        type: string
+        default: "1"
+  schedule:
+    - cron: "0 9 1 * *"
+
+permissions:
+  contents: read
+
+jobs:
+  ideas-golden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require FS_LICENSE
+        env:
+          FS_LICENSE_SECRET: ${{ secrets.FS_LICENSE }}
+        run: |
+          if [[ -z "${FS_LICENSE_SECRET}" ]]; then
+            echo "::error::Set repository secret FS_LICENSE"
+            exit 1
+          fi
+          printf '%s' "${FS_LICENSE_SECRET}" > /tmp/license.txt
+
+      - name: Install Apptainer + AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget awscli
+          wget -q -O /tmp/apptainer.deb \
+            https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer_1.3.4_amd64.deb
+          sudo dpkg -i /tmp/apptainer.deb || sudo apt-get install -f -y
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "snakemake>=8.0,<10" pyyaml numpy scipy nibabel
+
+      - name: Download IDEAS sample (OpenNeuro ds007401)
+        working-directory: dwi_pipeline
+        run: bash scripts/download_ideas_sample.sh
+
+      - name: Pull containers
+        working-directory: dwi_pipeline
+        env:
+          DKT_CONTAINER_CACHE: ${{ runner.temp }}/dkt_containers
+          APPTAINER_TMPDIR: ${{ runner.temp }}/apptainer_tmp
+        run: |
+          mkdir -p "${APPTAINER_TMPDIR}"
+          MODE=qsiprep
+          [[ "${{ inputs.analysis }}" == "dry-run" ]] && MODE=qsiprep
+          python3 scripts/container_install.py pull \
+            --cache "${DKT_CONTAINER_CACHE}" \
+            --mode "${MODE}" \
+            --write-config \
+            --quiet
+
+      - name: Run pipeline on IDEAS subject
+        working-directory: dwi_pipeline
+        env:
+          FS_LICENSE: /tmp/license.txt
+          DKT_CONTAINER_CACHE: ${{ runner.temp }}/dkt_containers
+          TEMPLATEFLOW_HOME: ${{ runner.temp }}/templateflow
+          RESULTS_ROOT: ${{ runner.temp }}/ideas_out
+          BIDS_DIR: ${{ github.workspace }}/dwi_pipeline/sample_data/ideas/bids
+          ANALYSIS: ${{ github.event.inputs.analysis || 'dry-run' }}
+          SUBJECT: ${{ github.event.inputs.subject || '1' }}
+          SESSION: ${{ github.event.inputs.session || '1' }}
+        run: |
+          mkdir -p "${TEMPLATEFLOW_HOME}" "${RESULTS_ROOT}"
+          EXTRA=()
+          if [[ "${ANALYSIS}" == "dry-run" ]]; then
+            EXTRA+=(--dry-run)
+          fi
+          ./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
+            --participant-label "${SUBJECT}" \
+            --session-filter "${SESSION}" \
+            --mode qsiprep \
+            --fastsurfer \
+            --syn \
+            --dwi-select config/dwi_select_ideas_b2500.json \
+            --n-cpus 4 \
+            "${EXTRA[@]}"
+
+      - name: Verify (qsiprep-only runs)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.analysis == 'qsiprep-only'
+        run: |
+          bash dwi_pipeline/scripts/integration_verify_qsiprep.sh \
+            "${{ runner.temp }}/ideas_out" "${{ github.event.inputs.subject || '1' }}"
