@@ -51,7 +51,6 @@ nav:
     - Field maps & SDC: fieldmaps_sdc.md
     - Lesion masks: lesion_segmentation.md
   - Methods:
-    - Science overview: science_overview.md
     - Step-by-step methods: methods/index.md
     - Step 1 — QSIPrep: methods/step1_qsiprep.md
     - Step 1.5 — Inpainting: methods/step1_5_inpaint.md

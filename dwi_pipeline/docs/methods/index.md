@@ -1,43 +1,14 @@
 # Methods overview
 
-Per-step **theory, biology, and citations** for the DKT Connectome. For a single landing page that explains the scientific rationale end-to-end, start with **[Science overview](../science_overview.md)**.
+Per-step **theory, biology, and citations** for the DKT Connectome.
 
-This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods page per major processing stage, each linking to [References by step](../references.md). For operational details (CLI flags, file paths), see [Pipeline steps](../pipeline_steps.md).
+| Audience | Start here |
+|----------|------------|
+| **Why** the pipeline exists (lesions, SDC, disconnectome) | **[Science overview](../science_overview.md)** |
+| **How to run** each step (paths, flags, outputs) | **[Pipeline steps](../pipeline_steps.md)** |
+| **Citations** (BibTeX tables) | **[References by step](../references.md)** |
 
----
-
-## End-to-end flow
-
-Structural connectomics here means: preprocess diffusion MRI, reconstruct anatomy, trace white-matter pathways, assign streamlines to brain regions, and optionally quantify lesion-related disconnection.
-
-![Pipeline overview](../img/pipeline_overview.svg)
-
-```text
-BIDS (T1w + DWI [+ fmap] [+ lesion mask])
-        │
-        ▼
-Step 1    QSIPrep           Motion, denoising, SDC, T1w–DWI alignment
-        │
-        ▼ (optional)
-Step 1.5  neuroLIT          DDPM inpainting when a BIDS lesion mask exists
-        │
-        ▼
-Step 2    FreeSurfer /      Cortical surfaces + DKT parcellation (78 nodes)
-          FastSurfer
-        │
-        ▼
-Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
-        │
-        ▼
-Step 4    Connectome        Warp DKT labels → DWI grid; tck2connectome
-        │
-        ├─► (optional) Step 4.5 Disconnectome — lesion excision + D matrix
-        │
-        ▼
-Step 5    Node strength     Graph metrics + ENIGMA-style clinical report
-```
-
-**Key principle:** tractography and connectome counting happen on a **common 3D grid** (`dwiref`, derived from QSIPrep's preprocessed T1w). FreeSurfer labels start in conformed surface space; Step 4 resamples them onto the tractography grid before counting streamlines.
+This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods page per processing stage.
 
 ---
 
@@ -55,38 +26,10 @@ Step 5    Node strength     Graph metrics + ENIGMA-style clinical report
 
 ---
 
-## Coordinate spaces (why registration matters)
-
-| Space | Typical grid | Used for |
-|-------|--------------|----------|
-| BIDS native T1w | Scanner-native | Input anatomy, lesion masks |
-| QSIPrep `desc-preproc_T1w` | ~1 mm isotropic | Registration reference after Step 1 |
-| `dwiref` | ~2 mm (tractography grid) | Streamlines, `nodes.mif`, connectome matrix |
-| FreeSurfer conformed | 256³ | `aparc.DKTatlas+aseg.mgz` before warping |
-
-Step 4 performs a three-stage warp chain (FreeSurfer conformed → native T1w → preproc T1w → `dwiref`). See [DKT connectome](step4_connectome.md#spatial-alignment) for details.
-
----
-
-## Default scientific choices
-
-| Choice | Default | Rationale |
-|--------|---------|-----------|
-| DWI shell | b = 1000 (`dwi_select_b1000.json`) | Single-shell SS3T-CSD requires one non-zero b-value |
-| Tractography spec | `mrtrix_singleshell_ss3t_ACT-hsvs` | ACT with hybrid surface/volume 5TT (needs Step 2 surfaces) |
-| Parcellation | DKT, 78 nodes | Consistent across FreeSurfer and FastSurfer cohorts |
-| Connectome weighting | Streamline **counts** | Simple, widely used; optional SIFT2 weighting |
-| Disconnectome | Off (`--disconnection` to enable) | Method under validation |
-| Inpainting | Auto when BIDS lesion mask present | Improves recon quality around lesions |
-
-Alternatives and trade-offs: [Comparisons](../comparisons.md) · [Science overview](../science_overview.md) · Developer deep-dive: [pipeline_science.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md).
-
----
-
 ## Related pages
 
-- [Pipeline steps](../pipeline_steps.md) — operational step reference
-- [References by step](../references.md) — full citation tables
-- [Preparing your data](../preparing_data.md) — BIDS inputs, SDC, lesion masks
-- [Outputs](../outputs.md) — derivatives layout
-- [Disconnectome](../disconnectome.md) — CLI defaults and QC for Step 4.5
+- [Science overview](../science_overview.md) — end-to-end flow, physics summary, default choices
+- [Pipeline steps](../pipeline_steps.md) — operational reference
+- [Disconnectome](../disconnectome.md) — CLI defaults and QC (Step 4.5 user guide)
+- [Comparisons](../comparisons.md) — vs other pipelines
+- Developer deep-dive: [pipeline_science.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md)
