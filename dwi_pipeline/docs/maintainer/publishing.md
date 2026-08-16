@@ -18,7 +18,7 @@ Checklist for releases, containers, and [dkt-connectome.readthedocs.io](https://
    gh release create v0.2.0 --title "DKT Connectome 0.2.0" --notes-file dwi_pipeline/RELEASE_NOTES.md
    ```
 
-6. Submit [BIDS Apps registry](../bids_apps_registry.md) PR or email.
+6. Submit [BIDS Apps registry](../BIDS_App.md) PR or email.
 
 Track remaining work: [Readiness checklist](readiness_checklist.md).
 

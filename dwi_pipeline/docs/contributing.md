@@ -99,5 +99,5 @@ Be respectful in issues and reviews. Neuroimaging software serves diverse clinic
 ## See also
 
 - [Schema reference](schema_reference.md)
-- [BIDS Apps registry](bids_apps_registry.md)
+- [BIDS App submission](BIDS_App.md)
 - [License information](license.md)
