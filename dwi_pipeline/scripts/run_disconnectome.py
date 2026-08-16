@@ -53,8 +53,8 @@ import numpy as np
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_LUT = SCRIPT_DIR.parent / "containers" / "connectome" / "mrtrix_lut" / "fs_dkt.txt"
-DEFAULT_CONTAINER = (
-    "/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_connectome.sif"
+DEFAULT_CONTAINER = Path(
+    __import__("os").environ.get("CONTAINER_CONNECTOME", "/path/to/dkt_connectome.sif")
 )
 
 

@@ -72,7 +72,7 @@ rule qsiprep:
           xtra+=(--use-syn-sdc error)
           echo "QSIPrep: sub-${{SUBJECT}}: explicit use_syn_sdc -> SyN SDC"
         elif [[ "{QSIPREP_NO_SDC}" == "True" ]]; then
-          echo "QSIPrep: sub-${{SUBJECT}}: explicit no_sdc -> NO SDC (matches previous CIDUR GE runs)"
+          echo "QSIPrep: sub-${{SUBJECT}}: explicit no_sdc -> NO SDC (legacy no-fieldmap GE runs)"
         else
           _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${{SUBJECT}}" \
             "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \

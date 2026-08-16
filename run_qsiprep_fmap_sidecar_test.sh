@@ -9,8 +9,8 @@
 # -----------------------------------------------------------------------------
 
 #SBATCH --job-name=qsiprep_fmaptest
-#SBATCH --output=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs/qsiprep_fmap_sidecar_test_%j.out
-#SBATCH --error=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/logs/qsiprep_fmap_sidecar_test_%j.err
+#SBATCH --output=logs/qsiprep_fmap_sidecar_test_%j.out
+#SBATCH --error=logs/qsiprep_fmap_sidecar_test_%j.err
 #SBATCH --time=24:00:00
 #SBATCH --partition=general
 #SBATCH --cpus-per-task=8
@@ -19,13 +19,13 @@
 set -euo pipefail
 set +H
 
-PROJECT_ROOT=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 BIDS_DIR="${BIDS_DIR:-${PROJECT_ROOT}/test_bids_fmap_no_sidecars}"
 QSIPREP_OUT="${QSIPREP_OUT:-${BIDS_DIR}/qsiprep_output}"
 WORK_QSIPREP="${WORK_QSIPREP:-${BIDS_DIR}/qsiprep_work}"
-CONTAINER_QSIPREP=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/containers/qsiprep.sif
+CONTAINER_QSIPREP="${CONTAINER_QSIPREP:-/path/to/containers/qsiprep.sif}"
 TEMPLATEFLOW_HOME="${TEMPLATEFLOW_HOME:-${PROJECT_ROOT}/templateflow}"
-FS_LICENSE=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/data_mining/freesurfer/license.txt
+FS_LICENSE="${FS_LICENSE:-/path/to/license.txt}"
 
 SUBJECT="${SUBJECT:-031}"
 NTHREADS="${NTHREADS:-8}"

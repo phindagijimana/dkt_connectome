@@ -153,7 +153,7 @@ and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
 
 ## Study cohorts and data use
 
-Validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI cohorts** (including CIDUR). Acknowledge institutional data-use agreements and study-specific requirements as required by your IRB.
+Validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI cohorts**. Acknowledge institutional data-use agreements and study-specific requirements as required by your IRB.
 
 ---
 

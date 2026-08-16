@@ -51,7 +51,7 @@ fs_lut: null   # default: dirname(fs_license)/FreeSurferColorLUT.txt
 qsiprep:
   use_syn_sdc: false       # --syn / QSIPREP_USE_SYN_SDC=1
   fmap_retry: false        # --fmap-retry / QSIPREP_FMAP_RETRY=1
-  no_sdc: false            # --no-sdc / QSIPREP_NO_SDC=1 — skip SDC entirely (matches previous CIDUR GE runs)
+  no_sdc: false            # --no-sdc / QSIPREP_NO_SDC=1 — skip SDC entirely (legacy no-fieldmap GE runs)
   bids_filter: null        # static filter JSON (--bids-filter); mutually exclusive with dwi-select
 
 # --- DWI series selection (QSIPrep) ---

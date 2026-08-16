@@ -21,8 +21,8 @@ ARRAY_CONCURRENCY="${ARRAY_CONCURRENCY:-5}"
 NTHREADS="${NTHREADS:-8}"
 OMP_NTHREADS="${OMP_NTHREADS:-8}"
 
-RESULTS_ROOT="${RESULTS_ROOT:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_results}"
-BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
+RESULTS_ROOT="${RESULTS_ROOT:-/path/to/results}"
+BIDS_DIR="${BIDS_DIR:-/path/to/BIDS}"
 
 [[ -f "${ARRAY_SCRIPT}" ]] || { echo "Missing ${ARRAY_SCRIPT}"; exit 1; }
 [[ -f "${SUBJECT_LIST_FILE}" ]] || { echo "Missing ${SUBJECT_LIST_FILE}"; exit 1; }

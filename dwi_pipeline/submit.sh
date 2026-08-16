@@ -24,7 +24,7 @@
 #   ./submit.sh --no-node-strength # skip Step 5 only (keep the connectome CSV)
 #   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc error
 #   ./submit.sh --fmap-retry       # ignore measured fmaps, SyN SDC
-#   ./submit.sh --no-sdc           # skip SDC entirely (matches previous CIDUR GE runs)
+#   ./submit.sh --no-sdc           # skip SDC entirely (matches previous no-fieldmap GE runs)
 #   ./submit.sh --dwi-shell 1000     # default: acq-b1000 + IntendedFor fmaps for QSIPrep
 #   ./submit.sh --no-dwi-filter      # legacy: no series filter
 #   ./submit.sh --bids-validation    # run bids-validator on BIDS_DIR before submit
@@ -256,7 +256,7 @@ if [[ -n "${QSIRECON_ATLASES}" ]]; then
 fi
 echo "  QSIPrep SDC: measured when dwi-select includes fmap; else requires --syn, --fmap-retry, or --no-sdc"
 [[ "${QSIPREP_FMAP_RETRY}" == "1" ]] && echo "  QSIPREP_FMAP_RETRY=1 (--ignore fieldmaps --use-syn-sdc error)"
-[[ "${QSIPREP_NO_SDC}"     == "1" ]] && echo "  QSIPREP_NO_SDC=1     (SDC skipped entirely — matches previous CIDUR GE runs)"
+[[ "${QSIPREP_NO_SDC}"     == "1" ]] && echo "  QSIPREP_NO_SDC=1     (SDC skipped entirely — matches previous no-fieldmap GE runs)"
 if [[ "${QSIPREP_NO_DWI_FILTER}" == "1" ]]; then
   echo "  dwi-select: off (--no-dwi-filter)"
 elif [[ -n "${DWI_SELECT_JSON}" ]]; then

@@ -211,7 +211,7 @@ match wins):
 | **`fmap-retry`** | `--fmap-retry` · `QSIPREP_FMAP_RETRY=1` · `qsiprep.fmap_retry: true` | `--ignore fieldmaps --use-syn-sdc error` | BIDS fmaps exist but are known to be broken; force SyN. |
 | **measured fmap** | dwi-select filter includes an `fmap` block | (none — QSIPrep uses the fmap it finds) | Default for subjects with a valid `fmap/` dir + `IntendedFor` → target DWI (all Siemens-with-fmap sessions). |
 | **`syn`** | `--syn` / `--use-syn-sdc` · `QSIPREP_USE_SYN_SDC=1` · `qsiprep.use_syn_sdc: true` | `--use-syn-sdc error` | No measured fmap on disk — best available fall-back. Uses ANTs SyN to register b0 → T1w with anatomical priors. |
-| **`no-sdc`** | `--no-sdc` · `QSIPREP_NO_SDC=1` · `qsiprep.no_sdc: true` | (none — SDC skipped) | Explicitly skip SDC (reproduces previous CIDUR GE runs, where no fmap was acquired and `--syn` was never passed). Grep-able as `"explicit no_sdc -> NO SDC"` in the QSIPrep log. |
+| **`no-sdc`** | `--no-sdc` · `QSIPREP_NO_SDC=1` · `qsiprep.no_sdc: true` | (none — SDC skipped) | Explicitly skip SDC (reproduces legacy no-fieldmap GE runs, where no fmap was acquired and `--syn` was never passed). Grep-able as `"explicit no_sdc -> NO SDC"` in the QSIPrep log. |
 
 If none of the four fire, QSIPrep exits with a `_pipeline_fail` message
 listing all three overrides — the pipeline **never silently runs without
@@ -228,24 +228,25 @@ instead of shipping an SDC-less subject that appears to have completed
 normally. If you genuinely want that subject to proceed without SDC, add
 `--no-sdc` explicitly.
 
-**Cohort split example — CIDUR**:
+**Cohort split example — mixed-manufacturer URMC clinical cohort**:
 
 ```bash
 # Group 1: Siemens-with-fmap → default (measured SDC)
 while read s; do
   bash dwi_pipeline/submit.sh --subject "$s" \
-       --dwi-select dwi_pipeline/config/dwi_select_cidur_64dirax.json
-done < dwi_pipeline/subject_list_cidur_fmap.txt
+       --dwi-select dwi_pipeline/config/dwi_select_64dirax_with_fmap.json
+done < dwi_pipeline/subject_list_urmc_with_fmap.txt
 
 # Group 2: GE + Siemens-no-fmap → --no-sdc (reproduces previous behavior)
 while read s; do
   bash dwi_pipeline/submit.sh --subject "$s" \
-       --dwi-select dwi_pipeline/config/dwi_select_cidur_64dirax.json \
+       --dwi-select dwi_pipeline/config/dwi_select_64dirax_with_fmap.json \
        --no-sdc
-done < dwi_pipeline/subject_list_cidur_ge.txt
+done < dwi_pipeline/subject_list_urmc_no_fmap.txt
 ```
 
-Ready-made lists sit at `dwi_pipeline/subject_list_cidur_{fmap,ge}.txt`.
+Ready-made lists: copy `subject_list_urmc_{with_fmap,no_fmap}.example.txt` to
+`subject_list_urmc_{with_fmap,no_fmap}.txt` locally (gitignored; do not commit real IDs).
 Both groups run through the default Snakemake engine — no
 `PIPELINE_ENGINE=bash` needed.
 

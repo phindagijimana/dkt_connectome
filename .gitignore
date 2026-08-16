@@ -143,6 +143,8 @@ backups/
 # the per-subject scan-parameter table stay local; the tracked template and
 # defaults carry placeholder IDs only.
 /dwi_pipeline/subjects_*.txt
+/dwi_pipeline/subject_list_urmc_*.txt
+!/dwi_pipeline/subject_list_urmc_*.example.txt
 /dwi_pipeline/config/bids_repair_subjects.local.csv
 
 # --- Report figures (per-subject, derived from real study data) ---------------
@@ -164,5 +166,8 @@ dwi_pipeline/site/
 # Local reference papers / repair configs with real subject IDs (never commit)
 dwi_pipeline/Inpainting/
 dwi_pipeline/ENIGMA.docx
+dwi_pipeline/flag.docx
+dwi_pipeline/sample_software_paper/*.pdf
+dwi_pipeline/sample_software_paper/*.docx
 dwi_pipeline/config/bids_repair_phase2_rsfmap.json
 dwi_pipeline/workflow/config/config.local.yaml

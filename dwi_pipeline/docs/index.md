@@ -2,7 +2,7 @@
 
 **BIDS App** for lesion-aware structural connectomics: QSIPrep → optional neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS tractography → DKT connectome → optional disconnectome → node-strength report.
 
-The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with optional lesion masks. Primary validation cohorts include the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI** (including CIDUR); those are data sources, not the pipeline name.
+The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with optional lesion masks. Primary validation cohorts include the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI**; those are data sources, not the pipeline name.
 
 This documentation follows the layout of [QSIPrep](https://qsiprep.readthedocs.io/) — installation, tutorial, usage, methods, outputs, and validation pages.
 
@@ -108,7 +108,7 @@ cd dwi_pipeline
 ## Quick start (HPC / `subject.sh`)
 
 ```bash
-export BIDS_DIR=/path/to/CIDUR_BIDS/data_bids
+export BIDS_DIR=/path/to/BIDS
 export RESULTS_ROOT=/path/to/results
 bash dwi_pipeline/subject.sh all 009 --session-filter ses-1
 ```

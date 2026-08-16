@@ -1,7 +1,7 @@
 # dwi_test_TBI — local BIDS inputs + pipeline RESULTS_ROOT
 
 Keep **inputs and outputs together** under this folder. Leave large cohort
-archives (e.g. `CIDUR_BIDS`) for data storage only.
+archives (e.g. local BIDS storage) for data storage only.
 
 ## Layout
 
