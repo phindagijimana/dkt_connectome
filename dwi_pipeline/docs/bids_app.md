@@ -179,6 +179,8 @@ Submit to the [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/) with
 - **Docker Hub:** `phindagijimana321/dkt-connectome:0.2.0` (orchestrator; step images mounted at runtime)  
 - **Test dataset:** `dwi_pipeline/tests/fixtures/bids_minimal/`  
 
-Step-by-step checklist: [bids_apps_registry.md](bids_apps_registry.md).
+**Step-by-step submission guide:** [BIDS_App.md](BIDS_App.md) (email template, PR to `bids-website`, verification commands).
+
+Short checklist: [bids_apps_registry.md](bids_apps_registry.md).
 
 Full descriptor: [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json).

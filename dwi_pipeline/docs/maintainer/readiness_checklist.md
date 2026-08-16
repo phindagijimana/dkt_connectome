@@ -6,7 +6,7 @@ Prioritized remaining work to reach a **listed, production-ready BIDS App** and 
 
 **Architectural note:** This pipeline is a **multi-container orchestrator** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). It will not match QSIPrep’s single-image UX unless you publish a monolithic or compose-all-pins stack (optional, P2).
 
-Related docs: [Publishing](publishing.md) · [BIDS Apps registry](../bids_apps_registry.md) · [Validation](../validation.md) · [paper plan on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md)
+Related docs: [Publishing](publishing.md) · [BIDS App submission](../BIDS_App.md) · [Validation](../validation.md) · [paper plan on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md)
 
 ---
 
@@ -16,7 +16,7 @@ Blockers for appearing on [bids-apps.neuroimaging.io](https://bids-apps.neuroima
 
 | # | Task | Status | Notes / path |
 |---|------|--------|--------------|
-| P0.1 | **Submit BIDS Apps registry entry** | Open | Email or PR to `bids-standard/bids-website` → `data/tools/apps.yml`. Template: [bids_apps_registry.md](../bids_apps_registry.md) §4. |
+| P0.1 | **Submit BIDS Apps registry entry** | Open | Follow [BIDS_App.md](../BIDS_App.md) — email or PR to `bids-standard/bids-website`. |
 | P0.2 | **Create GitHub Release for v0.2.0** | Open | Tag exists; use [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md) with `gh release create`. See [publishing.md](publishing.md). |
 | P0.3 | **Verify Docker Hub image is pullable** | Open | `docker pull phindagijimana321/dkt-connectome:0.2.0`. Set `DOCKERHUB_*` secrets or run `scripts/mirror_ghcr_to_dockerhub.sh`. |
 | P0.4 | **Fix RTD auto-rebuild** | Open | Confirm webhook or `READTHEDOCS_TOKEN` in `.github/workflows/readthedocs.yml`. [readthedocs_setup.md](../readthedocs_setup.md). |
@@ -105,7 +105,7 @@ Only if cloud-only / BIDS Apps reviewers demand single-image UX.
 | # | Task | Notes |
 |---|------|-------|
 | P5.1 | **Monolithic or “fat” Docker image** | Bundle orchestrator + pinned step images; large build, FS license still runtime. |
-| P5.2 | **Join `bids-apps` GitHub org** | CircleCI → Docker Hub under `bids-apps` namespace. [bids_apps_registry.md](../bids_apps_registry.md) §5. |
+| P5.2 | **Join `bids-apps` GitHub org** | CircleCI → Docker Hub under `bids-apps` namespace. [BIDS_App.md § Optional](../BIDS_App.md). |
 | P5.3 | **Public regression dataset on S3/OpenNeuro** | QSIPrep-style CI regression artifacts beyond golden QC outputs in `dwi_test_TBI/`. |
 
 ---
