@@ -44,9 +44,7 @@ jobs:
 
       - name: Verify registry pins (HTTP)
         working-directory: dwi_pipeline
-        env:
-          DKT_VERIFY_NETWORK: "1"
-        run: python3 scripts/container_install.py verify
+        run: python3 scripts/container_install.py verify --mode "${{ inputs.mode }}"
 
       - name: Write config and list cache
         working-directory: dwi_pipeline
