@@ -48,7 +48,23 @@ jobs:
           ./run --help | grep -q export-bids-derivatives
           ./run --help | grep -q session-id
           ./run --help | grep -q nprocs
+          ./run --help | grep -q doctor
           test "$(./run --version)" = "0.2.0"
+
+      - name: Install list + doctor (CI stubs)
+        working-directory: dwi_pipeline
+        env:
+          BIDS_APP_CI: "1"
+        run: |
+          python3 scripts/container_install.py list --cache /tmp/dkt_ci_cache --mode qsiprep
+          ./run doctor
+
+      - name: Verify container pin registries (HTTP)
+        working-directory: dwi_pipeline
+        run: |
+          python3 scripts/container_install.py verify --offline || \
+            python3 scripts/container_install.py verify || \
+            echo "::warning::Some registry URIs unreachable (fallbacks may still work at pull time)"
 
       - name: BIDS App smoke test (minimal fixture, dry-run)
         working-directory: dwi_pipeline

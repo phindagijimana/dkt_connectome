@@ -107,7 +107,15 @@ Set before `./run` when container paths differ from site defaults:
 | `CONTAINER_NODESTRENGTH` | Path to nodestrength SIF (Step 5) |
 | `CONNECTOME_WEIGHTING` | Default `count` |
 
-See [Installation](installation.md) for default paths and build instructions.
+See [Installation](installation.md) for default paths, **`bash install.sh`**, and build instructions.
+
+Quick install:
+
+```bash
+bash install.sh
+export FS_LICENSE=/path/to/license.txt
+./run doctor
+```
 
 ---
 

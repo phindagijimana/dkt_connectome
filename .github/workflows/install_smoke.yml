@@ -1,0 +1,52 @@
+name: Install smoke (Apptainer pull)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Pipeline mode subset to pull (qsiprep, all, ...)
+        type: string
+        default: qsiprep
+
+permissions:
+  contents: read
+
+jobs:
+  apptainer-pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Apptainer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apptainer
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Pull pinned containers
+        working-directory: dwi_pipeline
+        run: |
+          python3 -m pip install pyyaml
+          export DKT_CONTAINER_CACHE="${{ runner.temp }}/dkt_containers"
+          bash scripts/install.sh \
+            --cache "${DKT_CONTAINER_CACHE}" \
+            --mode "${{ inputs.mode }}" \
+            --missing-only \
+            --no-doctor
+
+      - name: Verify registry pins (HTTP)
+        working-directory: dwi_pipeline
+        env:
+          DKT_VERIFY_NETWORK: "1"
+        run: python3 scripts/container_install.py verify
+
+      - name: Write config and list cache
+        working-directory: dwi_pipeline
+        run: |
+          export DKT_CONTAINER_CACHE="${{ runner.temp }}/dkt_containers"
+          python3 scripts/container_install.py write-config --cache "${DKT_CONTAINER_CACHE}"
+          ls -lh "${DKT_CONTAINER_CACHE}"

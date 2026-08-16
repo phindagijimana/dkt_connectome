@@ -11,6 +11,7 @@ container_pins:
   fastsurfer: deepmi/fastsurfer:latest
   connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
   lit: deepmi/lit:0.6.0
+  nodestrength: phindagijimana321/nodestrength:0.1.0
 
 containers:
   qsiprep: /path/to/others/containers/qsiprep.sif

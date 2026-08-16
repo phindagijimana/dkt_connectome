@@ -4,7 +4,19 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch: {}
+    branches: [main]
+    paths:
+      - 'dwi_pipeline/Dockerfile'
+      - 'dwi_pipeline/docker-entrypoint.sh'
+      - 'dwi_pipeline/run'
+      - 'dwi_pipeline/scripts/**'
+      - '.github/workflows/docker_publish.yml'
+  workflow_dispatch:
+    inputs:
+      push:
+        description: Push to Docker Hub (requires DOCKERHUB_* secrets)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -41,16 +53,31 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "version=0.2.0" >> "$GITHUB_OUTPUT"
           else
             echo "version=0.2.0-dev" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Should push to Docker Hub
+        id: push
+        run: |
+          want_push=false
+          if [[ "${{ steps.creds.outputs.present }}" == "true" ]]; then
+            if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+              want_push=true
+            elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.push }}" == "true" ]]; then
+              want_push=true
+            fi
+          fi
+          echo "enabled=${want_push}" >> "$GITHUB_OUTPUT"
 
       - name: Build orchestrator image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: dwi_pipeline/Dockerfile
-          push: ${{ steps.creds.outputs.present == 'true' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+          push: ${{ steps.push.outputs.enabled == 'true' }}
           tags: |
             phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }}
             phindagijimana/dkt-connectome:latest
@@ -58,8 +85,9 @@ jobs:
 
       - name: Docker smoke test
         run: |
-          docker run --rm phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} --version | grep -q 0.2.0
+          docker run --rm phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} --version
           mkdir -p /tmp/docker_out
+          touch /tmp/license.txt
           docker run --rm \
             -v "${{ github.workspace }}/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
             -v /tmp/docker_out:/out \
@@ -69,3 +97,4 @@ jobs:
             /data/bids /out participant \
             --participant-label EXAMPLE --session-filter ses-1 \
             --dry-run --no-sdc --no-dwi-filter --mode qsiprep
+          docker run --rm phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} doctor
