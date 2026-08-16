@@ -9,9 +9,21 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(dirname "${SCRIPT_DIR}")"
-VERSION="$(python3 -c "import json; print(json.load(open('${SCRIPT_DIR}/../app.json'))['PipelineVersion'])")"
-IMAGE="phindagijimana/dkt-connectome"
+DWI_DIR="$(dirname "${SCRIPT_DIR}")"
+REPO_ROOT="$(dirname "${DWI_DIR}")"
+VERSION="$(python3 -c "import json; print(json.load(open('${DWI_DIR}/app.json'))['PipelineVersion'])")"
+IMAGE="phindagijimana321/dkt-connectome"
+CONTAINER="${CONTAINER:-}"
+if [[ -z "${CONTAINER}" ]]; then
+  if command -v docker >/dev/null 2>&1; then
+    CONTAINER=docker
+  elif command -v podman >/dev/null 2>&1; then
+    CONTAINER=podman
+  else
+    echo "ERROR: docker or podman required" >&2
+    exit 1
+  fi
+fi
 PUSH=0
 
 while [[ $# -gt 0 ]]; do
@@ -25,16 +37,19 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "Building ${IMAGE}:${VERSION} from ${REPO_ROOT}"
-docker build -f "${SCRIPT_DIR}/../Dockerfile" -t "${IMAGE}:${VERSION}" -t "${IMAGE}:latest" "${REPO_ROOT}"
+echo "Building ${IMAGE}:${VERSION} from ${REPO_ROOT} (${CONTAINER})"
+"${CONTAINER}" build -f "${DWI_DIR}/Dockerfile" \
+  -t "docker.io/${IMAGE}:${VERSION}" \
+  -t "docker.io/${IMAGE}:latest" \
+  "${REPO_ROOT}"
 
 echo "Smoke test:"
-docker run --rm "${IMAGE}:${VERSION}" --version
+"${CONTAINER}" run --rm "docker.io/${IMAGE}:${VERSION}" --version
 
 if [[ "${PUSH}" -eq 1 ]]; then
   echo "Pushing ${IMAGE}:${VERSION} and :latest"
-  docker push "${IMAGE}:${VERSION}"
-  docker push "${IMAGE}:latest"
+  "${CONTAINER}" push "docker.io/${IMAGE}:${VERSION}"
+  "${CONTAINER}" push "docker.io/${IMAGE}:latest"
   echo "Done. Registry URL: docker.io/${IMAGE}:${VERSION}"
 else
   echo "Built locally. Push with: bash scripts/publish_docker.sh --push"

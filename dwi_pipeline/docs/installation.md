@@ -59,7 +59,7 @@ docker run --rm \
   -v ~/license.txt:/license.txt:ro \
   -e FS_LICENSE=/license.txt \
   -e DKT_AUTO_INSTALL=1 \
-  phindagijimana/dkt-connectome:0.2.0 \
+  phindagijimana321/dkt-connectome:0.2.0 \
   /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
 ```
 
