@@ -1,6 +1,8 @@
 # BIDS App registry submission
 
-Step-by-step guide to list **DKT Connectome v0.2.0** on the official [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
+Optional guide to list **DKT Connectome v0.2.0** on the official [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
+
+**You do not need this listing** to release, cite, or run the pipeline. For release, Docker, RTD, Dockstore, and WorkflowHub steps, see [Maintainer one-shot tasks](maintainer/maintainer_tasks.md).
 
 **Related:** [BIDS App usage](bids_app.md) (how to run `./run`) · [Readiness checklist](maintainer/readiness_checklist.md) · [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json)
 

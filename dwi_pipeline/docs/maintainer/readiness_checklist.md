@@ -6,25 +6,27 @@ Prioritized remaining work to reach a **listed, production-ready BIDS App** and 
 
 **Architectural note:** This pipeline is a **multi-container orchestrator** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). It will not match QSIPrep’s single-image UX unless you publish a monolithic or compose-all-pins stack (optional, P2).
 
-Related docs: [Publishing](publishing.md) · [BIDS App submission](../BIDS_App.md) · [Validation](../validation.md) · [paper plan on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md)
+Related docs: [Maintainer one-shot tasks](maintainer_tasks.md) · [Publishing](publishing.md) · [BIDS App submission (optional)](../BIDS_App.md) · [Validation](../validation.md) · [paper plan on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md)
 
 ---
 
-## P0 — Listing-ready (do first)
+## P0 — Release & visibility (maintainer one-shots)
 
-Blockers for appearing on [bids-apps.neuroimaging.io](https://bids-apps.neuroimaging.io/) and giving a first-time user a clear path to run the app.
+Credential-based steps for GitHub Release, Docker Hub, docs hosting, and workflow registries. **BIDS Apps listing is optional** (P0.1).
+
+**Runbook:** [Maintainer one-shot tasks](maintainer_tasks.md)
 
 | # | Task | Status | Notes / path |
 |---|------|--------|--------------|
-| P0.1 | **Submit BIDS Apps registry entry** | Open | Follow [BIDS_App.md](../BIDS_App.md) — email or PR to `bids-standard/bids-website`. |
-| P0.2 | **Create GitHub Release for v0.2.0** | Open | Tag exists; use [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md) with `gh release create`. See [publishing.md](publishing.md). |
-| P0.3 | **Verify Docker Hub image is pullable** | Open | `docker pull phindagijimana321/dkt-connectome:0.2.0`. Set `DOCKERHUB_*` secrets or run `scripts/mirror_ghcr_to_dockerhub.sh`. |
-| P0.4 | **Fix RTD auto-rebuild** | Open | Confirm webhook or `READTHEDOCS_TOKEN` in `.github/workflows/readthedocs.yml`. [readthedocs_setup.md](../readthedocs_setup.md). |
-| P0.5 | **Link Dockstore to GitHub** | Open | One-time profile link for `.dockstore.yml` entries. Root [`REGISTRY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/REGISTRY.md). |
-| P0.6 | **Upload WorkflowHub RO-Crate** | Open | Manual upload; step-4 image ref updated in `workflowhub.yml` (v0.2.0). |
+| P0.1 | **Submit BIDS Apps registry entry** | Optional | Skip unless listing on bids-apps.neuroimaging.io — [BIDS_App.md](../BIDS_App.md). |
+| P0.2 | **Create GitHub Release for v0.2.0** | Open | [Maintainer tasks §10](maintainer_tasks.md#10-github-release-v020) |
+| P0.3 | **Verify Docker Hub image is pullable** | Open | [Maintainer tasks §11–12](maintainer_tasks.md#11-push-orchestrator-to-docker-hub) |
+| P0.4 | **Fix RTD auto-rebuild** | Open | [Maintainer tasks §14](maintainer_tasks.md#14-read-the-docs-auto-rebuild) |
+| P0.5 | **Link Dockstore to GitHub** | Open | [Maintainer tasks §15](maintainer_tasks.md#15-dockstore-github-link) |
+| P0.6 | **Upload WorkflowHub RO-Crate** | Open | [Maintainer tasks §16](maintainer_tasks.md#16-workflowhub-ro-crate-upload) |
 | P0.7 | **Commit legacy doc trim** | **Done** | Bash fallback / dual-container in [`workflow/LEGACY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/LEGACY.md); RTD uses `run_subject.sh` only. |
 
-**Exit criterion:** Listed (or submitted) on BIDS Apps site, GitHub Release published, `docker pull` + `./run --version` + RTD build green.
+**Exit criterion:** GitHub Release published, `docker pull phindagijimana321/dkt-connectome:0.2.0` works, RTD build green, Dockstore linked (WorkflowHub optional). BIDS Apps registry optional.
 
 ---
 
