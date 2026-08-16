@@ -91,6 +91,38 @@ def test_smoke_run_subject_dry_run(ci_env):
     assert proc.returncode == 0, proc.stderr
 
 
+def test_run_doctor_ci(ci_env, monkeypatch):
+    monkeypatch.setenv("BIDS_APP_CI", "1")
+    proc = subprocess.run(
+        [str(RUN), "doctor"],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    assert "doctor: OK" in proc.stdout
+
+
+def test_container_install_list(tmp_path):
+    proc = subprocess.run(
+        [
+            "python3",
+            str(DWI / "scripts" / "container_install.py"),
+            "list",
+            "--cache",
+            str(tmp_path / "cache"),
+        ],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "qsiprep" in proc.stdout
+    assert "missing" in proc.stdout
+
+
 def test_run_script_skips_postprocess_on_dry_run():
     text = RUN.read_text()
     assert 'if [[ "${DRY_RUN}" -eq 1 ]]; then' in text

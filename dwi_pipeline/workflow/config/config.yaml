@@ -23,6 +23,8 @@ bids:
   ignore_warnings: false     # pass --ignore-warnings to bids-validator
 
 # --- Recommended upstream container tags (pin in config.local.yaml) ---
+# install.sh tries container_pins first, then PULL_URI_FALLBACKS in scripts/container_install.py
+# for connectome + nodestrength (GHCR -> Docker Hub phindagijimana321).
 container_pins:
   qsiprep: pennlinc/qsiprep:1.0.0
   qsirecon: pennlinc/qsirecon:1.2.1
@@ -30,7 +32,7 @@ container_pins:
   fastsurfer: deepmi/fastsurfer:latest
   connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
   lit: deepmi/lit:0.6.0
-  nodestrength: ghcr.io/phindagijimana/nodestrength:0.1.0
+  nodestrength: phindagijimana321/nodestrength:0.1.0
 
 # --- Containers (local Apptainer .sif paths) ---
 containers:

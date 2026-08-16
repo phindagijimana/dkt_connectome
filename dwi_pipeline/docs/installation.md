@@ -20,10 +20,77 @@ Optional: Slurm for `submit.sh` array jobs.
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
-chmod +x run
+chmod +x run install
 ```
 
 Documentation: [index.md](index.md) · Quick start: [quickstart.md](quickstart.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
+
+---
+
+## Auto-install (recommended)
+
+Pull all pinned step `.sif` images and write `workflow/config/config.local.yaml`:
+
+```bash
+cd dwi_pipeline
+bash install.sh
+# or: bash scripts/install.sh --missing-only
+```
+
+| Variable / flag | Default | Purpose |
+|-----------------|---------|---------|
+| `DKT_CONTAINER_CACHE` | `~/.cache/dkt-connectome/containers` | Where `.sif` files are stored |
+| `--mode qsiprep` | all steps | Pull only what a mode needs |
+| `--missing-only` | off | Skip images already in cache |
+
+Verify before your first run:
+
+```bash
+export FS_LICENSE=/path/to/license.txt
+./run doctor
+```
+
+**Docker orchestrator** with first-run pull:
+
+```bash
+docker run --rm \
+  -v /data/bids:/data/bids:ro -v /data/out:/out \
+  -v ~/dkt_containers:/opt/dkt-connectome/containers \
+  -v ~/license.txt:/license.txt:ro \
+  -e FS_LICENSE=/license.txt \
+  -e DKT_AUTO_INSTALL=1 \
+  phindagijimana/dkt-connectome:0.2.0 \
+  /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
+```
+
+HPC: `sbatch containers/pull_freesurfer_sif.sbatch` for FreeSurfer only on a compute node; full install on a login node with network.
+
+**Docker Compose** (orchestrator + persistent cache volume):
+
+```bash
+cd dwi_pipeline
+mkdir -p data/bids data/out
+# copy or symlink license.txt beside docker-compose.yml
+docker compose build
+docker compose run --rm dkt-connectome \
+  /data/bids /data/out participant \
+  --participant-label 1 --session-filter ses-1 --fastsurfer --syn --dry-run
+```
+
+Publish orchestrator to Docker Hub (maintainers):
+
+```bash
+bash scripts/publish_docker.sh          # local build + smoke
+bash scripts/publish_docker.sh --push   # requires docker login
+# or: GitHub Actions → "Docker publish" workflow (workflow_dispatch)
+```
+
+Verify registry pins without pulling:
+
+```bash
+python3 scripts/container_install.py verify
+./run doctor --with-dry-run   # adds Snakemake dry-run (slower)
+```
 
 ---
 
@@ -132,9 +199,10 @@ Key defaults:
 
 ```bash
 cd dwi_pipeline
+./run doctor
 ./run --help
 
-# Dry-run one subject
+# Dry-run one subject (after install.sh + FS_LICENSE)
 export FS_LICENSE=/path/to/license.txt
 ./run /path/to/BIDS /path/to/out participant \
   --participant-label 009 --dry-run

@@ -1,0 +1,30 @@
+# DKT Connectome orchestrator + persistent step-container cache.
+#
+# First run (pulls missing .sif into dkt_containers volume):
+#   export FS_LICENSE=$HOME/license.txt
+#   docker compose run --rm dkt-connectome \
+#     /data/bids /data/out participant \
+#     --participant-label 1 --session-filter ses-1 --fastsurfer --syn --dry-run
+#
+# Mount your BIDS tree at ./data/bids and results at ./data/out (create locally).
+
+services:
+  dkt-connectome:
+    image: phindagijimana/dkt-connectome:0.2.0
+    build:
+      context: ..
+      dockerfile: dwi_pipeline/Dockerfile
+    environment:
+      FS_LICENSE: /license/license.txt
+      DKT_AUTO_INSTALL: "1"
+      DKT_CONTAINER_CACHE: /opt/dkt-connectome/containers
+    volumes:
+      - ./data/bids:/data/bids:ro
+      - ./data/out:/data/out
+      - ${FS_LICENSE:-./license.txt}:/license/license.txt:ro
+      - dkt_containers:/opt/dkt-connectome/containers
+    working_dir: /opt/dkt-connectome/dwi_pipeline
+    entrypoint: ["./docker-entrypoint.sh"]
+
+volumes:
+  dkt_containers:

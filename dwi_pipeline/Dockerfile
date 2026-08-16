@@ -39,6 +39,8 @@ RUN chmod +x /opt/dkt-connectome/dwi_pipeline/run \
 
 WORKDIR /opt/dkt-connectome/dwi_pipeline
 ENV PATH="/opt/dkt-connectome/dwi_pipeline:${PATH}"
+ENV DKT_CONTAINER_CACHE="/opt/dkt-connectome/containers"
+RUN mkdir -p "${DKT_CONTAINER_CACHE}"
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["--help"]

@@ -1,0 +1,554 @@
+#!/usr/bin/env python3
+"""Pull Apptainer step images and write workflow/config/config.local.yaml."""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    yaml = None  # type: ignore
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+DWI_PIPELINE_DIR = SCRIPT_DIR.parent
+CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.yaml"
+LOCAL_CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.local.yaml"
+CONNECTOME_BUILD = DWI_PIPELINE_DIR / "containers" / "connectome" / "build_connectome.sh"
+
+# Keys pulled by default for a full pipeline install (inpaint optional at runtime).
+DEFAULT_KEYS = (
+    "qsiprep",
+    "qsirecon",
+    "freesurfer",
+    "fastsurfer",
+    "connectome",
+    "lit",
+    "nodestrength",
+)
+
+MODE_KEYS = {
+    "all": DEFAULT_KEYS,
+    "qsiprep": ("qsiprep",),
+    "inpaint": ("lit",),
+    "recon": ("freesurfer", "fastsurfer"),
+    "qsirecon": ("qsirecon", "freesurfer"),
+    "connectome": ("connectome", "freesurfer"),
+    "disconnectome": ("connectome",),
+    "nodestrength": ("nodestrength",),
+}
+
+# Extra pull URIs when the primary container_pins entry is unavailable.
+PULL_URI_FALLBACKS: dict[str, tuple[str, ...]] = {
+    "connectome": (
+        "ghcr.io/phindagijimana/dk-connectome:0.1.0",
+        "phindagijimana321/dkt_connectome:latest",
+        "phindagijimana321/dkt_connectome:2.1.0",
+    ),
+    "nodestrength": (
+        "ghcr.io/phindagijimana/nodestrength:0.1.0",
+        "phindagijimana321/nodestrength:0.1.0",
+        "oras://index.docker.io/phindagijimana321/nodestrength:0.1.0",
+    ),
+}
+
+
+def _load_merged_config() -> dict:
+    if yaml is None:
+        sys.exit("ERROR: PyYAML required (pip install pyyaml)")
+    cfg = yaml.safe_load(CONFIG.read_text()) or {}
+    if LOCAL_CONFIG.is_file():
+        local = yaml.safe_load(LOCAL_CONFIG.read_text()) or {}
+        _deep_merge(cfg, local)
+    return cfg
+
+
+def _deep_merge(base: dict, override: dict) -> None:
+    for key, val in override.items():
+        if isinstance(val, dict) and isinstance(base.get(key), dict):
+            _deep_merge(base[key], val)
+        else:
+            base[key] = val
+
+
+def _sanitize_tag(tag: str) -> str:
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", tag)
+
+
+def sif_name(key: str, pin: str) -> str:
+    tag = pin.split(":")[-1] if ":" in pin else pin.replace("/", "_")
+    if key == "connectome":
+        return "dkt_connectome.sif"
+    if key == "freesurfer" and tag.startswith("7"):
+        return f"freesurfer_{_sanitize_tag(tag)}.sif"
+    if key == "fastsurfer":
+        return "fastsurfer_latest.sif"
+    if key == "lit":
+        return f"lit_{_sanitize_tag(tag)}.sif"
+    if key == "nodestrength":
+        return f"nodestrength_{_sanitize_tag(tag)}.sif"
+    return f"{key}_{_sanitize_tag(tag)}.sif"
+
+
+def pull_uris_for_key(key: str, pin: str) -> list[str]:
+    """Ordered URIs to try for apptainer pull (primary pin first, then fallbacks)."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for raw in (pin, *PULL_URI_FALLBACKS.get(key, ())):
+        uri = apptainer_uri(raw)
+        if uri not in seen:
+            seen.add(uri)
+            out.append(uri)
+    return out
+
+
+def _pull_to_dest(dest: Path, uris: list[str], *, quiet: bool) -> str:
+    """Try each URI until one succeeds; return the URI that worked."""
+    last_err: subprocess.CalledProcessError | None = None
+    tmp = dest.with_suffix(".sif.partial")
+    for uri in uris:
+        if tmp.exists():
+            tmp.unlink()
+        try:
+            _run_pull(tmp, uri, quiet=quiet)
+            tmp.replace(dest)
+            return uri
+        except subprocess.CalledProcessError as exc:
+            last_err = exc
+            if not quiet:
+                print(f"[install] pull failed: {uri}", file=sys.stderr)
+    if last_err:
+        raise last_err
+    raise SystemExit("ERROR: no URIs to pull")
+
+
+def apptainer_uri(pin: str) -> str:
+    if pin.startswith("docker://") or pin.startswith("oras://"):
+        return pin
+    if pin.startswith("ghcr.io/"):
+        return f"docker://{pin}"
+    return f"docker://{pin}"
+
+
+def default_cache() -> Path:
+    env = os.environ.get("DKT_CONTAINER_CACHE")
+    if env:
+        return Path(env).expanduser()
+    return Path.home() / ".cache" / "dkt-connectome" / "containers"
+
+
+def resolve_keys(mode: str | None, only: str | None) -> tuple[str, ...]:
+    if only:
+        return tuple(k.strip() for k in only.split(",") if k.strip())
+    if mode:
+        keys = MODE_KEYS.get(mode)
+        if keys is None:
+            sys.exit(f"ERROR: unknown mode {mode!r}")
+        return keys
+    return DEFAULT_KEYS
+
+
+def list_plan(cache: Path, keys: tuple[str, ...]) -> list[dict]:
+    cfg = _load_merged_config()
+    pins = cfg.get("container_pins") or {}
+    rows = []
+    for key in keys:
+        pin = pins.get(key)
+        if not pin:
+            rows.append({"key": key, "pin": None, "sif": None, "path": None, "exists": False})
+            continue
+        path = cache / sif_name(key, pin)
+        rows.append(
+            {
+                "key": key,
+                "pin": pin,
+                "uri": apptainer_uri(pin),
+                "sif": path.name,
+                "path": str(path),
+                "exists": path.is_file() and path.stat().st_size > 0,
+            }
+        )
+    return rows
+
+
+def _run(cmd: list[str], *, quiet: bool = False) -> None:
+    if not quiet:
+        print(f"+ {' '.join(cmd)}")
+    subprocess.run(cmd, check=True)
+
+
+def _pull_bin() -> str:
+    for name in ("apptainer", "singularity"):
+        if shutil.which(name):
+            return name
+    raise SystemExit("ERROR: apptainer or singularity required for pull")
+
+
+def _run_pull(dest_partial: Path, uri: str, *, quiet: bool) -> None:
+    cmd = [_pull_bin(), "pull", "--force", str(dest_partial), uri]
+    _run(cmd, quiet=quiet)
+
+
+def pull_one(key: str, cache: Path, *, force: bool, quiet: bool) -> Path:
+    cfg = _load_merged_config()
+    pin = (cfg.get("container_pins") or {}).get(key)
+    if not pin:
+        raise SystemExit(f"ERROR: no container_pins.{key} in {CONFIG}")
+    dest = cache / sif_name(key, pin)
+    cache.mkdir(parents=True, exist_ok=True)
+
+    if dest.is_file() and dest.stat().st_size > 0 and not force:
+        if not quiet:
+            print(f"[install] skip {key}: {dest} exists")
+        return dest
+
+    if key == "connectome":
+        return _pull_connectome(dest, pin, cache, force=force, quiet=quiet)
+
+    if key == "nodestrength":
+        uris = pull_uris_for_key(key, pin)
+        used = _pull_to_dest(dest, uris, quiet=quiet)
+        if not quiet:
+            print(f"[install] OK nodestrength ({used}) -> {dest}")
+        return dest
+
+    uris = pull_uris_for_key(key, pin)
+    used = _pull_to_dest(dest, uris, quiet=quiet)
+    if not quiet:
+        print(f"[install] OK {key} ({used}) -> {dest}")
+    return dest
+
+
+def _pull_connectome(dest: Path, pin: str, cache: Path, *, force: bool, quiet: bool) -> Path:
+    if dest.is_file() and dest.stat().st_size > 0 and not force:
+        if not quiet:
+            print(f"[install] skip connectome: {dest} exists")
+        return dest
+    uris = pull_uris_for_key("connectome", pin)
+    try:
+        used = _pull_to_dest(dest, uris, quiet=quiet)
+        if not quiet:
+            print(f"[install] OK connectome (pull {used}) -> {dest}")
+        return dest
+    except subprocess.CalledProcessError:
+        if not quiet:
+            print("[install] connectome pull failed for all URIs; trying local build...", file=sys.stderr)
+    if not CONNECTOME_BUILD.is_file():
+        raise SystemExit(f"ERROR: connectome pull failed and missing {CONNECTOME_BUILD}")
+
+    cfg = _load_merged_config()
+    pins = cfg.get("container_pins") or {}
+    fs_pin = pins.get("freesurfer")
+    qsi_pin = pins.get("qsirecon")
+    if not fs_pin or not qsi_pin:
+        raise SystemExit("ERROR: connectome build needs container_pins.freesurfer and qsirecon")
+
+    fs_sif = cache / sif_name("freesurfer", fs_pin)
+    qsi_sif = cache / sif_name("qsirecon", qsi_pin)
+    if not fs_sif.is_file():
+        pull_one("freesurfer", cache, force=False, quiet=quiet)
+        fs_sif = cache / sif_name("freesurfer", pins["freesurfer"])
+    if not qsi_sif.is_file():
+        pull_one("qsirecon", cache, force=False, quiet=quiet)
+        qsi_sif = cache / sif_name("qsirecon", pins["qsirecon"])
+
+    env = os.environ.copy()
+    env["CONTAINER_FREESURFER"] = str(fs_sif)
+    env["CONTAINER_QSIRECON"] = str(qsi_sif)
+    env["OUT_SIF"] = str(dest)
+    env["FORCE"] = "1" if force else "0"
+    subprocess.run(["bash", str(CONNECTOME_BUILD)], check=True, env=env)
+    if not quiet:
+        print(f"[install] OK connectome (build) -> {dest}")
+    return dest
+
+
+def pull_all(
+    cache: Path,
+    keys: tuple[str, ...],
+    *,
+    missing_only: bool,
+    force: bool,
+    quiet: bool,
+) -> None:
+    _pull_bin()  # raises if missing
+    os.environ.setdefault(
+        "APPTAINER_TMPDIR",
+        str(Path(os.environ.get("APPTAINER_TMPDIR", cache.parent / "apptainer_tmp"))),
+    )
+    Path(os.environ["APPTAINER_TMPDIR"]).mkdir(parents=True, exist_ok=True)
+
+    for key in keys:
+        pin_rows = list_plan(cache, (key,))
+        if pin_rows and pin_rows[0].get("exists") and missing_only and not force:
+            if not quiet:
+                print(f"[install] skip {key}: already present")
+            continue
+        pull_one(key, cache, force=force, quiet=quiet)
+
+
+def write_config(cache: Path, out: Path, *, quiet: bool) -> None:
+    cfg = _load_merged_config()
+    pins = cfg.get("container_pins") or {}
+    containers: dict[str, str] = {}
+    for key in DEFAULT_KEYS:
+        pin = pins.get(key)
+        if pin:
+            containers[key] = str((cache / sif_name(key, pin)).resolve())
+
+    block = {
+        "container_pins": dict(cfg.get("container_pins") or {}),
+        "containers": containers,
+    }
+    if yaml is None:
+        raise SystemExit("PyYAML required")
+    header = (
+        "# Auto-generated by DKT Connectome install (scripts/container_install.py).\n"
+        "# Regenerate: bash scripts/install.sh\n"
+    )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(header + yaml.safe_dump(block, sort_keys=False))
+    if not quiet:
+        print(f"[install] wrote {out}")
+
+
+def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
+    errors: list[str] = []
+    warnings: list[str] = []
+    ci = os.environ.get("BIDS_APP_CI") == "1"
+
+    for tool in ("python3", "snakemake"):
+        if shutil.which(tool) is None:
+            errors.append(f"{tool} not found on PATH")
+    if not ci and shutil.which("apptainer") is None:
+        errors.append("apptainer not found on PATH")
+
+    fs_license = os.environ.get("FS_LICENSE")
+    if not fs_license and LOCAL_CONFIG.is_file() and yaml:
+        merged = _load_merged_config()
+        fs_license = merged.get("fs_license")
+    if not ci:
+        if not fs_license or not Path(fs_license).expanduser().is_file():
+            errors.append(
+                "FreeSurfer license missing — export FS_LICENSE=/path/to/license.txt "
+                "(https://surfer.nmr.mgh.harvard.edu/registration.html)"
+            )
+
+    cfg = _load_merged_config() if yaml else {}
+    containers = cfg.get("containers") or {}
+    if cache is None:
+        cache = default_cache()
+
+    keys = resolve_keys(mode, None)
+    for key in keys:
+        path = containers.get(key) or str(cache / sif_name(key, (cfg.get("container_pins") or {}).get(key, "unknown")))
+        if ci:
+            continue
+        p = Path(path)
+        if not p.is_file() or p.stat().st_size == 0:
+            errors.append(
+                f"missing container ({key}): {path}\n"
+                f"  fix: bash scripts/install.sh --cache {cache}"
+            )
+
+    if with_dry_run and not ci:
+        fixture = DWI_PIPELINE_DIR / "tests" / "fixtures" / "bids_minimal"
+        lic = os.environ.get("FS_LICENSE", "/tmp/license.txt")
+        if fixture.is_dir() and shutil.which("bash"):
+            proc = subprocess.run(
+                [
+                    "bash",
+                    str(DWI_PIPELINE_DIR / "workflow" / "run_subject.sh"),
+                    "qsiprep",
+                    "EXAMPLE",
+                    "--session-filter",
+                    "ses-1",
+                    "--dry-run",
+                    "--no-sdc",
+                    "--no-dwi-filter",
+                ],
+                cwd=DWI_PIPELINE_DIR,
+                env={
+                    **os.environ,
+                    "BIDS_APP_CI": "1",
+                    "BIDS_DIR": str(fixture),
+                    "RESULTS_ROOT": "/tmp/dkt_doctor_dryrun",
+                },
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
+            if proc.returncode != 0:
+                errors.append(
+                    "Snakemake dry-run check failed — run workflow/run_subject.sh qsiprep EXAMPLE --dry-run"
+                )
+                if proc.stderr:
+                    warnings.append(proc.stderr[:300])
+
+    for w in warnings:
+        print(f"WARNING [doctor]: {w}")
+    if errors:
+        for e in errors:
+            print(f"ERROR [doctor]: {e}", file=sys.stderr)
+        print("\nRun: bash scripts/install.sh", file=sys.stderr)
+        return 1
+    print("doctor: OK")
+    for row in list_plan(cache, keys):
+        if row.get("path"):
+            status = "OK" if row.get("exists") or ci else "missing"
+            print(f"  {row['key']}: {row['path']} [{status}]")
+    return 0
+
+
+def verify_pins(*, require_network: bool = True) -> int:
+    """HTTP-check that primary and fallback registry references exist (no pull)."""
+    import urllib.error
+    import urllib.request
+
+    cfg = _load_merged_config()
+    pins = cfg.get("container_pins") or {}
+    errors: list[str] = []
+    checked = 0
+    for key in DEFAULT_KEYS:
+        pin = pins.get(key)
+        if not pin:
+            continue
+        for uri in pull_uris_for_key(key, pin):
+            checked += 1
+            ok, detail = _registry_reachable(uri)
+            status = "OK" if ok else "FAIL"
+            print(f"verify\t{key}\t{status}\t{uri}\t{detail}")
+            if not ok and require_network:
+                errors.append(f"{key}: {uri} ({detail})")
+    if errors:
+        print(f"\nverify: {len(errors)} unreachable of {checked} URIs", file=sys.stderr)
+        return 1
+    print(f"verify: OK ({checked} URIs)")
+    return 0
+
+
+def _registry_reachable(uri: str) -> tuple[bool, str]:
+    """Best-effort registry probe (Docker Hub tags API or HEAD)."""
+    import urllib.error
+    import urllib.request
+
+    if uri.startswith("oras://"):
+        # ORAS/docker index — treat docker hub path as tags API
+        uri = uri.replace("oras://index.docker.io/", "docker://")
+    if uri.startswith("docker://"):
+        ref = uri[len("docker://") :]
+        if ref.startswith("ghcr.io/"):
+            url = f"https://{ref.rsplit(':', 1)[0]}"
+            try:
+                req = urllib.request.Request(url, method="HEAD")
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    return True, f"HTTP {resp.status}"
+            except urllib.error.HTTPError as exc:
+                return exc.code in (200, 401, 405), f"HTTP {exc.code}"
+            except OSError as exc:
+                return False, str(exc)
+        # docker hub namespace/repo:tag
+        if "/" in ref and ":" in ref:
+            repo, tag = ref.rsplit(":", 1)
+            user, name = repo.split("/", 1)
+            url = f"https://hub.docker.com/v2/repositories/{user}/{name}/tags/{tag}"
+            try:
+                with urllib.request.urlopen(url, timeout=15) as resp:
+                    return resp.status == 200, f"HTTP {resp.status}"
+            except urllib.error.HTTPError as exc:
+                return False, f"HTTP {exc.code}"
+            except OSError as exc:
+                return False, str(exc)
+    return True, "skipped"
+
+
+def cmd_list(args: argparse.Namespace) -> None:
+    cache = Path(args.cache).expanduser()
+    keys = resolve_keys(args.mode, args.only)
+    for row in list_plan(cache, keys):
+        mark = "present" if row.get("exists") else "missing"
+        print(f"{row['key']}\t{mark}\t{row.get('pin') or '-'}\t{row.get('path') or '-'}")
+
+
+def cmd_pull(args: argparse.Namespace) -> None:
+    cache = Path(args.cache).expanduser()
+    keys = resolve_keys(args.mode, args.only)
+    pull_all(cache, keys, missing_only=args.missing_only, force=args.force, quiet=args.quiet)
+    if args.write_config:
+        write_config(cache, Path(args.config).expanduser(), quiet=args.quiet)
+
+
+def cmd_write_config(args: argparse.Namespace) -> None:
+    write_config(Path(args.cache).expanduser(), Path(args.config).expanduser(), quiet=args.quiet)
+
+
+def cmd_doctor(args: argparse.Namespace) -> None:
+    cache = Path(args.cache).expanduser() if args.cache else None
+    raise SystemExit(doctor(cache, mode=args.mode, with_dry_run=args.with_dry_run))
+
+
+def cmd_verify(args: argparse.Namespace) -> None:
+    raise SystemExit(verify_pins(require_network=not args.offline))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_list = sub.add_parser("list", help="Show pinned images and cache paths")
+    p_list.add_argument("--cache", default=str(default_cache()))
+    p_list.add_argument("--mode", default=None)
+    p_list.add_argument("--only", default=None, help="Comma-separated keys")
+    p_list.set_defaults(func=cmd_list)
+
+    p_pull = sub.add_parser("pull", help="apptainer pull step images into cache")
+    p_pull.add_argument("--cache", default=str(default_cache()))
+    p_pull.add_argument("--mode", default=None)
+    p_pull.add_argument("--only", default=None)
+    p_pull.add_argument("--missing-only", action="store_true")
+    p_pull.add_argument("--force", action="store_true")
+    p_pull.add_argument("--quiet", action="store_true")
+    p_pull.add_argument("--write-config", action="store_true")
+    p_pull.add_argument(
+        "--config",
+        default=str(LOCAL_CONFIG),
+        help="Output path for config.local.yaml when --write-config",
+    )
+    p_pull.set_defaults(func=cmd_pull)
+
+    p_cfg = sub.add_parser("write-config", help="Write workflow/config/config.local.yaml")
+    p_cfg.add_argument("--cache", default=str(default_cache()))
+    p_cfg.add_argument("--config", default=str(LOCAL_CONFIG))
+    p_cfg.add_argument("--quiet", action="store_true")
+    p_cfg.set_defaults(func=cmd_write_config)
+
+    p_doc = sub.add_parser("doctor", help="Verify tools, license, and containers")
+    p_doc.add_argument("--cache", default=None)
+    p_doc.add_argument("--mode", default="all")
+    p_doc.add_argument(
+        "--with-dry-run",
+        action="store_true",
+        help="Also run Snakemake dry-run on bids_minimal (slower)",
+    )
+    p_doc.set_defaults(func=cmd_doctor)
+
+    p_verify = sub.add_parser("verify", help="HTTP-check container_pins registries (no pull)")
+    p_verify.add_argument(
+        "--offline",
+        action="store_true",
+        help="Do not fail when registries are unreachable",
+    )
+    p_verify.set_defaults(func=cmd_verify)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

@@ -67,6 +67,7 @@ Node strength (Step 5):
   --no-report           Skip PDF report
 
 Other:
+  ./run doctor [options]      Verify install (tools, license, containers)
   --dry-run             Snakemake plan only (-n)
   --export-bids-derivatives   Write RESULTS_ROOT/derivatives/ mirror after run
   --export-copy         Copy files instead of symlinks for BIDS export
@@ -89,6 +90,11 @@ for arg in "$@"; do
     --version|-v) version; exit 0 ;;
   esac
 done
+
+if [[ "${1:-}" == "doctor" ]]; then
+  shift
+  exec bash "${SCRIPT_DIR}/scripts/doctor.sh" "$@"
+fi
 
 if [[ $# -lt 3 ]]; then
   usage
