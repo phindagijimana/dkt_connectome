@@ -2,7 +2,7 @@
 
 The **canonical execution engine** for the DKT Connectome is the Snakemake workflow under [`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow).
 
-Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, connectome, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — the same dependency chain as the legacy `subject.sh` bash path, but declarative and resumable.
+Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, connectome, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
 
 ---
 
@@ -97,10 +97,4 @@ GitHub Actions runs the same script on every push to `main` (`.github/workflows/
 | **Dockstore** | `dkt_connectome` (primary) + legacy root `dk_connectome` |
 | **BIDS App** | `./run` → Snakemake via `run_subject.sh` |
 
----
-
-## Legacy bash path
-
-[`subject.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/subject.sh) remains for sites that have not migrated. New work should use Snakemake (`PIPELINE_ENGINE=snakemake`, the default in `submit.sh`).
-
-See [Comparisons § Legacy root dk_connectome](comparisons.md#vs-legacy-root-dk_connectome-this-repo) for the root 4-stage Snakefile.
+See [Comparisons § Legacy root dk_connectome](comparisons.md#vs-legacy-root-dk_connectome-this-repo) for the repository root 4-stage Snakefile (Dockstore legacy entry).

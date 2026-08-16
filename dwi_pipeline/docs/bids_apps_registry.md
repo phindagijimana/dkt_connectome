@@ -3,6 +3,8 @@
 Use this checklist when submitting **DKT Connectome v0.2.0** to the
 [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
 
+Full prioritized backlog: [Readiness checklist](maintainer/readiness_checklist.md).
+
 ## Repository requirements (done in this repo)
 
 | Item | Location |
@@ -107,7 +109,7 @@ export BIDS_APP_CI=1
 export FS_LICENSE=/tmp/license.txt && touch /tmp/license.txt
 cd dwi_pipeline
 ./run tests/fixtures/bids_minimal /tmp/out participant \
-  --participant-label EXAMPLE --session-filter ses-1 \
+  --participant-label EXAMPLE --session-filter baseline \
   --dry-run --no-sdc --no-dwi-filter --random-seed 42
 pytest tests/test_bids_app.py -q
 ```
@@ -124,6 +126,6 @@ docker run --rm \
   -e FS_LICENSE=/tmp/license.txt \
   dkt-connectome:local \
   /data/bids /out participant \
-  --participant-label EXAMPLE --session-filter ses-1 \
+  --participant-label EXAMPLE --session-filter baseline \
   --dry-run --no-sdc --no-dwi-filter
 ```

@@ -77,7 +77,7 @@ def test_smoke_run_subject_dry_run(ci_env):
             "qsiprep",
             "EXAMPLE",
             "--session-filter",
-            "ses-1",
+            "baseline",
             "--dry-run",
             "--no-sdc",
             "--no-dwi-filter",

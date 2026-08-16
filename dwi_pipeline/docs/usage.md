@@ -34,7 +34,9 @@ HPC (recommended for production):
 ```bash
 export BIDS_DIR=/path/to/BIDS
 export RESULTS_ROOT=/path/to/out
-bash subject.sh all 001 --session-filter ses-1
+bash workflow/run_subject.sh all 001 --session-filter ses-1
+# or Slurm array:
+bash submit.sh
 ```
 
 ---
@@ -57,7 +59,7 @@ bash subject.sh all 001 --session-filter ses-1
 | `--session-filter SES` | auto | Single session (`ses-1` or `1`). **QSIPrep alias:** `--session-id` |
 | `--n-cpus N` | `8` | Snakemake / tool thread budget. **QSIPrep alias:** `--nprocs` |
 | `--omp-nthreads N` | same as `--n-cpus` | OpenMP threads inside containers |
-| `--mem-mb N` / `--mem N` | — | Informational memory hint (logged only) |
+| `--mem-mb N` / `--mem N` | — | Exported as `MEM_MB` for Slurm/HPC wrappers (not enforced by Snakemake) |
 | `--random-seed N` | `0` | Seed for pseudorandom number generators |
 | `--stop-on-first-crash` | off | Abort multi-subject runs after first failure |
 | `--skip-bids-validation` | on (implicit) | Validation off unless `--bids-validation` |
@@ -170,7 +172,7 @@ Group-level export (no reprocessing):
 
 ## Environment variables
 
-Set before `./run` or `subject.sh` when container paths differ from defaults:
+Set before `./run` or `run_subject.sh` when container paths differ from defaults:
 
 | Variable | Purpose |
 |----------|---------|
@@ -194,9 +196,8 @@ Full table: [Configuration](configuration.md) · [Containers](containers.md).
 | Method | When to use |
 |--------|-------------|
 | [`./run`](bids_app.md) | BIDS Apps interface, Docker, portable CLI |
-| [`subject.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/subject.sh) | HPC scripts, full flag surface |
+| [`run_subject.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/run_subject.sh) | Single-subject Snakemake CLI (HPC or interactive) |
 | [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) | Slurm array over a subject list |
-| [`run_subject.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/run_subject.sh) | Snakemake backend (used by `./run`) |
 
 ---
 

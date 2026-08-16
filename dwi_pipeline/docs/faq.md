@@ -16,7 +16,7 @@ export RESULTS_ROOT=/path/to/out
 bash dwi_pipeline/submit.sh
 ```
 
-Use `PIPELINE_ENGINE=snakemake` (default). See [Usage](usage.md) and [Cloud & group deployment](cloud_deployment.md).
+See [Usage](usage.md) and [Cloud & group deployment](cloud_deployment.md).
 
 ### Do I need a lesion mask?
 

@@ -58,11 +58,14 @@ containers:
     source: docker://pennlinc/qsirecon:1.2.1
   - name: freesurfer
     source: docker://freesurfer/freesurfer:7.4.1
-  - name: dk_connectome
-    source: docker://ghcr.io/phindagijimana/dk-connectome:0.1.0
+  - name: dkt_connectome_orchestrator
+    source: docker://phindagijimana321/dkt-connectome:0.2.0
+    description: BIDS App orchestrator (Snakemake); step images mount at runtime.
+  - name: connectome
+    source: docker://ghcr.io/phindagijimana/dk-connectome:0.2.0
     description: |
-      Step 4 connectome image (MRtrix3 + ANTs). Build recipe in
-      containers/Dockerfile.dk_connectome. HPC uses Apptainer .sif instead.
+      Step 4 connectome image (FreeSurfer tools + ANTs + MRtrix3).
+      Build: dwi_pipeline/containers/connectome/ or CI build-dk-connectome.yml.
 
 executors:
   - local

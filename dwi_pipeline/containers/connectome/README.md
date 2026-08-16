@@ -24,7 +24,7 @@ libraries by hand (`libtiff5`, `libpng16-16`, `libfftw3-double3`, `zlib1g`,
 fails if any library is unresolved — a missing one does not break the build,
 only every later run, with exit 127 and no output.
 
-Validated: `subject.sh connectome SUBJ01` with the baked entrypoint reproduces a
+Validated: `workflow/run_subject.sh connectome SUBJ01` with the baked entrypoint reproduces a
 **byte-identical** matrix against a run using the bind-mounted entrypoint.
 
 ## Build
@@ -60,7 +60,7 @@ FreeSurfer binaries are in the image — use a **private** repo or restrict acce
 ```bash
 export CONTAINER_CONNECTOME=/path/to/containers/dkt_connectome.sif
 export FS_LICENSE=/path/to/license.txt
-bash dwi_pipeline/subject.sh connectome SUBJECT
+bash dwi_pipeline/workflow/run_subject.sh connectome SUBJECT
 ```
 
 Recipients need a valid **FreeSurfer license** (bind-mounted at runtime). Do not publish the SIF publicly without respecting FreeSurfer terms.
@@ -83,4 +83,5 @@ reassigning that territory to neighbouring gyri.
 |----------|---------|-------|
 | `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` | Shared image |
 | `CONNECTOME_BIND_ENTRYPOINT` | `0` | Set `1` to override entrypoint from repo |
-| `CONNECTOME_LEGACY_DUAL_CONTAINER` | `0` | Set `1` for old freesurfer + qsirecon runtime path |
+
+Legacy dual-container Step 4 (`CONNECTOME_LEGACY_DUAL_CONTAINER=1`): see [workflow/LEGACY.md](../../workflow/LEGACY.md).

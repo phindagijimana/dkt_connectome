@@ -368,7 +368,7 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
                     "qsiprep",
                     "EXAMPLE",
                     "--session-filter",
-                    "ses-1",
+                    "baseline",
                     "--dry-run",
                     "--no-sdc",
                     "--no-dwi-filter",

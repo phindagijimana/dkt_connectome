@@ -81,6 +81,7 @@ nav:
     - Configuration catalog: config_catalog.md
     - Schema reference: schema_reference.md
   - Maintainer:
+    - Readiness checklist: maintainer/readiness_checklist.md
     - Publishing: maintainer/publishing.md
     - BIDS Apps registry: bids_apps_registry.md
     - Read the Docs setup: readthedocs_setup.md

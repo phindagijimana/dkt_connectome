@@ -11,7 +11,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent / "bids_minimal"
 SUB = "EXAMPLE"
-SES = "ses-1"
+SES = "ses-baseline"
 
 
 def _write_nii(path: Path, shape: tuple[int, ...], dtype=np.float32) -> None:
@@ -42,11 +42,9 @@ def main() -> None:
     base = ROOT / f"sub-{SUB}" / SES
     t1w = base / "anat" / f"sub-{SUB}_{SES}_T1w.nii.gz"
     dwi = base / "dwi" / f"sub-{SUB}_{SES}_dwi.nii.gz"
-    lesion = base / "anat" / f"sub-{SUB}_{SES}_T1w_label-lesion_roi.nii.gz"
 
-    _write_nii(t1w, (8, 8, 8))
-    _write_nii(dwi, (8, 8, 8, 6))
-    _write_nii(lesion, (8, 8, 8), dtype=np.uint8)
+    _write_nii(t1w, (32, 32, 32))
+    _write_nii(dwi, (32, 32, 32, 6))
 
     (base / "anat" / f"sub-{SUB}_{SES}_T1w.json").write_text(
         json.dumps({"RepetitionTime": 2.0, "FlipAngle": 9}) + "\n"
@@ -63,7 +61,7 @@ def main() -> None:
     )
     (base / "dwi" / f"sub-{SUB}_{SES}_dwi.bval").write_text("0 1000 1000 1000 1000 1000\n")
     (base / "dwi" / f"sub-{SUB}_{SES}_dwi.bvec").write_text(
-        "0 0 0\n1 0 0\n0 1 0\n0 0 1\n1 1 0\n0 1 1\n"
+        "0 0 0 1 0 0\n0 1 0 0 0 1\n0 0 1 0 1 1\n"
     )
 
     print(f"Wrote minimal BIDS fixture under {ROOT}")

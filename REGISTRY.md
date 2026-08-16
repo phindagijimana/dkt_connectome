@@ -1,5 +1,9 @@
 # Registries & Executors
 
+> **Canonical BIDS App (v0.2+):** [`dwi_pipeline/run`](dwi_pipeline/run) — full Steps 1–5 + disconnectome.  
+> Docs: [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/bids_app/).  
+> This page also covers the **legacy root** `./connectome` workflow and container images.
+
 `dk_connectome` is intentionally portable across compute backends and
 visible from the major neuroimaging registries. This page is the index to
 everything needed to publish, share, and run the workflow somewhere new.
@@ -58,10 +62,19 @@ metadata you'll be prompted for.
 
 ### BIDS Apps
 
-`./connectome bids <bids_dir> <output_dir> participant [opts]` matches the
-[BIDS-Apps CLI spec](https://bids-apps.neuroimaging.io/) verbatim, so any
-BIDS-App-aware harness (Nipoppy, Bidskit, the official BIDS-App validator)
-can invoke `dk_connectome` without knowing it's Snakemake underneath.
+**Canonical entrypoint (v0.2+):**
+
+```bash
+cd dwi_pipeline
+./run /data/BIDS /data/derivatives participant \
+  --participant-label 01 --session-filter ses-1
+```
+
+See [BIDS Apps registry checklist](dwi_pipeline/docs/bids_apps_registry.md) for submission steps.
+
+**Legacy root facade** — `./connectome bids <bids_dir> <output_dir> participant [opts]` matches the
+[BIDS-Apps CLI spec](https://bids-apps.neuroimaging.io/) for the older 4-stage workflow only.
+Prefer `dwi_pipeline/run` for new cohort work.
 
 ### Snakemake workflow catalog
 
