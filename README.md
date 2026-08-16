@@ -13,7 +13,7 @@
 > **Use this for all new work:** `cd dwi_pipeline && ./run …` or HPC [`submit.sh`](dwi_pipeline/submit.sh).  
 > The repository-root `./connectome` CLI below is the **legacy 4-stage** workflow (QSIPrep → recon → QSIRecon → DK connectome only).
 
-**Legacy 4-stage workflow:** [dwi_pipeline/docs/comparisons.md](dwi_pipeline/docs/comparisons.md#vs-legacy-root-dk_connectome-this-repo).
+**Legacy 4-stage workflow:** [dwi_pipeline/docs/comparisons.md](dwi_pipeline/docs/comparisons.md#vs-legacy-root-dk_connectome-this-repo-only).
 
 The workflow is an **orchestration of four containers**, one per stage:
 

@@ -4,7 +4,7 @@
 # DEPRECATED for new work. Use the canonical pipeline:
 #   dwi_pipeline/run              (BIDS App)
 #   dwi_pipeline/workflow/        (Snakemake)
-# See dwi_pipeline/docs/legacy_workflow.md
+# See dwi_pipeline/docs/comparisons.md (legacy root workflow)
 # =============================================================================
 # 4-stage workflow per subject:
 #     qsiprep -> recon -> qsirecon -> dk_connectome
