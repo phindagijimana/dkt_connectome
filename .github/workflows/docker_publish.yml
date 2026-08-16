@@ -97,4 +97,7 @@ jobs:
             /data/bids /out participant \
             --participant-label EXAMPLE --session-filter ses-1 \
             --dry-run --no-sdc --no-dwi-filter --mode qsiprep
-          docker run --rm phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} doctor
+          docker run --rm \
+            -e BIDS_APP_CI=1 \
+            -e FS_LICENSE=/tmp/license.txt \
+            phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} doctor
