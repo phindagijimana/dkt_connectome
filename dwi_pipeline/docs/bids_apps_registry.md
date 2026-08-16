@@ -26,8 +26,18 @@ Use this checklist when submitting **DKT Connectome v0.2.0** to the
 
 ### 2. Docker Hub
 
+**Status (v0.2.0):** Published at `docker.io/phindagijimana321/dkt-connectome:0.2.0` and `:latest`.
+
+CI pushes to **GHCR** on every build; mirror to Docker Hub with:
+
 ```bash
-# From repository root
+cd dwi_pipeline
+bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.2.0
+```
+
+Or build/push locally:
+
+```bash
 docker build -f dwi_pipeline/Dockerfile -t phindagijimana321/dkt-connectome:0.2.0 .
 docker push phindagijimana321/dkt-connectome:0.2.0
 docker tag phindagijimana321/dkt-connectome:0.2.0 phindagijimana321/dkt-connectome:latest

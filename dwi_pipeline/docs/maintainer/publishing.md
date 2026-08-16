@@ -1,70 +1,79 @@
 # Publishing documentation
 
-Checklist for keeping [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/) in sync with `main`.
+Checklist for releases, containers, and [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/).
 
 ---
 
-## One-time setup
+## Release checklist (v0.2.0+)
 
-1. **Import project** at [readthedocs.org](https://readthedocs.org/) → GitHub → `phindagijimana/dkt_connectome`.
-2. **Project slug:** `dkt-connectome` (must match URLs in `app.json`).
-3. **Display name:** [Admin → Settings](https://app.readthedocs.org/dashboard/dkt-connectome/edit/) → **DKT Connectome** (not TrackTBI Connectome Pipeline).
-4. **Config file:** repo root [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) → `dwi_pipeline/mkdocs.yml`.
-5. **Automatic rebuilds** (pick one):
-   - **Option A:** GitHub secret `READTHEDOCS_TOKEN` ([create token](https://readthedocs.org/accounts/tokens/)) — workflow [`.github/workflows/readthedocs.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/readthedocs.yml) triggers on docs pushes.
-   - **Option B:** [RTD Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) → connect GitHub webhook (no token needed).
+1. Update [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) `PipelineVersion` and [changelog.md](../changelog.md).
+2. Regenerate config catalog: `python3 dwi_pipeline/scripts/generate_config_catalog.py`
+3. Regenerate QC doc figures: `python3 dwi_pipeline/scripts/render_qc_doc_figures.py`
+4. `cd dwi_pipeline && mkdocs build --strict`
+5. Tag and GitHub Release:
+
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   gh release create v0.2.0 --title "DKT Connectome 0.2.0" --notes-file RELEASE_NOTES.md
+   ```
+
+6. Submit [BIDS Apps registry](../bids_apps_registry.md) PR or email.
 
 ---
 
-## After every docs push
+## Docker orchestrator publish
+
+CI **always** pushes to **GHCR:** `ghcr.io/phindagijimana/dkt-connectome:<version>`
+
+**Docker Hub** (`phindagijimana321/dkt-connectome`):
+
+| Method | When |
+|--------|------|
+| GitHub secrets `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` | CI pushes on `workflow_dispatch` with push=true or version tags |
+| **Skopeo mirror (OOD/HPC)** | After CI build — uses existing `podman login` |
 
 ```bash
-# Local strict build (matches CI)
-cd dwi_pipeline && mkdocs build --strict
-
-# Live site check (after RTD rebuild completes, ~2–5 min)
-bash scripts/verify_rtd_live.sh
+# After "Docker publish" workflow succeeds on GitHub:
+cd dwi_pipeline
+bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.2.0
 ```
 
-Expected: `<title>DKT Connectome</title>` and sidebar **DKT Connectome** — no **TrackTBI Connectome**.
-
----
-
-## Manual rebuild (if CI skipped token)
-
-1. [Builds → Trigger build](https://app.readthedocs.org/projects/dkt-connectome/builds/) for version **latest**.
-2. Wait for green build.
-3. Run `bash dwi_pipeline/scripts/verify_rtd_live.sh`.
-
----
-
-## Stale site symptoms
-
-| Symptom | Fix |
-|---------|-----|
-| Tab title **TrackTBI Connectome Pipeline** | Rebuild RTD; set project display name to **DKT Connectome** |
-| Old Methods pages missing | Build must use commit ≥ `4077d88` |
-| Wrong favicon | Clear custom RTD favicon override; hard-refresh browser |
-| GitHub README updated but RTD old | RTD not rebuilding — set up token or webhook (above) |
-
----
-
-## Local preview
+Verify:
 
 ```bash
-pip install mkdocs
-cd dwi_pipeline
-mkdocs serve
-# http://127.0.0.1:8000
+docker pull phindagijimana321/dkt-connectome:0.2.0
+./run doctor   # inside container or locally after install.sh
+```
+
+**Step 4 connectome image (separate):** `phindagijimana321/dkt_connectome` — see [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
+
+---
+
+## Read the Docs
+
+1. Import `phindagijimana/dkt_connectome` at [readthedocs.org](https://readthedocs.org/).
+2. Project slug: **`dkt-connectome`**
+3. Config: [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) → `dwi_pipeline/mkdocs.yml`
+4. Theme: **Material for MkDocs** (`dwi_pipeline/docs/requirements.txt`)
+
+After docs push:
+
+```bash
+cd dwi_pipeline && mkdocs build --strict
+bash scripts/verify_rtd_live.sh
 ```
 
 ---
 
 ## CI jobs
 
-| Workflow | What it checks |
-|----------|----------------|
-| `readthedocs.yml` | Triggers RTD API (if token set); local `mkdocs build --strict`; title/favicon/svg assets |
-| Live verify step | Curls production URL; **informational** until RTD rebuilds |
+| Workflow | Role |
+|----------|------|
+| `dwi_pipeline_ci.yml` | pytest, MkDocs strict, doctor, Snakemake dry-run |
+| `docker_publish.yml` | Build orchestrator → GHCR (+ Docker Hub if secrets set) |
+| `install_smoke.yml` | Apptainer pull smoke test |
+| `build-dk-connectome.yml` | Step-4 connectome image → GHCR/Docker Hub |
+| `readthedocs.yml` | Trigger RTD rebuild |
 
-See also: legacy notes in [Read the Docs setup](../readthedocs_setup.md).
+See also: [Read the Docs setup](../readthedocs_setup.md).

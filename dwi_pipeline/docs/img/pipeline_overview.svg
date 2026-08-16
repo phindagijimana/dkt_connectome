@@ -45,5 +45,5 @@
   <line class="arrow" x1="660" y1="92" x2="675" y2="118"/>
   <text x="300" y="110" text-anchor="middle" class="sub">optional when lesion mask present</text>
   <text x="675" y="188" text-anchor="middle" class="sub">--disconnection (opt-in)</text>
-  <text x="460" y="205" text-anchor="middle" class="sub">Dashed = optional steps · See Methods section for theory and citations</text>
+  <text x="460" y="205" text-anchor="middle" class="sub">Dashed = optional steps ï¿½ See Methods section for theory and citations</text>
 </svg>

@@ -1,0 +1,13 @@
+{
+  "target_shell_b": 2500,
+  "shell_tolerance": 150,
+  "b0_tolerance": 50,
+  "match_mode": "contains_target",
+  "allow_multi_shell": true,
+  "include_fmaps": false,
+  "exclude_fmap_acquisitions": ["rs"],
+  "include_sessions": null,
+  "exclude_acquisitions": [],
+  "on_no_match": "error",
+  "dwi_acquisition": "ideas_b2500"
+}

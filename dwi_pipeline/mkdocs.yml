@@ -9,8 +9,26 @@ copyright: Copyright &copy; 2026 Phind Ndagijimana and contributors. All rights 
 docs_dir: docs
 
 theme:
-  name: readthedocs
-  navigation_depth: 4
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
   custom_dir: overrides
 
 nav:
@@ -22,6 +40,7 @@ nav:
   - Usage: usage.md
   - Decision tables: decision_tables.md
   - Configuration: configuration.md
+  - Configuration catalog: config_catalog.md
   - Preparing your data: preparing_data.md
   - BIDS metadata: bids_metadata.md
   - Field maps & SDC: fieldmaps_sdc.md
@@ -40,6 +59,7 @@ nav:
   - Snakemake workflow: snakemake_workflow.md
   - BIDS App: bids_app.md
   - Containers: containers.md
+  - Cloud & group deployment: cloud_deployment.md
   - Outputs: outputs.md
   - Derivatives: derivatives.md
   - QC dashboard: qc_dashboard.md
@@ -71,5 +91,10 @@ markdown_extensions:
       permalink: true
   - tables
   - fenced_code
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 strict: true

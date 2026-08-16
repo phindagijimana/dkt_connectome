@@ -62,7 +62,7 @@ ENV PATH=/opt/ants/bin:${PATH} \
 # FreeSurfer color LUT (data file only; pinned to a specific upstream commit
 # in the freesurfer/freesurfer GitHub source repo for reproducibility).
 # Pin BOTH the LUT and the URL so a future upstream rename won't break builds.
-ARG FS_LUT_REF=fs_v7.4.1
+ARG FS_LUT_REF=v7.4.1
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl ca-certificates \
  && mkdir -p /opt/freesurfer \
