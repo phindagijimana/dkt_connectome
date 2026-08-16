@@ -287,7 +287,7 @@ def build_crate(*, repo_root: Path, results_root: Path, config_path: Path,
     person = {
         "@id":   "https://github.com/phindagijimana",
         "@type": "Person",
-        "name":  "Phind Ndagijimana",
+        "name":  "Philbert Ndagijimana",
     }
 
     metadata_descriptor = {

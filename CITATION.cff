@@ -6,7 +6,7 @@ message: >-
 title: "DKT Connectome — lesion-aware structural connectomics BIDS App"
 authors:
   - family-names: Ndagijimana
-    given-names: Phind
+    given-names: Philbert
 type: software
 repository-code: "https://github.com/phindagijimana/dkt_connectome"
 license: Apache-2.0

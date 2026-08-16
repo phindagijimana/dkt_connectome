@@ -85,14 +85,18 @@ nav:
     - BIDS App submission (optional): BIDS_App.md
     - Readiness checklist: maintainer/readiness_checklist.md
     - Publishing: maintainer/publishing.md
-    - BIDS Apps registry (checklist): bids_apps_registry.md
     - Read the Docs setup: readthedocs_setup.md
-  - Redirects:
-    - Quick start: quickstart.md
-    - Preprocessing inputs: preprocessing.md
-    - Integrity QC: integrity_qc.md
-    - Getting help: getting_help.md
-    - Theory deep dive: advanced/theory_deep_dive.md
+
+plugins:
+  - search
+  - redirects:
+      redirect_maps:
+        quickstart.md: tutorial.md
+        preprocessing.md: preparing_data.md
+        integrity_qc.md: disconnectome.md#integrity-qc
+        getting_help.md: index.md#help
+        advanced/theory_deep_dive.md: methods/index.md
+        bids_apps_registry.md: BIDS_App.md
 
 markdown_extensions:
   - toc:

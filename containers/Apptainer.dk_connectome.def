@@ -16,7 +16,7 @@ Bootstrap: docker
 From: mrtrix3/mrtrix3:3.0.4
 
 %labels
-    Maintainer  Phind Ndagijimana
+    Maintainer  Philbert Ndagijimana
     Workflow    dk_connectome
     Step        4_dk_connectome
     Description Desikan-Killiany structural connectome step (ANTs + MRtrix3).

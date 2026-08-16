@@ -23,7 +23,7 @@ workflows:
     primaryDescriptorPath: /dwi_pipeline/workflow/Snakefile
     readMePath: /dwi_pipeline/README.md
     authors:
-      - name: Phind Ndagijimana
+      - name: Philbert Ndagijimana
         orcid: ""
     testParameterFiles:
       - /dwi_pipeline/workflow/config/config.yaml
@@ -39,7 +39,7 @@ workflows:
     primaryDescriptorPath: /Snakefile
     readMePath: /README.md
     authors:
-      - name: Phind Ndagijimana
+      - name: Philbert Ndagijimana
         orcid: ""                              # add ORCID iD when available
     testParameterFiles:
       - /config/config.yaml
@@ -55,6 +55,6 @@ workflows:
     primaryDescriptorPath: /workflow/dk_connectome.cwl
     readMePath: /README.md
     authors:
-      - name: Phind Ndagijimana
+      - name: Philbert Ndagijimana
         orcid: ""
     topic: "CWL projection of the Snakemake dk_connectome workflow"

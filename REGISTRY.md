@@ -42,7 +42,7 @@ README's *Containers* section.
 |---------------------------------------|------------------------|------------------------|
 | [Dockstore](https://dockstore.org)    | `.dockstore.yml`       | one-time GitHub link   |
 | [WorkflowHub](https://workflowhub.eu) | `workflowhub.yml`      | upload a Workflow RO-Crate |
-| [BIDS Apps](https://bids-apps.neuroimaging.io/) | `./connectome bids ...` CLI | submit a PR to bids-apps/apps |
+| [BIDS Apps](https://bids-apps.neuroimaging.io/) | [`dwi_pipeline/run`](dwi_pipeline/run) | optional listing — see [BIDS_App.md](dwi_pipeline/docs/BIDS_App.md) |
 | [nf-core](https://nf-co.re) / [Snakemake catalog](https://snakemake.github.io/snakemake-workflow-catalog/) | `Snakefile`, `config/`, `README.md` | tagged release |
 
 ### Dockstore
@@ -70,11 +70,9 @@ cd dwi_pipeline
   --participant-label 01 --session-filter ses-1
 ```
 
-See [BIDS Apps registry checklist](dwi_pipeline/docs/bids_apps_registry.md) for submission steps.
+Optional listing on bids-apps.neuroimaging.io: [BIDS_App.md](dwi_pipeline/docs/BIDS_App.md) (not required for release).
 
-**Legacy root facade** — `./connectome bids <bids_dir> <output_dir> participant [opts]` matches the
-[BIDS-Apps CLI spec](https://bids-apps.neuroimaging.io/) for the older 4-stage workflow only.
-Prefer `dwi_pipeline/run` for new cohort work.
+The legacy root `./connectome bids` facade matches the older 4-stage workflow only — do not use for new cohort work. See [Comparisons](dwi_pipeline/docs/comparisons.md#vs-legacy-root-dk_connectome-this-repo-only).
 
 ### Snakemake workflow catalog
 
