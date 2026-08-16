@@ -6,7 +6,7 @@ Runbook for **credential-based, out-of-repo steps** that complete v0.2.0 publish
 
 **Not in scope here:** BIDS Apps registry listing — optional and documented separately in [BIDS_App.md](../BIDS_App.md) if you choose to submit later. You do **not** need registry submission to cut a release or use the pipeline.
 
-**Repo-side work** is tracked in [Readiness checklist](readiness_checklist.md). **Release + containers + docs** overlap with [Publishing](publishing.md).
+**Repo-side work** is tracked in [Readiness checklist](readiness_checklist.md) · [What's remaining](remaining.md). **Release + containers + docs** overlap with [Publishing](publishing.md).
 
 ---
 

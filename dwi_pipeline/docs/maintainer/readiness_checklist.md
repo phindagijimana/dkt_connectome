@@ -2,6 +2,8 @@
 
 Prioritized remaining work to reach a **listed, production-ready BIDS App** and get as close as practical to **QSIPrep-level** polish.
 
+**Summary (open items only):** [remaining.md](remaining.md) · repo root [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md)
+
 **Current baseline:** v0.2.0 — `./run`, participant + group levels, Snakemake engine, MkDocs site, CI dry-runs, orchestrator Docker image.
 
 **Architectural note:** This pipeline is a **multi-container orchestrator** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). It will not match QSIPrep’s single-image UX unless you publish a monolithic or compose-all-pins stack (optional, P2).
