@@ -14,12 +14,13 @@ on:
   workflow_dispatch:
     inputs:
       push:
-        description: Push to Docker Hub (requires DOCKERHUB_* secrets)
+        description: Also push to Docker Hub (requires DOCKERHUB_* secrets)
         type: boolean
         default: true
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   build-and-push:
@@ -31,6 +32,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Lowercase GHCR image
+        id: ghcr
+        run: echo "image=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/dkt-connectome" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Check Docker Hub credentials
         id: creds
         run: |
@@ -38,7 +50,7 @@ jobs:
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::DOCKERHUB_USERNAME / DOCKERHUB_TOKEN not set — image will build locally only"
+            echo "::notice::GHCR push always runs; set DOCKERHUB_* secrets to mirror to Docker Hub in CI"
           fi
 
       - name: Log in to Docker Hub
@@ -60,7 +72,7 @@ jobs:
           fi
 
       - name: Should push to Docker Hub
-        id: push
+        id: push_dh
         run: |
           want_push=false
           if [[ "${{ steps.creds.outputs.present }}" == "true" ]]; then
@@ -72,20 +84,36 @@ jobs:
           fi
           echo "enabled=${want_push}" >> "$GITHUB_OUTPUT"
 
+      - name: Compose image tags
+        id: tags
+        run: |
+          {
+            echo "${{ steps.ghcr.outputs.image }}:${{ steps.meta.outputs.version }}"
+            echo "${{ steps.ghcr.outputs.image }}:latest"
+            if [[ "${{ steps.push_dh.outputs.enabled }}" == "true" ]]; then
+              echo "phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }}"
+              echo "phindagijimana321/dkt-connectome:latest"
+            fi
+          } > /tmp/image-tags.txt
+          echo "list<<EOF" >> "$GITHUB_OUTPUT"
+          cat /tmp/image-tags.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Build orchestrator image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: dwi_pipeline/Dockerfile
-          push: ${{ steps.push.outputs.enabled == 'true' }}
-          tags: |
-            phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }}
-            phindagijimana321/dkt-connectome:latest
+          push: true
+          tags: ${{ steps.tags.outputs.list }}
           load: true
 
       - name: Docker smoke test
         run: |
-          docker run --rm phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }} --version
+          IMG="${{ steps.ghcr.outputs.image }}:${{ steps.meta.outputs.version }}"
+          docker pull "${IMG}"
+          docker run --rm "${IMG}" --version
           mkdir -p /tmp/docker_out
           touch /tmp/license.txt
           docker run --rm \
@@ -93,11 +121,20 @@ jobs:
             -v /tmp/docker_out:/out \
             -e BIDS_APP_CI=1 \
             -e FS_LICENSE=/tmp/license.txt \
-            phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }} \
+            "${IMG}" \
             /data/bids /out participant \
             --participant-label EXAMPLE --session-filter ses-1 \
             --dry-run --no-sdc --no-dwi-filter --mode qsiprep
           docker run --rm \
             -e BIDS_APP_CI=1 \
             -e FS_LICENSE=/tmp/license.txt \
-            phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }} doctor
+            "${IMG}" doctor
+
+      - name: Summary
+        run: |
+          {
+            echo "## Orchestrator image"
+            echo "- GHCR: \`${{ steps.ghcr.outputs.image }}:${{ steps.meta.outputs.version }}\`"
+            echo "- Docker Hub (CI): \`phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }}\` when \`DOCKERHUB_*\` secrets are set"
+            echo "- Local mirror: \`bash dwi_pipeline/scripts/mirror_ghcr_to_dockerhub.sh\`"
+          } >> "$GITHUB_STEP_SUMMARY"
