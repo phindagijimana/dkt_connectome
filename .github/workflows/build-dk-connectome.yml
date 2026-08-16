@@ -30,12 +30,12 @@ name: build-dk-connectome
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'containers/Dockerfile.dk_connectome'
       - 'containers/Apptainer.dk_connectome.def'
       - '.github/workflows/build-dk-connectome.yml'
-    tags: [ 'v*' ]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -66,9 +66,17 @@ jobs:
 
       # Skipped automatically when secrets aren't set — forks without
       # Docker Hub credentials still get a clean GHCR-only build.
+      - name: Check Docker Hub credentials
+        id: dh_creds
+        run: |
+          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" && -n "${{ secrets.DOCKERHUB_TOKEN }}" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Log in to Docker Hub
-        id: dh_login
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        if: steps.dh_creds.outputs.present == 'true'
         uses: docker/login-action@v3
         with:
           registry: docker.io

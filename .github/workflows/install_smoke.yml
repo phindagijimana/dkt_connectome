@@ -21,7 +21,11 @@ jobs:
       - name: Install Apptainer
         run: |
           sudo apt-get update
-          sudo apt-get install -y apptainer
+          sudo apt-get install -y wget
+          wget -q -O /tmp/apptainer.deb \
+            https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer_1.3.4_amd64.deb
+          sudo dpkg -i /tmp/apptainer.deb || sudo apt-get install -f -y
+          apptainer --version
 
       - uses: actions/setup-python@v5
         with:
