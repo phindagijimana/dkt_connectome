@@ -34,7 +34,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "snakemake>=8.0,<10" pyyaml numpy pytest scipy nibabel mkdocs
+          python -m pip install "snakemake>=8.0,<10" pyyaml numpy pytest scipy nibabel
+          python -m pip install -r dwi_pipeline/docs/requirements.txt
+
+      - name: Regenerate config catalog (docs drift check)
+        run: python dwi_pipeline/scripts/generate_config_catalog.py
 
       - name: pytest (dwi_pipeline scripts)
         run: pytest -q dwi_pipeline/tests -m "not slow" -c dwi_pipeline/pytest.ini

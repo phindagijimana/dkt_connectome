@@ -49,19 +49,22 @@ export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
 export FS_LICENSE=/path/to/license.txt
 
 cd dwi_pipeline
-./run "${BIDS_DIR}" /tmp/ideas_out participant \
+./run "${BIDS_DIR}" sample_data/ideas/results/sub-1_golden participant \
   --participant-label 1 \
   --session-filter ses-1 \
   --fastsurfer \
   --syn \
+  --dwi-select config/dwi_select_ideas_b2500.json \
   --n-cpus 8
 ```
 
 **Notes:**
 
-- Pass **`--syn`** when no fieldmap is in the dwi-select filter (default b=1000 shell).
+- IDEAS DWI shells are **0, 300, 700, 2500 s/mm²** — use **`config/dwi_select_ideas_b2500.json`** (not the default b=1000 filter).
+- Pass **`--syn`** — no fieldmaps in this sample.
 - Participant label is **`1`** or **`6`** (with or without `sub-` prefix).
-- Full pipeline takes hours; use **`--dry-run`** first.
+- Full pipeline takes hours on CPU; use **`--dry-run`** first.
+- Golden output path (when complete): `sample_data/ideas/results/sub-1_golden/`
 
 See also: [Tutorial](../tutorial.md).
 

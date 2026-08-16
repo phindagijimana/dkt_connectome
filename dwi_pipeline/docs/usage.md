@@ -146,6 +146,11 @@ Without a fieldmap in the filter, the pipeline **requires** one of `--syn`, `--f
 | `--strength-only` | `NODESTRENGTH_STRENGTH_ONLY=1` | Skip volume/compare outputs |
 | `--no-report` | `NODESTRENGTH_NO_REPORT=1` | Skip PDF report and figures |
 
+**Report-only / re-run QC:** There is no separate `--report-only` CLI flag. To regenerate Step 5 PDFs and cohort HTML without reprocessing imaging:
+
+1. **Subject-level:** re-run with `--mode nodestrength` (requires existing Step 4 outputs under `RESULTS_ROOT`).
+2. **Group-level:** `./run BIDS OUT group` — rebuilds cohort indexes and subject report links only (same as `scripts/batch_postprocess.sh`).
+
 ---
 
 ## Provenance and BIDS Derivatives export

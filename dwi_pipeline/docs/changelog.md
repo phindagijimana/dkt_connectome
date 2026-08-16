@@ -31,6 +31,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Dockstore / WorkflowHub** repointed to `dkt_connectome` (legacy root workflow retained)
 - **batch_postprocess.sh** for cohort NAS post-processing (QC + BIDS export)
 - **Expanded CI** (MkDocs build, BIDS export smoke test, Snakemake QC target dry-run)
+- **Auto-install stack** (`install.sh`, `doctor`, `container_install.py`, Docker Compose)
+- **Docker Hub orchestrator** `phindagijimana321/dkt-connectome:0.2.0` (+ GHCR mirror script)
+- **Material for MkDocs** theme; generated [config catalog](config_catalog.md) and [QC doc figures](visual_qc.md)
+- **IDEAS dwi-select** `config/dwi_select_ideas_b2500.json` for 0/300/700/2500 shells
+- [Cloud & group deployment](cloud_deployment.md) guide
 
 ### Changed
 

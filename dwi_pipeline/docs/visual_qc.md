@@ -33,6 +33,8 @@ RESULTS_ROOT/qc/sub-<ID>/subject_qc.html
 
 Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 
+![Example DKT connectome heatmap from bundled validation subject TBI011011](img/qc/tbi011011_connectome.png)
+
 ### Step 1.5 — Inpaint (if lesion mask)
 
 | Panel | What to look for |
@@ -76,6 +78,8 @@ Open `connectomes/sub-<ID>/disconnectome/disconnectome_qc.html`:
 | Disconnection heatmap | Fractional loss D_ij per node pair |
 | Options A / B / C comparison | Spared vs primary connectome |
 | Lesion overlap | Lesion voxels vs DKT nodes on DWI grid |
+
+![Example disconnection matrix (option C) from TBI011011](img/qc/tbi011011_disconnection.png)
 
 Validated examples: [Validation](validation.md).
 
