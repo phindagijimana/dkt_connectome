@@ -1,5 +1,5 @@
 site_name: DKT Connectome
-site_description: Lesion-aware structural connectomics BIDS App (QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome)
+site_description: Lesion-aware structural connectomics BIDS App — science, methods, and user guide (QSIPrep → inpaint → recon → QSIRecon → DKT connectome → disconnectome)
 site_url: https://dkt-connectome.readthedocs.io/
 repo_url: https://github.com/phindagijimana/dkt_connectome
 repo_name: phindagijimana/dkt_connectome
@@ -35,6 +35,7 @@ theme:
 nav:
   - Home: index.md
   - Getting started:
+    - How it works (science): science_overview.md
     - Installation: installation.md
     - Tutorial: tutorial.md
     - Sample data (IDEAS): datasets/ideas.md
@@ -50,7 +51,8 @@ nav:
     - Field maps & SDC: fieldmaps_sdc.md
     - Lesion masks: lesion_segmentation.md
   - Methods:
-    - Overview: methods/index.md
+    - Science overview: science_overview.md
+    - Step-by-step methods: methods/index.md
     - Step 1 — QSIPrep: methods/step1_qsiprep.md
     - Step 1.5 — Inpainting: methods/step1_5_inpaint.md
     - Step 2 — Recon: methods/step2_recon.md
@@ -98,7 +100,7 @@ plugins:
         preprocessing.md: preparing_data.md
         integrity_qc.md: disconnectome.md#integrity-qc
         getting_help.md: index.md#help
-        advanced/theory_deep_dive.md: methods/index.md
+        advanced/theory_deep_dive.md: science_overview.md
         bids_apps_registry.md: BIDS_App.md
 
 markdown_extensions:

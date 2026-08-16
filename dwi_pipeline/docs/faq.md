@@ -8,6 +8,10 @@
 
 No. The BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). This matches multi-site HPC deployments where images are cached on shared storage. See [Installation](installation.md).
 
+### Where is the scientific / theoretical background explained?
+
+Start with **[How it works — science and theory](science_overview.md)** on the docs home and Getting started tab. Per-step methods with citations: [Methods overview](methods/index.md).
+
 ### What is the recommended way to run on Slurm HPC?
 
 ```bash
