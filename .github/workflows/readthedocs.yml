@@ -28,14 +28,22 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Trigger Read the Docs build (latest)
+        id: rtd_trigger
         env:
           READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
         run: |
           if [[ -z "${READTHEDOCS_TOKEN}" ]]; then
-            echo "::warning::READTHEDOCS_TOKEN not set — skipping RTD API trigger."
-            echo "Add a token from https://readthedocs.org/accounts/tokens/ to repo secrets."
+            echo "triggered=false" >> "$GITHUB_OUTPUT"
+            echo "::error::READTHEDOCS_TOKEN not set — Read the Docs will NOT rebuild automatically."
+            echo "Fix: https://readthedocs.org/accounts/tokens/ → GitHub repo secret READTHEDOCS_TOKEN"
+            echo "Or: RTD dashboard → dkt-connectome → Builds → Build version (latest)"
+            echo "See dwi_pipeline/docs/maintainer/maintainer_tasks.md §14"
+            if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+              exit 1
+            fi
             exit 0
           fi
+          echo "triggered=true" >> "$GITHUB_OUTPUT"
           for version in latest stable; do
             echo "Triggering RTD build for version: ${version}"
             curl -fsS -X POST \
@@ -54,6 +62,8 @@ jobs:
           grep -qE 'favicon\.(png|ico)|assets/images/favicon' dwi_pipeline/site/index.html
           test -f dwi_pipeline/site/img/pipeline_overview.svg
 
-      - name: Verify live Read the Docs branding (informational)
-        continue-on-error: true
-        run: bash dwi_pipeline/scripts/verify_rtd_live.sh
+      - name: Verify live Read the Docs (science pages)
+        if: steps.rtd_trigger.outputs.triggered == 'true'
+        run: |
+          sleep 90
+          bash dwi_pipeline/scripts/verify_rtd_live.sh
