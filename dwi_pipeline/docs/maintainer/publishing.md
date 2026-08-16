@@ -73,7 +73,7 @@ bash scripts/verify_rtd_live.sh
 | Workflow | Role |
 |----------|------|
 | `dwi_pipeline_ci.yml` | pytest, MkDocs strict, doctor, Snakemake dry-run |
-| `integration_qsiprep.yml` | Real QSIPrep on `bids_minimal` (weekly; needs `FS_LICENSE`) |
+| `integration_qsiprep.yml` | QSIPrep pull + version smoke; optional full run if maintainer adds secret |
 | `integration_ideas.yml` | IDEAS OpenNeuro golden (monthly / manual) |
 | `docker_auto_install_smoke.yml` | `DKT_AUTO_INSTALL=1` in orchestrator image |
 | `docker_publish.yml` | Build orchestrator → GHCR (+ Docker Hub if secrets set) |

@@ -22,7 +22,6 @@ Runbook for **credential-based, out-of-repo steps** that complete v0.2.0 publish
 | 15 | Dockstore GitHub link | Dockstore account | [§15 Dockstore](#15-dockstore-github-link) |
 | 16 | WorkflowHub RO-Crate | WorkflowHub account | [§16 WorkflowHub](#16-workflowhub-ro-crate-upload) |
 | 17 | Zenodo archive + DOI | Zenodo + GitHub | [§17 Zenodo](#17-zenodo-archive-doi) |
-| 18 | Integration CI secrets | `FS_LICENSE` repo secret | [§18 Integration CI](#18-integration-ci-secrets) |
 
 ---
 
@@ -323,39 +322,13 @@ gh release create v1.0.0 --title "DKT Connectome 1.0.0" --notes-file dwi_pipelin
 
 ---
 
-## 18. Integration CI secrets
-
-**Goal:** Enable real-container workflows (P1.1).
-
-### Steps
-
-1. GitHub → **Settings → Secrets and variables → Actions**
-2. **New repository secret:** `FS_LICENSE` = full FreeSurfer license text
-3. Trigger smoke:
-
-   ```bash
-   gh workflow run integration_qsiprep.yml -f skip_pipeline_run=true
-   gh workflow run integration_qsiprep.yml
-   ```
-
-4. *(Optional)* Self-hosted runner for full DAG — see [Integration CI](integration_ci.md).
-
-### Verify
-
-- Actions → **Integration (QSIPrep real container)** → green
-- Weekly schedule enabled (Sundays 08:00 UTC)
-
-Full runbook: [integration_ci.md](integration_ci.md) · v1.0 science: [v1_science_track.md](v1_science_track.md).
-
----
-
 ## Deferred — not maintainer one-shots
 
 These require compute time, data access, or people — not a single afternoon of admin work.
 
 | Blocked on | Items | Where tracked |
 |------------|-------|---------------|
-| FS license + GPU/HPC hours | Real-container CI (P1.1), IDEAS golden CI (P1.7), URMC n=61 (P4.3) | [Readiness checklist](readiness_checklist.md) P1, P4 |
+| FS license + GPU/HPC hours | Real `./run` on HPC (each user’s license), URMC n=61 (P4.3) | [Integration CI](integration_ci.md), [Readiness checklist](readiness_checklist.md) P1, P4 |
 | Public HCP data + compute | HCP-YA n=10 baseline (P4.4) | [paper plan](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md) §11 |
 | Radiologist | Review rubric (P4.5) | paper plan |
 | Paper writing | Figures, preprint, Table 1 (P4.6–P4.8) | paper plan |

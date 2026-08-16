@@ -36,7 +36,7 @@ Closes the largest gaps vs mature BIDS Apps: CI confidence, spec completeness, a
 
 | # | Task | Status | Effort | Notes / path |
 |---|------|--------|--------|--------------|
-| P1.1 | **Add real-container integration test in CI** | **Scaffolded** | Workflows: `integration_qsiprep.yml`, `integration_ideas.yml`. **Needs:** repo secret `FS_LICENSE` — [Integration CI](integration_ci.md). |
+| P1.1 | **Add real-container integration test in CI** | **Scaffolded** | Weekly pull + `qsiprep --version` (no license). Optional full run: [Integration CI](integration_ci.md). Users bring own `FS_LICENSE`. |
 | P1.2 | **Run `bids-validator` on minimal fixture in CI** | **Done** | Regenerate fixture + validate in `.github/workflows/dwi_pipeline_ci.yml`. |
 | P1.3 | **Schedule `install_smoke.yml`** | **Done** | Weekly cron + `release: published`; default mode `qsiprep`. |
 | P1.4 | **Expand `app.json` + Boutiques flag surface** | **Done** | `app.json` `CommandLineArguments` expanded to match `./run` help. |
@@ -140,7 +140,7 @@ Only if cloud-only / BIDS Apps reviewers demand single-image UX.
 ```text
 Week 1 (P0):  registry PR · GitHub Release · Docker verify · RTD webhook · push doc trim
 Week 2 (P1):  bids-validator CI · app.json flags · install_smoke schedule
-Week 3+ (P1): integration_qsiprep.yml + FS_LICENSE secret → green weekly run
+Week 3+ (P1): integration_qsiprep.yml green (pull + version; license-free)
 Parallel (P4): URMC 61 + HCP 10 — [v1_science_track.md](v1_science_track.md)
 Before v1.0:   Zenodo DOI · digest table · P4 checklist · version bump
 ```
