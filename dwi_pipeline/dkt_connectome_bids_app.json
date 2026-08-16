@@ -3,7 +3,7 @@
   "tool-version": "0.2.0",
   "schema-version": "0.5",
   "container-image": {
-    "image": "phindagijimana/dkt-connectome",
+    "image": "phindagijimana321/dkt-connectome",
     "index": "docker.io"
   },
   "command-line": "./run [bids_dir] [output_dir] [analysis_level] [participant_label] [session_filter] [n_cpus] [random_seed] [stop_on_first_crash] [extra_flags]",

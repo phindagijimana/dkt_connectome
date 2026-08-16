@@ -79,13 +79,13 @@ jobs:
           file: dwi_pipeline/Dockerfile
           push: ${{ steps.push.outputs.enabled == 'true' }}
           tags: |
-            phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }}
-            phindagijimana/dkt-connectome:latest
+            phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }}
+            phindagijimana321/dkt-connectome:latest
           load: true
 
       - name: Docker smoke test
         run: |
-          docker run --rm phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} --version
+          docker run --rm phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }} --version
           mkdir -p /tmp/docker_out
           touch /tmp/license.txt
           docker run --rm \
@@ -93,11 +93,11 @@ jobs:
             -v /tmp/docker_out:/out \
             -e BIDS_APP_CI=1 \
             -e FS_LICENSE=/tmp/license.txt \
-            phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} \
+            phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }} \
             /data/bids /out participant \
             --participant-label EXAMPLE --session-filter ses-1 \
             --dry-run --no-sdc --no-dwi-filter --mode qsiprep
           docker run --rm \
             -e BIDS_APP_CI=1 \
             -e FS_LICENSE=/tmp/license.txt \
-            phindagijimana/dkt-connectome:${{ steps.meta.outputs.version }} doctor
+            phindagijimana321/dkt-connectome:${{ steps.meta.outputs.version }} doctor

@@ -13,7 +13,7 @@ Use this checklist when submitting **DKT Connectome v0.2.0** to the
 | Human documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Minimal public test dataset | `dwi_pipeline/tests/fixtures/bids_minimal/` |
 | CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
-| Docker orchestrator image | `dwi_pipeline/Dockerfile` → `phindagijimana/dkt-connectome:0.2.0` |
+| Docker orchestrator image | `dwi_pipeline/Dockerfile` → `phindagijimana321/dkt-connectome:0.2.0` |
 
 ## One-time maintainer steps
 
@@ -28,10 +28,10 @@ Use this checklist when submitting **DKT Connectome v0.2.0** to the
 
 ```bash
 # From repository root
-docker build -f dwi_pipeline/Dockerfile -t phindagijimana/dkt-connectome:0.2.0 .
-docker push phindagijimana/dkt-connectome:0.2.0
-docker tag phindagijimana/dkt-connectome:0.2.0 phindagijimana/dkt-connectome:latest
-docker push phindagijimana/dkt-connectome:latest
+docker build -f dwi_pipeline/Dockerfile -t phindagijimana321/dkt-connectome:0.2.0 .
+docker push phindagijimana321/dkt-connectome:0.2.0
+docker tag phindagijimana321/dkt-connectome:0.2.0 phindagijimana321/dkt-connectome:latest
+docker push phindagijimana321/dkt-connectome:latest
 ```
 
 Set GitHub secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to enable automatic
@@ -61,7 +61,7 @@ Name: DKT Connectome
 Version: 0.2.0
 GitHub: https://github.com/phindagijimana/dkt_connectome
 Documentation: https://dkt-connectome.readthedocs.io/en/latest/
-Docker Hub: docker.io/phindagijimana/dkt-connectome:0.2.0
+Docker Hub: docker.io/phindagijimana321/dkt-connectome:0.2.0
 Test dataset: dwi_pipeline/tests/fixtures/bids_minimal/
 ```
 
@@ -72,7 +72,7 @@ Fork https://github.com/bids-apps/bids-apps.github.io and add to `_config.yml`:
 ```yaml
 - name: dkt_connectome
   url: https://github.com/phindagijimana/dkt_connectome
-  dockerhub: phindagijimana/dkt-connectome
+  dockerhub: phindagijimana321/dkt-connectome
   docs: https://dkt-connectome.readthedocs.io/en/latest/
   version: 0.2.0
 ```
