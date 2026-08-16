@@ -1,19 +1,77 @@
 # Integration CI (real containers)
 
-How to run **real** Apptainer/QSIPrep jobs in GitHub Actions and on a self-hosted runner. PR CI (`dwi_pipeline_ci.yml`) stays fast with stub `.sif` files and Snakemake dry-runs.
+How GitHub Actions exercises **real** Apptainer pulls and (optionally) `./run`. PR CI (`dwi_pipeline_ci.yml`) stays fast with stub `.sif` files and Snakemake dry-runs.
 
 ---
 
-## Workflows
+## FreeSurfer license — per user, not per repo
+
+Each site and user must obtain their own FreeSurfer license (free registration):
+
+[https://surfer.nmr.mgh.harvard.edu/registration.html](https://surfer.nmr.mgh.harvard.edu/registration.html)
+
+At runtime:
+
+```bash
+export FS_LICENSE=/path/to/your/license.txt
+```
+
+Documented in [Installation](../installation.md), [Usage](../usage.md), and [Troubleshooting](../troubleshooting.md).
+
+**The project does not ship or centralize licenses.** Do not commit `license.txt` to git.
+
+---
+
+## What CI runs without any license
+
+| Workflow | Default behavior | License needed? |
+|----------|------------------|-----------------|
+| `dwi_pipeline_ci.yml` | Stubs + dry-run | No (`BIDS_APP_CI=1`) |
+| `install_smoke.yml` | Apptainer pull | No |
+| `integration_qsiprep.yml` | Pull QSIPrep + `qsiprep --version` | No |
+| `integration_ideas.yml` | OpenNeuro download + **dry-run** | No (`BIDS_APP_CI=1` + stub file) |
+| `docker_auto_install_smoke.yml` | Docker dry-run | No (stub file) |
+
+These prove registry pins, install paths, and Snakemake wiring — without anyone's personal license.
+
+---
+
+## Optional: full QSIPrep run in GitHub Actions
+
+If **you** (a maintainer) want CI to execute real QSIPrep on `bids_minimal`, you may add an **optional** repository secret:
+
+1. GitHub → **Settings → Secrets → Actions → New secret**
+2. Name: `FS_LICENSE`
+3. Value: your own license text
+
+Then `integration_qsiprep.yml` will also run `./run` (not just pull + version). **This is optional** — the repo is healthy without it.
+
+For IDEAS **real** runs (`workflow_dispatch` → `qsiprep-only`), the same optional secret is required; scheduled monthly jobs stay dry-run only.
+
+**Prefer local/HPC validation** with your own license:
+
+```bash
+export FS_LICENSE=/path/to/license.txt
+bash dwi_pipeline/scripts/install.sh --mode qsiprep
+cd dwi_pipeline
+./run tests/fixtures/bids_minimal /tmp/out participant \
+  --participant-label EXAMPLE --session-filter baseline \
+  --mode qsiprep --no-sdc --no-dwi-filter
+bash scripts/integration_verify_qsiprep.sh /tmp/out EXAMPLE
+```
+
+---
+
+## Workflows reference
 
 | Workflow | When | What it proves |
 |----------|------|----------------|
-| [`integration_qsiprep.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_qsiprep.yml) | Weekly, releases, manual | Pull QSIPrep → `./run` on `bids_minimal` → marker + outputs |
-| [`integration_ideas.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_ideas.yml) | Monthly, manual | OpenNeuro ds007401 download → dry-run or QSIPrep-only |
-| [`install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/install_smoke.yml) | Weekly | Apptainer pull pins (no `./run`) |
-| [`docker_auto_install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/docker_auto_install_smoke.yml) | Weekly, Dockerfile changes | `DKT_AUTO_INSTALL=1` inside orchestrator image |
+| [`integration_qsiprep.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_qsiprep.yml) | Weekly, releases, manual | Pull + version; optional full run |
+| [`integration_ideas.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_ideas.yml) | Monthly, manual | IDEAS download + dry-run (or real if secret set) |
+| [`install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/install_smoke.yml) | Weekly | Apptainer pull pins |
+| [`docker_auto_install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/docker_auto_install_smoke.yml) | Weekly | `DKT_AUTO_INSTALL=1` smoke |
 
-Local verification script:
+Local verification after a real local run:
 
 ```bash
 bash dwi_pipeline/scripts/integration_verify_qsiprep.sh /path/to/RESULTS_ROOT EXAMPLE
@@ -21,69 +79,24 @@ bash dwi_pipeline/scripts/integration_verify_qsiprep.sh /path/to/RESULTS_ROOT EX
 
 ---
 
-## Required GitHub secret: `FS_LICENSE`
-
-1. GitHub → **Settings → Secrets and variables → Actions → New repository secret**
-2. Name: `FS_LICENSE`
-3. Value: **full text** of your FreeSurfer `license.txt` (same file you use on HPC)
-
-Without this secret, `integration_qsiprep.yml` and `integration_ideas.yml` fail at the first step with an explicit error.
-
-**Never commit** the license file. CI writes it to `/tmp/license.txt` at runtime only.
-
----
-
-## Manual run (maintainer)
-
-```bash
-# GitHub CLI
-gh workflow run integration_qsiprep.yml
-gh workflow run integration_qsiprep.yml -f skip_pipeline_run=true   # pull + version only
-gh workflow run integration_ideas.yml -f analysis=dry-run -f subject=1 -f session=1
-```
-
-Watch: **Actions** tab → workflow run → logs.
-
----
-
 ## Self-hosted runner (full DAG / URMC)
 
-GitHub-hosted `ubuntu-latest` is limited (~7 GB disk, 2 vCPU, 6 h max). For **full pipeline** integration (recon + QSIRecon + connectome):
+GitHub-hosted runners are small (~7 GB disk). For **full pipeline** integration on your cluster:
 
-1. Register a [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners) on a URMC login or build node with:
-   - Apptainer/Singularity
-   - `/scratch` or large cache for `DKT_CONTAINER_CACHE`
-   - FreeSurfer license at a fixed path (or inject via secret in workflow)
+1. Register a [self-hosted runner](https://docs.github.com/en/actions/hosting-your-own-runners) with Apptainer + `/scratch` cache.
+2. Use **your** `FS_LICENSE` on that machine (env or mounted path — not necessarily a GitHub secret).
+3. Run `./run` without `--dry-run` on IDEAS or a test subject.
 
-2. Label the runner, e.g. `urmc-hpc`.
-
-3. Add a job (or duplicate `integration_qsiprep.yml` job):
-
-   ```yaml
-   qsiprep-full-local:
-     runs-on: [self-hosted, urmc-hpc]
-     if: github.event_name == 'workflow_dispatch'
-   ```
-
-4. Mount cache between runs:
-
-   ```yaml
-   env:
-     DKT_CONTAINER_CACHE: /scratch/${{ github.actor }}/dkt-connectome/containers
-   ```
-
-5. Run full `./run` without `--dry-run` on IDEAS or URMC test subject.
-
-**Do not** make self-hosted full runs PR-gating until stable and fast enough.
+See [v1 science track](v1_science_track.md) for cohort-scale runs.
 
 ---
 
 ## Exit criteria (P1.1)
 
-- [ ] `FS_LICENSE` secret set
-- [ ] `integration_qsiprep.yml` green on manual dispatch
-- [ ] Weekly schedule stays green (or alerts via GitHub notifications)
-- [ ] *(Optional)* Self-hosted job for `--mode all` on one public subject
+- [ ] `integration_qsiprep.yml` green weekly (pull + version — **no license required**)
+- [ ] `install_smoke.yml` green weekly
+- [ ] *(Optional)* Real `./run` in CI or on HPC with **your** license
+- [ ] *(Optional)* Self-hosted full DAG job
 
 Track status: [Readiness checklist](readiness_checklist.md) P1.1.
 
@@ -93,8 +106,8 @@ Track status: [Readiness checklist](readiness_checklist.md) P1.1.
 
 | Symptom | Fix |
 |---------|-----|
-| `Set repository secret FS_LICENSE` | Add secret (see above) |
-| Apptainer pull timeout | Re-run; or use self-hosted runner with warm cache |
-| QSIPrep fails on `bids_minimal` | Expected on tiny synthetic volumes — use IDEAS workflow for realistic data; check `logs/sub-*_qsiprep.log` |
-| IDEAS download fails | AWS CLI + network; OpenNeuro S3 is public (`aws s3 ls s3://openneuro.org/ds007401/`) |
-| Docker auto-install empty cache | Orchestrator image must include Apptainer (see `Dockerfile`); first run pulls qsiprep only when `--mode qsiprep` |
+| `Missing FreeSurfer license` locally | Register and `export FS_LICENSE=...` — [installation.md](../installation.md) |
+| Integration skips full `./run` | Expected without optional `FS_LICENSE` secret — run locally instead |
+| Apptainer pull timeout | Re-run workflow; use self-hosted runner with warm cache |
+| QSIPrep fails on `bids_minimal` | Tiny synthetic data — use IDEAS locally with real license |
+| IDEAS `qsiprep-only` fails in Actions | Add optional secret or run on HPC |

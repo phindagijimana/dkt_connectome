@@ -1,7 +1,7 @@
 name: Integration (IDEAS golden)
 
-# Optional slow job: OpenNeuro ds007401 (IDEAS II) QSIPrep dry-run or real run.
-# Requires: FS_LICENSE, AWS credentials (default GITHUB_ACTIONS role or AWS_ACCESS_KEY_ID/SECRET).
+# OpenNeuro ds007401 — dry-run by default (no FreeSurfer license needed).
+# Real QSIPrep requires optional FS_LICENSE repo secret OR run locally with your own license.
 
 on:
   workflow_dispatch:
@@ -35,15 +35,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Require FS_LICENSE
+      - name: License mode (dry-run stub vs optional secret)
+        id: fslic
         env:
           FS_LICENSE_SECRET: ${{ secrets.FS_LICENSE }}
+          ANALYSIS: ${{ github.event.inputs.analysis || 'dry-run' }}
         run: |
-          if [[ -z "${FS_LICENSE_SECRET}" ]]; then
-            echo "::error::Set repository secret FS_LICENSE"
-            exit 1
+          if [[ "${ANALYSIS}" == "qsiprep-only" ]]; then
+            if [[ -z "${FS_LICENSE_SECRET}" ]]; then
+              echo "::error::Real QSIPrep needs FS_LICENSE Actions secret, or run locally with your own license."
+              exit 1
+            fi
+            printf '%s' "${FS_LICENSE_SECRET}" > /tmp/license.txt
+            echo "bids_app_ci=0" >> "$GITHUB_OUTPUT"
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            touch /tmp/license.txt
+            echo "bids_app_ci=1" >> "$GITHUB_OUTPUT"
+            echo "present=false" >> "$GITHUB_OUTPUT"
           fi
-          printf '%s' "${FS_LICENSE_SECRET}" > /tmp/license.txt
 
       - name: Install Apptainer + AWS CLI
         run: |
@@ -73,11 +83,9 @@ jobs:
           APPTAINER_TMPDIR: ${{ runner.temp }}/apptainer_tmp
         run: |
           mkdir -p "${APPTAINER_TMPDIR}"
-          MODE=qsiprep
-          [[ "${{ inputs.analysis }}" == "dry-run" ]] && MODE=qsiprep
           python3 scripts/container_install.py pull \
             --cache "${DKT_CONTAINER_CACHE}" \
-            --mode "${MODE}" \
+            --mode qsiprep \
             --write-config \
             --quiet
 
@@ -85,6 +93,7 @@ jobs:
         working-directory: dwi_pipeline
         env:
           FS_LICENSE: /tmp/license.txt
+          BIDS_APP_CI: ${{ steps.fslic.outputs.bids_app_ci }}
           DKT_CONTAINER_CACHE: ${{ runner.temp }}/dkt_containers
           TEMPLATEFLOW_HOME: ${{ runner.temp }}/templateflow
           RESULTS_ROOT: ${{ runner.temp }}/ideas_out

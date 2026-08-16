@@ -1,7 +1,7 @@
 name: Integration (QSIPrep real container)
 
-# Real Apptainer pull + QSIPrep on bids_minimal. Not PR-gating (slow, needs FS license).
-# Add repository secret FS_LICENSE (full license.txt contents).
+# Pull QSIPrep + version smoke (no license). Optional full ./run only if repo secret FS_LICENSE is set.
+# FreeSurfer licenses are per-user — see installation.md (not a maintainer/repo requirement).
 
 on:
   workflow_dispatch:
@@ -26,14 +26,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Require FS_LICENSE secret
+      - name: Optional FreeSurfer license (repo secret)
+        id: fslic
         env:
           FS_LICENSE_SECRET: ${{ secrets.FS_LICENSE }}
         run: |
-          if [[ -z "${FS_LICENSE_SECRET}" ]]; then
-            echo "::error::Set repository secret FS_LICENSE (full FreeSurfer license.txt text)."
-            echo "See dwi_pipeline/docs/maintainer/integration_ci.md"
-            exit 1
+          if [[ -n "${FS_LICENSE_SECRET}" ]]; then
+            printf '%s' "${FS_LICENSE_SECRET}" > /tmp/license.txt
+            test -s /tmp/license.txt
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No FS_LICENSE Actions secret — running pull + version smoke only."
+            echo "::notice::Each user obtains their own license: https://surfer.nmr.mgh.harvard.edu/registration.html"
           fi
 
       - name: Install Apptainer
@@ -53,13 +58,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install "snakemake>=8.0,<10" pyyaml numpy scipy nibabel
-
-      - name: Write FreeSurfer license
-        env:
-          FS_LICENSE_SECRET: ${{ secrets.FS_LICENSE }}
-        run: |
-          printf '%s' "${FS_LICENSE_SECRET}" > /tmp/license.txt
-          test -s /tmp/license.txt
 
       - name: Regenerate minimal BIDS fixture
         run: python3 dwi_pipeline/tests/fixtures/generate_bids_fixture.py
@@ -92,7 +90,9 @@ jobs:
           apptainer exec "${QSIF}" qsiprep --version
 
       - name: Real QSIPrep run (bids_minimal)
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_pipeline_run != true }}
+        if: >-
+          steps.fslic.outputs.present == 'true' &&
+          (github.event_name != 'workflow_dispatch' || inputs.skip_pipeline_run != true)
         working-directory: dwi_pipeline
         env:
           FS_LICENSE: /tmp/license.txt
@@ -112,7 +112,9 @@ jobs:
             --random-seed 42
 
       - name: Verify QSIPrep outputs
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_pipeline_run != true }}
+        if: >-
+          steps.fslic.outputs.present == 'true' &&
+          (github.event_name != 'workflow_dispatch' || inputs.skip_pipeline_run != true)
         run: |
           bash dwi_pipeline/scripts/integration_verify_qsiprep.sh \
             "${{ runner.temp }}/integration_out" EXAMPLE
@@ -122,7 +124,7 @@ jobs:
         run: |
           {
             echo "## QSIPrep integration"
-            echo "- Workflow: \`integration_qsiprep.yml\`"
-            echo "- Fixture: \`dwi_pipeline/tests/fixtures/bids_minimal\`"
-            echo "- Docs: [integration_ci.md](dwi_pipeline/docs/maintainer/integration_ci.md)"
+            echo "- Pull + \`qsiprep --version\`: always run"
+            echo "- Full \`./run\`: only when optional \`FS_LICENSE\` Actions secret is set"
+            echo "- Users: register for your own license — [installation.md](https://dkt-connectome.readthedocs.io/en/latest/installation/)"
           } >> "$GITHUB_STEP_SUMMARY"
