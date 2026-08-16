@@ -45,8 +45,8 @@ Subjects **without** a mask skip Steps 1.5 and 4.5. Step 4.5 additionally requir
 - **Output:** `inpainted/.../inpainting_result.nii.gz` used by Steps 2 and 4
 
 ```bash
-bash dwi_pipeline/subject.sh inpaint 009
-bash dwi_pipeline/subject.sh all 009 --no-inpaint   # force skip
+bash workflow/run_subject.sh inpaint 009
+bash workflow/run_subject.sh all 009 --no-inpaint   # force skip
 ```
 
 QC: `scripts/check_inpainting.py` — see [Inpainting/pipeline_usage.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/pipeline_usage.md).
@@ -55,7 +55,7 @@ QC: `scripts/check_inpainting.py` — see [Inpainting/pipeline_usage.md](https:/
 
 ## Step 4.5 (disconnectome)
 
-**Opt-in:** pass `--disconnection` on a full pipeline run, or use `--mode disconnectome` / `subject.sh disconnectome`.
+**Opt-in:** pass `--disconnection` on a full pipeline run, or use `--mode disconnectome` / `run_subject.sh disconnectome`.
 
 **Primary lesion definition:** binary union of core + oedema, **no erosion**.
 

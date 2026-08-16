@@ -131,7 +131,6 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PIPELINE_ENGINE` | `snakemake` | `snakemake` or `bash` |
 | `ARRAY_CONCURRENCY` | `5` | Slurm `%K` throttle |
 | `NTHREADS` | `8` | CPU threads per job |
 | `SBATCH_GRES` | auto | GPU when inpaint / FastSurfer cuda |

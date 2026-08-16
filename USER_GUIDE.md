@@ -1,7 +1,11 @@
 # dk_connectome — User Guide
 
+> **Canonical pipeline (v0.2+):** use [`dwi_pipeline/run`](dwi_pipeline/run) and [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/).  
+> This guide documents the **legacy repository-root** `./connectome` 4-stage workflow.
+
 In-depth reference for users who want to go beyond `./connectome install / start / check`.
-For the quick start, see [README.md](README.md).
+For the DKT Connectome BIDS App quick start, see [dwi_pipeline/docs/tutorial.md](dwi_pipeline/docs/tutorial.md).
+For the legacy quick start, see [README.md](README.md).
 
 ---
 
@@ -582,7 +586,19 @@ Typical use cases:
 
 ## BIDS-App invocation
 
-`./connectome bids` is a thin facade that exposes the workflow under the
+**Canonical (v0.2+):** use [`dwi_pipeline/run`](dwi_pipeline/run):
+
+```bash
+cd dwi_pipeline
+./run /data/BIDS /data/derivatives participant \
+  --participant-label 01 --session-filter ses-1
+```
+
+Full flag reference: [BIDS App docs](https://dkt-connectome.readthedocs.io/en/latest/bids_app/).
+
+### Legacy root facade
+
+`./connectome bids` exposes the **legacy 4-stage** workflow under the
 [BIDS-Apps CLI spec](https://bids-apps.neuroimaging.io/):
 
 ```bash

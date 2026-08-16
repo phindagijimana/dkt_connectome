@@ -16,7 +16,7 @@ Theory for each step: [Methods](methods/index.md).
 
 ## Per-subject dashboard (`subject_qc.html`)
 
-After `./run` or `subject.sh all`, open:
+After `./run` or a full `run_subject.sh all` run, open:
 
 ```text
 RESULTS_ROOT/qc/sub-<ID>/subject_qc.html

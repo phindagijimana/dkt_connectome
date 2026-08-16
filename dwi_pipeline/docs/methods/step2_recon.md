@@ -27,7 +27,7 @@ Both write a FreeSurfer-compatible subject directory under `freesurfer/sub-<ID>/
 
 **Pipeline default:** DKT parcellation (78 nodes) regardless of recon tool — see [DKT vs. DK](#dkt-vs-dk-parcellation) below.
 
-Pass `--fastsurfer` on `./run` or set `RECON_TOOL=fastsurfer` in `subject.sh`.
+Pass `--fastsurfer` on `./run` or set `RECON_TOOL=fastsurfer` before `run_subject.sh`.
 
 ---
 

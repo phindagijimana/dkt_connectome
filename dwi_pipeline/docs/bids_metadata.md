@@ -238,7 +238,7 @@ BandwidthPerPixelPhaseEncode = 1 / (0.000550012 × 96) = 18.938995 Hz/px
 
 Pipeline config: `dwi_pipeline/config/dwi_select_b1000.json` → generates QSIPrep `--bids-filter-file` per subject via `build_bids_filter.py`.
 
-**DK connectome pipeline (`dwi_pipeline/subject.sh`):** dwi-select runs **by default at the start of QSIPrep** (before the container). Default shell is **b=1000** (`--dwi-shell 1000`). Disable with `--no-dwi-filter`. Run BIDS sidecar repair **separately** before submitting the pipeline (see § Sidecar repair pipeline below).
+**DK connectome pipeline (`./run` / `submit.sh`):** dwi-select runs **by default at the start of QSIPrep** (before the container). Default shell is **b=1000** (`--dwi-shell 1000`). Disable with `--no-dwi-filter`. Run BIDS sidecar repair **separately** before submitting the pipeline (see § Sidecar repair pipeline below).
 
 ```bash
 # Full cohort (default b1000 + IntendedFor fmaps)
@@ -274,7 +274,7 @@ For each subject/session:
 
 - Default fmaps (`magnitude1/2`, `phasediff`, no `acq` label): **`IntendedFor` → b1000 DWI**
 - Optional `acq-rs` fmaps: may remain in `fmap/`; excluded by Gate A
-- Run QSIPrep with dwi-select (automatic in `submit.sh` / `subject.sh`; or manual `--dwi-select`)
+- Run QSIPrep with dwi-select (automatic in `submit.sh` / `./run`; or manual `--dwi-select`)
 
 ### Verify (dry-run)
 

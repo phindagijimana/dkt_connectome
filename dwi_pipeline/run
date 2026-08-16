@@ -24,7 +24,7 @@ Options (BIDS App):
   --session-filter SES              Limit to one BIDS session (alias: --session-id)
   --n-cpus N                        Thread budget (alias: --nprocs; default: 8)
   --omp-nthreads N                  OpenMP threads (default: same as --n-cpus)
-  --mem-mb N                        Informational memory hint (logged only)
+  --mem-mb N                        Memory hint (exported as MEM_MB for Slurm/HPC wrappers; not enforced by Snakemake)
   --random-seed N                   Seed for pseudorandom number generators (default: 0)
   --stop-on-first-crash             Stop after the first subject failure (default: off)
   --skip-bids-validation            Accepted (default: validation off)
@@ -209,7 +209,7 @@ export NTHREADS="${N_CPUS}"
 export OMP_NTHREADS="${OMP_THREADS:-${N_CPUS}}"
 export RANDOM_SEED="${RANDOM_SEED}"
 export STOP_ON_FIRST_CRASH="${STOP_ON_FIRST_CRASH}"
-[[ -n "${MEM_MB}" ]] && echo "[run] mem-mb hint: ${MEM_MB} (informational)"
+[[ -n "${MEM_MB}" ]] && export MEM_MB="${MEM_MB}" && echo "[run] mem-mb hint: ${MEM_MB} (exported as MEM_MB)"
 [[ -n "${RANDOM_SEED}" ]] && echo "[run] random-seed: ${RANDOM_SEED}"
 
 PREFLIGHT=(bash "${SCRIPT_DIR}/workflow/preflight.sh" --mode "${MODE}" --quick)

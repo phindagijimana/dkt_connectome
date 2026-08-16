@@ -11,8 +11,8 @@ Full method specification: [`Inpainting/disconnection.md`](https://github.com/ph
 - **A/B/C** all built by default; skip with `--skip-option-a` etc.
 - **D default spared = C** (`--disconnection-spared C`)
 - **Weighting default = count** (matches Step 4); optional `--connectome-weighting sift2`
-- **Opt-in** via `--disconnection` on `./run` / `subject.sh all` (off by default; method under validation)
-- Standalone: `--mode disconnectome` or `subject.sh disconnectome` (requires `lesion_mask_prepared.nii.gz` from Step 1.5)
+- **Opt-in** via `--disconnection` on `./run` or `run_subject.sh all` (off by default; method under validation)
+- Standalone: `--mode disconnectome` or `run_subject.sh disconnectome` (requires `lesion_mask_prepared.nii.gz` from Step 1.5)
 - **SIFT1 is not used** in this pipeline
 
 ---

@@ -93,7 +93,7 @@ Review Snakemake rule list: `qsiprep` → `inpaint` (if mask) → `recon` → `q
 HPC equivalent:
 
 ```bash
-bash subject.sh all TBI011011 --session-filter ses-1 --fastsurfer
+bash workflow/run_subject.sh all TBI011011 --session-filter ses-1 --fastsurfer
 ```
 
 ---

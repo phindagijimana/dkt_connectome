@@ -19,6 +19,6 @@ export FS_LICENSE=/tmp/license.txt
 touch /tmp/license.txt
 ./run tests/fixtures/bids_minimal /tmp/out participant \
   --participant-label EXAMPLE \
-  --session-filter ses-1 \
+  --session-filter baseline \
   --dry-run --no-sdc --no-dwi-filter --random-seed 42
 ```

@@ -58,7 +58,7 @@ cd dwi_pipeline
 | `--session-filter SES` | auto | Single session (`ses-1` or `1`). Alias: `--session-id` |
 | `--n-cpus N` | 8 | Thread budget. Aliases: `--nprocs` |
 | `--omp-nthreads N` | same as `--n-cpus` | OpenMP threads inside containers |
-| `--mem-mb N` | — | Logged hint only (not enforced) |
+| `--mem-mb N` | — | Exported as `MEM_MB` for HPC wrappers (not enforced by Snakemake) |
 | `--random-seed N` | `0` | Seed for pseudorandom number generators |
 | `--stop-on-first-crash` | off | Abort multi-subject runs after first failure |
 | `--bids-validation` | off | Run `bids-validator` on `bids_dir` before processing |

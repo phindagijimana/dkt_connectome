@@ -8,10 +8,9 @@ inputs/outputs/params) joined into **one workflow** (the `Snakefile`, which
 computes the dependency graph from those declarations instead of a human
 tracing bash).
 
-Status: **production-ready via `submit.sh` / `array.sh` (default `PIPELINE_ENGINE=snakemake`)**
-for single-subject and cohort array runs. The legacy `subject.sh` path remains
-available (`PIPELINE_ENGINE=bash`) for anything not yet ported (legacy
-dual-container connectome only).
+Status: **production-ready via `submit.sh` / `array.sh` → Snakemake** (`run_subject.sh`).
+
+Legacy bash / dual-container paths: **[LEGACY.md](LEGACY.md)** (local maintainer notes, not on Read the Docs).
 
 ### Machine setup (required once per host)
 
@@ -99,11 +98,10 @@ bash submit.sh --syn \
 `submit.sh` auto-requests `SBATCH_GRES=gpu:l40s.24g:1` when Step 1.5 inpaint
 is enabled. Override with `SBATCH_GRES=` or a different slice if needed.
 
-Use `PIPELINE_ENGINE=bash ./submit.sh ...` to run the legacy `subject.sh`
-path instead.
+If you still need the bash engine or dual-container connectome, see **[LEGACY.md](LEGACY.md)**.
 
-Before re-running subjects that were already processed by `subject.sh`, backfill
-Snakemake markers so Steps 1 and 3 are not redone:
+Before re-running subjects that were processed outside Snakemake, backfill
+markers so Steps 1 and 3 are not redone:
 
 ```bash
 RESULTS_ROOT=/path/to/output bash workflow/backfill_markers.sh
@@ -193,13 +191,9 @@ Both engines are kept in sync deliberately, not by accident:
   rule `source`s it. If you fix a bug in one of these functions, fix it in
   `subject.sh`'s copy too (or better: this file is the natural next step for
   `subject.sh` itself to start sourcing, once this engine is trusted).
-- `run_subject.sh` takes the identical `(mode, subject, flags)` CLI as
-  `subject.sh`, and reads the same env vars (`submit.sh` exports them).
-  `array.sh` selects the engine via `PIPELINE_ENGINE=snakemake|bash`
-  (default: `snakemake`).
+- `run_subject.sh` mirrors the historical `subject.sh` CLI and env vars for drop-in use with `submit.sh`.
 
-**Not yet ported** (use `PIPELINE_ENGINE=bash` / `subject.sh` for these):
-- The legacy dual-container connectome path (`CONNECTOME_LEGACY_DUAL_CONTAINER=1`).
+Unported legacy paths (bash engine, dual-container Step 4): **[LEGACY.md](LEGACY.md)**.
 
 ## SDC (Step 1 / QSIPrep) — four modes
 
@@ -247,8 +241,7 @@ done < dwi_pipeline/subject_list_urmc_no_fmap.txt
 
 Ready-made lists: copy `subject_list_urmc_{with_fmap,no_fmap}.example.txt` to
 `subject_list_urmc_{with_fmap,no_fmap}.txt` locally (gitignored; do not commit real IDs).
-Both groups run through the default Snakemake engine — no
-`PIPELINE_ENGINE=bash` needed.
+Both groups run through Snakemake via `submit.sh`.
 
 **Behaviour changes, by design, not oversight:**
 - *Recon skip-if-exists is now the default*, not opt-in. `subject.sh` fails

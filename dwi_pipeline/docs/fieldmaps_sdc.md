@@ -54,7 +54,7 @@ When **no fmap** is included in the dwi-select filter, the strict pipeline **doe
 | `--syn` or `QSIPREP_USE_SYN_SDC=1` | `--use-syn-sdc warn` |
 | `--fmap-retry` or `QSIPREP_FMAP_RETRY=1` | `--ignore fieldmaps --use-syn-sdc warn` |
 
-If neither measured fmaps nor an explicit SyN flag is set, `subject.sh` exits with `ERROR [QSIPrep/SDC]`.
+If neither measured fmaps nor an explicit SyN flag is set, the pipeline exits with `ERROR [QSIPrep/SDC]`.
 
 ---
 
@@ -81,7 +81,7 @@ python3 dwi_pipeline/scripts/build_bids_filter.py \
 
 ## BIDS repair (before QSIPrep)
 
-Sidecar repair is **not** run inside `subject.sh`. Apply fixes separately, then submit the pipeline:
+Sidecar repair is **not** run inside `./run`. Apply fixes separately, then submit the pipeline:
 
 ```bash
 ./dwi_pipeline/scripts/run_bids_repair.sh /path/to/bids SUBJ01 --dry-run

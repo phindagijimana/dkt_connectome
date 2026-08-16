@@ -22,7 +22,7 @@ Read [Installation](installation.md) for Apptainer images and HPC setup.
 | Path | Purpose |
 |------|---------|
 | `run` | BIDS App entrypoint |
-| `subject.sh` / `submit.sh` | HPC wrappers |
+| `submit.sh` / `run_subject.sh` | HPC + Snakemake wrappers |
 | `workflow/Snakefile` | Snakemake DAG |
 | `workflow/rules/` | Per-step plugin rules |
 | `workflow/config/config.yaml` | Default configuration |

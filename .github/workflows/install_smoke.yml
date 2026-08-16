@@ -7,6 +7,10 @@ on:
         description: Pipeline mode subset to pull (qsiprep, all, ...)
         type: string
         default: qsiprep
+  schedule:
+    - cron: "0 6 * * 1"
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -33,18 +37,22 @@ jobs:
 
       - name: Pull pinned containers
         working-directory: dwi_pipeline
+        env:
+          SMOKE_MODE: ${{ inputs.mode || 'qsiprep' }}
         run: |
           python3 -m pip install pyyaml
           export DKT_CONTAINER_CACHE="${{ runner.temp }}/dkt_containers"
           bash scripts/install.sh \
             --cache "${DKT_CONTAINER_CACHE}" \
-            --mode "${{ inputs.mode }}" \
+            --mode "${SMOKE_MODE}" \
             --missing-only \
             --no-doctor
 
       - name: Verify registry pins (HTTP)
         working-directory: dwi_pipeline
-        run: python3 scripts/container_install.py verify --mode "${{ inputs.mode }}"
+        env:
+          SMOKE_MODE: ${{ inputs.mode || 'qsiprep' }}
+        run: python3 scripts/container_install.py verify --mode "${SMOKE_MODE}"
 
       - name: Write config and list cache
         working-directory: dwi_pipeline

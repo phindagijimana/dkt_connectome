@@ -52,7 +52,7 @@ local BIDS archives) separate from day-to-day pipeline I/O.
 | 4 | `connectome` | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) | `dkt_connectome.csv` (78×78) |
 | 5 | `nodestrength` | `nodestrength_0.1.0.sif` ([dwi-AI](https://github.com/phindagijimana/dwi-AI)) — **auto, whenever a connectome exists** | Node strength/AI CSVs, ENIGMA figures, `report.pdf` |
 
-`bash subject.sh all SUBJECT` runs steps 1–5 sequentially (1.5 runs inside Step 2 whenever
+`bash workflow/run_subject.sh all SUBJECT` runs steps 1–5 sequentially (1.5 runs inside Step 2 whenever
 a lesion mask is found for that subject/session; 5 runs inside Step 4 whenever a connectome
 was produced).
 
@@ -73,19 +73,18 @@ cd dwi_pipeline
 ```bash
 export RESULTS_ROOT=/path/to/results
 export BIDS_DIR=/path/to/bids
-export PIPELINE_ENGINE=snakemake   # default
 ./dwi_pipeline/submit.sh
 ```
 
-**Single subject / `subject.sh`:**
+**Single subject:**
 
 ```bash
 export BIDS_DIR=/path/to/bids
 export RESULTS_ROOT=/path/to/out
-bash dwi_pipeline/subject.sh all SUBJ01
+bash dwi_pipeline/workflow/run_subject.sh all SUBJ01
 ```
 
-More examples: [docs/quickstart.md](docs/quickstart.md).
+More examples: [docs/tutorial.md](docs/tutorial.md).
 
 ---
 
@@ -100,13 +99,13 @@ other subject it's a silent no-op.
 
 ```bash
 # Runs automatically as part of Step 2 when sub-01/ses-2WK has a lesion mask:
-bash dwi_pipeline/subject.sh all 01
+bash dwi_pipeline/workflow/run_subject.sh all 01
 
 # Run/test Step 1.5 in isolation:
-bash dwi_pipeline/subject.sh inpaint 01
+bash dwi_pipeline/workflow/run_subject.sh inpaint 01
 
 # Force-skip even if a mask exists:
-bash dwi_pipeline/subject.sh all 01 --no-inpaint
+bash dwi_pipeline/workflow/run_subject.sh all 01 --no-inpaint
 ```
 
 Pipeline: `scripts/prepare_lesion_mask.py` (resample onto the T1w grid, select
@@ -120,7 +119,7 @@ for that subject/session.
 
 Build the container once: `bash dwi_pipeline/containers/lit/build_lit.sh`.
 
-See `subject.sh`'s header (Environment section) for the full `INPAINT_*` variable list,
+See `workflow/run_subject.sh` and [`workflow/config/config.yaml`](workflow/config/config.yaml) for the full `INPAINT_*` variable list,
 and [`pipeline_science.md` §Inpaint](pipeline_science.md) for the science (DDPM, VINN
 layers, QC methodology).
 
@@ -135,13 +134,13 @@ it lives in its own repo/container and is invoked, not built, from here.
 
 ```bash
 # Runs automatically as part of Step 4:
-bash dwi_pipeline/subject.sh all 01
+bash dwi_pipeline/workflow/run_subject.sh all 01
 
 # Run/rerun Step 5 in isolation (needs an existing connectome):
-bash dwi_pipeline/subject.sh nodestrength 01
+bash dwi_pipeline/workflow/run_subject.sh nodestrength 01
 
 # Skip Step 5 only (keep the connectome):
-bash dwi_pipeline/subject.sh all 01 --no-node-strength
+bash dwi_pipeline/workflow/run_subject.sh all 01 --no-node-strength
 ```
 
 Atlas-agnostic: auto-detects 78-node DKT vs. 84-node DK from the connectome's own shape,
@@ -183,7 +182,7 @@ for the full CLI, output layout, and the underlying Piper et al. 2026 methodolog
 
 ---
 
-## CLI flags (`subject.sh` / `submit.sh`)
+## CLI flags (`run_subject.sh` / `submit.sh` / `./run`)
 
 | Flag | Effect |
 |------|--------|
@@ -246,7 +245,7 @@ bash dwi_pipeline/containers/connectome/build_connectome.sh
 # Stages minimal FS + ANTs/MRtrix from qsirecon.sif; see containers/connectome/README.md
 ```
 
-Legacy dual-container Step 4 (pre-containerization): `CONNECTOME_LEGACY_DUAL_CONTAINER=1`.
+Legacy dual-container Step 4: see [workflow/LEGACY.md](workflow/LEGACY.md).
 
 Build the Step 1.5 SIF (straight Docker Hub pull, no custom layers):
 
@@ -314,7 +313,7 @@ work; the variables print a deprecation note.
 
 | Old | New |
 |-----|-----|
-| `subject.sh dk SUB` | `subject.sh connectome SUB` |
+| `run_subject.sh connectome SUB` | `run_subject.sh connectome SUB` |
 | `--no-dk` | `--no-connectome` |
 | `CONTAINER_DK_CONNECTOME` | `CONTAINER_CONNECTOME` |
 | `RUN_DK_CONNECTOME` | `RUN_CONNECTOME` |
@@ -332,9 +331,10 @@ The **matrix filename stays parcellation-specific** — `dkt_connectome.csv` or
 
 | Path | Purpose |
 |------|---------|
-| `subject.sh` | One subject, one or more stages |
+| `workflow/run_subject.sh` | One subject via Snakemake (modes match `./run`) |
 | `submit.sh` | Build subject list + Slurm array |
 | `array.sh` | Slurm array worker (do not run directly) |
+| `subject.sh` | Legacy bash engine only — see [workflow/LEGACY.md](workflow/LEGACY.md) |
 | `scripts/build_bids_filter.py` | dwi-select → QSIPrep filter JSON |
 | `scripts/repair_bids_sidecars.py` | BIDS sidecar repair |
 | `scripts/run_bids_repair.sh` | Repair wrapper |

@@ -8,8 +8,12 @@
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 [![Container image](https://img.shields.io/badge/ghcr.io-dk--connectome-blue?logo=github)](https://github.com/phindagijimana/dk_connectome/pkgs/container/dk-connectome)
 
-**📖 DKT Connectome (canonical):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) — Steps 1–5 + disconnectome, BIDS App [`./run`](dwi_pipeline/run).
-**Legacy 4-stage workflow:** [dwi_pipeline/docs/legacy_workflow.md](dwi_pipeline/docs/legacy_workflow.md).
+**📖 DKT Connectome (canonical):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) — Steps 1–5 + disconnectome, BIDS App [`dwi_pipeline/run`](dwi_pipeline/run).
+
+> **Use this for all new work:** `cd dwi_pipeline && ./run …` or HPC [`submit.sh`](dwi_pipeline/submit.sh).  
+> The repository-root `./connectome` CLI below is the **legacy 4-stage** workflow (QSIPrep → recon → QSIRecon → DK connectome only).
+
+**Legacy 4-stage workflow:** [dwi_pipeline/docs/comparisons.md](dwi_pipeline/docs/comparisons.md#vs-legacy-root-dk_connectome-this-repo).
 
 The workflow is an **orchestration of four containers**, one per stage:
 
@@ -26,7 +30,12 @@ without any per-machine compiler or library setup.
 
 ---
 
-## Prerequisites
+## Legacy root workflow (4-stage)
+
+The sections below describe the **original** `./connectome` CLI at the repository root.
+For the full lesion-aware pipeline (Steps 1–5 + disconnectome), use **`dwi_pipeline/run`** instead.
+
+---
 
 * Python 3.8+
 * [Apptainer](https://apptainer.org/) (or Singularity) on `PATH`

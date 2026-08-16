@@ -123,7 +123,7 @@ jobs:
             -e FS_LICENSE=/tmp/license.txt \
             "${IMG}" \
             /data/bids /out participant \
-            --participant-label EXAMPLE --session-filter ses-1 \
+            --participant-label EXAMPLE --session-filter baseline \
             --dry-run --no-sdc --no-dwi-filter --mode qsiprep
           docker run --rm \
             -e BIDS_APP_CI=1 \

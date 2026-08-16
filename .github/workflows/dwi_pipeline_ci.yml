@@ -40,6 +40,17 @@ jobs:
       - name: Regenerate config catalog (docs drift check)
         run: python dwi_pipeline/scripts/generate_config_catalog.py
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Regenerate minimal BIDS fixture
+        run: python3 dwi_pipeline/tests/fixtures/generate_bids_fixture.py
+
+      - name: bids-validator (minimal fixture)
+        working-directory: dwi_pipeline
+        run: bash scripts/run_bids_validator.sh tests/fixtures/bids_minimal --ignore-warnings
+
       - name: pytest (dwi_pipeline scripts)
         run: pytest -q dwi_pipeline/tests -m "not slow" -c dwi_pipeline/pytest.ini
 
@@ -86,7 +97,7 @@ jobs:
           done
           bash workflow/preflight.sh --mode qsiprep --subject EXAMPLE --quick
           bash workflow/run_subject.sh qsiprep EXAMPLE \
-            --session-filter ses-1 --dry-run --no-sdc --no-dwi-filter
+            --session-filter baseline --dry-run --no-sdc --no-dwi-filter
 
       - name: BIDS Derivatives export smoke test
         run: |
