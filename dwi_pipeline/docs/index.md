@@ -47,6 +47,18 @@ Operational detail: [Pipeline steps](pipeline_steps.md) · Theory: [Methods](met
 
 ---
 
+## Before your first run
+
+**FreeSurfer license (required):** This pipeline does not ship a license. Each user registers at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), saves `license.txt`, and exports:
+
+```bash
+export FS_LICENSE=/path/to/your/license.txt
+```
+
+Full steps: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
+
+---
+
 ## Quick start
 
 **New users:** follow the [Tutorial](tutorial.md) with [IDEAS sample data](datasets/ideas.md) or bundled TBI test outputs.

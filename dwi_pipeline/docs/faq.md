@@ -18,6 +18,16 @@ bash dwi_pipeline/submit.sh
 
 See [Usage](usage.md) and [Cloud & group deployment](cloud_deployment.md).
 
+### Do I need a FreeSurfer license? Who provides it?
+
+**Yes** — for any real run (QSIPrep, recon, FastSurfer). **You** obtain it; the DKT Connectome repo **does not** ship or share licenses.
+
+1. Register (free): [surfer.nmr.mgh.harvard.edu/registration.html](https://surfer.nmr.mgh.harvard.edu/registration.html)
+2. Save the emailed `license.txt` on your machine or cluster
+3. Before `./run`: `export FS_LICENSE=/path/to/your/license.txt`
+
+Step-by-step: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
+
 ### Do I need a lesion mask?
 
 **No** for the standard connectome pipeline. Step 1.5 (inpaint) runs **only when** `*_T1w_label-lesion_roi.nii.gz` exists. Step 4.5 (disconnectome) is **opt-in** via `--disconnection` (off by default while under validation).

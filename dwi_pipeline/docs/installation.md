@@ -94,13 +94,71 @@ python3 scripts/container_install.py verify
 
 ---
 
-## FreeSurfer license
+## FreeSurfer license (you must obtain this)
+
+The pipeline **does not include or distribute** a FreeSurfer license. **Each user and site** must register independently (free for research) and point the pipeline at their own `license.txt` file.
+
+### 1. Register
+
+1. Open [FreeSurfer registration](https://surfer.nmr.mgh.harvard.edu/registration.html).
+2. Complete the form for your institution and use case.
+3. Download the email attachment **`license.txt`** (plain text, a few lines).
+
+Allow up to 48 hours for approval on first registration.
+
+### 2. Store the file safely
 
 ```bash
-export FS_LICENSE=/path/to/license.txt
+# Example — keep outside the git clone
+mkdir -p ~/.freesurfer
+mv ~/Downloads/license.txt ~/.freesurfer/license.txt
+chmod 600 ~/.freesurfer/license.txt
 ```
 
-QSIPrep and recon steps read this inside containers via bind-mount.
+!!! warning "Do not commit the license"
+    Never add `license.txt` to git or upload it to GitHub. The repository and CI **do not** provide a shared license — that is intentional.
+
+### 3. Export before every run (HPC / Apptainer)
+
+```bash
+export FS_LICENSE="$HOME/.freesurfer/license.txt"
+./run doctor    # confirms license path and containers
+```
+
+Add to your Slurm prologue or `~/.bashrc` on shared systems so batch jobs inherit it:
+
+```bash
+# in submit.sh environment or ~/.bashrc
+export FS_LICENSE=/path/to/your/license.txt
+```
+
+QSIPrep and FreeSurfer steps bind-mount this file into containers at runtime.
+
+### 4. Docker / cloud
+
+Mount **your** file read-only and set the same variable:
+
+```bash
+docker run --rm \
+  -v /path/to/your/license.txt:/opt/freesurfer/license.txt:ro \
+  -e FS_LICENSE=/opt/freesurfer/license.txt \
+  ... \
+  phindagijimana321/dkt-connectome:0.2.0 \
+  /data/bids /out participant --participant-label 01
+```
+
+See also [Cloud deployment](cloud_deployment.md) and [BIDS App](bids_app.md).
+
+### 5. When is it required?
+
+| Step | License needed? |
+|------|-----------------|
+| `./run doctor` (full check) | Yes |
+| QSIPrep (Step 1) | Yes (FreeSurfer tools inside QSIPrep) |
+| Recon / FastSurfer (Step 2) | Yes |
+| `--dry-run` in CI-style stubs | No (see [Contributing](contributing.md)) |
+
+If `./run` fails with `Missing FreeSurfer license`, set `FS_LICENSE` to an existing file — see [Troubleshooting](troubleshooting.md).
 
 ---
 

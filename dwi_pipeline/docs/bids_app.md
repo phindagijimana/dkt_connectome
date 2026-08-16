@@ -96,7 +96,7 @@ Set before `./run` when container paths differ from site defaults:
 
 | Variable | Purpose |
 |----------|---------|
-| `FS_LICENSE` | FreeSurfer license file (**required**) |
+| `FS_LICENSE` | **Your** FreeSurfer license file ([how to obtain](installation.md#freesurfer-license-you-must-obtain-this)) |
 | `TEMPLATEFLOW_HOME` | TemplateFlow cache bind-mount |
 | `CONTAINER_QSIPREP` | Path to `qsiprep.sif` |
 | `CONTAINER_QSIRECON` | Path to `qsirecon.sif` |
@@ -113,7 +113,7 @@ Quick install:
 
 ```bash
 bash install.sh
-export FS_LICENSE=/path/to/license.txt
+export FS_LICENSE=/path/to/your/license.txt   # you register — not provided by this repo
 ./run doctor
 ```
 
