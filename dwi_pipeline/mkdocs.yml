@@ -89,6 +89,7 @@ nav:
     - Container digests (S4): maintainer/container_digests.md
     - BIDS App submission (optional): BIDS_App.md
     - Readiness checklist: maintainer/readiness_checklist.md
+    - What's remaining: maintainer/remaining.md
     - Publishing: maintainer/publishing.md
     - Read the Docs setup: readthedocs_setup.md
 
