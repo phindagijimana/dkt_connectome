@@ -4,7 +4,7 @@ site_url: https://dkt-connectome.readthedocs.io/
 repo_url: https://github.com/phindagijimana/dkt_connectome
 repo_name: phindagijimana/dkt_connectome
 edit_uri: edit/main/dwi_pipeline/docs/
-copyright: Copyright &copy; 2026 Phind Ndagijimana and contributors. All rights reserved.
+copyright: Copyright &copy; 2026 Philbert Ndagijimana and contributors. All rights reserved.
 
 docs_dir: docs
 
@@ -91,7 +91,6 @@ nav:
     - Quick start: quickstart.md
     - Preprocessing inputs: preprocessing.md
     - Integrity QC: integrity_qc.md
-    - Legacy workflow: legacy_workflow.md
     - Getting help: getting_help.md
     - Theory deep dive: advanced/theory_deep_dive.md
 

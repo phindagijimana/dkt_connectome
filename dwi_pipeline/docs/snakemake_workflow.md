@@ -97,4 +97,4 @@ GitHub Actions runs the same script on every push to `main` (`.github/workflows/
 | **Dockstore** | `dkt_connectome` (primary) + legacy root `dk_connectome` |
 | **BIDS App** | `./run` → Snakemake via `run_subject.sh` |
 
-See [Comparisons § Legacy root dk_connectome](comparisons.md#vs-legacy-root-dk_connectome-this-repo) for the repository root 4-stage Snakefile (Dockstore legacy entry).
+See [Comparisons § Legacy root workflow](comparisons.md#vs-legacy-root-dk_connectome-this-repo-only) for the repository root 4-stage Snakefile (Dockstore legacy entry).
