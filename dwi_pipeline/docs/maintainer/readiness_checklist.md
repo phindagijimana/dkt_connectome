@@ -19,9 +19,9 @@ Credential-based steps for GitHub Release, Docker Hub, docs hosting, and workflo
 | # | Task | Status | Notes / path |
 |---|------|--------|--------------|
 | P0.1 | **Submit BIDS Apps registry entry** | Optional | Skip unless listing on bids-apps.neuroimaging.io — [BIDS_App.md](../BIDS_App.md). |
-| P0.2 | **Create GitHub Release for v0.2.0** | Open | [Maintainer tasks §10](maintainer_tasks.md#10-github-release-v020) |
-| P0.3 | **Verify Docker Hub image is pullable** | Open | [Maintainer tasks §11–12](maintainer_tasks.md#11-push-orchestrator-to-docker-hub) |
-| P0.4 | **Fix RTD auto-rebuild** | Open | [Maintainer tasks §14](maintainer_tasks.md#14-read-the-docs-auto-rebuild) |
+| P0.2 | **Create GitHub Release for v0.2.0** | **Done** | https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0 |
+| P0.3 | **Verify Docker Hub image is pullable** | **Done** | `phindagijimana321/dkt-connectome:0.2.0` on Docker Hub |
+| P0.4 | **Fix RTD auto-rebuild** | **Done** | Site live; CI `readthedocs.yml` triggers rebuilds (optional: `READTHEDOCS_TOKEN`) |
 | P0.5 | **Link Dockstore to GitHub** | Open | [Maintainer tasks §15](maintainer_tasks.md#15-dockstore-github-link) |
 | P0.6 | **Upload WorkflowHub RO-Crate** | Open | [Maintainer tasks §16](maintainer_tasks.md#16-workflowhub-ro-crate-upload) |
 | P0.7 | **Commit legacy doc trim** | **Done** | Bash fallback / dual-container in [`workflow/LEGACY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/LEGACY.md); RTD uses `run_subject.sh` only. |

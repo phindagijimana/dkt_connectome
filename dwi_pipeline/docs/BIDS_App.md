@@ -300,6 +300,22 @@ Full machine-readable descriptor: [`dwi_pipeline/app.json`](https://github.com/p
 
 ---
 
+## Repository checklist (pre-submission)
+
+| Item | Location |
+|------|----------|
+| BIDS App entrypoint `./run` | `dwi_pipeline/run` |
+| Machine-readable metadata | `dwi_pipeline/app.json` |
+| Boutiques descriptor | `dwi_pipeline/dkt_connectome_bids_app.json` |
+| Human documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
+| Minimal public test dataset | `dwi_pipeline/tests/fixtures/bids_minimal/` |
+| CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
+| Docker orchestrator image | `phindagijimana321/dkt-connectome:0.2.0` |
+
+Prioritized backlog: [Readiness checklist](maintainer/readiness_checklist.md).
+
+---
+
 ## FAQ
 
 ### Is the app “fully tested” for listing?
