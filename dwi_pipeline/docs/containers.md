@@ -35,7 +35,7 @@ The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use
 | `CONTAINER_NODESTRENGTH` | `containers.nodestrength` |
 | `DKT_CONTAINER_CACHE` | Default install cache (`~/.cache/dkt-connectome/containers`) |
 
-Reference upstream tags with `container_pins:` in config — see [Configuration catalog](config_catalog.md).
+Reference upstream tags with `container_pins:` in config — see [Configuration](configuration.md). Full auto-generated catalog: [on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/config_catalog.md).
 
 ---
 
@@ -43,7 +43,7 @@ Reference upstream tags with `container_pins:` in config — see [Configuration 
 
 **Production (recommended):** [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) + Apptainer on Slurm, or `./run` after `bash install.sh`.
 
-**Docker / cloud:** orchestrator image + cached step `.sif` files (`DKT_AUTO_INSTALL=1`, `docker-compose.yml`). See [Installation § Docker Compose](installation.md) and [BIDS App](bids_app.md).
+**Docker / cloud:** orchestrator image + cached step `.sif` files (`DKT_AUTO_INSTALL=1`, `docker-compose.yml`). See [Installation § Docker Compose](installation.md) and [BIDS App specification](bids_app.md).
 
 ---
 
@@ -51,4 +51,4 @@ Reference upstream tags with `container_pins:` in config — see [Configuration 
 
 - **Step 4:** [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md)
 - **Step 1.5:** [containers/lit/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md)
-- **Publish orchestrator:** [Maintainer publishing](maintainer/publishing.md)
+- **Publish orchestrator:** [Release checklist on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/publishing.md)

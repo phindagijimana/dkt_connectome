@@ -2,9 +2,10 @@
 
 **Canonical tracker:** [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) at the repository root (edit there).
 
-**Detailed checklist (P0–P5 IDs):** [Readiness checklist](readiness_checklist.md)
+**Detailed checklist (P0–P5 IDs):** [readiness_checklist.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/readiness_checklist.md)
 
-This page is a pointer only — content is not duplicated here to avoid drift.
+!!! note "Not on Read the Docs"
+    Maintainer pages under `docs/maintainer/` are **repository-local** only. Public user docs: [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/). Index: [Contributing § Repository-local documentation](../contributing.md#repository-local-documentation).
 
 ---
 

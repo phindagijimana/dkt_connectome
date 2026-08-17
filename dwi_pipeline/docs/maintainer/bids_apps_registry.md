@@ -1,10 +1,10 @@
-# BIDS App registry submission
+# BIDS Apps registry submission
 
 Optional guide to list **DKT Connectome v0.2.0** on the official [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/).
 
-**You do not need this listing** to release, cite, or run the pipeline. For release, Docker, RTD, Dockstore, and WorkflowHub steps, see [Maintainer one-shot tasks](maintainer/maintainer_tasks.md).
+**You do not need this listing** to release, cite, or run the pipeline. For release, Docker, RTD, Dockstore, and WorkflowHub steps, see [Maintainer one-shot tasks](maintainer_tasks.md).
 
-**Related:** [BIDS App usage](bids_app.md) (how to run `./run`) · [Readiness checklist](maintainer/readiness_checklist.md) · [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json)
+**Related:** [BIDS App specification](../bids_app.md) · [Usage](../usage.md) (CLI) · [Readiness checklist](readiness_checklist.md) · [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json)
 
 ---
 
@@ -157,9 +157,9 @@ Boutiques descriptor: dwi_pipeline/dkt_connectome_bids_app.json
 Maintainer: [your name / lab contact]
 ```
 
-Expect a reply asking for clarification or confirmation; link to the full submission doc on RTD if helpful:
+Expect a reply asking for clarification or confirmation; link to the submission doc on GitHub if helpful:
 
-`https://dkt-connectome.readthedocs.io/en/latest/BIDS_App/`
+`https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/bids_apps_registry.md`
 
 ---
 
@@ -247,15 +247,15 @@ Maintainers may ask for:
 - Clarification of entrypoint path (`dwi_pipeline/run` vs repo root)
 - Link to BIDS App usage documentation
 
-Point reviewers to this page and [bids_app.md](bids_app.md).
+Point reviewers to this page and the [BIDS App specification](../bids_app.md).
 
 ---
 
 ## After listing
 
 1. **Confirm** the app appears at https://bids-apps.neuroimaging.io/apps/
-2. **Update** [citation.md](citation.md) if the registry URL was “TBD”
-3. **Tick** P0.1 on [readiness checklist](maintainer/readiness_checklist.md)
+2. **Update** [citation.md](../citation.md) if the registry URL was “TBD”
+3. **Tick** P0.1 on [readiness checklist](readiness_checklist.md)
 4. **Optional:** request membership in the [`bids-apps` GitHub org](https://github.com/bids-apps) for CircleCI → `bids/` Docker Hub namespace (not required for listing)
 
 ---
@@ -312,7 +312,7 @@ Full machine-readable descriptor: [`dwi_pipeline/app.json`](https://github.com/p
 | CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
 | Docker orchestrator image | `phindagijimana321/dkt-connectome:0.2.0` |
 
-Prioritized backlog: [Readiness checklist](maintainer/readiness_checklist.md).
+Prioritized backlog: [Readiness checklist](readiness_checklist.md).
 
 ---
 
@@ -320,7 +320,7 @@ Prioritized backlog: [Readiness checklist](maintainer/readiness_checklist.md).
 
 ### Is the app “fully tested” for listing?
 
-CI runs **dry-run** smoke tests, `bids-validator`, and pytest — not full QSIPrep/FreeSurfer execution. That matches many orchestrator-style apps; disclose the multi-container model in the submission. See [validation.md](validation.md) for scientific validation status.
+CI runs **dry-run** smoke tests, `bids-validator`, and pytest — not full QSIPrep/FreeSurfer execution. That matches many orchestrator-style apps; disclose the multi-container model in the submission. See [validation.md](../validation.md) for scientific validation status.
 
 ### Why is `./run` under `dwi_pipeline/`?
 

@@ -3,7 +3,7 @@
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
-**📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [BIDS App `./run`](docs/bids_app.md) · [Installation](docs/installation.md)
+**📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md)
 
 Full **anatomically constrained tractography** pipeline with a post-hoc anatomical connectome step,
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.

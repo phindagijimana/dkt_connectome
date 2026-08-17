@@ -8,6 +8,12 @@ copyright: Copyright &copy; 2026 Philbert Ndagijimana and contributors. All righ
 
 docs_dir: docs
 
+# Maintainer runbooks, registry submission, and auto-generated config dumps — GitHub only (see contributing.md).
+exclude_docs: |
+  maintainer/*
+  config_catalog.md
+  schema_reference.md
+
 theme:
   name: material
   palette:
@@ -43,7 +49,7 @@ nav:
   - Using the pipeline:
     - Usage: usage.md
     - Decision tables: decision_tables.md
-    - BIDS App: bids_app.md
+    - BIDS App specification: bids_app.md
     - Containers: containers.md
   - Your data:
     - Preparing your data: preparing_data.md
@@ -59,10 +65,9 @@ nav:
     - Step 4.5 — Disconnectome: methods/step4_5_disconnectome.md
     - Step 5 — Node strength: methods/step5_node_strength.md
   - Outputs & QC:
+    - Quality control: qc.md
     - Outputs: outputs.md
     - Derivatives export: derivatives.md
-    - Visual QC guide: visual_qc.md
-    - QC dashboard: qc_dashboard.md
     - Disconnectome: disconnectome.md
   - Reference:
     - Configuration: configuration.md
@@ -78,17 +83,6 @@ nav:
   - Developer:
     - Contributing: contributing.md
     - Snakemake workflow: snakemake_workflow.md
-    - Configuration catalog: config_catalog.md
-    - Schema reference: schema_reference.md
-  - Maintainer:
-    - One-shot tasks (release, Docker, RTD): maintainer/maintainer_tasks.md
-    - Integration CI (real containers): maintainer/integration_ci.md
-    - v1.0 science track: maintainer/v1_science_track.md
-    - Container digests (S4): maintainer/container_digests.md
-    - BIDS App submission (optional): BIDS_App.md
-    - Readiness checklist: maintainer/readiness_checklist.md
-    - What's remaining: maintainer/remaining.md
-    - Publishing: maintainer/publishing.md
 
 plugins:
   - search
@@ -99,9 +93,22 @@ plugins:
         integrity_qc.md: disconnectome.md#integrity-qc
         getting_help.md: index.md#help
         advanced/theory_deep_dive.md: science_overview.md
-        bids_apps_registry.md: BIDS_App.md
+        bids_apps_registry.md: contributing.md#repository-local-documentation
+        BIDS_App.md: contributing.md#repository-local-documentation
+        visual_qc.md: qc.md
+        qc_dashboard.md: qc.md
         fieldmaps_sdc.md: preparing_data.md#fieldmaps-and-sdc
-        readthedocs_setup.md: maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild
+        readthedocs_setup.md: contributing.md#repository-local-documentation
+        config_catalog.md: contributing.md#repository-local-documentation
+        schema_reference.md: contributing.md#repository-local-documentation
+        maintainer/maintainer_tasks.md: contributing.md#repository-local-documentation
+        maintainer/publishing.md: contributing.md#repository-local-documentation
+        maintainer/readiness_checklist.md: contributing.md#repository-local-documentation
+        maintainer/remaining.md: contributing.md#repository-local-documentation
+        maintainer/integration_ci.md: contributing.md#repository-local-documentation
+        maintainer/v1_science_track.md: contributing.md#repository-local-documentation
+        maintainer/container_digests.md: contributing.md#repository-local-documentation
+        maintainer/bids_apps_registry.md: contributing.md#repository-local-documentation
 
 markdown_extensions:
   - toc:

@@ -105,4 +105,4 @@ Full table: [References § Step 5](../references.md#step-5-node-strength-report)
 
 - [Step 4 — DKT connectome](step4_connectome.md)
 - [Outputs § node strength](../outputs.md)
-- [QC dashboard](../qc_dashboard.md)
+- [QC dashboard](../qc.md)

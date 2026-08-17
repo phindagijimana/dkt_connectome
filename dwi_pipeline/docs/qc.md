@@ -1,28 +1,35 @@
-# Visual QC guide
+# Quality control
 
-What to inspect in pipeline HTML reports and where to find example outputs. Screenshots are best captured from your own `subject_qc.html` after a run; paths below use the bundled test subjects.
+HTML reports summarize pipeline outputs for Steps 1–5. This page covers **where to find reports**, **how to regenerate them**, and **what to inspect** in each panel.
 
----
-
-## Pipeline overview diagram
-
-![DKT Connectome pipeline overview](img/pipeline_overview.svg)
-
-Solid boxes = default steps. Dashed boxes = optional (Step 1.5 when a lesion mask exists; Step 4.5 with `--disconnection`).
-
-Theory for each step: [Methods](methods/index.md).
+Pipeline overview diagram: [How it works — science & theory](science_overview.md). Step 4.5 theory: [Disconnectome methods](methods/step4_5_disconnectome.md). Automated disconnectome checks: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
 
 ---
 
-## Per-subject dashboard (`subject_qc.html`)
+## Per-subject dashboard
 
-After `./run` or a full `run_subject.sh all` run, open:
+### Open the report
+
+After `./run` participant or a full `run_subject.sh all` run:
 
 ```text
 RESULTS_ROOT/qc/sub-<ID>/subject_qc.html
+RESULTS_ROOT/qc/sub-<ID>/subject_qc.json
 ```
 
-### Step 1 — QSIPrep
+Snakemake builds this automatically when `qc.subject_html: true` (default).
+
+Regenerate manually:
+
+```bash
+bash workflow/run_subject.sh all TBI011011
+# or:
+python3 scripts/render_subject_qc.py --results-root OUT --subject TBI011011
+```
+
+### What to inspect (by step)
+
+#### Step 1 — QSIPrep
 
 | Panel | What to look for |
 |-------|------------------|
@@ -35,7 +42,7 @@ Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 
 ![Example DKT connectome heatmap from bundled validation subject TBI011011](img/qc/tbi011011_connectome.png)
 
-### Step 1.5 — Inpaint (if lesion mask)
+#### Step 1.5 — Inpaint (if lesion mask)
 
 | Panel | What to look for |
 |-------|------------------|
@@ -43,7 +50,7 @@ Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 | `inpainting_qc.json` | `outside_lesion_correlation` ≥ 0.995 |
 | Preview PNGs | No obvious blurring outside mask |
 
-### Step 2 — Recon
+#### Step 2 — Recon
 
 | Check | PASS |
 |-------|------|
@@ -51,9 +58,9 @@ Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 | Surfaces present (ACT-HSVS) | `surf/lh.white`, `surf/lh.pial` |
 | DKT parcellation | `mri/aparc.DKTatlas+aseg.mgz` or FastSurfer equivalent |
 
-Inspect with FreeView or FastSurfer QC tools if segmentation looks wrong around lesions.
+Inspect with FreeView or FastSurfer QC tools if segmentation looks wrong near lesions.
 
-### Step 3 — QSIRecon
+#### Step 3 — QSIRecon
 
 | Panel | What to look for |
 |-------|------------------|
@@ -61,7 +68,7 @@ Inspect with FreeView or FastSurfer QC tools if segmentation looks wrong around 
 | ACT termination | Endpoints in GM, not floating in CSF |
 | Session HTML | QSIRecon report under `qsirecon_single_run_output/` |
 
-### Step 4 — Connectome
+#### Step 4 — Connectome
 
 | Artifact | Inspect |
 |----------|---------|
@@ -69,7 +76,7 @@ Inspect with FreeView or FastSurfer QC tools if segmentation looks wrong around 
 | `dkt_connectome.csv` | Symmetric; no all-zero rows except post-resection |
 | `nodes.mif` | Overlay on `dwiref` — labels align with anatomy |
 
-### Step 4.5 — Disconnectome (if enabled)
+#### Step 4.5 — Disconnectome (if enabled)
 
 Open `connectomes/sub-<ID>/disconnectome/disconnectome_qc.html`:
 
@@ -83,7 +90,7 @@ Open `connectomes/sub-<ID>/disconnectome/disconnectome_qc.html`:
 
 Validated examples: [Validation](validation.md).
 
-### Step 5 — Node strength
+#### Step 5 — Node strength
 
 | Output | Inspect |
 |--------|---------|
@@ -103,18 +110,34 @@ Validated examples: [Validation](validation.md).
 | `OUT/cohort_qc.html` | All subjects, Steps 1–5 rollup |
 | `OUT/disconnectome_cohort_qc.html` | Step 4.5 integrity across cohort |
 
+Regenerate manually:
+
+```bash
+python3 scripts/render_cohort_qc.py --results-root OUT --write-subject-reports
+```
+
 ---
 
-## Example paths (test data)
+## Configuration
 
-If you ran the [Tutorial](tutorial.md) on bundled TBI subjects:
+```yaml
+qc:
+  enabled: true
+  subject_html: true
+```
+
+Set in `workflow/config/config.local.yaml`. Disable per-subject HTML with `qc.subject_html: false` or omit QC from the Snakemake `all` target.
+
+---
+
+## Example paths (tutorial data)
+
+After the [Tutorial](tutorial.md) on bundled TBI subjects:
 
 ```text
 dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/qc/sub-TBI011011/subject_qc.html
 dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/connectomes/sub-TBI011011/disconnectome/disconnectome_qc.html
 ```
-
-Open in a browser:
 
 ```bash
 firefox dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/qc/sub-TBI011011/subject_qc.html
@@ -124,6 +147,6 @@ firefox dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/qc/sub-TBI011
 
 ## See also
 
-- [QC dashboard](qc_dashboard.md) — how reports are generated
-- [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) — automated disconnectome checks
-- [Outputs](outputs.md) — full file layout
+- [Outputs](outputs.md) — full derivatives layout
+- [Disconnectome](disconnectome.md) — Step 4.5 CLI defaults and detail QC
+- [Pipeline steps](pipeline_steps.md) — internal workflow reference
