@@ -14,7 +14,7 @@
 | | |
 |--|--|
 | **BIDS App ready to run?** | ✅ Yes — `./run`, docs, Docker, release |
-| **Still open** | Dockstore · WorkflowHub · Zenodo DOI · RTD rebuild token · v1.0 science |
+| **Still open** | RTD rebuild · Dockstore · WorkflowHub · Zenodo DOI · integration CI green · v1.0 science |
 | **Optional** | BIDS Apps registry listing |
 
-See the root [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) for the full open-items list.
+See the root [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) for the full open-items list (verdict, P0–P5, suggested order).
