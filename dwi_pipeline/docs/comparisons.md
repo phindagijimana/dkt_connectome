@@ -43,7 +43,7 @@ This pipeline **uses** QSIPrep and QSIRecon as Steps 1 and 3.
 
 > **New work:** use [`dwi_pipeline/run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) and [`dwi_pipeline/workflow/Snakefile`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow) only.
 
-The repository root still ships an older **4-stage** Snakefile (`qsiprep → recon → qsirecon → connectome`) for Dockstore backward compatibility (`.dockstore.yml` entry `dk_connectome`). It has no inpainting, disconnectome, node strength, or BIDS App `./run`. Do not start new cohorts on the root workflow; it may be removed in a future release (see [readiness checklist](maintainer/readiness_checklist.md) P3.3).
+The repository root still ships an older **4-stage** Snakefile (`qsiprep → recon → qsirecon → connectome`) for Dockstore backward compatibility (`.dockstore.yml` entry `dk_connectome`). It has no inpainting, disconnectome, node strength, or BIDS App `./run`. Do not start new cohorts on the root workflow; it may be removed in a future release (see [readiness checklist on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/readiness_checklist.md) P3.3).
 
 ---
 

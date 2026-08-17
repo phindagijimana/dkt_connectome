@@ -1,184 +1,92 @@
-# BIDS App
+# BIDS App specification
 
-The pipeline implements the [BIDS Apps](https://bids-apps.neuroimaging.io/) specification via:
+The DKT Connectome implements the [BIDS Apps](https://bids-apps.neuroimaging.io/) contract. This page documents **metadata, analysis levels, and the container model**. For every flag and example invocation, see **[Usage](usage.md)**.
+
+---
+
+## Specification files
 
 | File | Role |
 |------|------|
-| [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | Executable entrypoint |
-| [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) | Machine-readable metadata |
+| [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | Executable entrypoint (`./run`) |
+| [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) | Machine-readable BIDS App metadata |
 | [`dkt_connectome_bids_app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/dkt_connectome_bids_app.json) | Boutiques / BIDS Exec descriptor |
-| [`docs/`](index.md) | Human-readable documentation (this site) |
+| [Documentation site](index.md) | Human-readable guide (this site) |
 
-**Analysis levels:** `participant` (full pipeline), `group` (cohort QC + BIDS Derivatives export to `derivatives/`).
-
-Under the hood, `./run` calls the **Snakemake workflow** in [`workflow/Snakefile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/Snakefile) via `run_subject.sh`. See [Snakemake workflow](snakemake_workflow.md) for direct `snakemake` usage and all plugin targets.
+Version string: `./run --version` (matches `app.json` → `PipelineVersion`).
 
 ---
 
-## Basic usage
+## Invocation contract
 
-```bash
-cd dwi_pipeline
-
-./run <bids_dir> <output_dir> participant \
-  --participant-label <ID> [<ID> ...] \
-  [options]
+```text
+./run <bids_dir> <output_dir> <analysis_level> [options]
 ```
 
-### Example
-
-```bash
-./run /data/bids /data/derivatives participant \
-  --participant-label 009 \
-  --session-filter ses-1 \
-  --n-cpus 8
-```
-
-- `<bids_dir>` → `BIDS_DIR`
-- `<output_dir>` → `RESULTS_ROOT` (created if missing)
-- Subject IDs may be given with or without the `sub-` prefix.
-
----
-
-## Positional arguments
-
-| Argument | Description |
-|----------|-------------|
-| `bids_dir` | BIDS dataset root |
-| `output_dir` | Derivatives / results root |
-| `analysis_level` | `participant` (full pipeline) or `group` (cohort QC + BIDS Derivatives export) |
-
----
-
-## Standard BIDS App options
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--participant-label ID …` | *(required)* | One or more subjects |
-| `--session-filter SES` | auto | Single session (`ses-1` or `1`). Alias: `--session-id` |
-| `--n-cpus N` | 8 | Thread budget. Aliases: `--nprocs` |
-| `--omp-nthreads N` | same as `--n-cpus` | OpenMP threads inside containers |
-| `--mem-mb N` | — | Exported as `MEM_MB` for HPC wrappers (not enforced by Snakemake) |
-| `--random-seed N` | `0` | Seed for pseudorandom number generators |
-| `--stop-on-first-crash` | off | Abort multi-subject runs after first failure |
-| `--bids-validation` | off | Run `bids-validator` on `bids_dir` before processing |
-| `--ignore-warnings` | off | Pass through to bids-validator |
-| `--version` | — | Print pipeline version |
-
----
-
-## Pipeline-specific options
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--mode MODE` | `all` | `all`, `qsiprep`, `inpaint`, `recon`, `qsirecon`, `connectome`, `disconnectome`, `nodestrength` |
-| `--fastsurfer` | off | FastSurfer for Step 2 |
-| `--no-inpaint` | off | Skip Step 1.5 even if lesion mask exists |
-| `--no-recon` | off | Skip Step 2 |
-| `--disconnection` | off | Opt in to Step 4.5 disconnectome |
-| `--no-disconnectome` | — | Explicitly skip Step 4.5 |
-| `--disconnectome` | — | Alias for `--disconnection` |
-| `--disconnectome-core-only` | off | Sensitivity: core label only |
-| `--disconnectome-erode-voxels N` | 0 | Sensitivity: erode lesion N voxels |
-| `--connectome-weighting` | `count` | Step 4 + 4.5 edge weights |
-| `--dry-run` | off | Snakemake plan only |
-
-Step 4.5 disconnectome runs **only when** you pass **`--disconnection`** (or `--mode disconnectome`)
-and a prepared lesion mask + DKT connectome exist. Off by default while the method is validated.
-
-Modes: `all`, `qsiprep`, `inpaint`, `recon`, `qsirecon`, `connectome`, **`disconnectome`**, `nodestrength`.
-
----
-
-## Environment overrides
-
-Set before `./run` when container paths differ from site defaults:
-
-| Variable | Purpose |
+| Argument | Meaning |
 |----------|---------|
-| `FS_LICENSE` | **Your** FreeSurfer license file ([how to obtain](installation.md#freesurfer-license-you-must-obtain-this)) |
-| `TEMPLATEFLOW_HOME` | TemplateFlow cache bind-mount |
-| `CONTAINER_QSIPREP` | Path to `qsiprep.sif` |
-| `CONTAINER_QSIRECON` | Path to `qsirecon.sif` |
-| `CONTAINER_FREESURFER` | Path to `freesurfer_7.4.1.sif` |
-| `CONTAINER_FASTSURFER` | Path to FastSurfer SIF |
-| `CONTAINER_CONNECTOME` | Path to `dkt_connectome.sif` |
-| `CONTAINER_LIT` | Path to `lit_0.6.0.sif` (inpainting) |
-| `CONTAINER_NODESTRENGTH` | Path to nodestrength SIF (Step 5) |
-| `CONNECTOME_WEIGHTING` | Default `count` |
+| `bids_dir` | BIDS dataset root (`BIDS_DIR`) |
+| `output_dir` | Derivatives / results root (`RESULTS_ROOT`; created if missing) |
+| `analysis_level` | `participant` or `group` |
 
-See [Installation](installation.md) for default paths, **`bash install.sh`**, and build instructions.
+Subject IDs may be given with or without the `sub-` prefix. Full CLI tables: **[Usage](usage.md)**.
 
-Quick install:
+---
 
-```bash
-bash install.sh
-export FS_LICENSE=/path/to/your/license.txt   # you register — not provided by this repo
-./run doctor
-```
+## Analysis levels
+
+| Level | Behavior |
+|-------|----------|
+| **`participant`** | Full per-subject pipeline (Steps 1–5; optional 1.5 / 4.5 when inputs and flags allow) |
+| **`group`** | Cohort QC HTML indexes + BIDS Derivatives export to `derivatives/` (no reprocessing) |
+
+Group-level outputs include `cohort_qc.html` and, when disconnectome was run, `disconnectome_cohort_qc.html`. See **[Quality control](qc.md)**.
+
+---
+
+## Required and optional inputs
+
+Per [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json):
+
+| Modality | Required | Notes |
+|----------|----------|-------|
+| `dwi` | Yes | Preprocessed by Step 1 (QSIPrep) |
+| `T1w` | Yes | Structural reference for recon and ACT tractography |
+| `fmap` | Recommended | Enables measured SDC; otherwise pass `--syn` (see [Preparing your data](preparing_data.md#fieldmaps-and-sdc)) |
+
+Optional BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) enables Step 1.5 inpainting and Step 4.5 disconnectome when requested.
+
+---
+
+## Output types
+
+Declared in `app.json`: **NIfTI_GZ**, **CSV**, **JSON**, plus HTML QC reports. File layout: **[Outputs](outputs.md)** · export policy: **[Derivatives](derivatives.md)**.
 
 ---
 
 ## Container model
 
-Unlike a single monolithic QSIPrep image, this BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer/FastSurfer, QSIRecon, connectome, LIT, nodestrength) via Snakemake. This matches common HPC deployments where upstream BIDS Apps are already cached on shared filesystems.
+Unlike a single monolithic QSIPrep image, this BIDS App **orchestrates multiple pinned step containers** (QSIPrep, FreeSurfer/FastSurfer, QSIRecon, connectome, LIT, nodestrength) via Snakemake. This matches typical HPC deployments where upstream BIDS Apps are cached on shared filesystems.
 
-Required inputs per [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json):
+| Deployment | Image / path |
+|------------|--------------|
+| **Docker orchestrator** | `phindagijimana321/dkt-connectome:<version>` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:<version>` |
+| **HPC (Apptainer)** | Step `.sif` files via `bash install.sh` — [Containers](containers.md) |
 
-- `dwi`
-- `T1w`
-- `fmap` (optional — SyN or explicit flags if absent)
-
-Output types: NIfTI_GZ, CSV, JSON.
-
----
-
-## Multi-subject invocation
-
-```bash
-./run /data/BIDS /data/derivatives participant \
-  --participant-label 001 003 009 \
-  --n-cpus 8
-```
-
-Subjects run sequentially; any failure sets a non-zero exit code.
+The orchestrator image wraps `./run`; step images mount at runtime. **`FS_LICENSE`** must point to **your** FreeSurfer license ([Installation](installation.md#freesurfer-license-you-must-obtain-this)).
 
 ---
 
-## Session handling
+## Implementation
 
-When a subject has **multiple BIDS sessions**, pass exactly one filter per invocation:
+Under the hood, `./run` invokes the Snakemake workflow in [`workflow/Snakefile`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/Snakefile) through `run_subject.sh`.
 
-```bash
-./run /data/BIDS /data/out participant \
-  --participant-label 009 \
-  --session-filter ses-1
-```
-
-Multiple `--session-filter` values are rejected — run separate jobs per session.
+- Direct Snakemake / HPC usage: **[Snakemake workflow](snakemake_workflow.md)**
+- `./run` flags and examples: **[Usage](usage.md)**
+- First run walkthrough: **[Tutorial](tutorial.md)**
 
 ---
 
-## Help
+## Registry listing (optional)
 
-```bash
-./run --help
-# or
-./run /data/BIDS /data/out participant -h
-```
-
----
-
-## Registering as a BIDS App
-
-Submit to the [BIDS Apps registry](https://bids-apps.neuroimaging.io/apps/) with:
-
-- **Name:** DKT Connectome  
-- **Version:** 0.2.0 (see `./run --version`)  
-- **Documentation:** https://dkt-connectome.readthedocs.io/en/latest/  
-- **Docker Hub:** `phindagijimana321/dkt-connectome:0.2.0` (orchestrator; step images mounted at runtime)  
-- **Test dataset:** `dwi_pipeline/tests/fixtures/bids_minimal/`  
-
-**Optional listing:** [BIDS_App.md](BIDS_App.md) (maintainer section).
-
-Full descriptor: [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json).
+Listing on [bids-apps.neuroimaging.io](https://bids-apps.neuroimaging.io/apps/) is **not required** to run, cite, or release the pipeline. Maintainer submission guide (GitHub only): [bids_apps_registry.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/bids_apps_registry.md).

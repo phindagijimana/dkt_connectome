@@ -157,7 +157,7 @@ After each participant run, `./run` writes:
 
 Group level: `./run … group` → `cohort_qc.html` + BIDS Derivatives export.
 
-See [QC dashboard](qc_dashboard.md).
+See [Quality control](qc.md).
 
 ---
 

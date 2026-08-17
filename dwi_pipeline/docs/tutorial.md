@@ -121,7 +121,7 @@ bash workflow/run_subject.sh all TBI011011 --session-filter ses-1 --fastsurfer
 firefox "${RESULTS_ROOT}/qc/sub-TBI011011/subject_qc.html"
 ```
 
-What each panel means: [Visual QC guide](visual_qc.md).
+What each panel means: [Quality control](qc.md).
 
 ---
 

@@ -42,7 +42,7 @@ README's *Containers* section.
 |---------------------------------------|------------------------|------------------------|
 | [Dockstore](https://dockstore.org)    | `.dockstore.yml`       | one-time GitHub link   |
 | [WorkflowHub](https://workflowhub.eu) | `workflowhub.yml`      | upload a Workflow RO-Crate |
-| [BIDS Apps](https://bids-apps.neuroimaging.io/) | [`dwi_pipeline/run`](dwi_pipeline/run) | optional listing — see [BIDS_App.md](dwi_pipeline/docs/BIDS_App.md) |
+| [BIDS Apps](https://bids-apps.neuroimaging.io/) | [`dwi_pipeline/run`](dwi_pipeline/run) | optional listing — see [bids_apps_registry.md](dwi_pipeline/docs/maintainer/bids_apps_registry.md) |
 | [nf-core](https://nf-co.re) / [Snakemake catalog](https://snakemake.github.io/snakemake-workflow-catalog/) | `Snakefile`, `config/`, `README.md` | tagged release |
 
 ### Dockstore
@@ -70,7 +70,7 @@ cd dwi_pipeline
   --participant-label 01 --session-filter ses-1
 ```
 
-Optional listing on bids-apps.neuroimaging.io: [BIDS_App.md](dwi_pipeline/docs/BIDS_App.md) (not required for release).
+Optional listing on bids-apps.neuroimaging.io: [bids_apps_registry.md](dwi_pipeline/docs/maintainer/bids_apps_registry.md) (not required for release).
 
 The legacy root `./connectome bids` facade matches the older 4-stage workflow only — do not use for new cohort work. See [Comparisons](dwi_pipeline/docs/comparisons.md#vs-legacy-root-dk_connectome-this-repo-only).
 

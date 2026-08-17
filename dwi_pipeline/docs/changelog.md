@@ -12,10 +12,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **CI full-workflow dry-run** — `scripts/snakemake_dryrun_ci.sh` exercises all nine Snakemake targets (with lesion-mask stub)
 - **Documentation site pages:** [configuration.md](configuration.md), [faq.md](faq.md), [troubleshooting.md](troubleshooting.md), [changelog.md](changelog.md), [containers.md](containers.md)
 - **`./run --version`** flag
-- [Read the Docs — Maintainer tasks §14](maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild)
-- MkDocs **strict** build enabled (out-of-tree links → GitHub URLs)
-
-### Added (pipeline)
+- Read the Docs setup — [Maintainer tasks §14 on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild)
+- **Material for MkDocs** theme; generated config catalog (GitHub) and [QC doc figures](qc.md)
 - Expanded **BIDS App `./run` CLI** (SDC, dwi-select, nodestrength, disconnectome flags)
 - **QSIPrep-style docs** under `dwi_pipeline/docs/` with GitHub-navigable links
 - **CI** workflow `.github/workflows/dwi_pipeline_ci.yml` (pytest + Snakemake dry-run)
@@ -33,7 +31,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Expanded CI** (MkDocs build, BIDS export smoke test, Snakemake QC target dry-run)
 - **Auto-install stack** (`install.sh`, `doctor`, `container_install.py`, Docker Compose)
 - **Docker Hub orchestrator** `phindagijimana321/dkt-connectome:0.2.0` (+ GHCR mirror script)
-- **Material for MkDocs** theme; generated [config catalog](config_catalog.md) and [QC doc figures](visual_qc.md)
+- **Material for MkDocs** theme; generated [config catalog on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/config_catalog.md) and [QC doc figures](qc.md)
 - **IDEAS dwi-select** `config/dwi_select_ideas_b2500.json` for 0/300/700/2500 shells
 - [Cloud & group deployment](cloud_deployment.md) guide
 

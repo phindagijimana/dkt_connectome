@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-08-16 · **Current release:** v0.2.0
 
-Living tracker of **open** work. Detailed IDs and history: [`dwi_pipeline/docs/maintainer/readiness_checklist.md`](dwi_pipeline/docs/maintainer/readiness_checklist.md) (also on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/maintainer/readiness_checklist/)).
+Living tracker of **open** work. Detailed IDs and history: [`dwi_pipeline/docs/maintainer/readiness_checklist.md`](dwi_pipeline/docs/maintainer/readiness_checklist.md) (GitHub only — not on Read the Docs).
 
 ---
 
@@ -25,7 +25,7 @@ The BIDS App is **ready for use** at v0.2.0: `./run`, participant + group levels
 |------|-------|-----|
 | Link **Dockstore** to GitHub | Maintainer | [maintainer_tasks §15](dwi_pipeline/docs/maintainer/maintainer_tasks.md#15-dockstore-github-link) |
 | Upload **WorkflowHub** RO-Crate | Maintainer (optional) | [maintainer_tasks §16](dwi_pipeline/docs/maintainer/maintainer_tasks.md#16-workflowhub-ro-crate-upload) |
-| **BIDS Apps registry** PR | Optional | [BIDS_App.md](dwi_pipeline/docs/BIDS_App.md) |
+| **BIDS Apps registry** PR | Optional | [bids_apps_registry.md](dwi_pipeline/docs/maintainer/bids_apps_registry.md) |
 | **RTD rebuild (science pages live)** | Maintainer | Stale site — add `READTHEDOCS_TOKEN` or manual build · [§14](dwi_pipeline/docs/maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild) |
 
 **Done (P0):** GitHub Release v0.2.0 · Docker Hub pull · RTD project exists · legacy doc trim.

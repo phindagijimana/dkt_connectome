@@ -147,7 +147,7 @@ and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
 | Documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Source code | https://github.com/phindagijimana/dkt_connectome |
 | GitHub Releases | https://github.com/phindagijimana/dkt_connectome/releases |
-| Zenodo archive | *(enable GitHub integration — see [Maintainer §17](maintainer/maintainer_tasks.md#17-zenodo-archive-doi))* |
+| Zenodo archive | *(enable GitHub integration — see [Maintainer §17 on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md#17-zenodo-archive-doi))* |
 | CITATION.cff | https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff |
 
 After the first Zenodo release, add the software DOI here and in `CITATION.cff`:

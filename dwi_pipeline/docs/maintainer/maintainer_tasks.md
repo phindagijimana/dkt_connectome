@@ -1,10 +1,13 @@
 # Maintainer one-shot tasks
 
+!!! note "Repository-local documentation"
+    This page is **not** published on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/). User-facing docs stay on the public site; maintainer runbooks live in the repo only. Index: [Contributing § Repository-local documentation](../contributing.md#repository-local-documentation).
+
 Runbook for **credential-based, out-of-repo steps** that complete v0.2.0 publishing and registry visibility. These are done once (or per release) by a maintainer with GitHub, Docker Hub, and RTD access.
 
 **Time budget:** about one afternoon if credentials are ready.
 
-**Not in scope here:** BIDS Apps registry listing — optional and documented separately in [BIDS_App.md](../BIDS_App.md) if you choose to submit later. You do **not** need registry submission to cut a release or use the pipeline.
+**Not in scope here:** BIDS Apps registry listing — optional and documented separately in [BIDS Apps registry submission](bids_apps_registry.md) if you choose to submit later. You do **not** need registry submission to cut a release or use the pipeline.
 
 **Repo-side work** is tracked in [Readiness checklist](readiness_checklist.md) · [What's remaining](remaining.md). **Release + containers + docs** overlap with [Publishing](publishing.md).
 
@@ -17,7 +20,7 @@ Runbook for **credential-based, out-of-repo steps** that complete v0.2.0 publish
 | 10 | GitHub Release v0.2.0 | `gh auth login` | [§10 GitHub Release](#10-github-release-v020) |
 | 11 | Push orchestrator to Docker Hub | Docker Hub token or `podman login` | [§11 Docker Hub](#11-push-orchestrator-to-docker-hub) |
 | 12 | Verify `docker pull` | Network | [§12 Verify pull](#12-verify-docker-pull) |
-| 13 | BIDS Apps registry | *(optional — skip unless listing)* | [BIDS_App.md](../BIDS_App.md) |
+| 13 | BIDS Apps registry | *(optional — skip unless listing)* | [bids_apps_registry.md](bids_apps_registry.md) |
 | 14 | RTD auto-rebuild | RTD token or GitHub integration | [§14 Read the Docs](#14-read-the-docs-auto-rebuild) |
 | 15 | Dockstore GitHub link | Dockstore account | [§15 Dockstore](#15-dockstore-github-link) |
 | 16 | WorkflowHub RO-Crate | WorkflowHub account | [§16 WorkflowHub](#16-workflowhub-ro-crate-upload) |
@@ -164,7 +167,7 @@ If pull fails: check Docker Hub repo visibility (public vs private) and that Opt
 
 **Skip unless you want a listing on https://bids-apps.neuroimaging.io/apps/.**
 
-The app is BIDS-App-compatible without being listed. If you submit later, follow [BIDS_App.md](../BIDS_App.md) (email or PR to `bids-standard/bids-website`).
+The app is BIDS-App-compatible without being listed. If you submit later, follow [bids_apps_registry.md](bids_apps_registry.md) (email or PR to `bids-standard/bids-website`).
 
 ---
 
@@ -222,7 +225,7 @@ Strict build (matches CI): `mkdocs build --strict`
 | Science / theory | [Science overview](../science_overview.md) |
 | Per-step methods + citations | [Methods](../methods/index.md) |
 | Flags, paths, outputs | [Pipeline steps](../pipeline_steps.md) |
-| `./run` reference | [Usage](../usage.md) or [BIDS App](../bids_app.md) |
+| `./run` reference | [Usage](../usage.md) · [BIDS App spec](../bids_app.md) |
 | What's left to ship | [remaining.md](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) |
 
 Publishing checklist: [Publishing](publishing.md).

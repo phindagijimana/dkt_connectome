@@ -147,7 +147,7 @@ docker run --rm \
   /data/bids /out participant --participant-label 01
 ```
 
-See also [Cloud deployment](cloud_deployment.md) and [BIDS App](bids_app.md).
+See also [Cloud deployment](cloud_deployment.md) and [BIDS App specification](bids_app.md).
 
 ### 5. When is it required?
 
@@ -266,4 +266,4 @@ export FS_LICENSE=/path/to/license.txt
   --participant-label 009 --dry-run
 ```
 
-Next: [Tutorial](tutorial.md) · [BIDS App](bids_app.md).
+Next: [Tutorial](tutorial.md) · [Usage](usage.md)

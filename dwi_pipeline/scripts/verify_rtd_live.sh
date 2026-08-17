@@ -28,10 +28,10 @@ echo "${HOME_HTML}" | grep -qE 'DKT Connectome' \
   || fail "page does not contain 'DKT Connectome' branding"
 
 # Science overview landing (added v0.2.0 docs — commit 31e673f+)
-if echo "${HOME_HTML}" | grep -q 'Understand the science'; then
-  echo "RTD home: science-first section present"
+if echo "${HOME_HTML}" | grep -q 'Start here'; then
+  echo "RTD home: start-here section present"
 else
-  fail "home page missing 'Understand the science' — RTD build is stale; rebuild latest (see maintainer_tasks §14)"
+  fail "home page missing 'Start here' — RTD build is stale; rebuild latest (see maintainer_tasks.md §14 on GitHub)"
 fi
 
 SCIENCE_CODE="$(curl -sS -o /tmp/rtd_science.html -w '%{http_code}' --max-time 30 "${SCIENCE_URL}")"

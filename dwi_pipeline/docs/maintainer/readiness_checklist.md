@@ -8,7 +8,7 @@ Prioritized remaining work to reach a **listed, production-ready BIDS App** and 
 
 **Architectural note:** This pipeline is a **multi-container orchestrator** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). It will not match QSIPrep’s single-image UX unless you publish a monolithic or compose-all-pins stack (optional, P2).
 
-Related docs: [Maintainer one-shot tasks](maintainer_tasks.md) · [Publishing](publishing.md) · [BIDS App submission (optional)](../BIDS_App.md) · [Validation](../validation.md) · [paper plan on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md)
+Related docs: [Maintainer one-shot tasks](maintainer_tasks.md) · [Publishing](publishing.md) · [BIDS Apps registry (optional)](bids_apps_registry.md) · [Validation](../validation.md) · [paper plan on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md)
 
 ---
 
@@ -20,7 +20,7 @@ Credential-based steps for GitHub Release, Docker Hub, docs hosting, and workflo
 
 | # | Task | Status | Notes / path |
 |---|------|--------|--------------|
-| P0.1 | **Submit BIDS Apps registry entry** | Optional | Skip unless listing on bids-apps.neuroimaging.io — [BIDS_App.md](../BIDS_App.md). |
+| P0.1 | **Submit BIDS Apps registry entry** | Optional | Skip unless listing on bids-apps.neuroimaging.io — [bids_apps_registry.md](bids_apps_registry.md). |
 | P0.2 | **Create GitHub Release for v0.2.0** | **Done** | https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0 |
 | P0.3 | **Verify Docker Hub image is pullable** | **Done** | `phindagijimana321/dkt-connectome:0.2.0` on Docker Hub |
 | P0.4 | **Fix RTD auto-rebuild** | **Done** | Site live; CI `readthedocs.yml` triggers rebuilds (optional: `READTHEDOCS_TOKEN`) |
@@ -109,7 +109,7 @@ Only if cloud-only / BIDS Apps reviewers demand single-image UX.
 | # | Task | Notes |
 |---|------|-------|
 | P5.1 | **Monolithic or “fat” Docker image** | Bundle orchestrator + pinned step images; large build, FS license still runtime. |
-| P5.2 | **Join `bids-apps` GitHub org** | CircleCI → Docker Hub under `bids-apps` namespace. [BIDS_App.md § Optional](../BIDS_App.md). |
+| P5.2 | **Join `bids-apps` GitHub org** | CircleCI → Docker Hub under `bids-apps` namespace. [bids_apps_registry.md § Optional](bids_apps_registry.md#optional-join-the-bids-apps-organization). |
 | P5.3 | **Public regression dataset on S3/OpenNeuro** | QSIPrep-style CI regression artifacts beyond golden QC outputs in `dwi_test_TBI/`. |
 
 ---

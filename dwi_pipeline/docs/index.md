@@ -15,7 +15,7 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 | **Why** the workflow exists (science, lesions, SDC) | [How it works — science & theory](science_overview.md) |
 | **First run** (install, tutorial, sample data) | [Installation](installation.md) → [Tutorial](tutorial.md) |
 | **Prepare BIDS** (fieldmaps, masks, sidecars) | [Preparing your data](preparing_data.md) |
-| **Run** (`./run`, HPC, flags) | [Usage](usage.md) · [BIDS App](bids_app.md) |
+| **Run** (`./run`, HPC, flags) | [Usage](usage.md) · [BIDS App spec](bids_app.md) |
 | **Methods & citations** | [Methods overview](methods/index.md) · [References](references.md) |
 
 !!! note "Upstream tools"

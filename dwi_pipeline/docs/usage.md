@@ -8,6 +8,8 @@ For a minimal example, see the [Tutorial](tutorial.md). For **when to use which 
 
 ## Basic invocation
 
+<a id="basic-invocation"></a>
+
 ```bash
 cd dwi_pipeline
 
@@ -195,7 +197,7 @@ Full table: [Configuration](configuration.md) · [Containers](containers.md).
 
 | Method | When to use |
 |--------|-------------|
-| [`./run`](bids_app.md) | BIDS Apps interface, Docker, portable CLI |
+| [`./run`](#basic-invocation) | BIDS Apps interface, Docker, portable CLI |
 | [`run_subject.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/run_subject.sh) | Single-subject Snakemake CLI (HPC or interactive) |
 | [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) | Slurm array over a subject list |
 
