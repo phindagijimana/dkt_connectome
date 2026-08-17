@@ -3,8 +3,18 @@ site_description: Lesion-aware structural connectomics BIDS App — science, met
 site_url: https://dkt-connectome.readthedocs.io/
 repo_url: https://github.com/phindagijimana/dkt_connectome
 repo_name: phindagijimana/dkt_connectome
+site_author: Philbert Ndagijimana
 edit_uri: edit/main/dwi_pipeline/docs/
 copyright: Copyright &copy; 2026 Philbert Ndagijimana and contributors. All rights reserved.
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/phindagijimana/dkt_connectome
+      name: GitHub repository
+    - icon: fontawesome/solid/envelope
+      link: mailto:phindagiji@gmail.com
+      name: Email maintainer
 
 docs_dir: docs
 
@@ -91,7 +101,7 @@ plugins:
         quickstart.md: tutorial.md
         preprocessing.md: preparing_data.md
         integrity_qc.md: disconnectome.md#integrity-qc
-        getting_help.md: index.md#help
+        getting_help.md: index.md#contact
         advanced/theory_deep_dive.md: science_overview.md
         bids_apps_registry.md: contributing.md#repository-local-documentation
         BIDS_App.md: contributing.md#repository-local-documentation
