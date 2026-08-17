@@ -81,4 +81,4 @@ bash scripts/verify_rtd_live.sh
 | `build-dk-connectome.yml` | Step-4 connectome image → GHCR/Docker Hub |
 | `readthedocs.yml` | Trigger RTD rebuild |
 
-See also: [Read the Docs setup](../readthedocs_setup.md).
+See also: [Maintainer tasks §14 — Read the Docs](maintainer_tasks.md#14-read-the-docs-auto-rebuild).

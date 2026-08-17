@@ -12,7 +12,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **CI full-workflow dry-run** — `scripts/snakemake_dryrun_ci.sh` exercises all nine Snakemake targets (with lesion-mask stub)
 - **Documentation site pages:** [configuration.md](configuration.md), [faq.md](faq.md), [troubleshooting.md](troubleshooting.md), [changelog.md](changelog.md), [containers.md](containers.md)
 - **`./run --version`** flag
-- [Read the Docs setup guide](readthedocs_setup.md)
+- [Read the Docs — Maintainer tasks §14](maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild)
 - MkDocs **strict** build enabled (out-of-tree links → GitHub URLs)
 
 ### Added (pipeline)

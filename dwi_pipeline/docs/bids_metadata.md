@@ -6,7 +6,7 @@ Part of the [DKT Connectome documentation](index.md).
 
 **Related:**
 
-- Field maps and QSIPrep SDC behavior: [Field maps & SDC](fieldmaps_sdc.md)
+- Field maps and QSIPrep SDC behavior: [Preparing your data § Field maps & SDC](preparing_data.md#fieldmaps-and-sdc)
 - Repair script: [`repair_siemens_pe_metadata.py`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/repair_siemens_pe_metadata.py) (heuristic PE only)
 - **Sidecar repair pipeline:** [`repair_bids_sidecars.py`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/repair_bids_sidecars.py) + [`bids_repair_defaults.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/config/bids_repair_defaults.json)
 
@@ -322,7 +322,7 @@ Use a separate `RESULTS_ROOT` per pipeline variant:
 | `dwi_pipeline` | Full pipeline including the subject-native DKT connectome (Step 4) |
 | `dwi_connect_default` | Atlas connectome only (`RUN_CONNECTOME=0`, no Step 4) |
 
-See [README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/README.md) and [`fmaps.md`](fieldmaps_sdc.md) for SDC and strict fail-fast behavior.
+See [README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/README.md) and [Preparing your data § Field maps & SDC](preparing_data.md#fieldmaps-and-sdc) for SDC and strict fail-fast behavior.
 
 ### Subject table (Excel / CSV)
 
