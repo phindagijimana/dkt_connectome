@@ -209,3 +209,9 @@ If you publish results derived from these volumes (or redistribute derivatives),
 ```
 
 Full sample-data guide: [datasets/ideas.md](datasets/ideas.md).
+
+---
+
+## Contact
+
+Questions about citing or software metadata: [phindagiji@gmail.com](mailto:phindagiji@gmail.com) · [GitHub Issues](https://github.com/phindagijimana/dkt_connectome/issues)

@@ -57,8 +57,17 @@ bash dwi_pipeline/submit.sh
 
 ---
 
+## Contact
+
+<a id="contact"></a>
+
+- **GitHub:** [github.com/phindagijimana/dkt_connectome](https://github.com/phindagijimana/dkt_connectome) · [open an issue](https://github.com/phindagijimana/dkt_connectome/issues)
+- **Email:** [phindagiji@gmail.com](mailto:phindagiji@gmail.com)
+
+For usage questions, also see [FAQ](faq.md) and [NeuroStars](https://neurostars.org/) (tag `qsiprep`, `qsirecon`, or link this repo).
+
+---
+
 ## Help
 
 - [FAQ](faq.md) · [Troubleshooting](troubleshooting.md)
-- [GitHub Issues](https://github.com/phindagijimana/dkt_connectome/issues)
-- [NeuroStars](https://neurostars.org/) (tag `qsiprep`, `qsirecon`, or link this repo)

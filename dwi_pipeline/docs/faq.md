@@ -117,3 +117,12 @@ CLI: `python3 scripts/evaluate_disconnectome_integrity.py --disconnectome-dir ..
 ### Where is the hosted documentation?
 
 [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) (built from this `docs/` folder). GitHub mirror: [docs/index.md](index.md).
+
+### Who maintains this pipeline? How do I contact you?
+
+**Maintainer:** Philbert Ndagijimana
+
+- **GitHub:** [phindagijimana/dkt_connectome](https://github.com/phindagijimana/dkt_connectome) (bugs and feature requests via [Issues](https://github.com/phindagijimana/dkt_connectome/issues))
+- **Email:** [phindagiji@gmail.com](mailto:phindagiji@gmail.com)
+
+See also [Home → Contact](index.md#contact).
