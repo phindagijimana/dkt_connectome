@@ -60,7 +60,7 @@ Step 4   Connectome       Warp DKT labels to dwiref grid → 78×78 matrix (stre
 Step 5   Node strength     Graph metrics + ENIGMA-style report from the connectome
 ```
 
-**Key geometric principle:** streamlines live on a shared **tractography grid** (`dwiref`, ~2 mm, from QSIPrep). FreeSurfer labels start in **conformed surface space**; Step 4 warps them onto `dwiref` before counting streamlines — see [Methods → coordinate spaces](methods/index.md#coordinate-spaces-why-registration-matters).
+**Key geometric principle:** streamlines live on a shared **tractography grid** (`dwiref`, ~2 mm, from QSIPrep). FreeSurfer labels start in **conformed surface space**; Step 4 warps them onto `dwiref` before counting streamlines. See [Step 4 — spatial alignment](methods/step4_connectome.md#spatial-alignment).
 
 ---
 
@@ -100,8 +100,6 @@ A **disconnection matrix** compares spared connectivity to the intact Step 4 gra
 | Edge weight | Streamline **counts** | Simple, widely reported; SIFT2 optional |
 | Inpainting | Auto if BIDS lesion mask | Improves recon near lesions |
 | Disconnectome | Off | Pass `--disconnection` to opt in |
-
-Full table: [Methods → default choices](methods/index.md#default-scientific-choices).
 
 ---
 

@@ -225,7 +225,7 @@ bash dwi_pipeline/scripts/batch_postprocess.sh
 - [Pipeline steps](pipeline_steps.md) — what happens inside each step
 - [Methods](methods/index.md) — theory and citations per step
 - [Preparing your data](preparing_data.md) — BIDS sidecars, fieldmaps, lesion masks
-- [BIDS metadata](bids_metadata.md) · [Field maps & SDC](fieldmaps_sdc.md)
+- [BIDS metadata](bids_metadata.md)
 - [Outputs](outputs.md) — derivative file layout
 - [Tutorial](tutorial.md) — end-to-end walkthrough
 - [Troubleshooting](troubleshooting.md) — common errors

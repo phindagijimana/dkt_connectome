@@ -48,7 +48,6 @@ nav:
   - Your data:
     - Preparing your data: preparing_data.md
     - BIDS metadata & repair: bids_metadata.md
-    - Field maps & SDC: fieldmaps_sdc.md
     - Lesion masks: lesion_segmentation.md
   - Methods:
     - Step-by-step methods: methods/index.md
@@ -90,7 +89,6 @@ nav:
     - Readiness checklist: maintainer/readiness_checklist.md
     - What's remaining: maintainer/remaining.md
     - Publishing: maintainer/publishing.md
-    - Read the Docs setup: readthedocs_setup.md
 
 plugins:
   - search
@@ -102,6 +100,8 @@ plugins:
         getting_help.md: index.md#help
         advanced/theory_deep_dive.md: science_overview.md
         bids_apps_registry.md: BIDS_App.md
+        fieldmaps_sdc.md: preparing_data.md#fieldmaps-and-sdc
+        readthedocs_setup.md: maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild
 
 markdown_extensions:
   - toc:

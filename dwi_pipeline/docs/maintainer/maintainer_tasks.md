@@ -172,9 +172,15 @@ The app is BIDS-App-compatible without being listed. If you submit later, follow
 
 **Goal:** https://dkt-connectome.readthedocs.io/en/latest/ rebuilds when `main` changes.
 
-One-time setup — pick **Option A** or **Option B** (not both required).
+### One-time project setup
 
-### Option A — GitHub secret + Actions (already wired)
+1. Sign in at [readthedocs.org](https://readthedocs.org/) → import `phindagijimana/dkt_connectome`
+2. Project slug: **`dkt-connectome`**
+3. Config: [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) → `dwi_pipeline/mkdocs.yml`
+
+**Auto-rebuild on push** — pick **Option A** or **Option B** (not both required).
+
+#### Option A — GitHub secret + Actions (already wired)
 
 1. Create token: https://readthedocs.org/accounts/tokens/
 2. GitHub repo → **Settings → Secrets → Actions** → `READTHEDOCS_TOKEN`
@@ -184,11 +190,9 @@ Workflow file: `.github/workflows/readthedocs.yml`
 
 If the secret is missing, CI prints a warning and skips the trigger (docs stay stale until manual rebuild).
 
-### Option B — RTD GitHub integration (no token in GitHub)
+#### Option B — RTD GitHub integration (no token in GitHub)
 
-1. Sign in at https://readthedocs.org/
-2. Import project **`dkt-connectome`** from `phindagijimana/dkt_connectome`
-3. [Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) → connect GitHub → enable builds on push
+1. [Integrations](https://app.readthedocs.org/dashboard/dkt-connectome/integrations/) → connect GitHub → enable builds on push
 
 ### Manual rebuild (anytime)
 
@@ -196,11 +200,32 @@ If the secret is missing, CI prints a warning and skips the trigger (docs stay s
 2. Or locally verify then trigger:
 
    ```bash
+   pip install -r dwi_pipeline/docs/requirements.txt
    cd dwi_pipeline && mkdocs build --strict
-   bash scripts/verify_rtd_live.sh   # if available
+   bash dwi_pipeline/scripts/verify_rtd_live.sh
    ```
 
-Full troubleshooting: [Read the Docs setup](../readthedocs_setup.md).
+### Local preview
+
+```bash
+pip install -r dwi_pipeline/docs/requirements.txt
+cd dwi_pipeline && mkdocs serve
+# http://127.0.0.1:8000
+```
+
+Strict build (matches CI): `mkdocs build --strict`
+
+### Doc map (avoid duplicate reading)
+
+| If you need… | Read… |
+|--------------|--------|
+| Science / theory | [Science overview](../science_overview.md) |
+| Per-step methods + citations | [Methods](../methods/index.md) |
+| Flags, paths, outputs | [Pipeline steps](../pipeline_steps.md) |
+| `./run` reference | [Usage](../usage.md) or [BIDS App](../bids_app.md) |
+| What's left to ship | [remaining.md](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) |
+
+Publishing checklist: [Publishing](publishing.md).
 
 ---
 

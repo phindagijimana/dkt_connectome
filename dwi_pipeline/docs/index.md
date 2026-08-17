@@ -2,39 +2,36 @@
 
 **BIDS App** for **lesion-aware structural connectomics** — from raw diffusion MRI to DKT connectomes and optional disconnectome mapping.
 
-The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed and validated in **TBI** settings where manual lesion masks and explicit distortion correction matter; see [How it works — science and theory](science_overview.md).
+The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed and validated in **TBI** settings where manual lesion masks and explicit distortion correction matter.
 
 **Hosted site:** [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/)
 
-![DKT Connectome pipeline overview](img/pipeline_overview.svg)
-
 ---
 
-## Understand the science first
+## Start here
 
-New here? Start with **why** the workflow is built this way — lesion inpainting, ACT-HSVS tractography, DKT parcellation, and optional disconnectome:
-
-| Start here | Contents |
-|------------|----------|
-| **[How it works — science & theory](science_overview.md)** | Problem statement, end-to-end flow, physics/math summary, default choices |
-| **[Methods overview](methods/index.md)** | One page per step with citations (QSIPrep-style) |
-| **[Pipeline steps](pipeline_steps.md)** | Operational reference (inputs, outputs, flags) |
-| **[Comparisons](comparisons.md)** | vs QSIPrep alone, MRtrix3_connectome, legacy root workflow |
+| If you want… | Read… |
+|--------------|--------|
+| **Why** the workflow exists (science, lesions, SDC) | [How it works — science & theory](science_overview.md) |
+| **First run** (install, tutorial, sample data) | [Installation](installation.md) → [Tutorial](tutorial.md) |
+| **Prepare BIDS** (fieldmaps, masks, sidecars) | [Preparing your data](preparing_data.md) |
+| **Run** (`./run`, HPC, flags) | [Usage](usage.md) · [BIDS App](bids_app.md) |
+| **Methods & citations** | [Methods overview](methods/index.md) · [References](references.md) |
 
 !!! note "Upstream tools"
-    This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. It does not replace them. Cite the primary method papers — [References by step](references.md).
+    This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. Cite the primary method papers — [References by step](references.md).
 
 ---
 
 ## Before your first run
 
-**FreeSurfer license (required):** This pipeline does not ship a license. Each user registers at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), saves `license.txt`, and exports:
+Each user needs a **FreeSurfer license** (not shipped with the app):
 
 ```bash
 export FS_LICENSE=/path/to/your/license.txt
 ```
 
-Full steps: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
+Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html) — full steps: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
 
 ---
 
@@ -57,8 +54,6 @@ export BIDS_DIR=/path/to/BIDS
 export RESULTS_ROOT=/path/to/results
 bash dwi_pipeline/submit.sh
 ```
-
-Install containers: [Installation](installation.md) · BIDS App spec: [BIDS App](bids_app.md)
 
 ---
 

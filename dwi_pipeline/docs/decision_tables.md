@@ -13,7 +13,7 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 | GE / no fieldmaps | `--syn` | SyN SDC when no measured fmap in filter |
 | Fieldmaps exist but known bad | `--fmap-retry` | Ignore fmaps; force SyN |
 | Reproducing legacy no-SDC cohort | `--no-sdc` | Skip SDC entirely (not recommended for new studies) |
-| Unsure what filter selects | Dry-run `build_bids_filter.py` | See [Field maps & SDC](fieldmaps_sdc.md) |
+| Unsure what filter selects | Dry-run `build_bids_filter.py` | See [Preparing your data § Field maps & SDC](preparing_data.md#fieldmaps-and-sdc) |
 
 **Fail-fast rule:** without fmaps in the filter, you **must** pass `--syn`, `--fmap-retry`, or `--no-sdc`.
 
@@ -101,5 +101,5 @@ Requires: lesion mask from Step 1.5 + DKT connectome from Step 4.
 ## See also
 
 - [Preparing your data](preparing_data.md)
-- [Field maps & SDC](fieldmaps_sdc.md)
+- [Preparing your data § Field maps & SDC](preparing_data.md#fieldmaps-and-sdc)
 - [Methods](methods/index.md)
