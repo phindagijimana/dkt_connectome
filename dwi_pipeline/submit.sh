@@ -196,7 +196,7 @@ FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
 # Workaround: smdodwork05 fails the Slurm prolog ("mkdir /var/spool/slurmd/logs:
 # Permission denied"). Excluded by default; override with EXCLUDE_NODES="" or a
 # different comma-list when the node is healthy again.
-EXCLUDE_NODES="${EXCLUDE_NODES:-smdodwork05}"
+EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork05}"
 
 [[ -d "${BIDS_DIR}" ]] || { echo "BIDS directory missing: ${BIDS_DIR}"; exit 1; }
 [[ -f "${ARRAY_SCRIPT}" ]] || { echo "Missing array script: ${ARRAY_SCRIPT}"; exit 1; }
