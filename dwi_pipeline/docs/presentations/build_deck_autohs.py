@@ -34,10 +34,9 @@ REPORT_JSON = JOB_ROOT / "output" / "report.json"
 T1W = JOB_ROOT / "input" / "sub-001_ses-1_T1w.nii.gz"
 FS_DIR = JOB_ROOT / "freesurfer" / f"job_{SAMPLE_JOB}"
 
-# Colour to outline the hippocampi — same accent used elsewhere but shifted
-# to keep left / right visually distinct.
-HIPPO_L = "#00C2FF"
-HIPPO_R = "#FF6B35"
+# Colour to outline the hippocampi — group convention: red = left, blue = right.
+HIPPO_L = "#E63946"   # red
+HIPPO_R = "#1A5FB4"   # blue
 
 # ---- Layout constants (mirrors build_deck.py) --------------------------------
 W, H = 13.333, 7.5
@@ -123,7 +122,7 @@ def _slides():
             "kind": "results",
             "layout": "side",
             "title": f"Sample subject — {SAMPLE_ID}, IDEAS BIDS release",
-            "kicker": "T1w with left (blue) and right (orange) hippocampus overlays · AutoHS auto-classified as No HS",
+            "kicker": "T1w with left (red) and right (blue) hippocampus overlays · AutoHS auto-classified as No HS",
             "images": [
                 ("fig-hippocampus.png", "Coronal T1w slice through the largest hippocampal cross-section; overlay from aparc+aseg.mgz"),
             ],
