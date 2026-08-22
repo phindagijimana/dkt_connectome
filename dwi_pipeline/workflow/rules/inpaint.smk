@@ -122,7 +122,7 @@ rule inpaint:
         backend_container=(
             CONTAINER_LIT
             if ANATOMY_MITIGATION_BACKEND == "neurolit"
-            else CONTAINER_QSIPREP
+            else CONTAINER_VBT
         ),
         binarize_flag="--binarize" if INPAINT_BINARIZE else "",
         nv_flag="--nv" if INPAINT_DEVICE != "cpu" else "",
@@ -158,18 +158,16 @@ rule inpaint:
               --batch_size {INPAINT_BATCH_SIZE}
         elif [[ "{ANATOMY_MITIGATION_BACKEND}" == "vbt" ]]; then
           mkdir -p "$(dirname "{output.result}")"
-          apptainer exec --cleanenv --containall \
+          apptainer run --cleanenv --containall \
             -B "$(dirname "{input.t1w}")":/t1w_input:ro \
             -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
             -B "{params.outdir}":/out \
-            -B "{RUN_VBT}":/run_vbt.py:ro \
-            "{CONTAINER_QSIPREP}" \
-            python3 /run_vbt.py \
-              --t1w "/t1w_input/$(basename "{input.t1w}")" \
-              --mask /mask/lesion_mask_prepared.nii.gz \
-              --output /out/inpainting_volumes/inpainting_result.nii.gz \
-              --smoothing-factor {VBT_SMOOTHING_FACTOR} \
-              --work-dir /out/.vbt_work
+            "{CONTAINER_VBT}" \
+            --t1w "/t1w_input/$(basename "{input.t1w}")" \
+            --mask /mask/lesion_mask_prepared.nii.gz \
+            --output /out/inpainting_volumes/inpainting_result.nii.gz \
+            --smoothing-factor {VBT_SMOOTHING_FACTOR} \
+            --work-dir /out/.vbt_work
           rm -rf "{params.outdir}/.vbt_work"
         else
           _pipeline_fail "inpaint" \

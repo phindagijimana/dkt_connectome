@@ -42,6 +42,8 @@ def test_tensor_map_and_edge_sampling_contract_is_declared():
 
 def test_count_is_default_primary_measure():
     script = RUN_CONNECTOME.read_text()
+    config = CONFIG.read_text()
     assert 'PRIMARY_MEASURE="count"' in script
     assert "--primary-measure NAME" in script
-    assert "primary_measure: count" in CONFIG.read_text()
+    assert "primary_measure: count" in config
+    assert "sift2: false" in config

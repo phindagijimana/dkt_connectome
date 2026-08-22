@@ -102,6 +102,7 @@ _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == 
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
 _apply_env connectome.primary_measure "${PRIMARY_CONNECTOME_MEASURE:-}"
+_apply_env connectome.sift2       "$([[ "${CONNECTOME_SIFT2:-0}" == "1" ]] && echo true || echo false)"
 if [[ -n "${CONNECTOME_ATLASES:-}" ]]; then
   _apply_env connectome.atlases         "${CONNECTOME_ATLASES}"
 fi
@@ -123,6 +124,8 @@ _apply_env containers.qsirecon        "${CONTAINER_QSIRECON:-}"
 _apply_env containers.fastsurfer      "${CONTAINER_FASTSURFER:-}"
 _apply_env containers.freesurfer      "${CONTAINER_FREESURFER:-}"
 _apply_env containers.connectome      "${CONTAINER_CONNECTOME:-}"
+_apply_env containers.vbt              "${CONTAINER_VBT:-}"
+_apply_env containers.lesion_act       "${CONTAINER_LESION_ACT:-}"
 _apply_env containers.lit             "${CONTAINER_LIT:-}"
 _apply_env containers.nodestrength    "${CONTAINER_NODESTRENGTH:-}"
 _apply_env fs_license                 "${FS_LICENSE:-}"
@@ -165,6 +168,7 @@ while [[ $# -gt 0 ]]; do
     --act-mode)             OVERRIDES[act.mode]="${2:?Need standard or lesion-aware}"; shift ;;
     --act-streamlines)      OVERRIDES[act.streamlines]="${2:?Need streamline count}"; shift ;;
     --tractography-model)   OVERRIDES[tractography.model]="${2:?Need ifod2, sd_stream, or both}"; shift ;;
+    --connectome-sift2)      OVERRIDES[connectome.sift2]=true ;;
     --experiment-arm)       OVERRIDES[experiment.arm]="${2:?Need experiment arm}"; shift ;;
     --no-disconnectome)    OVERRIDES[disconnectome.enabled]=false ;;
     --disconnection|--disconnectome) OVERRIDES[disconnectome.enabled]=true ;;

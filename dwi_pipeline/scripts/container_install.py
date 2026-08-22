@@ -22,6 +22,8 @@ DWI_PIPELINE_DIR = SCRIPT_DIR.parent
 CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.yaml"
 LOCAL_CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.local.yaml"
 CONNECTOME_BUILD = DWI_PIPELINE_DIR / "containers" / "connectome" / "build_connectome.sh"
+VBT_BUILD = DWI_PIPELINE_DIR / "containers" / "vbt" / "build_vbt.sh"
+LESION_ACT_BUILD = DWI_PIPELINE_DIR / "containers" / "lesion_act" / "build_lesion_act.sh"
 
 # Keys pulled by default for a full pipeline install (inpaint optional at runtime).
 DEFAULT_KEYS = (
@@ -30,6 +32,8 @@ DEFAULT_KEYS = (
     "freesurfer",
     "fastsurfer",
     "connectome",
+    "vbt",
+    "lesion_act",
     "lit",
     "nodestrength",
 )
@@ -37,9 +41,10 @@ DEFAULT_KEYS = (
 MODE_KEYS = {
     "all": DEFAULT_KEYS,
     "qsiprep": ("qsiprep",),
-    "inpaint": ("lit",),
+    "inpaint": ("lit", "vbt"),
     "recon": ("freesurfer", "fastsurfer"),
     "qsirecon": ("qsirecon", "freesurfer"),
+    "act": ("lesion_act", "qsirecon"),
     "connectome": ("connectome", "freesurfer"),
     "disconnectome": ("connectome",),
     "nodestrength": ("nodestrength",),
@@ -86,6 +91,10 @@ def sif_name(key: str, pin: str) -> str:
     tag = pin.split(":")[-1] if ":" in pin else pin.replace("/", "_")
     if key == "connectome":
         return "dkt_connectome.sif"
+    if key == "vbt":
+        return "dkt_vbt.sif"
+    if key == "lesion_act":
+        return "dkt_lesion_act.sif"
     if key == "freesurfer" and tag.startswith("7"):
         return f"freesurfer_{_sanitize_tag(tag)}.sif"
     if key == "fastsurfer":
@@ -212,6 +221,12 @@ def pull_one(key: str, cache: Path, *, force: bool, quiet: bool) -> Path:
     if key == "connectome":
         return _pull_connectome(dest, pin, cache, force=force, quiet=quiet)
 
+    if key == "vbt":
+        return _pull_vbt(dest, pin, cache, force=force, quiet=quiet)
+
+    if key == "lesion_act":
+        return _pull_lesion_act(dest, pin, cache, force=force, quiet=quiet)
+
     if key == "nodestrength":
         uris = pull_uris_for_key(key, pin)
         used = _pull_to_dest(dest, uris, quiet=quiet)
@@ -267,6 +282,78 @@ def _pull_connectome(dest: Path, pin: str, cache: Path, *, force: bool, quiet: b
     subprocess.run(["bash", str(CONNECTOME_BUILD)], check=True, env=env)
     if not quiet:
         print(f"[install] OK connectome (build) -> {dest}")
+    return dest
+
+
+def _pull_vbt(dest: Path, pin: str, cache: Path, *, force: bool, quiet: bool) -> Path:
+    if dest.is_file() and dest.stat().st_size > 0 and not force:
+        if not quiet:
+            print(f"[install] skip vbt: {dest} exists")
+        return dest
+    uris = pull_uris_for_key("vbt", pin)
+    try:
+        used = _pull_to_dest(dest, uris, quiet=quiet)
+        if not quiet:
+            print(f"[install] OK vbt (pull {used}) -> {dest}")
+        return dest
+    except subprocess.CalledProcessError:
+        if not quiet:
+            print("[install] vbt pull failed; trying local build...", file=sys.stderr)
+    if not VBT_BUILD.is_file():
+        raise SystemExit(f"ERROR: vbt pull failed and missing {VBT_BUILD}")
+
+    cfg = _load_merged_config()
+    qsi_pin = (cfg.get("container_pins") or {}).get("qsiprep")
+    if not qsi_pin:
+        raise SystemExit("ERROR: vbt build needs container_pins.qsiprep")
+    qsi_sif = cache / sif_name("qsiprep", qsi_pin)
+    if not qsi_sif.is_file():
+        pull_one("qsiprep", cache, force=False, quiet=quiet)
+        qsi_sif = cache / sif_name("qsiprep", qsi_pin)
+
+    env = os.environ.copy()
+    env["CONTAINER_QSIPREP"] = str(qsi_sif)
+    env["OUT_SIF"] = str(dest)
+    env["FORCE"] = "1" if force else "0"
+    subprocess.run(["bash", str(VBT_BUILD)], check=True, env=env)
+    if not quiet:
+        print(f"[install] OK vbt (build) -> {dest}")
+    return dest
+
+
+def _pull_lesion_act(dest: Path, pin: str, cache: Path, *, force: bool, quiet: bool) -> Path:
+    if dest.is_file() and dest.stat().st_size > 0 and not force:
+        if not quiet:
+            print(f"[install] skip lesion_act: {dest} exists")
+        return dest
+    uris = pull_uris_for_key("lesion_act", pin)
+    try:
+        used = _pull_to_dest(dest, uris, quiet=quiet)
+        if not quiet:
+            print(f"[install] OK lesion_act (pull {used}) -> {dest}")
+        return dest
+    except subprocess.CalledProcessError:
+        if not quiet:
+            print("[install] lesion_act pull failed; trying local build...", file=sys.stderr)
+    if not LESION_ACT_BUILD.is_file():
+        raise SystemExit(f"ERROR: lesion_act pull failed and missing {LESION_ACT_BUILD}")
+
+    cfg = _load_merged_config()
+    qsi_pin = (cfg.get("container_pins") or {}).get("qsirecon")
+    if not qsi_pin:
+        raise SystemExit("ERROR: lesion_act build needs container_pins.qsirecon")
+    qsi_sif = cache / sif_name("qsirecon", qsi_pin)
+    if not qsi_sif.is_file():
+        pull_one("qsirecon", cache, force=False, quiet=quiet)
+        qsi_sif = cache / sif_name("qsirecon", qsi_pin)
+
+    env = os.environ.copy()
+    env["CONTAINER_QSIRECON"] = str(qsi_sif)
+    env["OUT_SIF"] = str(dest)
+    env["FORCE"] = "1" if force else "0"
+    subprocess.run(["bash", str(LESION_ACT_BUILD)], check=True, env=env)
+    if not quiet:
+        print(f"[install] OK lesion_act (build) -> {dest}")
     return dest
 
 

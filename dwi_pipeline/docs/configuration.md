@@ -33,6 +33,8 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 | `containers.fastsurfer` | `CONTAINER_FASTSURFER` |
 | `containers.connectome` | `CONTAINER_CONNECTOME` |
 | `containers.lit` | `CONTAINER_LIT` |
+| `containers.vbt` | `CONTAINER_VBT` |
+| `containers.lesion_act` | `CONTAINER_LESION_ACT` |
 | `containers.nodestrength` | `CONTAINER_NODESTRENGTH` |
 
 **Pin upstream tags** with `container_pins:` (reference only) â€” see [Derivatives policy](derivatives.md).
@@ -109,7 +111,7 @@ Lesion-aware mode requires a BIDS lesion mask. Output: `lesion_aware_act/sub-<ID
 
 | Key | CLI / env | Default |
 |-----|-----------|---------|
-| `model` | `--tractography-model`, `TRACTOGRAPHY_MODEL` | `ifod2` |
+| `model` | `--tractography-model`, `TRACTOGRAPHY_MODEL` | `both` |
 
 Values: `ifod2`, `sd_stream`, `both`. SD_STREAM writes parallel `*_model-SDSTREAM_*` connectome CSVs.
 
@@ -135,6 +137,7 @@ When `arm` is set, the workflow applies the anatomy + ACT mapping from [Usage â€
 | `atlases` | `CONNECTOME_ATLASES` | `[dkt]` |
 | `weighting` | `--connectome-weighting`, `CONNECTOME_WEIGHTING` | **`count`** |
 | `primary_measure` | `--primary-connectome-measure`, `PRIMARY_CONNECTOME_MEASURE` | `count` |
+| `sift2` | `--connectome-sift2`, `CONNECTOME_SIFT2=1` | false |
 | `deterministic` | `CONNECTOME_DETERMINISTIC` | true |
 | `fail_on_empty_nodes` | `CONNECTOME_FAIL_ON_EMPTY_NODES=1` | false |
 

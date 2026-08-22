@@ -62,12 +62,16 @@ workflow/
   rules/
     common.smk              # config loading, path constants, Python helpers
     qsiprep.smk              # Step 1  (plugin: qsiprep.sif)
-    inpaint.smk               # Step 1.5 (plugin: lit_0.6.0.sif) -- only in the DAG for subjects with a lesion mask
+    inpaint.smk               # Step 1.5 (lit_0.6.0.sif or dkt_vbt.sif) — lesion subjects only
     recon.smk                  # Step 2  (plugin: freesurfer_7.4.1.sif or fastsurfer_latest.sif)
     qsirecon.smk                # Step 3  (plugin: qsirecon.sif)
+    lesion_aware_act.smk        # Step 3.5 (plugin: dkt_lesion_act.sif; act.mode=lesion-aware)
+    sdstream.smk                # Step 3b/4b optional SD_STREAM tractography + connectomes
+    lausanne.smk                # Optional Lausanne-60 parcellation (connectome.atlases)
     connectome.smk                # Step 4  (plugin: dkt_connectome.sif)
     disconnectome.smk             # Step 4.5 (opt-in via --disconnection)
     nodestrength.smk               # Step 5  (plugin: nodestrength_0.1.0.sif)
+    subject_qc.smk                # Unified QC HTML dashboard
 ```
 
 Each `rules/*.smk` is a self-contained plugin: it declares config knobs, an

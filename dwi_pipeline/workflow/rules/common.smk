@@ -46,6 +46,8 @@ CONTAINER_FREESURFER = _containers["freesurfer"]
 CONTAINER_CONNECTOME = _containers["connectome"]
 CONTAINER_LIT = _containers["lit"]
 CONTAINER_NODESTRENGTH = _containers["nodestrength"]
+CONTAINER_VBT = _containers.get("vbt") or _containers["qsiprep"]
+CONTAINER_LESION_ACT = _containers.get("lesion_act") or _containers["qsirecon"]
 
 FS_LICENSE = config["fs_license"]
 FS_LUT = config.get("fs_lut") or str(Path(FS_LICENSE).parent / "FreeSurferColorLUT.txt")
@@ -104,6 +106,8 @@ ANATOMY_MITIGATION_OUT = (
     if ANATOMY_MITIGATION_BACKEND == "vbt"
     else INPAINT_OUT
 )
+
+CONNECTOME_SIFT2_ENABLED = bool(CONNECTOME_CFG.get("sift2", False))
 
 CONNECTOME_LUT_DKT = CONNECTOME_CFG.get("lut_dkt") or str(
     DWI_PIPELINE_DIR / "containers" / "connectome" / "mrtrix_lut" / "fs_dkt.txt"

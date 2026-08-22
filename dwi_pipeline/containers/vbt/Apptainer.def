@@ -1,0 +1,31 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Philbert Ndagijimana
+    Version 0.1.0
+    Description LeAPP-compatible virtual brain transplant (FSL from qsiprep.sif)
+
+%environment
+    export FSLDIR=/opt/fsl
+    export FSLOUTPUTTYPE=NIFTI_GZ
+    export LD_LIBRARY_PATH=/opt/fsl/lib
+    export PATH=/opt/fsl/bin:/usr/local/bin:/usr/bin:/bin
+
+%files
+    fsl /opt/fsl
+    run_vbt.py /opt/vbt/run_vbt.py
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        ca-certificates python3 python3-pip \
+        libgomp1 libgfortran5 zlib1g libtiff5 libpng16-16 libfftw3-double3 bc
+    rm -rf /var/lib/apt/lists/*
+    pip3 install --no-cache-dir nibabel numpy scipy
+    chmod +x /opt/vbt/run_vbt.py
+    ln -sf /opt/vbt/run_vbt.py /usr/local/bin/run_vbt.py
+
+%runscript
+    exec python3 /opt/vbt/run_vbt.py "$@"

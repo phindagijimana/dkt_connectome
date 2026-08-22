@@ -104,70 +104,24 @@ rule lesion_aware_act:
         dwiref_rel="${{dwiref#{QSIPREP_OUT}/}}"
         xfm_rel="${{orig_to_t1w#{QSIPREP_OUT}/}}"
 
-        apptainer exec --cleanenv --containall \
+        apptainer run --cleanenv --containall \
           --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
           -B "{QSIRECON_OUT}":/qsirecon:ro \
           -B "{QSIPREP_OUT}":/qsiprep:ro \
           -B "{params.outdir}":/out \
-          "{CONTAINER_QSIRECON}" \
-          bash -lc "
-            set -euo pipefail
-            export MRTRIX_RNG_SEED={ACT_RANDOM_SEED}
-            antsApplyTransforms -d 3 \
-              -i /out/lesion_mask_t1w.nii.gz \
-              -r /qsiprep/${{dwiref_rel}} \
-              -t /qsiprep/${{xfm_rel}} \
-              -n GenericLabel \
-              -o /out/lesion_mask_in_dwi.nii.gz
-            [[ \"\$(mrstats /out/lesion_mask_in_dwi.nii.gz -output max)\" != \"0\" ]] || {{
-              echo 'ERROR: transformed lesion mask is empty' >&2
-              exit 1
-            }}
-            mrtransform -force \
-              /qsirecon/${{five_tt_rel}} \
-              -template /qsiprep/${{dwiref_rel}} \
-              -interp linear \
-              /out/base_5tt_resampled.mif
-            mrcalc -force /out/base_5tt_resampled.mif 0 -max 1 -min \
-              /out/base_5tt_clipped.mif
-            mrmath -force /out/base_5tt_clipped.mif sum /out/base_5tt_sum.mif \
-              -axis 3
-            mrcalc -force /out/base_5tt_sum.mif 0.000001 -max \
-              /out/base_5tt_denominator.mif
-            mrcalc -force /out/base_5tt_clipped.mif \
-              /out/base_5tt_denominator.mif -div /out/base_5tt.mif
-            5ttedit -force /out/base_5tt.mif /out/lesion_aware_5tt.mif \
-              -path /out/lesion_mask_in_dwi.nii.gz
-            5ttcheck /out/lesion_aware_5tt.mif
-            mrconvert -force -quiet /out/lesion_aware_5tt.mif \
-              -coord 3 4 /out/pathology_channel.mif
-            mrcalc -force -quiet /out/pathology_channel.mif \
-              /out/lesion_mask_in_dwi.nii.gz -sub -abs \
-              /out/lesion_mask_in_dwi.nii.gz -mult /out/pathology_lesion_diff.mif
-            [[ \"\$(mrstats /out/pathology_lesion_diff.mif -output max)\" == \"0\" ]] || {{
-              echo 'ERROR: lesion voxels were not fully assigned to 5TT pathology' >&2
-              exit 1
-            }}
-            5tt2gmwmi -force /out/lesion_aware_5tt.mif /out/gmwmi.mif
-            tckgen -force \
-              /qsirecon/${{wm_fod_rel}} \
-              /out/model-ifod2_streamlines.tck \
-              -algorithm iFOD2 \
-              -act /out/lesion_aware_5tt.mif \
-              -seed_dynamic /qsirecon/${{wm_fod_rel}} \
-              -backtrack -crop_at_gmwmi \
-              -cutoff {ACT_CUTOFF} \
-              -minlength {ACT_MIN_LENGTH} \
-              -maxlength {ACT_MAX_LENGTH} \
-              -select {ACT_STREAMLINES} \
-              -nthreads {threads}
-            tcksift2 -force \
-              /out/model-ifod2_streamlines.tck \
-              /qsirecon/${{wm_fod_rel}} \
-              /out/model-sift2_streamlineweights.csv \
-              -act /out/lesion_aware_5tt.mif \
-              -nthreads {threads}
-          "
+          "{CONTAINER_LESION_ACT}" \
+          --five-tt "/qsirecon/${{five_tt_rel}}" \
+          --wm-fod "/qsirecon/${{wm_fod_rel}}" \
+          --dwiref "/qsiprep/${{dwiref_rel}}" \
+          --lesion-mask-t1w "/out/lesion_mask_t1w.nii.gz" \
+          --orig-to-t1w "/qsiprep/${{xfm_rel}}" \
+          --outdir /out \
+          --streamlines {ACT_STREAMLINES} \
+          --random-seed {ACT_RANDOM_SEED} \
+          --cutoff {ACT_CUTOFF} \
+          --min-length-mm {ACT_MIN_LENGTH} \
+          --max-length-mm {ACT_MAX_LENGTH} \
+          --threads {threads}
 
         python3 - "{output.provenance}" "{input.lesion}" "${{five_tt}}" "${{wm_fod}}" \
           "${{dwiref}}" "${{orig_to_t1w}}" <<'PY'

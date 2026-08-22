@@ -95,7 +95,7 @@ Under `connectomes/sub-<ID>/`:
 |------|-------------|
 | `dkt_connectome.csv` | **Primary** 78×78 alias (default: count → same as `dkt_connectome_count.csv`) |
 | `dkt_connectome_count.csv` | Streamline counts |
-| `dkt_connectome_sift2.csv` | SIFT2 weights |
+| `dkt_connectome_sift2.csv` | SIFT2 weights (**optional** — `--connectome-sift2`) |
 | `dkt_connectome_meanlength.csv` | Mean streamline length per edge (mm) |
 | `dkt_connectome_meanfa.csv` | Mean FA along streamlines |
 | `dkt_connectome_meanmd.csv` | Mean MD along streamlines |

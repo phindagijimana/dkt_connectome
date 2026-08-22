@@ -48,18 +48,21 @@ def test_anatomy_backend_defaults_to_neurolit():
     config = (DWI / "workflow" / "config" / "config.yaml").read_text()
     assert "backend: neurolit" in config
     assert "smoothing_factor: 2.0" in config
+    assert "model: both" in config
+    assert "sift2: false" in config
 
 
 def test_lesion_aware_act_contract():
     rule = (
         DWI / "workflow" / "rules" / "lesion_aware_act.smk"
     ).read_text()
-    assert "5ttedit -force" in rule
-    assert "-path /out/lesion_mask_in_dwi.nii.gz" in rule
-    assert "5ttcheck /out/lesion_aware_5tt.mif" in rule
-    assert "MRTRIX_RNG_SEED" in rule
-    assert "tckgen -force" in rule
-    assert "tcksift2 -force" in rule
+    inpaint = (DWI / "workflow" / "rules" / "inpaint.smk").read_text()
+    assert "CONTAINER_LESION_ACT" in rule
+    assert "run_lesion_aware_act" in (
+        DWI / "containers" / "lesion_act" / "run_lesion_aware_act.sh"
+    ).read_text()
+    assert "CONTAINER_VBT" in inpaint
+    assert "apptainer run" in inpaint
 
 
 def test_experiment_arms_are_isolated():
@@ -78,10 +81,13 @@ def test_experiment_arms_are_isolated():
 
 def test_sdstream_contract_is_model_specific():
     rule = (DWI / "workflow" / "rules" / "sdstream.smk").read_text()
+    connectome = (DWI / "workflow" / "rules" / "connectome.smk").read_text()
     assert "-algorithm SD_Stream" in rule
     assert "-backtrack" not in rule
     assert "model-SDSTREAM_connectome_count.csv" in rule
-    assert "model-SDSTREAM_connectome_sift2.csv" in rule
     assert "model-SDSTREAM_connectome_meanlength.csv" in rule
     assert "model-SDSTREAM_connectome_meanfa.csv" in rule
     assert "model-SDSTREAM_connectome_meanmd.csv" in rule
+    assert "rule sdstream_connectome_sift2:" in rule
+    assert "rule connectome_sift2:" in connectome
+    assert "CONNECTOME_SIFT2_ENABLED" in connectome

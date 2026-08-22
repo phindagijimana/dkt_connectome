@@ -167,7 +167,12 @@ container_path() {
 if ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
   check_sif lit "$(container_path lit CONTAINER_LIT)"
 elif ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "vbt" ]]; then
-  check_sif qsiprep-vbt "$(container_path qsiprep CONTAINER_QSIPREP)"
+  check_sif vbt "$(container_path vbt CONTAINER_VBT)"
+fi
+ACT_MODE="${ACT_MODE:-$(read_config act.mode)}"
+ACT_MODE="${ACT_MODE:-standard}"
+if [[ "${PIPELINE_MODE}" == "act" || ( "${PIPELINE_MODE}" == "all" && "${ACT_MODE}" == "lesion-aware" ) ]]; then
+  check_sif lesion_act "$(container_path lesion_act CONTAINER_LESION_ACT)"
 fi
 ((need_nodestrength)) && check_sif nodestrength "$(container_path nodestrength CONTAINER_NODESTRENGTH)"
 

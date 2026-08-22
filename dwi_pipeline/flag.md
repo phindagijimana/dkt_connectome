@@ -2,7 +2,7 @@
 
 CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow/run_subject.sh`. Most flags are shared; a few are entry-point specific (noted below).
 
-**Pipeline steps:** QSIPrep → Inpaint (1.5) → Recon → QSIRecon → Connectome → Node strength
+**Pipeline steps:** QSIPrep → Inpaint (1.5) → Recon → QSIRecon → Lesion-aware ACT (3.5, optional) → Connectome → Node strength
 
 **Modes** (`PIPELINE_MODE` or first arg to `subject.sh` / `run_subject.sh`):
 
@@ -13,7 +13,9 @@ CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow
 | `inpaint` | Step 1.5 only (needs lesion mask) |
 | `recon` | Step 2 only |
 | `qsirecon` | Step 3 only (needs QSIPrep) |
-| `connectome` | Step 4 only (needs QSIRecon + FS tree) |
+| `act` | Step 3.5 only (needs QSIRecon + lesion mask) |
+| `sdstream` | SD_STREAM tractography + connectomes (needs QSIRecon + Step 4 nodes) |
+| `connectome` | Step 4 (+ SD connectomes if `tractography.model: both`) |
 | `disconnectome` | Step 4.5 only (needs lesion mask + DKT connectome) |
 | `nodestrength` | Step 5 only (needs connectome CSV) |
 | `dk` | Alias for `connectome` (legacy) |
@@ -71,15 +73,17 @@ backend cannot overwrite the other.
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--no-connectome` / `--no-dk` | `RUN_CONNECTOME=0` | Skip Step 4 (and Step 5 with it in `all` mode). `--no-dk` is the legacy name. |
-| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Selects the weighting used by downstream disconnectome analysis; both Step 4 matrices are still generated. |
-| `--primary-connectome-measure count\|sift2` | `PRIMARY_CONNECTOME_MEASURE` | Select which matrix is copied to `dkt_connectome.csv`. Default: `count`. |
+| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Edge weights for disconnectome (default `count`); must match any SIFT2 matrix you use in Step 4.5. |
+| `--primary-connectome-measure count\|sift2` | `PRIMARY_CONNECTOME_MEASURE` | Select which matrix is copied to `dkt_connectome.csv`. Default: `count`. Requires `--connectome-sift2` when set to `sift2`. |
+| `--connectome-sift2` | `CONNECTOME_SIFT2=1` | Optional extra Step 4 job: write `*_connectome_sift2.csv` (and SD_STREAM SIFT2 when `--tractography-model both`). |
 
-Step 4 writes `dkt_connectome_count.csv`, `dkt_connectome_sift2.csv`,
-`dkt_connectome_meanlength.csv`, `dkt_connectome_meanfa.csv`, and
-`dkt_connectome_meanmd.csv` from the same tractogram and DKT node image. It
-also derives `dkt_desc-FA_dwi.nii.gz` and `dkt_desc-MD_dwi.nii.gz` from the
-QSIPrep preprocessed DWI. The existing `dkt_connectome.csv` remains the primary
-compatibility alias used by Step 5 and existing analyses.
+Step 4 always writes `dkt_connectome_count.csv`, `dkt_connectome_meanlength.csv`,
+`dkt_connectome_meanfa.csv`, and `dkt_connectome_meanmd.csv` from the same
+tractogram and DKT node image. Enable `--connectome-sift2` for
+`dkt_connectome_sift2.csv`. It also derives `dkt_desc-FA_dwi.nii.gz` and
+`dkt_desc-MD_dwi.nii.gz` from the QSIPrep preprocessed DWI. The existing
+`dkt_connectome.csv` remains the primary compatibility alias used by Step 5 and
+existing analyses (count by default).
 
 ### ACT and experiment arms (Steps 3.5–4)
 
@@ -87,7 +91,7 @@ compatibility alias used by Step 5 and existing analyses.
 |------|----------------|--------------|
 | `--act-mode standard\|lesion-aware` | `ACT_MODE` | Use the QSIRecon tractogram or rebuild matched iFOD2/SIFT2 after inserting the lesion into the fifth 5TT channel. |
 | `--act-streamlines N` | `ACT_STREAMLINES` | Number of lesion-aware streamlines; default `10000000`. |
-| `--tractography-model ifod2\|sd_stream\|both` | `TRACTOGRAPHY_MODEL` | Keep default iFOD2 only, or additionally generate deterministic SD_STREAM with Count/SIFT2/MeanLength/MeanFA/MeanMD matrices. |
+| `--tractography-model ifod2\|sd_stream\|both` | `TRACTOGRAPHY_MODEL` | Default `both`: iFOD2 (QSIRecon) plus deterministic SD_STREAM Count/MeanLength/MeanFA/MeanMD matrices. |
 | `--experiment-arm ARM` | `EXPERIMENT_ARM` | Maps an anatomy × ACT arm and isolates it under `RESULTS_ROOT/arms/ARM`. |
 
 Supported arms: `orig-std`, `orig-lesion`, `neurolit-std`,
@@ -172,6 +176,8 @@ Set before `./submit.sh` or before `subject.sh` / `run_subject.sh`.
 | `CONTAINER_FREESURFER` | FreeSurfer `recon-all` image |
 | `CONTAINER_CONNECTOME` | Connectome / DKT tooling image |
 | `CONTAINER_LIT` | LIT inpainting image |
+| `CONTAINER_VBT` | Virtual brain transplant (Step 1.5 VBT) image |
+| `CONTAINER_LESION_ACT` | Post-QSIRecon lesion-aware ACT (Step 3.5) image |
 | `CONTAINER_NODESTRENGTH` | Node strength / ENIGMA report image |
 | `FS_LICENSE` | FreeSurfer license file |
 | `TEMPLATEFLOW_HOME` | TemplateFlow cache directory |

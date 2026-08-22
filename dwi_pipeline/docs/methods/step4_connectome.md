@@ -87,12 +87,12 @@ Measured impact of using the wrong segmentation+LUT combination: ~3.4% of stream
 
 ## Multi-measure connectomes (one tractogram)
 
-From the **same** iFOD2 tractogram and DKT node image, Step 4 writes five edge definitions (IDEAS II and connectomics literature use multiple strength measures because no single metric is universally accepted; Jones et al. 2013):
+From the **same** iFOD2 tractogram and DKT node image, Step 4 always writes count, mean length, mean FA, and mean MD matrices. Enable **`--connectome-sift2`** for an additional SIFT2-weighted matrix (and matching SD_STREAM SIFT2 when `--tractography-model both`).
 
 | Output file | Measure | Interpretation |
 |-------------|---------|----------------|
 | `dkt_connectome_count.csv` | Streamline **count** | Raw connectivity density; default primary (`dkt_connectome.csv`) |
-| `dkt_connectome_sift2.csv` | **SIFT2** weight sum | Global density-corrected connectivity (Smith et al. 2015) |
+| `dkt_connectome_sift2.csv` | **SIFT2** weight sum | Optional — enable with `--connectome-sift2` (Smith et al. 2015) |
 | `dkt_connectome_meanlength.csv` | Mean streamline **length** (mm) | Path length between regions |
 | `dkt_connectome_meanfa.csv` | Mean **FA** along streamlines | Microstructure sampled on reconstructed paths |
 | `dkt_connectome_meanmd.csv` | Mean **MD** along streamlines | Microstructure sampled on reconstructed paths |

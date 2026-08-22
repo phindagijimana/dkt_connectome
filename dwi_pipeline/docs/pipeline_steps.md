@@ -12,7 +12,7 @@ Step 1.5  Inpaint           Lesion anatomical mitigation (neuroLIT default; opti
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
 Step 3.5  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
-Step 4    Connectome        DKT 78-node matrices (Count, SIFT2, MeanLength, MeanFA, MeanMD)
+Step 4    Connectome        DKT 78-node matrices (Count, MeanLength, MeanFA, MeanMD; optional SIFT2)
 Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 ```
@@ -99,6 +99,8 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 ## Step 3.5 — Lesion-aware ACT (optional)
 
+**Tool:** `dkt_lesion_act.sif` (ANTs + MRtrix staged from `qsirecon.sif`; see [containers/lesion_act/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md))
+
 **Trigger:** `--act-mode lesion-aware` or an `*-lesion` [experiment arm](usage.md)
 
 **Processing:**
@@ -124,8 +126,9 @@ Step 4 uses these tractograms when lesion-aware mode is active.
 
 1. Build DKT parcellation on DWI grid (`nodes.mif`)
 2. Assign streamlines to 78 DKT nodes (standard QSIRecon or lesion-aware ACT tractogram)
-3. Write connectome matrices: **Count, SIFT2, MeanLength, MeanFA, MeanMD** (same tractogram)
-4. Copy primary measure to `dkt_connectome.csv` (default: count)
+3. Write connectome matrices: **Count, MeanLength, MeanFA, MeanMD** (same tractogram)
+4. Optional: **SIFT2** matrix with `--connectome-sift2` (separate Snakemake rule)
+5. Copy primary measure to `dkt_connectome.csv` (default: count)
 
 **Primary output:** `connectomes/sub-<ID>/dkt_connectome.csv`
 

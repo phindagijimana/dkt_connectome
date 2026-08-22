@@ -4,6 +4,27 @@ All notable changes to the **DKT Connectome** (`dwi_pipeline/`) are documented h
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning aligns with [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) `PipelineVersion`.
 
+## [Unreleased]
+
+### Added
+
+- **`dkt_vbt.sif`** — dedicated Step 1.5 virtual brain transplant container (`containers/vbt/`, FSL staged from `qsiprep.sif`)
+- **`dkt_lesion_act.sif`** — dedicated Step 3.5 post-QSIRecon lesion-aware ACT container (`containers/lesion_act/`)
+- **Snakemake rules** `lesion_aware_act.smk`, `sdstream.smk` with `target_act` / `target_sdstream` modes
+- **`--connectome-sift2`** — optional Step 4 SIFT2 matrix (default primary remains count)
+- **`--tractography-model both`** (default) — iFOD2 + deterministic SD_STREAM connectomes
+- **`--experiment-arm`** presets (`orig-std`, `vbt-lesion`, …) with isolated `RESULTS_ROOT/arms/<arm>/`
+- **Validation** — `scripts/validate_vbt_lesion_act.py` + unit tests
+- **Theory docs** — methods pages for Steps 1.5, 3.5, 4 multi-measure outputs; experiment-arm citations
+
+### Changed
+
+- Step 1.5 VBT runs via `CONTAINER_VBT` instead of binding into `qsiprep.sif`
+- Step 3.5 runs via `CONTAINER_LESION_ACT` instead of inline `qsirecon.sif` shell
+- `submit.sh` exports `CONTAINER_VBT` and `CONTAINER_LESION_ACT` to Slurm jobs
+- `connectome.sift2` default **false**; count remains primary `dkt_connectome.csv`
+- Documentation: containers catalog, Snakemake targets, config examples updated for new images
+
 ## [0.2.0] - 2026-08-14
 
 ### Added
