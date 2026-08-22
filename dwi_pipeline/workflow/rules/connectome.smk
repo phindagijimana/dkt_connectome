@@ -44,6 +44,14 @@ if CONNECTOME_PRIMARY_MEASURE not in ("count", "sift2"):
         "invalid connectome.primary_measure="
         f"{CONNECTOME_PRIMARY_MEASURE} (use count or sift2)"
     )
+if CONNECTOME_PRIMARY_MEASURE == "sift2" and not CONNECTOME_SIFT2_ENABLED:
+    raise WorkflowError(
+        "connectome.primary_measure=sift2 requires connectome.sift2=true "
+        "(enable with --connectome-sift2 or CONNECTOME_SIFT2=1)"
+    )
+CONNECTOME_RUN_PRIMARY = (
+    "count" if CONNECTOME_SIFT2_ENABLED else CONNECTOME_PRIMARY_MEASURE
+)
 
 
 @functools.lru_cache(maxsize=None)
@@ -119,6 +127,15 @@ def connectome_matrix(subject: str) -> str:
     )
 
 
+def connectome_sift2_products(subject: str) -> list[str]:
+    if not CONNECTOME_SIFT2_ENABLED:
+        return []
+    return [
+        CONNECTOME_SIFT2_PATTERN.format(subject=subject, parc=parc)
+        for parc in connectome_atlases_for(subject)
+    ]
+
+
 def connectome_products(subject: str) -> list[str]:
     products: list[str] = []
     for parc in connectome_atlases_for(subject):
@@ -127,7 +144,6 @@ def connectome_products(subject: str) -> list[str]:
             for pattern in (
                 CONNECTOME_MATRIX_PATTERN,
                 CONNECTOME_COUNT_PATTERN,
-                CONNECTOME_SIFT2_PATTERN,
                 CONNECTOME_MEANLENGTH_PATTERN,
                 CONNECTOME_MEANFA_PATTERN,
                 CONNECTOME_MEANMD_PATTERN,
@@ -136,6 +152,7 @@ def connectome_products(subject: str) -> list[str]:
                 CONNECTOME_NODES_PATTERN,
             )
         )
+    products.extend(connectome_sift2_products(subject))
     return products
 
 
@@ -169,7 +186,6 @@ rule connectome:
         # written by the shell block below, just not skip/rerun-tracked.
         matrix=CONNECTOME_MATRIX_PATTERN,
         count_matrix=CONNECTOME_COUNT_PATTERN,
-        sift2_matrix=CONNECTOME_SIFT2_PATTERN,
         meanlength_matrix=CONNECTOME_MEANLENGTH_PATTERN,
         meanfa_matrix=CONNECTOME_MEANFA_PATTERN,
         meanmd_matrix=CONNECTOME_MEANMD_PATTERN,
@@ -190,7 +206,7 @@ rule connectome:
         deterministic="1" if CONNECTOME_DETERMINISTIC else "0",
         fail_on_empty="1" if CONNECTOME_FAIL_ON_EMPTY_NODES else "0",
         weighting=CONNECTOME_WEIGHTING,
-        primary_measure=CONNECTOME_PRIMARY_MEASURE,
+        primary_measure=CONNECTOME_RUN_PRIMARY,
         session=lambda wc: resolve_session(wc.subject),
     shell:
         r"""
@@ -302,17 +318,6 @@ rule connectome:
         echo "Using BIDS T1w (affine reg source): ${{bids_t1w}}"
         echo "Connectome weighting: {params.weighting}"
 
-        if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
-          sift2_weights="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv"
-          [[ -f "${{sift2_weights}}" ]] || _pipeline_fail "connectome/sift2_weights" \
-            "missing lesion-aware SIFT2 weights: ${{sift2_weights}}"
-        else
-          sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
-            find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
-              -name '*model-sift2_streamlineweights.csv')"
-        fi
-        echo "Using SIFT2 weights: ${{sift2_weights}}"
-
         binds=()
         act_binds=()
         if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
@@ -334,16 +339,6 @@ rule connectome:
         env_args=()
         if [[ "{params.deterministic}" == "1" ]]; then
           env_args+=(--env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1" --env "ANTS_RANDOM_SEED=1")
-        fi
-
-        sift2_args=()
-        if [[ -n "${{sift2_weights}}" ]]; then
-          if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
-            sift2_args=(--sift2-weights "/lesion_act/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv")
-          else
-            w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
-            sift2_args=(--sift2-weights "/qsirecon/${{w_rel}}")
-          fi
         fi
 
         apptainer run --cleanenv --containall \
@@ -375,7 +370,6 @@ rule connectome:
           --output-dir /out \
           --fs-license /opt/freesurfer/license.txt \
           --primary-measure "{params.primary_measure}" \
-          "${{sift2_args[@]}}" \
           "${{lut_args[@]}}" \
           --subject-id "sub-${{SUBJECT}}"
 
@@ -388,7 +382,6 @@ rule connectome:
 
         mv -f "{params.outdir}/connectome.csv" "{output.matrix}"
         mv -f "{params.outdir}/connectome_count.csv" "{output.count_matrix}"
-        mv -f "{params.outdir}/connectome_sift2.csv" "{output.sift2_matrix}"
         mv -f "{params.outdir}/connectome_meanlength.csv" "{output.meanlength_matrix}"
         mv -f "{params.outdir}/connectome_meanfa.csv" "{output.meanfa_matrix}"
         mv -f "{params.outdir}/connectome_meanmd.csv" "{output.meanmd_matrix}"
@@ -423,7 +416,7 @@ rule connectome:
   "connectome_csv": "$(basename "{output.matrix}")",
   "matrices": {{
     "count": "$(basename "{output.count_matrix}")",
-    "sift2": "$(basename "{output.sift2_matrix}")",
+    "sift2": null,
     "meanlength": "$(basename "{output.meanlength_matrix}")",
     "meanfa": "$(basename "{output.meanfa_matrix}")",
     "meanmd": "$(basename "{output.meanmd_matrix}")"
@@ -441,7 +434,6 @@ rule connectome:
 EOF
         echo "Primary connectome: {output.matrix} ({params.primary_measure})"
         echo "Count: {output.count_matrix}"
-        echo "SIFT2: {output.sift2_matrix}"
         echo "MeanLength: {output.meanlength_matrix}"
         echo "MeanFA: {output.meanfa_matrix}"
         echo "MeanMD: {output.meanmd_matrix}"
@@ -449,3 +441,100 @@ EOF
         echo "MD map: {output.md_map}"
         echo "Atlas: ${{atlas}} (${{node_count}} nodes)"
         """
+
+
+if CONNECTOME_SIFT2_ENABLED:
+    rule connectome_sift2:
+        input:
+            nodes=CONNECTOME_NODES_PATTERN,
+            count_matrix=CONNECTOME_COUNT_PATTERN,
+            qsirecon_marker=lambda wc: qsirecon_marker(wc.subject),
+            lesion_act=lambda wc: lesion_act_products(wc.subject),
+        output:
+            sift2_matrix=CONNECTOME_SIFT2_PATTERN,
+        threads: 2
+        log:
+            f"{RESULTS_ROOT}/logs/sub-{{subject}}_connectome_sift2_{{parc}}.log",
+        params:
+            outdir=lambda wc: f"{CONNECTOME_OUT}/sub-{wc.subject}",
+            parcellation_json=lambda wc: connectome_parcellation_json(wc.subject, wc.parc),
+            primary_matrix=lambda wc: CONNECTOME_MATRIX_PATTERN.format(
+                subject=wc.subject, parc=wc.parc
+            ),
+            primary_measure=CONNECTOME_PRIMARY_MEASURE,
+            session=lambda wc: resolve_session(wc.subject),
+        shell:
+            r"""
+            exec > {log} 2>&1
+            set -euo pipefail
+            source {COMMON_SH}
+            SUBJECT="{wildcards.subject}"
+
+            if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
+              tracks="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+              [[ -f "${{tracks}}" ]] || _pipeline_fail "connectome_sift2/tractogram" \
+                "missing lesion-aware tractogram: ${{tracks}}"
+              tracks_in_container="/lesion_act/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+              sift2_weights="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv"
+              [[ -f "${{sift2_weights}}" ]] || _pipeline_fail "connectome_sift2/sift2_weights" \
+                "missing lesion-aware SIFT2 weights: ${{sift2_weights}}"
+              weights_in_container="/lesion_act/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv"
+              act_binds=(-B "{LESION_AWARE_ACT_OUT}":/lesion_act:ro)
+            else
+              tracks="$(_strict_find_one "connectome_sift2/tractogram" \
+                find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+                  \( -name '*.tck' -o -name '*.tck.gz' \))"
+              tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
+              tracks_in_container="/qsirecon/${{tracks_rel}}"
+              sift2_weights="$(_strict_find_one "connectome_sift2/sift2_weights" \
+                find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+                  -name '*model-sift2_streamlineweights.csv')"
+              w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
+              weights_in_container="/qsirecon/${{w_rel}}"
+              act_binds=()
+            fi
+
+            echo "SIFT2 connectome: tractogram=${{tracks}}"
+            echo "SIFT2 connectome: weights=${{sift2_weights}}"
+
+            apptainer exec --cleanenv --containall \
+              --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
+              "${{act_binds[@]}}" \
+              -B "{QSIRECON_OUT}":/qsirecon:ro \
+              -B "{CONNECTOME_OUT}":/connectomes \
+              "{CONTAINER_CONNECTOME}" \
+              bash -lc "
+                set -euo pipefail
+                tck2connectome -force \
+                  ${{tracks_in_container}} \
+                  /connectomes/sub-${{SUBJECT}}/{wildcards.parc}_nodes.mif \
+                  /connectomes/sub-${{SUBJECT}}/{wildcards.parc}_connectome_sift2.csv \
+                  -symmetric -zero_diagonal \
+                  -tck_weights_in ${{weights_in_container}}
+              "
+
+            if [[ "{params.primary_measure}" == "sift2" ]]; then
+              cp -f "{output.sift2_matrix}" "{params.primary_matrix}"
+              echo "Primary connectome alias updated from SIFT2: {params.primary_matrix}"
+            fi
+
+            python3 - "{params.parcellation_json}" "{output.sift2_matrix}" \
+              "{params.primary_measure}" <<'PY'
+            import json, sys
+            from pathlib import Path
+            json_path, sift2_path, primary = sys.argv[1:4]
+            payload = {}
+            path = Path(json_path)
+            if path.is_file():
+                payload = json.loads(path.read_text())
+            matrices = payload.setdefault("matrices", {})
+            matrices["sift2"] = Path(sift2_path).name
+            if primary == "sift2":
+                payload["primary_measure"] = "sift2"
+                payload["connectome_csv"] = Path(sift2_path).name
+            path.write_text(json.dumps(payload, indent=2) + "\n")
+            PY
+
+            echo "SIFT2 connectome: {output.sift2_matrix}"
+            """
+

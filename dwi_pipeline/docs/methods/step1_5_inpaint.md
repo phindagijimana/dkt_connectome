@@ -133,4 +133,5 @@ Full table: [References § Step 1.5](../references.md#step-15-anatomical-lesion-
 - [Lesion segmentation](../lesion_segmentation.md)
 - [Step 2 — Cortical reconstruction](step2_recon.md)
 - [Step 4.5 — Disconnectome](step4_5_disconnectome.md)
-- [Container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md)
+- [neuroLIT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md)
+- [VBT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/vbt/README.md)

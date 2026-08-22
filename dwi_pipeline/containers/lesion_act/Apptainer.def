@@ -1,0 +1,29 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Philbert Ndagijimana
+    Version 0.1.0
+    Description Post-QSIRecon lesion-aware ACT (ANTs/MRtrix from qsirecon.sif)
+
+%environment
+    export ANTSPATH=/opt/ants/bin
+    export LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib
+    export PATH=/opt/ants/bin:/opt/mrtrix3-latest/bin:/usr/bin:/bin
+
+%files
+    run_lesion_aware_act.sh /usr/local/bin/run_lesion_aware_act
+    ants /opt/ants
+    mrtrix3-latest /opt/mrtrix3-latest
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        ca-certificates bc libgomp1 libgfortran5 zlib1g \
+        libtiff5 libpng16-16 libfftw3-double3
+    rm -rf /var/lib/apt/lists/*
+    chmod +x /usr/local/bin/run_lesion_aware_act
+
+%runscript
+    exec /usr/local/bin/run_lesion_aware_act "$@"

@@ -29,7 +29,7 @@ Lesion-aware ACT therefore answers: *How should tractography behave where anatom
 3. Prepare lesion mask on native T1w; transform to DWI space (nearest neighbour).
 4. `5ttedit -path` → `lesion_aware_5tt.mif`; `5ttcheck` must pass.
 5. Verify every lesion voxel maps to the pathology channel.
-6. Re-run iFOD2 ACT + SIFT2 with fixed streamline budget (`ACT_STREAMLINES`, default 10M).
+6. Re-run iFOD2 ACT + SIFT2 with fixed streamline budget (`ACT_STREAMLINES`, default 10M) inside **`dkt_lesion_act.sif`** (`run_lesion_aware_act.sh`).
 7. Step 4 consumes the rebuilt tractogram and weights when `--act-mode lesion-aware`.
 
 QSIPrep preprocessing, anatomical reconstruction, and SS3T-CSD FOD estimation are **not** repeated.
@@ -72,4 +72,5 @@ Full table: [References § Step 3.5](../references.md#step-35-lesion-aware-act-o
 - [Lesion-aware tractography](../lesion_aware.md)
 - [Step 1.5 — Inpainting](step1_5_inpaint.md)
 - [Step 4 — Connectome](step4_connectome.md)
+- [Lesion-aware ACT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md)
 - [Disconnectome](../disconnectome.md) — post-hoc lesion disconnection (different question)

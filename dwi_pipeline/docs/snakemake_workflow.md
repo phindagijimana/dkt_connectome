@@ -2,7 +2,7 @@
 
 The **canonical execution engine** for the DKT Connectome is the Snakemake workflow under [`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow).
 
-Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, connectome, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
+Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, lesion-aware ACT, connectome, SD_STREAM, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
 
 ---
 
@@ -22,13 +22,15 @@ Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, conn
 
 These wildcard-free targets map 1:1 to `./run --mode` and `run_subject.sh` modes:
 
-| Snakemake target | Pipeline step | `./run --mode` |
-|------------------|---------------|----------------|
+| Snakemake target | Pipeline step | `./run --mode` / `run_subject.sh` |
+|------------------|---------------|-------------------------------------|
 | `target_qsiprep` | Step 1 — QSIPrep | `qsiprep` |
-| `target_inpaint` | Step 1.5 — neuroLIT | `inpaint` |
+| `target_inpaint` | Step 1.5 — neuroLIT or VBT | `inpaint` |
 | `target_recon` | Step 2 — FreeSurfer/FastSurfer | `recon` |
 | `target_qsirecon` | Step 3 — QSIRecon | `qsirecon` |
-| `target_connectome` | Step 4 — DKT connectome | `connectome` |
+| `target_act` | Step 3.5 — lesion-aware ACT | `act` |
+| `target_sdstream` | SD_STREAM tractography + connectomes | `sdstream` |
+| `target_connectome` | Step 4 — DKT connectome (+ SD if `both`) | `connectome` |
 | `target_disconnectome` | Step 4.5 — disconnectome | `disconnectome` |
 | `target_nodestrength` | Step 5 — node strength | `nodestrength` |
 | `target_subject_qc` | Unified QC HTML | (part of participant run) |

@@ -31,6 +31,8 @@ container_pins:
   freesurfer: freesurfer/freesurfer:7.4.1
   fastsurfer: deepmi/fastsurfer:latest
   connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
+  vbt: ghcr.io/phindagijimana/dkt-vbt:0.1.0
+  lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.1.0
   lit: deepmi/lit:0.6.0
   nodestrength: phindagijimana321/nodestrength:0.1.0
 
@@ -41,6 +43,8 @@ containers:
   fastsurfer: /path/to/others/containers/fastsurfer_latest.sif
   freesurfer: /path/to/others/containers/freesurfer_7.4.1.sif
   connectome: /path/to/others/containers/dkt_connectome.sif
+  vbt: /path/to/others/containers/dkt_vbt.sif
+  lesion_act: /path/to/others/containers/dkt_lesion_act.sif
   lit: /path/to/others/containers/lit_0.6.0.sif
   nodestrength: /path/to/node_strength/containers/nodestrength_0.1.0.sif
 
@@ -99,7 +103,7 @@ act:
   max_length_mm: 250
 
 tractography:
-  model: ifod2             # ifod2 | sd_stream | both; sd_stream keeps iFOD2 compatibility outputs
+  model: both              # ifod2 | sd_stream | both — default runs iFOD2 + deterministic SD_STREAM
 
 experiment:
   arm: null               # orig-std | orig-lesion | neurolit-std | neurolit-lesion | vbt-std | vbt-lesion
@@ -116,9 +120,10 @@ connectome:
   resample_to_dwi: true
   weighting: count          # count | sift2 — must match Step 4.5 disconnectome weighting
   primary_measure: count     # dkt_connectome.csv remains count unless explicitly overridden
-  # Step 4 always also writes *_connectome_count.csv,
-  # *_connectome_sift2.csv, *_connectome_meanlength.csv, *_connectome_meanfa.csv,
-  # *_connectome_meanmd.csv, and voxelwise FA/MD maps.
+  sift2: false               # --connectome-sift2 / CONNECTOME_SIFT2=1 — optional SIFT2 matrix step
+  # Step 4 always writes *_connectome_count.csv, *_connectome_meanlength.csv,
+  # *_connectome_meanfa.csv, *_connectome_meanmd.csv, and voxelwise FA/MD maps.
+  # Enable sift2 for an additional *_connectome_sift2.csv (and SD_STREAM SIFT2 when both models run).
 
 # --- Step 4.5: Disconnectome (opt-in via --disconnection / disconnectome.enabled) ---
 disconnectome:

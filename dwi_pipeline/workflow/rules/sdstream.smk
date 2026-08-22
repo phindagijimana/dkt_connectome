@@ -1,6 +1,6 @@
 """Optional deterministic SD_STREAM tractography and matched connectomes."""
 
-TRACTOGRAPHY_MODEL = str(TRACTOGRAPHY_CFG.get("model", "ifod2")).lower()
+TRACTOGRAPHY_MODEL = str(TRACTOGRAPHY_CFG.get("model", "both")).lower()
 if TRACTOGRAPHY_MODEL not in ("ifod2", "sd_stream", "both"):
     raise WorkflowError(
         f"invalid tractography.model={TRACTOGRAPHY_MODEL} "
@@ -165,21 +165,29 @@ SD_MEANMD_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_model-SDSTREAM_c
 SD_CONNECTOME_JSON_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_model-SDSTREAM_connectome.json"
 
 
+def sdstream_connectome_sift2_products(subject: str, parc: str | None = None) -> list[str]:
+    if not sdstream_enabled() or not CONNECTOME_SIFT2_ENABLED:
+        return []
+    parc = (parc or CONNECTOME_PARCELLATION_CFG).lower()
+    return [SD_SIFT2_PATTERN.format(subject=subject, parc=parc)]
+
+
 def sdstream_connectome_products(subject: str, parc: str | None = None) -> list[str]:
     if not sdstream_enabled():
         return []
     parc = (parc or CONNECTOME_PARCELLATION_CFG).lower()
-    return [
+    products = [
         pattern.format(subject=subject, parc=parc)
         for pattern in (
             SD_COUNT_PATTERN,
-            SD_SIFT2_PATTERN,
             SD_MEANLENGTH_PATTERN,
             SD_MEANFA_PATTERN,
             SD_MEANMD_PATTERN,
             SD_CONNECTOME_JSON_PATTERN,
         )
     ]
+    products.extend(sdstream_connectome_sift2_products(subject, parc))
+    return products
 
 
 rule sdstream_connectome:
@@ -191,7 +199,6 @@ rule sdstream_connectome:
         md=CONNECTOME_MD_MAP_PATTERN,
     output:
         count_matrix=SD_COUNT_PATTERN,
-        sift2_matrix=SD_SIFT2_PATTERN,
         meanlength_matrix=SD_MEANLENGTH_PATTERN,
         meanfa_matrix=SD_MEANFA_PATTERN,
         meanmd_matrix=SD_MEANMD_PATTERN,
@@ -226,8 +233,6 @@ rule sdstream_connectome:
               -symmetric -zero_diagonal
             tck2connectome -force \${{tracks}} \${{nodes}} \${{prefix}}_connectome_meanlength.csv \
               -symmetric -zero_diagonal -scale_length -stat_edge mean
-            tck2connectome -force \${{tracks}} \${{nodes}} \${{prefix}}_connectome_sift2.csv \
-              -symmetric -zero_diagonal -tck_weights_in \${{weights}}
             tcksample -force \${{tracks}} \${{fa}} \${{prefix}}_streamline_meanfa.csv \
               -stat_tck mean
             tcksample -force \${{tracks}} \${{md}} \${{prefix}}_streamline_meanmd.csv \
@@ -252,7 +257,7 @@ payload = {{
     "empty_nodes": int(empty_nodes),
     "matrices": {{
         "count": "{output.count_matrix}",
-        "sift2": "{output.sift2_matrix}",
+        "sift2": null,
         "meanlength": "{output.meanlength_matrix}",
         "meanfa": "{output.meanfa_matrix}",
         "meanmd": "{output.meanmd_matrix}",
@@ -263,3 +268,62 @@ with open(out, "w") as stream:
     stream.write("\n")
 PY
         """
+
+
+if CONNECTOME_SIFT2_ENABLED:
+    rule sdstream_connectome_sift2:
+        input:
+            tracks=lambda wc: sdstream_tracks(wc.subject),
+            weights=lambda wc: sdstream_weights(wc.subject),
+            nodes=CONNECTOME_NODES_PATTERN,
+            count_matrix=SD_COUNT_PATTERN,
+        output:
+            sift2_matrix=SD_SIFT2_PATTERN,
+        threads: 2
+        log:
+            f"{RESULTS_ROOT}/logs/sub-{{subject}}_sdstream_connectome_sift2_{{parc}}.log",
+        params:
+            provenance=lambda wc: SD_CONNECTOME_JSON_PATTERN.format(
+                subject=wc.subject, parc=wc.parc
+            ),
+        shell:
+            r"""
+            exec > {log} 2>&1
+            set -euo pipefail
+            source {COMMON_SH}
+            SUBJECT="{wildcards.subject}"
+            PARC="{wildcards.parc}"
+
+            apptainer exec --cleanenv --containall \
+              -B "{TRACTOGRAPHY_OUT}":/tractography:ro \
+              -B "{CONNECTOME_OUT}":/connectomes \
+              "{CONTAINER_CONNECTOME}" \
+              bash -lc "
+                set -euo pipefail
+                tracks=/tractography/sub-${{SUBJECT}}/model-SDSTREAM_streamlines.tck
+                weights=/tractography/sub-${{SUBJECT}}/model-SDSTREAM_sift2weights.csv
+                nodes=/connectomes/sub-${{SUBJECT}}/${{PARC}}_nodes.mif
+                prefix=/connectomes/sub-${{SUBJECT}}/${{PARC}}_model-SDSTREAM
+                tck2connectome -force \${{tracks}} \${{nodes}} \${{prefix}}_connectome_sift2.csv \
+                  -symmetric -zero_diagonal -tck_weights_in \${{weights}}
+              "
+
+            python3 - "{params.provenance}" "{output.sift2_matrix}" <<'PY'
+import json, sys
+from pathlib import Path
+out, sift2_path = sys.argv[1:3]
+path = Path(out)
+payload = json.loads(path.read_text()) if path.is_file() else {{
+    "subject": "sub-{wildcards.subject}",
+    "parcellation": "{wildcards.parc}",
+    "model": "SD_STREAM",
+    "act_mode": "{ACT_MODE}",
+}}
+payload.setdefault("matrices", {})["sift2"] = sift2_path
+with open(out, "w") as stream:
+    json.dump(payload, stream, indent=2)
+    stream.write("\n")
+PY
+            echo "SD_STREAM SIFT2 connectome: {output.sift2_matrix}"
+            """
+
