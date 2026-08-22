@@ -8,11 +8,10 @@
 Full **anatomically constrained tractography** pipeline with a post-hoc anatomical connectome step,
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.
 
-Subjects with a manually-traced lesion mask (`*_T1w_label-lesion_roi.nii.gz`) get an
-extra Step 1.5 that fills the lesion on the T1w with a diffusion model
-([neuroLIT](containers/lit/README.md)) before FreeSurfer/FastSurfer ever sees it — see
-[Inpaint (Step 1.5)](#inpaint-step-15) below. Every other subject is unaffected: no mask,
-no Step 1.5, exactly the pipeline that existed before this feature.
+Subjects with a manually traced lesion mask (`*_T1w_label-lesion_roi.nii.gz`)
+can receive Step 1.5 anatomical lesion mitigation before reconstruction:
+neuroLIT inpainting (default), LeAPP-compatible virtual brain transplant
+(VBT), or none. Every subject without a mask is unaffected.
 
 Step 4 produces a **Desikan–Killiany–Tourville (DKT, 78 nodes)** matrix by default, from either
 recon tool, because DKT is the only parcellation both `recon-all` and FastSurfer can deliver.
@@ -49,7 +48,7 @@ local BIDS archives) separate from day-to-day pipeline I/O.
 | 1.5 | `inpaint` | `lit_0.6.0.sif` (neuroLIT/DDPM) — **auto, only if a lesion mask exists** | Lesion-filled T1w, QC report |
 | 2 | `recon` | FreeSurfer / FastSurfer | `aparc+aseg.mgz`, surfaces |
 | 3 | `qsirecon` | QSIRecon (SS3T + ACT-HSVS) | Tractogram (~10M streamlines), optional 4S156 atlas connectome |
-| 4 | `connectome` | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) | `dkt_connectome.csv` (78×78) |
+| 4 | `connectome` | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) | DKT Count, SIFT2, MeanLength, MeanFA, MeanMD (78×78), plus FA/MD maps |
 | 5 | `nodestrength` | `nodestrength_0.1.0.sif` ([dwi-AI](https://github.com/phindagijimana/dwi-AI)) — **auto, whenever a connectome exists** | Node strength/AI CSVs, ENIGMA figures, `report.pdf` |
 
 `bash workflow/run_subject.sh all SUBJECT` runs steps 1–5 sequentially (1.5 runs inside Step 2 whenever
@@ -88,14 +87,14 @@ More examples: [docs/tutorial.md](docs/tutorial.md).
 
 ---
 
-## Inpaint (Step 1.5)
+## Anatomical lesion mitigation (Step 1.5)
 
-Runs [neuroLIT](containers/lit/README.md) (a DDPM lesion-inpainting model) on the
-subject's T1w before Step 2, so a manually-traced lesion doesn't throw off
-recon-all/FastSurfer's atlas-based skull-strip, Talairach registration, or cortical
-parcellation. It is **auto-on but conditional**: it only actually runs when a sibling
-`*_T1w_label-lesion_roi.nii.gz` exists next to the T1w for the target session; for every
-other subject it's a silent no-op.
+The default `neurolit` backend runs the DDPM lesion-inpainting model. The
+optional `vbt` backend ports LeAPP's implementation of the Solodkin et al.
+virtual brain transplant: mirror the anatomy, perform lesion-masked rigid
+registration and half-transform midline alignment, then blend contralesional
+signal through a smoothed lesion mask. `none` preserves the original T1w.
+All backends are conditional on a sibling `*_T1w_label-lesion_roi.nii.gz`.
 
 ```bash
 # Runs automatically as part of Step 2 when sub-01/ses-2WK has a lesion mask:
@@ -104,16 +103,19 @@ bash dwi_pipeline/workflow/run_subject.sh all 01
 # Run/test Step 1.5 in isolation:
 bash dwi_pipeline/workflow/run_subject.sh inpaint 01
 
+# LeAPP-compatible virtual brain transplant:
+bash dwi_pipeline/workflow/run_subject.sh inpaint 01 --anat-mitigation vbt
+
+# Explicit original-T1w arm:
+bash dwi_pipeline/workflow/run_subject.sh all 01 --anat-mitigation none
+
 # Force-skip even if a mask exists:
 bash dwi_pipeline/workflow/run_subject.sh all 01 --no-inpaint
 ```
 
-Pipeline: `scripts/prepare_lesion_mask.py` (resample onto the T1w grid, select
-labels, optionally binarize, record provenance) → `lit-inpainting` inside
-`CONTAINER_LIT` with `--keepgeom` (so the result stays on the T1w's native
-grid) → `scripts/check_inpainting.py` (QC: correlation outside the lesion vs.
-a resampling-only control). Writes
-`${INPAINT_OUT}/sub-XXX/ses-YYY/{lesion_mask_prepared.nii.gz, inpainting_volumes/inpainting_result.nii.gz, inpainting.json}`.
+Both mitigation backends prepare the lesion mask and run identical geometry
+and outside-lesion correlation QC. neuroLIT writes under
+`${RESULTS_ROOT}/inpainted/`; VBT writes under `${RESULTS_ROOT}/vbt/`.
 Steps 2 and 4 then use `inpainting_result.nii.gz` in place of the raw BIDS T1w
 for that subject/session.
 
@@ -122,6 +124,41 @@ Build the container once: `bash dwi_pipeline/containers/lit/build_lit.sh`.
 See `workflow/run_subject.sh` and [`workflow/config/config.yaml`](workflow/config/config.yaml) for the full `INPAINT_*` variable list,
 and [`pipeline_science.md` §Inpaint](pipeline_science.md) for the science (DDPM, VINN
 layers, QC methodology).
+
+---
+
+## Lesion-aware ACT and experiment arms (Step 3.5)
+
+`--act-mode lesion-aware` resamples QSIRecon's retained HSVS 5TT to the DWI/FOD
+grid, inserts the transformed lesion into its fifth pathological-tissue
+channel with `5ttedit -path`, validates the result with `5ttcheck`, and rebuilds
+matched iFOD2 tractography and SIFT2 weights from the retained WM FOD.
+
+```bash
+# Individual controls
+bash workflow/run_subject.sh act TBI011011 \
+  --recon-session 2WK --act-mode lesion-aware
+
+# Isolated anatomy × ACT study arms
+bash workflow/run_subject.sh all TBI011011 --experiment-arm orig-std
+bash workflow/run_subject.sh all TBI011011 --experiment-arm orig-lesion
+bash workflow/run_subject.sh all TBI011011 --experiment-arm neurolit-std
+bash workflow/run_subject.sh all TBI011011 --experiment-arm neurolit-lesion
+bash workflow/run_subject.sh all TBI011011 --experiment-arm vbt-std
+bash workflow/run_subject.sh all TBI011011 --experiment-arm vbt-lesion
+```
+
+The six supported arms are `orig-std`, `orig-lesion`, `neurolit-std`,
+`neurolit-lesion`, `vbt-std`, and `vbt-lesion`. By default each is written
+under `RESULTS_ROOT/arms/<arm>/`, preventing cross-arm overwrites.
+
+Full tables and Slurm examples: [docs/usage.md](docs/usage.md).
+
+For deterministic sensitivity analysis, add
+`--tractography-model both`. The workflow reuses the same WM FOD and selected
+standard/lesion-aware 5TT, runs MRtrix `SD_STREAM`, applies SIFT2, and writes
+model-specific Count, SIFT2, MeanLength, MeanFA, and MeanMD matrices without
+replacing the iFOD2 outputs.
 
 ---
 
@@ -178,6 +215,8 @@ for the full CLI, output layout, and the underlying Piper et al. 2026 methodolog
 | `RUN_NODESTRENGTH` | `1` (auto: runs whenever Step 4 produced a connectome) |
 | `CONNECTOME_PARCELLATION` | `dkt` (78 nodes, same for both recon tools) |
 | `CONNECTOME_DETERMINISTIC` | `1` (ITK pinned to one thread) |
+| `CONNECTOME_WEIGHTING` | `count` (used by downstream disconnectome analysis) |
+| `PRIMARY_CONNECTOME_MEASURE` | `count` (`dkt_connectome.csv` stays count unless explicitly overridden) |
 | dwi-select | **ON** — `config/dwi_select_b1000.json` (b=1000 + IntendedFor fmaps) |
 
 ---
@@ -196,6 +235,8 @@ for the full CLI, output layout, and the underlying Piper et al. 2026 methodolog
 | `--fast-fs` | FastSurfer + `--fsaparc` (adds a classic DK-68 aparc/ribbon alongside FastSurfer's native DKT) |
 | `--no-recon` | Skip Step 2 (requires ACT-fast spec or existing FS dir) |
 | `--no-connectome` | Skip Step 4 (`--no-dk` still accepted; skips Step 5 too) |
+| `--connectome-weighting count\|sift2` | Select downstream disconnectome weighting |
+| `--primary-connectome-measure count\|sift2` | Explicitly choose the `dkt_connectome.csv` compatibility alias |
 | `--inpaint` / `--no-inpaint` | Force Step 1.5 on/off (default: auto — on only if a lesion mask exists) |
 | `--node-strength` / `--no-node-strength` | Force Step 5 on/off (default: auto — on whenever Step 4 ran) |
 | `--strength-only` | Step 5: skip `volume/` and `compare/` |
@@ -269,7 +310,8 @@ bash /path/to/node_strength/containers/build.sh
 Under `${RESULTS_ROOT}/`:
 
 ```
-inpainted/sub-XXX/ses-YYY/   (only for subjects with a lesion mask)
+inpainted/sub-XXX/ses-YYY/   (neuroLIT backend; only with a lesion mask)
+vbt/sub-XXX/ses-YYY/         (VBT backend; only with a lesion mask)
 qsiprep_single_run_output/
 freesurfer/sub-XXX/
 qsirecon_single_run_output/
@@ -299,7 +341,7 @@ outputs and Step 4 is on in one and off in the other:
 
 | Pipeline | Step 4 | Connectome produced | Step 5 |
 |----------|--------|---------------------|--------|
-| `dwi_pipeline` (this launcher) | on | `dkt_connectome.csv`, subject-native DKT, 78 nodes | on (needs Step 4) |
+| `dwi_pipeline` (this launcher) | on | `dkt_connectome_{count,sift2,meanlength,meanfa,meanmd}.csv` plus primary `dkt_connectome.csv`, subject-native DKT, 78 nodes | on (needs Step 4) |
 | `dwi_connect_default` (`RUN_CONNECTOME=0`) | off | QSIRecon atlas connectome only (4S156) | off (no Step 4 connectome to read) |
 
 ---
@@ -322,8 +364,12 @@ work; the variables print a deprecation note.
 | `dk_nodes.mif`, `dk_assignments.csv`, `dk_parcellation.json` | `nodes.mif`, `assignments.csv`, `parcellation.json` |
 | `dk_connectome.sif` | `dkt_connectome.sif` |
 
-The **matrix filename stays parcellation-specific** — `dkt_connectome.csv` or
-`dk_connectome.csv` — because 78- and 84-node results must never be pooled.
+Matrix filenames stay parcellation-specific because 78- and 84-node results
+must never be pooled. `dkt_connectome.csv` / `dk_connectome.csv` remain
+compatibility aliases; measure-specific files append `_count`, `_sift2`, or
+`_meanlength`, `_meanfa`, or `_meanmd`. Step 4 also writes
+`dkt_desc-FA_dwi.nii.gz` and `dkt_desc-MD_dwi.nii.gz` in the tractography
+T1w/DWI grid.
 
 ---
 

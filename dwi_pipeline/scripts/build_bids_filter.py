@@ -199,6 +199,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--bids-dir", type=Path, required=True)
     ap.add_argument("--subject", required=True)
+    ap.add_argument(
+        "--session",
+        help="Restrict selection to one BIDS session (bare label, for example 1)",
+    )
     ap.add_argument("--select-json", type=Path)
     ap.add_argument("--static-filter", type=Path)
     ap.add_argument("--output", type=Path, required=True)
@@ -206,8 +210,15 @@ def main() -> None:
     subject = args.subject.removeprefix("sub-")
     if args.static_filter:
         data = json.loads(args.static_filter.read_text())
+        if args.session:
+            data.setdefault("dwi", {})["session"] = args.session.removeprefix("ses-")
+            if "fmap" in data:
+                data["fmap"]["session"] = args.session.removeprefix("ses-")
     elif args.select_json:
-        data = build_from_select(args.bids_dir, subject, json.loads(args.select_json.read_text()))
+        select = json.loads(args.select_json.read_text())
+        if args.session:
+            select["include_sessions"] = [args.session.removeprefix("ses-")]
+        data = build_from_select(args.bids_dir, subject, select)
     else:
         raise SystemExit("Provide --select-json or --static-filter")
     args.output.parent.mkdir(parents=True, exist_ok=True)

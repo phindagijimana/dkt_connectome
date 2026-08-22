@@ -94,6 +94,7 @@ See [Preparing your data](preparing_data.md) for fieldmaps, Siemens sidecars, an
 | `--mode inpaint` | Step 1.5 only |
 | `--mode recon` | Step 2 only |
 | `--mode qsirecon` | Step 3 only |
+| `--mode act` | Step 3.5 only (lesion-aware ACT; needs lesion mask) |
 | `--mode connectome` | Step 4 (+ 5 if enabled) |
 | `--mode disconnectome` | Step 4.5 only |
 | `--mode nodestrength` | Step 5 only |
@@ -132,14 +133,105 @@ Without a fieldmap in the filter, the pipeline **requires** one of `--syn`, `--f
 
 ---
 
+## Options for anatomical lesion mitigation (Step 1.5)
+
+Runs only when a BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) exists for the session. Theory: [Step 1.5 methods](methods/step1_5_inpaint.md) · [Lesion-aware tractography](lesion_aware.md).
+
+**Biological question:** Large lesions break cortical surface reconstruction and parcellation because FreeSurfer/FastSurfer expects contiguous GM. Step 1.5 modifies T1w *before* Step 2 so surfaces and DKT labels can be estimated on a plausible whole-brain anatomy. This is **not** a claim that tissue inside the lesion is healthy.
+
+| Backend | Theory (short) | Primary citation |
+|---------|----------------|------------------|
+| **neurolit** (default) | DDPM inpainting synthesizes plausible tissue in the lesion cavity using a resolution-agnostic VINN (Pollak et al. 2025) | [Pollak et al. 2025](https://doi.org/10.1162/imag_a_00446) |
+| **vbt** | Virtual brain transplant: mirror contralesional anatomy into the lesion (LeAPP port; Bey et al. 2024) | [Bey et al. 2024](https://doi.org/10.1002/hbm.26701) |
+| **none** | Sensitivity arm — raw T1w; surfaces may fail or be distorted near large lesions | — |
+
+| Flag | Env | Description |
+|------|-----|-------------|
+| `--anat-mitigation none\|neurolit\|vbt` | `ANAT_MITIGATION` | **none** — raw T1w; **neurolit** (default) — DDPM inpainting; **vbt** — LeAPP-compatible virtual brain transplant |
+| `--inpaint` | `RUN_INPAINT=1` | Alias for `--anat-mitigation neurolit` |
+| `--no-inpaint` | `RUN_INPAINT=0` | Alias for `--anat-mitigation none`; force-skip even if a mask exists |
+
+**Output roots:** neuroLIT → `inpainted/`; VBT → `vbt/`. Step 2 and Step 4 use `inpainting_volumes/inpainting_result.nii.gz` from whichever backend ran.
+
+```bash
+bash workflow/run_subject.sh all 011 --anat-mitigation vbt
+bash submit.sh --anat-mitigation none   # original-T1w sensitivity arm
+```
+
+**When publishing:** cite Pollak et al. 2025 for neuroLIT; Bey et al. 2024 for VBT and state that VBT is a port of LeAPP's released code, not a full LeAPP container run. See [References § Step 1.5](references.md#step-15-anatomical-lesion-mitigation-optional).
+
+---
+
+## Options for lesion-aware ACT and experiment arms (Steps 3.5–4)
+
+**Anatomy mitigation** (Step 1.5) and **lesion-aware ACT** (Step 3.5) are **orthogonal axes** inspired by the LeAPP factorial design (Bey et al. 2024):
+
+- **Step 1.5** fixes *anatomical* priors for reconstruction and parcellation.
+- **Step 3.5** fixes *tractography* priors by placing the **original BIDS lesion mask** in the 5TT pathology channel (Smith et al. 2012 ACT framework).
+
+You can combine them (e.g. VBT-filled T1w + lesion in the pathology channel). Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md).
+
+| Flag | Env | Description |
+|------|-----|-------------|
+| `--act-mode standard\|lesion-aware` | `ACT_MODE` | **standard** — QSIRecon iFOD2/SIFT2 (default); **lesion-aware** — rebuild tractography after `5ttedit -path` |
+| `--act-streamlines N` | `ACT_STREAMLINES` | Streamline count for lesion-aware ACT (default `10000000`) |
+| `--tractography-model ifod2\|sd_stream\|both` | `TRACTOGRAPHY_MODEL` | Optional deterministic SD_STREAM matrices alongside iFOD2 (Tournier et al. 2019; robustness, not replacement) |
+| `--experiment-arm ARM` | `EXPERIMENT_ARM` | Set anatomy + ACT together and write under `RESULTS_ROOT/arms/ARM/` (see table below) |
+
+### Theory: lesion-aware ACT (`--act-mode lesion-aware`)
+
+Standard ACT builds a five-tissue-type (5TT) image from the T1w that Step 2 received. If Step 1.5 inpainted the lesion, the HSVS 5TT may label that region as healthy GM/WM. Lesion-aware ACT re-inserts the **original lesion mask** into the pathology compartment so streamlines seed and terminate under pathology priors rather than false healthy tissue (Smith et al. 2012; Bey et al. 2024). The pathology channel is **not** a hard mask — it signals unreliable tissue priors, not proof of axonal absence.
+
+### Theory: SD_STREAM (`--tractography-model both`)
+
+**SD_STREAM** (Tournier et al. 2019) provides a deterministic complement to probabilistic iFOD2. The pipeline writes parallel `dkt_model-SDSTREAM_connectome_*.csv` files. Use for robustness checks; disagreement in crossing-fibre regions is expected.
+
+### Experiment arms (`--experiment-arm`) {#experiment-arms-experiment-arm}
+
+Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.5. Factorial design follows Bey et al. 2024 (LeAPP).
+
+| Arm | Step 1.5 anatomy | Step 3.5 ACT | Typical contrast | Cite when contrasting |
+|-----|------------------|--------------|------------------|------------------------|
+| `orig-std` | Original T1w (`none`) | Standard | Baseline | — |
+| `orig-lesion` | Original T1w | Lesion-aware | ACT effect without anatomical fill | Smith et al. 2012 ACT; Bey et al. 2024 |
+| `neurolit-std` | neuroLIT (default backend) | Standard | Inpainting effect on anatomy | Pollak et al. 2025 |
+| `neurolit-lesion` | neuroLIT | Lesion-aware | Inpainting + pathology-aware tractography | Pollak et al. 2025; Bey et al. 2024 |
+| `vbt-std` | Virtual brain transplant | Standard | VBT vs neuroLIT sensitivity | Bey et al. 2024 |
+| `vbt-lesion` | Virtual brain transplant | Lesion-aware | Full LeAPP-style factorial | Bey et al. 2024 |
+
+```bash
+# Slurm array — one isolated arm tree per submission
+export BIDS_DIR=/path/to/BIDS
+export RESULTS_ROOT=/path/to/results
+bash submit.sh --experiment-arm neurolit-lesion
+
+# Single subject (Snakemake)
+bash workflow/run_subject.sh all TBI011011 --experiment-arm vbt-lesion
+
+# Equivalent manual flags (no arm prefix on RESULTS_ROOT)
+bash workflow/run_subject.sh all TBI011011 \
+  --anat-mitigation vbt --act-mode lesion-aware
+```
+
+Set `EXPERIMENT_ISOLATE_OUTPUTS=0` only when you intentionally want multiple arms in one `RESULTS_ROOT` (not recommended).
+
+**When publishing:** cite Bey et al. 2024 for the factorial lesion-processing design; add Pollak et al. 2025 or Bey et al. 2024 per anatomy backend; cite Smith et al. 2012 for ACT when using lesion-aware mode. See [References § Experiment arms](references.md#experiment-arms-factorial-lesion-processing).
+
+---
+
 ## Options for connectome and disconnectome (Steps 4–4.5)
 
 | Flag | Env | Description |
 |------|-----|-------------|
 | `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Edge weights for Steps 4 and 4.5 (default `count`) |
+| `--primary-connectome-measure count\|sift2` | `PRIMARY_CONNECTOME_MEASURE` | Which matrix is copied to `dkt_connectome.csv` (default `count`) |
 | `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Override 4.5 weighting only |
 | `--disconnectome-core-only` | `DISCONNECTOME_CORE_ONLY=1` | Sensitivity: core label only |
 | `--disconnectome-erode-voxels N` | `DISCONNECTOME_ERODE_VOXELS` | Sensitivity: erode lesion N voxels |
+
+Step 4 always writes **Count, SIFT2, MeanLength, MeanFA, and MeanMD** matrices from the same iFOD2 tractogram (`dkt_connectome_*.csv`). See [Outputs](outputs.md).
+
+**Theory:** No single edge metric is universally accepted (Jones et al. 2013). Count is the default primary (`dkt_connectome.csv`); SIFT2 corrects global density bias (Smith et al. 2015); MeanFA/MeanMD sample diffusion along reconstructed paths and must not be interpreted as independent histological ground truth. Multi-measure release precedent: IDEAS II (Taylor et al. 2026). Details: [Step 4 methods](methods/step4_connectome.md#multi-measure-connectomes-one-tractogram).
 
 ---
 
@@ -223,7 +315,8 @@ bash dwi_pipeline/scripts/batch_postprocess.sh
 
 ## See also
 
-- [Decision tables](decision_tables.md) — when to use SDC, recon, weighting, disconnectome flags
+- [Decision tables](decision_tables.md) — when to use SDC, recon, weighting, disconnectome, **experiment arms**
+- [Lesion-aware tractography](lesion_aware.md) — VBT, lesion-aware ACT, LeAPP context
 - [Pipeline steps](pipeline_steps.md) — what happens inside each step
 - [Methods](methods/index.md) — theory and citations per step
 - [Preparing your data](preparing_data.md) — BIDS sidecars, fieldmaps, lesion masks

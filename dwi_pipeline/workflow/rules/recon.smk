@@ -21,9 +21,9 @@ def recon_t1w_input(subject: str) -> str:
     """T1w that Step 2 should reconstruct from: the Step 1.5 inpainted T1w
     when a lesion mask exists for this subject, else the raw BIDS T1w
     (mirrors subject.sh's run_recon() picking up $INPAINTED_T1W)."""
-    inpainted = inpainted_t1w_for(subject)
-    if inpainted:
-        return inpainted
+    mitigated = mitigated_t1w_for(subject)
+    if mitigated:
+        return mitigated
     return _bids_t1w_for(subject, resolve_session(subject))
 
 

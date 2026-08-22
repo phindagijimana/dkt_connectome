@@ -85,6 +85,28 @@ Measured impact of using the wrong segmentation+LUT combination: ~3.4% of stream
 
 ---
 
+## Multi-measure connectomes (one tractogram)
+
+From the **same** iFOD2 tractogram and DKT node image, Step 4 writes five edge definitions (IDEAS II and connectomics literature use multiple strength measures because no single metric is universally accepted; Jones et al. 2013):
+
+| Output file | Measure | Interpretation |
+|-------------|---------|----------------|
+| `dkt_connectome_count.csv` | Streamline **count** | Raw connectivity density; default primary (`dkt_connectome.csv`) |
+| `dkt_connectome_sift2.csv` | **SIFT2** weight sum | Global density-corrected connectivity (Smith et al. 2015) |
+| `dkt_connectome_meanlength.csv` | Mean streamline **length** (mm) | Path length between regions |
+| `dkt_connectome_meanfa.csv` | Mean **FA** along streamlines | Microstructure sampled on reconstructed paths |
+| `dkt_connectome_meanmd.csv` | Mean **MD** along streamlines | Microstructure sampled on reconstructed paths |
+
+**Important:** MeanFA and MeanMD describe diffusion properties **along tractography paths**, not independent histological ground truth. They must not be interpreted as interchangeable with Count or SIFT2 “strength” (Jones et al. 2013).
+
+Voxelwise **`dkt_desc-FA_dwi.nii.gz`** and **`dkt_desc-MD_dwi.nii.gz`** are derived from QSIPrep preprocessed DWI via `dwi2tensor` / `tensor2metric` for tract sampling.
+
+### Optional deterministic tractography (`--tractography-model both`)
+
+**SD_STREAM** (Tournier et al. 2019) provides a deterministic complement to probabilistic iFOD2. The pipeline writes parallel `dkt_model-SDSTREAM_connectome_*.csv` files using the same atlas and measure definitions. Agreement between iFOD2 and SD_STREAM can support robustness claims; disagreement in crossing-fibre regions is expected and is not proof of anatomical absence.
+
+---
+
 ## What DKT Connectome runs
 
 | Item | Value |
@@ -105,6 +127,7 @@ Measured impact of using the wrong segmentation+LUT combination: ~3.4% of stream
 | **DKT parcellation** | Klein A, Tourville J. *Frontiers in Neuroscience* 2012 | [10.3389/fnins.2012.00171](https://doi.org/10.3389/fnins.2012.00171) |
 | Registration | Avants BB, et al. ANTs. *NeuroImage* 2011 | [10.1016/j.neuroimage.2010.09.025](https://doi.org/10.1016/j.neuroimage.2010.09.025) |
 | FS parcellation | Fischl B, et al. *Cerebral Cortex* 2004 | [10.1093/cercor/bhg087](https://doi.org/10.1093/cercor/bhg087) |
+| Diffusion metric interpretation | Jones DK, et al. *NeuroImage* 2013;73:239–254. | [10.1016/j.neuroimage.2013.06.018](https://doi.org/10.1016/j.neuroimage.2013.06.018) |
 
 Full table: [References § Step 4](../references.md#step-4-dkt-structural-connectome).
 

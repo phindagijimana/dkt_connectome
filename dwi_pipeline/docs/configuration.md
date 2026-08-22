@@ -60,11 +60,13 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 
 ## Step 1.5 — Inpaint (`inpaint`)
 
-| Key | Env | Description |
-|-----|-----|-------------|
+| Key | CLI / env | Description |
+|-----|-----------|-------------|
 | `enabled` | `RUN_INPAINT`, `--no-inpaint` | Auto-on; no-op without lesion mask |
+| `backend` | `--anat-mitigation`, `ANAT_MITIGATION` | `neurolit` (default), `vbt`, or `none` |
 | `dilate` | `INPAINT_DILATE` | Mask dilation voxels (default 2) |
-| `device` | `INPAINT_DEVICE` | `auto`, `cpu`, `cuda` |
+| `device` | `INPAINT_DEVICE` | `auto`, `cpu`, `cuda` (neuroLIT only) |
+| `vbt.smoothing_factor` | `VBT_SMOOTHING_FACTOR` | Gaussian sigma for VBT (default `2.0`) |
 | `min_outside_corr` | `INPAINT_MIN_OUTSIDE_CORR` | QC threshold |
 | `fail_on_qc` | `INPAINT_FAIL_ON_QC=1` | Fail when QC `ok=false` |
 
@@ -91,13 +93,48 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 
 ---
 
+## Step 3.5 — Lesion-aware ACT (`act`)
+
+| Key | CLI / env | Default |
+|-----|-----------|---------|
+| `mode` | `--act-mode`, `ACT_MODE` | `standard` |
+| `streamlines` | `--act-streamlines`, `ACT_STREAMLINES` | `10000000` |
+| `random_seed` | `ACT_RANDOM_SEED`, `--random-seed` | `0` |
+
+Lesion-aware mode requires a BIDS lesion mask. Output: `lesion_aware_act/sub-<ID>/`.
+
+---
+
+## Tractography model (`tractography`)
+
+| Key | CLI / env | Default |
+|-----|-----------|---------|
+| `model` | `--tractography-model`, `TRACTOGRAPHY_MODEL` | `ifod2` |
+
+Values: `ifod2`, `sd_stream`, `both`. SD_STREAM writes parallel `*_model-SDSTREAM_*` connectome CSVs.
+
+---
+
+## Experiment arms (`experiment`)
+
+| Key | CLI / env | Default |
+|-----|-----------|---------|
+| `arm` | `--experiment-arm`, `EXPERIMENT_ARM` | *(unset)* |
+| `isolate_outputs` | `EXPERIMENT_ISOLATE_OUTPUTS` | `true` |
+
+When `arm` is set, the workflow applies the anatomy + ACT mapping from [Usage — experiment arms](usage.md) and, by default, prefixes `RESULTS_ROOT` with `arms/<arm>/`.
+
+---
+
 ## Step 4 — Connectome (`connectome`)
 
 | Key | Env | Default |
 |-----|-----|---------|
 | `enabled` | `--no-connectome`, `RUN_CONNECTOME=0` | true |
 | `parcellation` | `CONNECTOME_PARCELLATION` | `dkt` (78 nodes) |
+| `atlases` | `CONNECTOME_ATLASES` | `[dkt]` |
 | `weighting` | `--connectome-weighting`, `CONNECTOME_WEIGHTING` | **`count`** |
+| `primary_measure` | `--primary-connectome-measure`, `PRIMARY_CONNECTOME_MEASURE` | `count` |
 | `deterministic` | `CONNECTOME_DETERMINISTIC` | true |
 | `fail_on_empty_nodes` | `CONNECTOME_FAIL_ON_EMPTY_NODES=1` | false |
 

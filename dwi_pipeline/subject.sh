@@ -264,9 +264,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --inpaint)
       RUN_INPAINT=1
+      ANAT_MITIGATION=neurolit
       ;;
     --no-inpaint)
       RUN_INPAINT=0
+      ANAT_MITIGATION=none
+      ;;
+    --anat-mitigation)
+      ANAT_MITIGATION="${2:?Need none, neurolit, or vbt after --anat-mitigation}"
+      [[ "${ANAT_MITIGATION}" == "none" ]] && RUN_INPAINT=0 || RUN_INPAINT=1
+      shift
       ;;
     --node-strength)
       RUN_NODESTRENGTH=1
@@ -307,6 +314,21 @@ while [[ $# -gt 0 ]]; do
       ;;
     --connectome-weighting)
       CONNECTOME_WEIGHTING="${2:?Need count or sift2 after --connectome-weighting}"
+      shift 2
+      continue
+      ;;
+    --primary-connectome-measure)
+      PRIMARY_CONNECTOME_MEASURE="${2:?Need count or sift2 after --primary-connectome-measure}"
+      shift 2
+      continue
+      ;;
+    --act-mode)
+      ACT_MODE="${2:?Need standard or lesion-aware after --act-mode}"
+      shift 2
+      continue
+      ;;
+    --tractography-model)
+      TRACTOGRAPHY_MODEL="${2:?Need ifod2, sd_stream, or both after --tractography-model}"
       shift 2
       continue
       ;;
@@ -388,8 +410,22 @@ FS_LUT="${FS_LUT:-${FS_LICENSE%/*}/FreeSurferColorLUT.txt}"
 # no-op for them and the pipeline behaves exactly as it did before Step 1.5
 # existed. --no-inpaint / RUN_INPAINT=0 forces a skip even when a mask exists.
 RUN_INPAINT="${RUN_INPAINT:-1}"
+ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
+if [[ "${RUN_INPAINT}" != "1" ]]; then ANAT_MITIGATION=none; fi
+case "${ANAT_MITIGATION}" in
+  none) RUN_INPAINT=0 ;;
+  neurolit|vbt) RUN_INPAINT=1 ;;
+  *) _pipeline_fail "config" \
+       "invalid ANAT_MITIGATION=${ANAT_MITIGATION} (use none, neurolit, or vbt)" ;;
+esac
 INPAINT_REQUIRE_MASK="${INPAINT_REQUIRE_MASK:-0}"
-INPAINT_OUT="${INPAINT_OUT:-${RESULTS_ROOT}/inpainted}"
+if [[ -z "${INPAINT_OUT:-}" ]]; then
+  if [[ "${ANAT_MITIGATION}" == "vbt" ]]; then
+    INPAINT_OUT="${RESULTS_ROOT}/vbt"
+  else
+    INPAINT_OUT="${RESULTS_ROOT}/inpainted"
+  fi
+fi
 INPAINT_DILATE="${INPAINT_DILATE:-2}"
 INPAINT_DEVICE="${INPAINT_DEVICE:-auto}"           # auto | cpu | cuda
 INPAINT_BATCH_SIZE="${INPAINT_BATCH_SIZE:-8}"
@@ -398,9 +434,11 @@ INPAINT_BINARIZE="${INPAINT_BINARIZE:-0}"
 INPAINT_MIN_OUTSIDE_CORR="${INPAINT_MIN_OUTSIDE_CORR:-0.995}"
 INPAINT_MAX_CORR_DROP="${INPAINT_MAX_CORR_DROP:-0.01}"
 INPAINT_FAIL_ON_QC="${INPAINT_FAIL_ON_QC:-0}"
+VBT_SMOOTHING_FACTOR="${VBT_SMOOTHING_FACTOR:-2.0}"
 INPAINT_SKIP_IF_EXISTS="${INPAINT_SKIP_IF_EXISTS:-1}"
 PREPARE_LESION_MASK="${REPO_ROOT}/dwi_pipeline/scripts/prepare_lesion_mask.py"
 CHECK_INPAINTING="${REPO_ROOT}/dwi_pipeline/scripts/check_inpainting.py"
+RUN_VBT="${REPO_ROOT}/dwi_pipeline/scripts/run_vbt.py"
 # Set by run_inpaint() when it actually ran and produced a result; consumed by
 # run_recon() and run_connectome() in place of the raw BIDS T1w. Empty means
 # "no inpainting for this subject/session -- behave exactly as before".
@@ -479,6 +517,10 @@ CONNECTOME_FAIL_ON_EMPTY_NODES="${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}"
 # connectome is reproducible; set 0 to trade reproducibility for speed.
 CONNECTOME_DETERMINISTIC="${CONNECTOME_DETERMINISTIC:-1}"
 CONNECTOME_WEIGHTING="${CONNECTOME_WEIGHTING:-count}"
+PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-count}"
+CONNECTOME_BIND_ENTRYPOINT="${CONNECTOME_BIND_ENTRYPOINT:-1}"
+ACT_MODE="${ACT_MODE:-standard}"
+TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-ifod2}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
@@ -749,8 +791,16 @@ run_inpaint() {
   fi
   echo "Inpaint: found lesion mask ${mask}"
 
-  [[ -f "${CONTAINER_LIT}" ]] || _pipeline_fail "inpaint" "missing CONTAINER_LIT: ${CONTAINER_LIT}" \
-    "Build it: bash dwi_pipeline/containers/lit/build_lit.sh"
+  local mitigation_container="${CONTAINER_LIT}"
+  if [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
+    [[ -f "${CONTAINER_LIT}" ]] || _pipeline_fail "inpaint" "missing CONTAINER_LIT: ${CONTAINER_LIT}" \
+      "Build it: bash dwi_pipeline/containers/lit/build_lit.sh"
+  else
+    mitigation_container="${CONTAINER_QSIPREP}"
+    [[ -f "${RUN_VBT}" ]] || _pipeline_fail "inpaint" "missing ${RUN_VBT}"
+    [[ -f "${CONTAINER_QSIPREP}" ]] || _pipeline_fail "inpaint" \
+      "VBT requires the QSIPrep container for FSL tools: ${CONTAINER_QSIPREP}"
+  fi
   [[ -f "${PREPARE_LESION_MASK}" ]] || _pipeline_fail "inpaint" "missing ${PREPARE_LESION_MASK}"
   [[ -f "${CHECK_INPAINTING}" ]] || _pipeline_fail "inpaint" "missing ${CHECK_INPAINTING}"
 
@@ -764,7 +814,7 @@ run_inpaint() {
     return 0
   fi
 
-  echo "=== Inpaint (Step 1.5): sub-${SUBJECT} ses-${target_ses} ==="
+  echo "=== Anatomical mitigation (${ANAT_MITIGATION}): sub-${SUBJECT} ses-${target_ses} ==="
   mkdir -p "${outdir}"
 
   local mask_prepared="${outdir}/lesion_mask_prepared.nii.gz"
@@ -777,27 +827,41 @@ run_inpaint() {
     --labels "${INPAINT_LABELS}" \
     "${prep_xtra[@]}"
 
-  # --nv is a no-op (not a hard failure) on nodes with no visible GPU/driver,
-  # so it's always safe to pass whenever the caller didn't explicitly ask for
-  # CPU-only inference.
-  local -a nv_args=()
-  [[ "${INPAINT_DEVICE}" != "cpu" ]] && nv_args+=(--nv)
+  if [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
+    # --nv is a no-op (not a hard failure) on nodes with no visible GPU/driver.
+    local -a nv_args=()
+    [[ "${INPAINT_DEVICE}" != "cpu" ]] && nv_args+=(--nv)
+    apptainer exec "${nv_args[@]}" --cleanenv --containall \
+      -B "$(dirname "${t1w}")":/t1w_input:ro \
+      -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+      -B "${outdir}":/out \
+      "${CONTAINER_LIT}" \
+      lit-inpainting \
+        -i "/t1w_input/$(basename "${t1w}")" \
+        -m /mask/lesion_mask_prepared.nii.gz \
+        -o /out \
+        --dilate "${INPAINT_DILATE}" \
+        --keepgeom \
+        --device "${INPAINT_DEVICE}" \
+        --batch_size "${INPAINT_BATCH_SIZE}"
+  else
+    mkdir -p "$(dirname "${result}")"
+    apptainer exec --cleanenv --containall \
+      -B "$(dirname "${t1w}")":/t1w_input:ro \
+      -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+      -B "${outdir}":/out \
+      -B "${RUN_VBT}":/run_vbt.py:ro \
+      "${CONTAINER_QSIPREP}" \
+      python3 /run_vbt.py \
+        --t1w "/t1w_input/$(basename "${t1w}")" \
+        --mask /mask/lesion_mask_prepared.nii.gz \
+        --output /out/inpainting_volumes/inpainting_result.nii.gz \
+        --smoothing-factor "${VBT_SMOOTHING_FACTOR}" \
+        --work-dir /out/.vbt_work
+    rm -rf "${outdir}/.vbt_work"
+  fi
 
-  apptainer exec "${nv_args[@]}" --cleanenv --containall \
-    -B "$(dirname "${t1w}")":/t1w_input:ro \
-    -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
-    -B "${outdir}":/out \
-    "${CONTAINER_LIT}" \
-    lit-inpainting \
-      -i "/t1w_input/$(basename "${t1w}")" \
-      -m /mask/lesion_mask_prepared.nii.gz \
-      -o /out \
-      --dilate "${INPAINT_DILATE}" \
-      --keepgeom \
-      --device "${INPAINT_DEVICE}" \
-      --batch_size "${INPAINT_BATCH_SIZE}"
-
-  [[ -f "${result}" ]] || _pipeline_fail "inpaint" "lit-inpainting finished but ${result} was not produced" \
+  [[ -f "${result}" ]] || _pipeline_fail "inpaint" "${ANAT_MITIGATION} finished but ${result} was not produced" \
     "Inspect ${outdir} for tool output."
 
   local qc_json="${outdir}/inpainting_qc.json"
@@ -817,15 +881,17 @@ run_inpaint() {
   fi
 
   python3 - "${t1w}" "${mask}" "${mask_prepared}" "${result}" "${mask_json}" "${qc_json}" "${final_json}" \
-    "sub-${SUBJECT}" "ses-${target_ses}" "${CONTAINER_LIT}" "${INPAINT_LABELS}" "${INPAINT_DILATE}" \
-    "${INPAINT_DEVICE}" "${INPAINT_BATCH_SIZE}" <<'PY'
+    "sub-${SUBJECT}" "ses-${target_ses}" "${mitigation_container}" "${INPAINT_LABELS}" "${INPAINT_DILATE}" \
+    "${INPAINT_DEVICE}" "${INPAINT_BATCH_SIZE}" "${ANAT_MITIGATION}" "${VBT_SMOOTHING_FACTOR}" <<'PY'
 import json, sys
 (t1w, mask, mask_prepared, result, mask_json, qc_json, final_json,
- subject, session, container, labels, dilate, device, batch_size) = sys.argv[1:15]
+ subject, session, container, labels, dilate, device, batch_size,
+ backend, vbt_smoothing) = sys.argv[1:17]
 out = {
     "subject": subject,
     "session": session,
-    "tool": "neuroLIT (FastSurfer-LIT)",
+    "backend": backend,
+    "tool": "neuroLIT (FastSurfer-LIT)" if backend == "neurolit" else "virtual brain transplant",
     "container": container,
     "input_t1w": t1w,
     "lesion_mask_source": mask,
@@ -834,6 +900,8 @@ out = {
     "dilate": int(dilate),
     "device": device,
     "batch_size": int(batch_size),
+    "vbt_smoothing_factor": float(vbt_smoothing) if backend == "vbt" else None,
+    "vbt_smoothing_units": "voxel sigma (LeAPP code default)" if backend == "vbt" else None,
     "keepgeom": True,
     "inpainted_t1w": result,
     "mask_summary": json.load(open(mask_json)),
@@ -865,7 +933,7 @@ run_recon() {
   if [[ -f "${aparc}" ]]; then
     if [[ "${RECON_SKIP_IF_EXISTS}" == "1" ]]; then
       echo "Recon: ${aparc} exists — skipping (RECON_SKIP_IF_EXISTS=1)"
-      return 0
+    return 0
     fi
     _pipeline_fail "recon" "aparc+aseg.mgz already exists at ${aparc}" \
       "Delete ${sd_subj} to force rerun, or set RECON_SKIP_IF_EXISTS=1 to skip Step 2."
@@ -1333,6 +1401,16 @@ _count_empty_nodes() {
 # -----------------------------------------------------------------------------
 run_connectome() {
   echo "=== Connectome: sub-${SUBJECT} ==="
+  if [[ "${ACT_MODE}" == "lesion-aware" ]]; then
+    _pipeline_fail "lesion-aware-act" \
+      "ACT_MODE=lesion-aware is implemented in the Snakemake engine only" \
+      "Run with PIPELINE_ENGINE=snakemake (the default)."
+  fi
+  if [[ "${TRACTOGRAPHY_MODEL}" != "ifod2" ]]; then
+    _pipeline_fail "sd-stream" \
+      "TRACTOGRAPHY_MODEL=${TRACTOGRAPHY_MODEL} is implemented in the Snakemake engine only" \
+      "Run with PIPELINE_ENGINE=snakemake (the default)."
+  fi
 
   local fs_dir="${FS_SUBJECTS_DIR}/sub-${SUBJECT}"
   local aparc="${fs_dir}/mri/aparc+aseg.mgz"
@@ -1423,13 +1501,32 @@ run_connectome() {
   dwiref="$(_strict_find_one "connectome/dwiref" \
     find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
       -name '*space-T1w_dwiref.nii.gz')"
+  local preproc_dwi bval bvec brain_mask
+  preproc_dwi="$(_strict_find_one "connectome/preproc_dwi" \
+    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
+      -name '*space-T1w_desc-preproc_dwi.nii.gz')"
+  bval="${preproc_dwi%.nii.gz}.bval"
+  bvec="${preproc_dwi%.nii.gz}.bvec"
+  [[ -f "${bval}" ]] || _pipeline_fail "connectome/tensor" "missing b-values: ${bval}"
+  [[ -f "${bvec}" ]] || _pipeline_fail "connectome/tensor" "missing b-vectors: ${bvec}"
+  brain_mask="$(_strict_find_one "connectome/brain_mask" \
+    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
+      -name '*space-T1w_desc-brain_mask.nii.gz')"
   preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
   bids_t1w="$(_resolve_registration_t1w "${SUBJECT}" "${ses}")"
 
   dwiref_rel="${dwiref#${QSIPREP_OUT}/}"
   preproc_t1w_rel="${preproc_t1w#${QSIPREP_OUT}/}"
+  local preproc_dwi_rel="${preproc_dwi#${QSIPREP_OUT}/}"
+  local bval_rel="${bval#${QSIPREP_OUT}/}"
+  local bvec_rel="${bvec#${QSIPREP_OUT}/}"
+  local brain_mask_rel="${brain_mask#${QSIPREP_OUT}/}"
   dwiref_in_container="/qsiprep/${dwiref_rel}"
   preproc_t1w_in_container="/qsiprep/${preproc_t1w_rel}"
+  local preproc_dwi_in_container="/qsiprep/${preproc_dwi_rel}"
+  local bval_in_container="/qsiprep/${bval_rel}"
+  local bvec_in_container="/qsiprep/${bvec_rel}"
+  local brain_mask_in_container="/qsiprep/${brain_mask_rel}"
 
   # bids_t1w is usually under BIDS_DIR (already bound at /bids below), but
   # when Step 1.5 ran it's the inpainted T1w under INPAINT_OUT instead — bind
@@ -1449,21 +1546,27 @@ run_connectome() {
   echo "Using aparc+aseg: ${aparc}"
   [[ -n "${dwiref}" ]] && echo "Using DWI reference: ${dwiref}"
   [[ -n "${preproc_t1w}" ]] && echo "Using QSIPrep T1w reference: ${preproc_t1w}"
+  echo "Using preprocessed DWI: ${preproc_dwi}"
+  echo "Using DWI brain mask: ${brain_mask}"
   [[ -n "${bids_t1w}"     ]] && echo "Using BIDS T1w (affine reg source): ${bids_t1w}"
   echo "Space handling: ${space_note}"
   echo "Connectome weighting: ${CONNECTOME_WEIGHTING}"
+  case "${PRIMARY_CONNECTOME_MEASURE}" in
+    count|sift2) ;;
+    *) _pipeline_fail "connectome" \
+         "invalid PRIMARY_CONNECTOME_MEASURE=${PRIMARY_CONNECTOME_MEASURE} (use count or sift2)" ;;
+  esac
 
   local sift2_weights="" sift2_args=()
-  if [[ "${CONNECTOME_WEIGHTING}" == "sift2" ]]; then
-    sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
-      find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
-        -name '*model-sift2_streamlineweights.csv')"
-    local w_rel="${sift2_weights#${QSIRECON_OUT}/}"
-    sift2_args=(--sift2-weights "/qsirecon/${w_rel}")
-    echo "Using SIFT2 weights: ${sift2_weights}"
-  elif [[ "${CONNECTOME_WEIGHTING}" != "count" ]]; then
+  if [[ "${CONNECTOME_WEIGHTING}" != "count" && "${CONNECTOME_WEIGHTING}" != "sift2" ]]; then
     _pipeline_fail "connectome" "invalid CONNECTOME_WEIGHTING=${CONNECTOME_WEIGHTING} (use count or sift2)"
   fi
+  sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
+    find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
+      -name '*model-sift2_streamlineweights.csv')"
+  local w_rel="${sift2_weights#${QSIRECON_OUT}/}"
+  sift2_args=(--sift2-weights "/qsirecon/${w_rel}")
+  echo "Using SIFT2 weights: ${sift2_weights}"
 
   if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
     echo "[connectome] Using legacy dual-container path (CONNECTOME_LEGACY_DUAL_CONTAINER=1)"
@@ -1520,8 +1623,13 @@ run_connectome() {
       --dwiref "${dwiref_in_container}" \
       --preproc-t1w "${preproc_t1w_in_container}" \
       --bids-t1w "${bids_t1w_in_container}" \
+      --preproc-dwi "${preproc_dwi_in_container}" \
+      --bval "${bval_in_container}" \
+      --bvec "${bvec_in_container}" \
+      --brain-mask "${brain_mask_in_container}" \
       --output-dir /out \
       --fs-license /opt/freesurfer/license.txt \
+      --primary-measure "${PRIMARY_CONNECTOME_MEASURE}" \
       "${sift2_args[@]}" \
       "${lut_args[@]}" \
       --subject-id "sub-${SUBJECT}"
@@ -1543,10 +1651,47 @@ run_connectome() {
   # never be mistaken for each other, and clear any matrix left behind by the
   # other parcellation so a stale file of the wrong dimension cannot be picked up.
   local matrix="${outdir}/${parc}_connectome.csv"
+  local count_matrix="${outdir}/${parc}_connectome_count.csv"
+  local sift2_matrix="${outdir}/${parc}_connectome_sift2.csv"
+  local meanlength_matrix="${outdir}/${parc}_connectome_meanlength.csv"
+  local meanfa_matrix="${outdir}/${parc}_connectome_meanfa.csv"
+  local meanmd_matrix="${outdir}/${parc}_connectome_meanmd.csv"
+  local fa_map="${outdir}/${parc}_desc-FA_dwi.nii.gz"
+  local md_map="${outdir}/${parc}_desc-MD_dwi.nii.gz"
+  local count_json sift2_json meanlength_json meanfa_json meanmd_json fa_json md_json
   mv -f "${outdir}/connectome.csv" "${matrix}"
+  if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
+    mv -f "${outdir}/connectome_count.csv" "${count_matrix}"
+    mv -f "${outdir}/connectome_sift2.csv" "${sift2_matrix}"
+    mv -f "${outdir}/connectome_meanlength.csv" "${meanlength_matrix}"
+    mv -f "${outdir}/connectome_meanfa.csv" "${meanfa_matrix}"
+    mv -f "${outdir}/connectome_meanmd.csv" "${meanmd_matrix}"
+    mv -f "${outdir}/desc-FA_dwi.nii.gz" "${fa_map}"
+    mv -f "${outdir}/desc-MD_dwi.nii.gz" "${md_map}"
+    count_json="\"${count_matrix##*/}\""
+    sift2_json="\"${sift2_matrix##*/}\""
+    meanlength_json="\"${meanlength_matrix##*/}\""
+    meanfa_json="\"${meanfa_matrix##*/}\""
+    meanmd_json="\"${meanmd_matrix##*/}\""
+    fa_json="\"${fa_map##*/}\""
+    md_json="\"${md_map##*/}\""
+  else
+    count_matrix="${matrix}"
+    count_json="\"${matrix##*/}\""
+    sift2_json="null"
+    meanlength_json="null"
+    meanfa_json="null"
+    meanmd_json="null"
+    fa_json="null"
+    md_json="null"
+  fi
   local other
   for other in dk dkt; do
-    [[ "${other}" == "${parc}" ]] || rm -f "${outdir}/${other}_connectome.csv"
+    if [[ "${other}" != "${parc}" ]]; then
+      rm -f "${outdir}/${other}_connectome"*.csv
+      rm -f "${outdir}/${other}_desc-FA_dwi.nii.gz" \
+            "${outdir}/${other}_desc-MD_dwi.nii.gz"
+    fi
   done
   # Briefly-lived earlier naming, removed so it cannot be mistaken for output.
   rm -f "${outdir}/DKT_connectome.csv"
@@ -1555,7 +1700,7 @@ run_connectome() {
   # segmentation, which is exactly the failure this parcellation logic exists to
   # prevent, so surface it rather than let it reach group analysis unnoticed.
   local empty_nodes
-  empty_nodes="$(_count_empty_nodes "${matrix}")"
+  empty_nodes="$(_count_empty_nodes "${count_matrix}")"
   if [[ "${empty_nodes}" -gt 0 ]]; then
     echo "WARNING: ${empty_nodes} of ${node_count} ${atlas} nodes received no streamlines."
     echo "         Usually a LUT/segmentation mismatch; can be genuine after resection"
@@ -1571,7 +1716,19 @@ run_connectome() {
   "atlas": "${atlas}",
   "nodes": ${node_count},
   "labelconvert_lut": "${lut_used}",
+  "primary_measure": "${PRIMARY_CONNECTOME_MEASURE}",
   "connectome_csv": "${matrix##*/}",
+  "matrices": {
+    "count": ${count_json},
+    "sift2": ${sift2_json},
+    "meanlength": ${meanlength_json},
+    "meanfa": ${meanfa_json},
+    "meanmd": ${meanmd_json}
+  },
+  "tensor_maps": {
+    "fa": ${fa_json},
+    "md": ${md_json}
+  },
   "empty_nodes": ${empty_nodes},
   "deterministic": ${CONNECTOME_DETERMINISTIC},
   "selected_by": "${parc_source}",
@@ -1580,7 +1737,17 @@ run_connectome() {
 }
 EOF
 
-  echo "Connectome: ${matrix} (${atlas}, ${node_count} nodes)"
+  echo "Primary connectome: ${matrix} (${PRIMARY_CONNECTOME_MEASURE})"
+  echo "Count: ${count_matrix}"
+  if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
+    echo "SIFT2: ${sift2_matrix}"
+    echo "MeanLength: ${meanlength_matrix}"
+    echo "MeanFA: ${meanfa_matrix}"
+    echo "MeanMD: ${meanmd_matrix}"
+    echo "FA map: ${fa_map}"
+    echo "MD map: ${md_map}"
+  fi
+  echo "Atlas: ${atlas} (${node_count} nodes)"
   echo "Parcellation provenance: ${outdir}/parcellation.json"
   echo "Space diagnostic: ${outdir}/nodes.mrinfo.txt , ${outdir}/tracks.tckinfo.txt"
 
@@ -1603,14 +1770,29 @@ run_disconnectome() {
     fi
   fi
 
-  local target_ses mask_prepared dkt_matrix
+  local target_ses mask_raw mask_prepared mask_json t1w dkt_matrix
   target_ses="$(_resolve_target_session)" || return 0
-  mask_prepared="${INPAINT_OUT}/sub-${SUBJECT}/ses-${target_ses}/lesion_mask_prepared.nii.gz"
+  mask_raw="$(find_lesion_mask "${SUBJECT}" "${target_ses}")"
+  if [[ -z "${mask_raw}" ]]; then
+    echo "Disconnectome (Step 4.5): no BIDS lesion mask — skipping"
+    return 0
+  fi
+  mask_prepared="${RESULTS_ROOT}/lesion_masks/sub-${SUBJECT}/ses-${target_ses}/lesion_mask_prepared.nii.gz"
+  mask_json="${RESULTS_ROOT}/lesion_masks/sub-${SUBJECT}/ses-${target_ses}/lesion_mask_prepared.json"
   dkt_matrix="${CONNECTOME_OUT}/sub-${SUBJECT}/dkt_connectome.csv"
 
   if [[ ! -f "${mask_prepared}" ]]; then
-    echo "Disconnectome (Step 4.5): no prepared lesion mask — skipping (no lesion or inpaint did not run)"
-    return 0
+    t1w="$(_strict_find_one "disconnectome/T1w" \
+      find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
+        \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \))"
+    mkdir -p "$(dirname "${mask_prepared}")"
+    local -a prep_xtra=()
+    [[ "${INPAINT_BINARIZE}" == "1" ]] && prep_xtra+=(--binarize)
+    python3 "${PREPARE_LESION_MASK}" \
+      --t1w "${t1w}" --mask "${mask_raw}" \
+      --out "${mask_prepared}" --json "${mask_json}" \
+      --labels "${INPAINT_LABELS}" \
+      "${prep_xtra[@]}"
   fi
   if [[ ! -f "${dkt_matrix}" ]]; then
     _pipeline_fail "disconnectome" "missing ${dkt_matrix}" "Run Step 4 (connectome) first."

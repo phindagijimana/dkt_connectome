@@ -60,9 +60,10 @@ dwi_select:
   shell_b: 1000
   json: null   # explicit override path; default: config/dwi_select_b<shell_b>.json
 
-# --- Step 1.5: Inpaint (LIT) ---
+# --- Step 1.5: Anatomical lesion mitigation ---
 inpaint:
   enabled: true            # auto-on; no-op per subject unless a lesion mask is found
+  backend: neurolit        # none | neurolit | vbt
   require_mask: false
   dilate: 2
   device: auto             # auto | cpu | cuda
@@ -72,6 +73,8 @@ inpaint:
   min_outside_corr: 0.995
   max_corr_drop: 0.01
   fail_on_qc: false
+  vbt:
+    smoothing_factor: 2.0  # Gaussian sigma in voxels, matching LeAPP code
 
 # --- Step 2: Recon (recon-all / FastSurfer) ---
 recon:
@@ -86,15 +89,36 @@ qsirecon:
   spec: mrtrix_singleshell_ss3t_ACT-hsvs
   atlases: ["4S156Parcels"]
 
+# --- Step 3.5: ACT anatomy ---
+act:
+  mode: standard            # standard | lesion-aware
+  streamlines: 10000000
+  random_seed: 0
+  cutoff: 0.05
+  min_length_mm: 30
+  max_length_mm: 250
+
+tractography:
+  model: ifod2             # ifod2 | sd_stream | both; sd_stream keeps iFOD2 compatibility outputs
+
+experiment:
+  arm: null               # orig-std | orig-lesion | neurolit-std | neurolit-lesion | vbt-std | vbt-lesion
+  isolate_outputs: true
+
 # --- Step 4: Connectome ---
 connectome:
   enabled: true
-  parcellation: dkt         # dkt | dk | auto
+  parcellation: dkt         # dkt | dk | auto (primary / backward-compatible)
+  atlases: [dkt]            # optional: add lausanne60 for robustness connectomes
   lut_dkt: null             # default: containers/connectome/mrtrix_lut/fs_dkt.txt
   fail_on_empty_nodes: false
   deterministic: true
   resample_to_dwi: true
   weighting: count          # count | sift2 — must match Step 4.5 disconnectome weighting
+  primary_measure: count     # dkt_connectome.csv remains count unless explicitly overridden
+  # Step 4 always also writes *_connectome_count.csv,
+  # *_connectome_sift2.csv, *_connectome_meanlength.csv, *_connectome_meanfa.csv,
+  # *_connectome_meanmd.csv, and voxelwise FA/MD maps.
 
 # --- Step 4.5: Disconnectome (opt-in via --disconnection / disconnectome.enabled) ---
 disconnectome:

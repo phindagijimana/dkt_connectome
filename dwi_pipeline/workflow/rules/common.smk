@@ -23,6 +23,8 @@ COMMON_SH = LIB_DIR / "common.sh"
 RESOLVE_SESSION_PY = LIB_DIR / "resolve_session.py"
 PREPARE_LESION_MASK = DWI_PIPELINE_DIR / "scripts" / "prepare_lesion_mask.py"
 CHECK_INPAINTING = DWI_PIPELINE_DIR / "scripts" / "check_inpainting.py"
+RUN_VBT = DWI_PIPELINE_DIR / "scripts" / "run_vbt.py"
+BUILD_LAUSANNE_PARC = DWI_PIPELINE_DIR / "scripts" / "build_lausanne_parcellation.py"
 BUILD_BIDS_FILTER = DWI_PIPELINE_DIR / "scripts" / "build_bids_filter.py"
 MAKE_DWI_SELECT_CONFIG = DWI_PIPELINE_DIR / "scripts" / "make_dwi_select_config.py"
 
@@ -55,6 +57,9 @@ QSIRECON_OUT = f"{RESULTS_ROOT}/qsirecon_single_run_output"
 RECON_OUT = config.get("recon_out") or f"{RESULTS_ROOT}/freesurfer"
 FS_SUBJECTS_DIR = config.get("fs_subjects_dir") or RECON_OUT
 INPAINT_OUT = f"{RESULTS_ROOT}/inpainted"
+LESION_MASK_OUT = f"{RESULTS_ROOT}/lesion_masks"
+LESION_AWARE_ACT_OUT = f"{RESULTS_ROOT}/lesion_aware_act"
+TRACTOGRAPHY_OUT = f"{RESULTS_ROOT}/tractography"
 CONNECTOME_OUT = f"{RESULTS_ROOT}/connectomes"
 NODESTRENGTH_OUT = config.get("nodestrength_out") or f"{RESULTS_ROOT}/node_strength"
 INTER_QSP = f"{RESULTS_ROOT}/intermediate_results_qsiprep_single"
@@ -80,12 +85,41 @@ DWI_SELECT_JSON = _dwi_select.get("json") or str(
 INPAINT_CFG = config.get("inpaint", {})
 RECON_CFG = config.get("recon", {})
 QSIRECON_CFG = config.get("qsirecon", {})
+ACT_CFG = config.get("act", {})
+TRACTOGRAPHY_CFG = config.get("tractography", {})
+EXPERIMENT_CFG = config.get("experiment", {})
 CONNECTOME_CFG = config.get("connectome", {})
 NODESTRENGTH_CFG = config.get("nodestrength", {})
+
+ANATOMY_MITIGATION_BACKEND = str(
+    INPAINT_CFG.get("backend", "neurolit") if INPAINT_CFG.get("enabled", True) else "none"
+).lower()
+if ANATOMY_MITIGATION_BACKEND not in ("none", "neurolit", "vbt"):
+    raise WorkflowError(
+        "invalid inpaint.backend="
+        f"{ANATOMY_MITIGATION_BACKEND} (use none, neurolit, or vbt)"
+    )
+ANATOMY_MITIGATION_OUT = (
+    f"{RESULTS_ROOT}/vbt"
+    if ANATOMY_MITIGATION_BACKEND == "vbt"
+    else INPAINT_OUT
+)
 
 CONNECTOME_LUT_DKT = CONNECTOME_CFG.get("lut_dkt") or str(
     DWI_PIPELINE_DIR / "containers" / "connectome" / "mrtrix_lut" / "fs_dkt.txt"
 )
+
+_raw_connectome_atlases = CONNECTOME_CFG.get("atlases")
+if _raw_connectome_atlases is None:
+    CONNECTOME_ATLASES = [str(CONNECTOME_CFG.get("parcellation", "dkt"))]
+else:
+    CONNECTOME_ATLASES = [str(a).lower() for a in _raw_connectome_atlases]
+for _atlas in CONNECTOME_ATLASES:
+    if _atlas not in ("dkt", "dk", "auto", "lausanne60"):
+        raise WorkflowError(
+            f"invalid connectome.atlases entry={_atlas} "
+            "(use dkt, dk, auto, lausanne60)"
+        )
 
 
 @functools.lru_cache(maxsize=None)
@@ -141,7 +175,12 @@ def find_lesion_mask(subject: str, session: str) -> str | None:
 
 
 def subject_has_lesion_mask(subject: str) -> bool:
-    if not INPAINT_CFG.get("enabled", True):
-        return False
     session = resolve_session(subject)
     return find_lesion_mask(subject, session) is not None
+
+
+def mitigation_enabled_for(subject: str) -> bool:
+    return (
+        ANATOMY_MITIGATION_BACKEND != "none"
+        and subject_has_lesion_mask(subject)
+    )

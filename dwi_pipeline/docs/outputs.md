@@ -10,10 +10,13 @@ Derivatives written under `RESULTS_ROOT` (the BIDS App `<output_dir>`). Paths us
 RESULTS_ROOT/
 ├── dataset_description.json   # derivative dataset provenance (auto-written by ./run)
 ├── qsiprep_single_run_output/sub-<ID>/     Step 1
-├── inpainted/sub-<ID>/ses-<Y>/             Step 1.5 (lesion subjects only)
+├── inpainted/sub-<ID>/ses-<Y>/             Step 1.5 neuroLIT (lesion subjects)
+├── vbt/sub-<ID>/ses-<Y>/                   Step 1.5 VBT (--anat-mitigation vbt)
+├── lesion_aware_act/sub-<ID>/              Step 3.5 (--act-mode lesion-aware)
 ├── freesurfer/sub-<ID>/                    Step 2
 ├── qsirecon_single_run_output/sub-<ID>/    Step 3
 ├── connectomes/sub-<ID>/                   Step 4 (+ optional 4.5/)
+├── arms/<arm>/                             Experiment-arm isolated runs (optional)
 ├── qc/sub-<ID>/subject_qc.html             Unified QC dashboard (Steps 1–5)
 ├── cohort_qc.html                          Group-level QC index (./run group)
 ├── derivatives/                            BIDS Derivatives export (symlink mirror)
@@ -41,10 +44,26 @@ Only when `*_T1w_label-lesion_roi.nii.gz` exists for the session:
 
 | Path | Description |
 |------|-------------|
-| `inpainted/sub-<ID>/ses-<Y>/lesion_mask_prepared.nii.gz` | Resampled / label-selected mask |
-| `inpainted/sub-<ID>/ses-<Y>/lesion_mask_prepared.json` | Provenance |
-| `inpainted/sub-<ID>/ses-<Y>/inpainting_volumes/inpainting_result.nii.gz` | Inpainted T1w |
-| `inpainted/sub-<ID>/ses-<Y>/inpainting.json` | QC metrics |
+| `inpainted/sub-<ID>/ses-<Y>/…` | neuroLIT backend (default) |
+| `vbt/sub-<ID>/ses-<Y>/…` | VBT backend (`--anat-mitigation vbt`) |
+| `…/lesion_mask_prepared.nii.gz` | Resampled / label-selected mask |
+| `…/lesion_mask_prepared.json` | Provenance |
+| `…/inpainting_volumes/inpainting_result.nii.gz` | Mitigated T1w (Step 2 input) |
+| `…/inpainting.json` | QC metrics and backend provenance |
+
+---
+
+## Step 3.5 — Lesion-aware ACT
+
+When `--act-mode lesion-aware` or a `*-lesion` experiment arm:
+
+| Path | Description |
+|------|-------------|
+| `lesion_aware_act/sub-<ID>/lesion_aware_5tt.mif` | 5TT with pathology channel |
+| `lesion_aware_act/sub-<ID>/lesion_mask_in_dwi.nii.gz` | Mask in DWI space |
+| `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck` | Rebuilt tractogram |
+| `lesion_aware_act/sub-<ID>/model-sift2_streamlineweights.csv` | SIFT2 weights |
+| `lesion_aware_act/sub-<ID>/lesion_aware_act.json` | Provenance |
 
 ---
 
@@ -74,11 +93,19 @@ Under `connectomes/sub-<ID>/`:
 
 | File | Description |
 |------|-------------|
-| `dkt_connectome.csv` | **Primary** 78×78 DKT matrix (default: streamline counts) |
-| `nodes.mif` | DKT parcellation on DWI grid |
+| `dkt_connectome.csv` | **Primary** 78×78 alias (default: count → same as `dkt_connectome_count.csv`) |
+| `dkt_connectome_count.csv` | Streamline counts |
+| `dkt_connectome_sift2.csv` | SIFT2 weights |
+| `dkt_connectome_meanlength.csv` | Mean streamline length per edge (mm) |
+| `dkt_connectome_meanfa.csv` | Mean FA along streamlines |
+| `dkt_connectome_meanmd.csv` | Mean MD along streamlines |
+| `dkt_desc-FA_dwi.nii.gz`, `dkt_desc-MD_dwi.nii.gz` | Voxelwise tensor maps |
+| `dkt_nodes.mif` | DKT parcellation on DWI grid |
 | `parcellation.json` | Atlas metadata |
 | `native_to_preproc_T1w_0GenericAffine.mat` | Registration used for lesion warp (4.5) |
 | `assignments.csv` | Streamline–node assignments (debug) |
+
+With `--tractography-model both`: additional `dkt_model-SDSTREAM_connectome_*.csv` files.
 
 With `CONNECTOME_PARCELLATION=dk`: `dk_connectome.csv` (84 nodes, recon-all only).
 
@@ -121,3 +148,5 @@ Step 4 and Step 4.5 must use the same edge weighting (`count` by default). Misma
 ## One `RESULTS_ROOT` per pipeline variant
 
 Do not mix runs with different settings (FastSurfer vs FreeSurfer, inpaint on/off, connectome off) in the same output directory.
+
+**Experiment arms:** by default each `--experiment-arm` writes to `RESULTS_ROOT/arms/<arm>/` with the full step tree under that prefix. Run one arm per Slurm submission when comparing anatomy × ACT factorial designs. See [Usage — experiment arms](usage.md).

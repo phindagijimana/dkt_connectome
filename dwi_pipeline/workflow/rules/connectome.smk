@@ -17,9 +17,17 @@ import os
 import tempfile
 
 wildcard_constraints:
-    parc=r"dk|dkt"
+    parc=r"dk|dkt|lausanne60"
 
 CONNECTOME_MATRIX_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_connectome.csv"
+CONNECTOME_COUNT_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_connectome_count.csv"
+CONNECTOME_SIFT2_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_connectome_sift2.csv"
+CONNECTOME_MEANLENGTH_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_connectome_meanlength.csv"
+CONNECTOME_MEANFA_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_connectome_meanfa.csv"
+CONNECTOME_MEANMD_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_connectome_meanmd.csv"
+CONNECTOME_FA_MAP_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_desc-FA_dwi.nii.gz"
+CONNECTOME_MD_MAP_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_desc-MD_dwi.nii.gz"
+CONNECTOME_NODES_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/{{parc}}_nodes.mif"
 CONNECTOME_PARCJSON_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/parcellation.json"
 
 CONNECTOME_PARCELLATION_CFG = str(CONNECTOME_CFG.get("parcellation", "dkt"))
@@ -27,6 +35,15 @@ CONNECTOME_DETERMINISTIC = bool(CONNECTOME_CFG.get("deterministic", True))
 CONNECTOME_FAIL_ON_EMPTY_NODES = bool(CONNECTOME_CFG.get("fail_on_empty_nodes", False))
 CONNECTOME_RESAMPLE_TO_DWI = bool(CONNECTOME_CFG.get("resample_to_dwi", True))
 CONNECTOME_WEIGHTING = str(CONNECTOME_CFG.get("weighting", "count")).lower()
+CONNECTOME_PRIMARY_MEASURE = str(
+    CONNECTOME_CFG.get("primary_measure") or "count"
+).lower()
+EXPERIMENT_ARM = str(EXPERIMENT_CFG.get("arm") or "")
+if CONNECTOME_PRIMARY_MEASURE not in ("count", "sift2"):
+    raise WorkflowError(
+        "invalid connectome.primary_measure="
+        f"{CONNECTOME_PRIMARY_MEASURE} (use count or sift2)"
+    )
 
 
 @functools.lru_cache(maxsize=None)
@@ -82,25 +99,68 @@ def resolved_parcellation(subject: str) -> str:
     return parc
 
 
+def connectome_atlases_for(subject: str) -> list[str]:
+    out: list[str] = []
+    for atlas in CONNECTOME_ATLASES:
+        if atlas == "auto":
+            resolved = resolved_parcellation(subject)
+        elif atlas in ("dkt", "dk", "lausanne60"):
+            resolved = atlas
+        else:
+            raise WorkflowError(f"unsupported connectome atlas: {atlas}")
+        if resolved not in out:
+            out.append(resolved)
+    return out
+
+
 def connectome_matrix(subject: str) -> str:
-    return CONNECTOME_MATRIX_PATTERN.format(subject=subject, parc=resolved_parcellation(subject))
+    return CONNECTOME_MATRIX_PATTERN.format(
+        subject=subject, parc=resolved_parcellation(subject)
+    )
 
 
-def connectome_parcellation_json(subject: str) -> str:
-    return CONNECTOME_PARCJSON_PATTERN.format(subject=subject)
+def connectome_products(subject: str) -> list[str]:
+    products: list[str] = []
+    for parc in connectome_atlases_for(subject):
+        products.extend(
+            pattern.format(subject=subject, parc=parc)
+            for pattern in (
+                CONNECTOME_MATRIX_PATTERN,
+                CONNECTOME_COUNT_PATTERN,
+                CONNECTOME_SIFT2_PATTERN,
+                CONNECTOME_MEANLENGTH_PATTERN,
+                CONNECTOME_MEANFA_PATTERN,
+                CONNECTOME_MEANMD_PATTERN,
+                CONNECTOME_FA_MAP_PATTERN,
+                CONNECTOME_MD_MAP_PATTERN,
+                CONNECTOME_NODES_PATTERN,
+            )
+        )
+    return products
+
+
+def connectome_parcellation_json(subject: str, parc: str | None = None) -> str:
+    parc = parc or resolved_parcellation(subject)
+    if parc == resolved_parcellation(subject):
+        return CONNECTOME_PARCJSON_PATTERN.format(subject=subject)
+    return f"{CONNECTOME_OUT}/sub-{subject}/{parc}_parcellation.json"
 
 
 def connectome_registration_t1w_input(subject: str):
     """If Step 1.5 ran for this subject, connectome must wait for it and use
     its result as the affine-registration source (see subject.sh's
     _resolve_registration_t1w); otherwise no such dependency exists."""
-    return inpainted_t1w_for(subject) or []
+    return mitigated_t1w_for(subject) or []
 
 
 rule connectome:
     input:
         aparc=lambda wc: recon_aparc(wc.subject),
+        lausanne_parc=lambda wc: (
+            lausanne60_parcellation(wc.subject) if wc.parc == "lausanne60" else []
+        ),
         qsirecon_marker=lambda wc: qsirecon_marker(wc.subject),
+        lesion_act=lambda wc: lesion_act_products(wc.subject),
         registration_t1w=lambda wc: connectome_registration_t1w_input(wc.subject),
     output:
         # parcellation.json is not declared here (Snakemake requires every
@@ -108,6 +168,14 @@ rule connectome:
         # name -- unlike the matrix -- doesn't vary with {parc}); it's still
         # written by the shell block below, just not skip/rerun-tracked.
         matrix=CONNECTOME_MATRIX_PATTERN,
+        count_matrix=CONNECTOME_COUNT_PATTERN,
+        sift2_matrix=CONNECTOME_SIFT2_PATTERN,
+        meanlength_matrix=CONNECTOME_MEANLENGTH_PATTERN,
+        meanfa_matrix=CONNECTOME_MEANFA_PATTERN,
+        meanmd_matrix=CONNECTOME_MEANMD_PATTERN,
+        fa_map=CONNECTOME_FA_MAP_PATTERN,
+        md_map=CONNECTOME_MD_MAP_PATTERN,
+        nodes=CONNECTOME_NODES_PATTERN,
     threads: 4
     log:
         f"{RESULTS_ROOT}/logs/sub-{{subject}}_connectome_{{parc}}.log",
@@ -115,11 +183,15 @@ rule connectome:
         parc=lambda wc: wc.parc,
         fs_dir=lambda wc: f"{FS_SUBJECTS_DIR}/sub-{wc.subject}",
         outdir=lambda wc: f"{CONNECTOME_OUT}/sub-{wc.subject}",
-        parcellation_json=lambda wc: connectome_parcellation_json(wc.subject),
+        parcellation_json=lambda wc: connectome_parcellation_json(wc.subject, wc.parc),
         lut_dkt=CONNECTOME_LUT_DKT,
+        lut_lausanne_fs=LAUSANNE60_LUT_FS,
+        lut_lausanne_mrtrix=LAUSANNE60_LUT_MRTRIX,
         deterministic="1" if CONNECTOME_DETERMINISTIC else "0",
         fail_on_empty="1" if CONNECTOME_FAIL_ON_EMPTY_NODES else "0",
         weighting=CONNECTOME_WEIGHTING,
+        primary_measure=CONNECTOME_PRIMARY_MEASURE,
+        session=lambda wc: resolve_session(wc.subject),
     shell:
         r"""
         exec > {log} 2>&1
@@ -130,37 +202,67 @@ rule connectome:
         [[ "{CONNECTOME_RESAMPLE_TO_DWI}" == "True" ]] || \
           _pipeline_fail "connectome" "connectome.resample_to_dwi must be true (strict pipeline)"
 
-        # Replace any prior connectome dir for this subject (resume-safe)
-        rm -rf "{params.outdir}"
+        # Multi-atlas safe: remove only this atlas's prior outputs.
         mkdir -p "{params.outdir}"
+        rm -f "{params.outdir}/{params.parc}_connectome"*.csv \
+              "{params.outdir}/{params.parc}_desc-FA_dwi.nii.gz" \
+              "{params.outdir}/{params.parc}_desc-MD_dwi.nii.gz" \
+              "{params.outdir}/{params.parc}_nodes.mif"
         aparc="{input.aparc}"
+        seg_container_path=""
+        lausanne_binds=()
 
-        _CONNECTOME_DETECT_METHOD=""
-        tree_is_dkt=0
-        if _fs_tree_is_dkt "{params.fs_dir}" "{params.outdir}"; then tree_is_dkt=1; fi
-        echo "Parcellation requested: {params.parc} (tree_is_dkt=${{tree_is_dkt}}, detected via ${{_CONNECTOME_DETECT_METHOD}})"
+        if [[ "{params.parc}" == "lausanne60" ]]; then
+          aparc="{input.lausanne_parc}"
+          [[ -f "${{aparc}}" ]] || _pipeline_fail "connectome" \
+            "missing Lausanne-60 parcellation: ${{aparc}}"
+          lausanne_binds=(-B "$(dirname "${{aparc}}")":/lausanne_parc:ro)
+          seg_container_path="/lausanne_parc/$(basename "${{aparc}}")"
+          echo "Using Lausanne-60 parcellation: ${{aparc}}"
+        else
+          _CONNECTOME_DETECT_METHOD=""
+          tree_is_dkt=0
+          if _fs_tree_is_dkt "{params.fs_dir}" "{params.outdir}"; then tree_is_dkt=1; fi
+          echo "Parcellation requested: {params.parc} (tree_is_dkt=${{tree_is_dkt}}, detected via ${{_CONNECTOME_DETECT_METHOD}})"
 
-        if [[ "{params.parc}" == "dkt" && "${{tree_is_dkt}}" != "1" ]]; then
-          aparc="{params.fs_dir}/mri/aparc.DKTatlas+aseg.mgz"
-          [[ -f "${{aparc}}" ]] || _pipeline_fail "connectome" "DKT requested but no DKT segmentation at ${{aparc}}"
-          echo "Using the recon-all DKT segmentation: ${{aparc}}"
+          if [[ "{params.parc}" == "dkt" && "${{tree_is_dkt}}" != "1" ]]; then
+            aparc="{params.fs_dir}/mri/aparc.DKTatlas+aseg.mgz"
+            [[ -f "${{aparc}}" ]] || _pipeline_fail "connectome" "DKT requested but no DKT segmentation at ${{aparc}}"
+            echo "Using the recon-all DKT segmentation: ${{aparc}}"
+          fi
+          if [[ "{params.parc}" == "dk" && "${{tree_is_dkt}}" == "1" ]]; then
+            echo "WARNING: parcellation=dk on a FastSurfer tree -- expect 6 empty nodes."
+          fi
+          seg_container_path="$(basename "${{aparc}}")"
         fi
-        if [[ "{params.parc}" == "dk" && "${{tree_is_dkt}}" == "1" ]]; then
-          echo "WARNING: parcellation=dk on a FastSurfer tree -- expect 6 empty nodes."
+
+        ses="{params.session}"
+        if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
+          tracks="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+          [[ -f "${{tracks}}" ]] || _pipeline_fail "connectome/tractogram" \
+            "missing lesion-aware tractogram: ${{tracks}}"
+          tracks_in_container="/lesion_act/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+        else
+          tracks="$(_strict_find_one "connectome/tractogram" \
+            find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+              \( -name '*.tck' -o -name '*.tck.gz' \))"
+          tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
+          tracks_in_container="/qsirecon/${{tracks_rel}}"
         fi
-
-        tracks="$(_strict_find_one "connectome/tractogram" \
-          find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
-            \( -name '*.tck' -o -name '*.tck.gz' \))"
-        tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
-        tracks_in_container="/qsirecon/${{tracks_rel}}"
-
-        ses="$(_bids_ses_from_path "${{tracks}}")"
-        [[ -n "${{ses}}" ]] || _pipeline_fail "connectome/session" "tractogram path has no ses-* entity: ${{tracks}}"
 
         dwiref="$(_strict_find_one "connectome/dwiref" \
           find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
             -name '*space-T1w_dwiref.nii.gz')"
+        preproc_dwi="$(_strict_find_one "connectome/preproc_dwi" \
+          find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
+            -name '*space-T1w_desc-preproc_dwi.nii.gz')"
+        bval="${{preproc_dwi%.nii.gz}}.bval"
+        bvec="${{preproc_dwi%.nii.gz}}.bvec"
+        [[ -f "${{bval}}" ]] || _pipeline_fail "connectome/tensor" "missing b-values: ${{bval}}"
+        [[ -f "${{bvec}}" ]] || _pipeline_fail "connectome/tensor" "missing b-vectors: ${{bvec}}"
+        brain_mask="$(_strict_find_one "connectome/brain_mask" \
+          find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
+            -name '*space-T1w_desc-brain_mask.nii.gz')"
         preproc_t1w="$(find_qsiprep_preproc_t1w "{QSIPREP_OUT}" "${{SUBJECT}}" "${{ses}}")"
 
         if [[ -n "{input.registration_t1w}" ]]; then
@@ -172,8 +274,16 @@ rule connectome:
 
         dwiref_rel="${{dwiref#{QSIPREP_OUT}/}}"
         preproc_t1w_rel="${{preproc_t1w#{QSIPREP_OUT}/}}"
+        preproc_dwi_rel="${{preproc_dwi#{QSIPREP_OUT}/}}"
+        bval_rel="${{bval#{QSIPREP_OUT}/}}"
+        bvec_rel="${{bvec#{QSIPREP_OUT}/}}"
+        brain_mask_rel="${{brain_mask#{QSIPREP_OUT}/}}"
         dwiref_in_container="/qsiprep/${{dwiref_rel}}"
         preproc_t1w_in_container="/qsiprep/${{preproc_t1w_rel}}"
+        preproc_dwi_in_container="/qsiprep/${{preproc_dwi_rel}}"
+        bval_in_container="/qsiprep/${{bval_rel}}"
+        bvec_in_container="/qsiprep/${{bvec_rel}}"
+        brain_mask_in_container="/qsiprep/${{brain_mask_rel}}"
 
         t1w_override_binds=()
         if [[ "${{bids_t1w}}" == "{BIDS_DIR}"/* ]]; then
@@ -187,23 +297,38 @@ rule connectome:
         echo "Using tractogram: ${{tracks}}"
         echo "Using aparc+aseg: ${{aparc}}"
         echo "Using DWI reference: ${{dwiref}}"
+        echo "Using preprocessed DWI: ${{preproc_dwi}}"
+        echo "Using DWI brain mask: ${{brain_mask}}"
         echo "Using BIDS T1w (affine reg source): ${{bids_t1w}}"
         echo "Connectome weighting: {params.weighting}"
 
-        sift2_weights=""
-        if [[ "{params.weighting}" == "sift2" ]]; then
+        if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
+          sift2_weights="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv"
+          [[ -f "${{sift2_weights}}" ]] || _pipeline_fail "connectome/sift2_weights" \
+            "missing lesion-aware SIFT2 weights: ${{sift2_weights}}"
+        else
           sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
             find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
               -name '*model-sift2_streamlineweights.csv')"
-          echo "Using SIFT2 weights: ${{sift2_weights}}"
         fi
+        echo "Using SIFT2 weights: ${{sift2_weights}}"
 
         binds=()
+        act_binds=()
+        if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
+          act_binds=(-B "{LESION_AWARE_ACT_OUT}":/lesion_act:ro)
+        fi
         lut_args=()
         if [[ "{params.parc}" == "dkt" ]]; then
           [[ -f "{params.lut_dkt}" ]] || _pipeline_fail "connectome" "missing DKT LUT: {params.lut_dkt}"
           binds+=(-B "{params.lut_dkt}":/lut/fs_dkt.txt:ro)
           lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+        elif [[ "{params.parc}" == "lausanne60" ]]; then
+          [[ -f "{params.lut_lausanne_fs}" ]] || _pipeline_fail "connectome" "missing Lausanne FS LUT"
+          [[ -f "{params.lut_lausanne_mrtrix}" ]] || _pipeline_fail "connectome" "missing Lausanne MRtrix LUT"
+          binds+=(-B "{params.lut_lausanne_fs}":/lut/lausanne60_fs_lut.txt:ro)
+          binds+=(-B "{params.lut_lausanne_mrtrix}":/lut/lausanne60_mrtrix_lut.txt:ro)
+          lut_args+=(--fs-lut /lut/lausanne60_fs_lut.txt --mrtrix-lut /lut/lausanne60_mrtrix_lut.txt)
         fi
 
         env_args=()
@@ -213,8 +338,12 @@ rule connectome:
 
         sift2_args=()
         if [[ -n "${{sift2_weights}}" ]]; then
-          w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
-          sift2_args=(--sift2-weights "/qsirecon/${{w_rel}}")
+          if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
+            sift2_args=(--sift2-weights "/lesion_act/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv")
+          else
+            w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
+            sift2_args=(--sift2-weights "/qsirecon/${{w_rel}}")
+          fi
         fi
 
         apptainer run --cleanenv --containall \
@@ -222,7 +351,10 @@ rule connectome:
           --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
           "${{env_args[@]}}" \
           "${{binds[@]}}" \
+          "${{lausanne_binds[@]}}" \
           "${{t1w_override_binds[@]}}" \
+          "${{act_binds[@]}}" \
+          -B "{DWI_PIPELINE_DIR}/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro \
           -B "{FS_SUBJECTS_DIR}":/subjects:ro \
           -B "{QSIRECON_OUT}":/qsirecon:ro \
           -B "{QSIPREP_OUT}":/qsiprep:ro \
@@ -231,13 +363,18 @@ rule connectome:
           -B "{FS_LICENSE}":/opt/freesurfer/license.txt:ro \
           "{CONTAINER_CONNECTOME}" \
           --freesurfer-subject "/subjects/sub-${{SUBJECT}}" \
-          --segmentation "$(basename "${{aparc}}")" \
+          --segmentation "${{seg_container_path}}" \
           --tractogram "${{tracks_in_container}}" \
           --dwiref "${{dwiref_in_container}}" \
           --preproc-t1w "${{preproc_t1w_in_container}}" \
           --bids-t1w "${{bids_t1w_in_container}}" \
+          --preproc-dwi "${{preproc_dwi_in_container}}" \
+          --bval "${{bval_in_container}}" \
+          --bvec "${{bvec_in_container}}" \
+          --brain-mask "${{brain_mask_in_container}}" \
           --output-dir /out \
           --fs-license /opt/freesurfer/license.txt \
+          --primary-measure "{params.primary_measure}" \
           "${{sift2_args[@]}}" \
           "${{lut_args[@]}}" \
           --subject-id "sub-${{SUBJECT}}"
@@ -245,14 +382,28 @@ rule connectome:
         lut_used="fs_default.txt"; atlas="Desikan-Killiany"; node_count=84
         if [[ "{params.parc}" == "dkt" ]]; then
           lut_used="fs_dkt.txt"; atlas="Desikan-Killiany-Tourville"; node_count=78
+        elif [[ "{params.parc}" == "lausanne60" ]]; then
+          lut_used="lausanne60_mrtrix_lut.txt"; atlas="Lausanne-60"; node_count={LAUSANNE60_NODE_COUNT}
         fi
 
         mv -f "{params.outdir}/connectome.csv" "{output.matrix}"
-        for other in dk dkt; do
-          [[ "${{other}}" == "{params.parc}" ]] || rm -f "{params.outdir}/${{other}}_connectome.csv"
+        mv -f "{params.outdir}/connectome_count.csv" "{output.count_matrix}"
+        mv -f "{params.outdir}/connectome_sift2.csv" "{output.sift2_matrix}"
+        mv -f "{params.outdir}/connectome_meanlength.csv" "{output.meanlength_matrix}"
+        mv -f "{params.outdir}/connectome_meanfa.csv" "{output.meanfa_matrix}"
+        mv -f "{params.outdir}/connectome_meanmd.csv" "{output.meanmd_matrix}"
+        mv -f "{params.outdir}/desc-FA_dwi.nii.gz" "{output.fa_map}"
+        mv -f "{params.outdir}/desc-MD_dwi.nii.gz" "{output.md_map}"
+        cp -f "{params.outdir}/nodes.mif" "{output.nodes}"
+        for other in dk dkt lausanne60; do
+          if [[ "${{other}}" != "{params.parc}" ]]; then
+            rm -f "{params.outdir}/${{other}}_connectome"*.csv
+            rm -f "{params.outdir}/${{other}}_desc-FA_dwi.nii.gz" \
+                  "{params.outdir}/${{other}}_desc-MD_dwi.nii.gz"
+          fi
         done
 
-        empty_nodes="$(_count_empty_nodes "{output.matrix}")"
+        empty_nodes="$(_count_empty_nodes "{output.count_matrix}")"
         if [[ "${{empty_nodes}}" -gt 0 ]]; then
           echo "WARNING: ${{empty_nodes}} of ${{node_count}} ${{atlas}} nodes received no streamlines."
           if [[ "{params.fail_on_empty}" == "1" ]]; then
@@ -266,12 +417,35 @@ rule connectome:
   "atlas": "${{atlas}}",
   "nodes": ${{node_count}},
   "labelconvert_lut": "${{lut_used}}",
+  "primary_measure": "{params.primary_measure}",
+  "act_mode": "{ACT_MODE}",
+  "experiment_arm": "{EXPERIMENT_ARM}",
   "connectome_csv": "$(basename "{output.matrix}")",
+  "matrices": {{
+    "count": "$(basename "{output.count_matrix}")",
+    "sift2": "$(basename "{output.sift2_matrix}")",
+    "meanlength": "$(basename "{output.meanlength_matrix}")",
+    "meanfa": "$(basename "{output.meanfa_matrix}")",
+    "meanmd": "$(basename "{output.meanmd_matrix}")"
+  }},
+  "tensor_maps": {{
+    "fa": "$(basename "{output.fa_map}")",
+    "md": "$(basename "{output.md_map}")"
+  }},
+  "nodes_image": "$(basename "{output.nodes}")",
   "empty_nodes": ${{empty_nodes}},
   "deterministic": {params.deterministic},
   "freesurfer_subject_dir": "{params.fs_dir}",
   "aparc_aseg": "${{aparc}}"
 }}
 EOF
-        echo "Connectome: {output.matrix} (${{atlas}}, ${{node_count}} nodes)"
+        echo "Primary connectome: {output.matrix} ({params.primary_measure})"
+        echo "Count: {output.count_matrix}"
+        echo "SIFT2: {output.sift2_matrix}"
+        echo "MeanLength: {output.meanlength_matrix}"
+        echo "MeanFA: {output.meanfa_matrix}"
+        echo "MeanMD: {output.meanmd_matrix}"
+        echo "FA map: {output.fa_map}"
+        echo "MD map: {output.md_map}"
+        echo "Atlas: ${{atlas}} (${{node_count}} nodes)"
         """

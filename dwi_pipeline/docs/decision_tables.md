@@ -48,19 +48,71 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 
 | Situation | Behavior |
 |-----------|----------|
-| BIDS `*_T1w_label-lesion_roi.nii.gz` present | Auto inpaint before recon |
+| BIDS `*_T1w_label-lesion_roi.nii.gz` present | Auto Step 1.5 before recon (default backend: neuroLIT) |
 | No mask | Silent skip (raw T1w → Step 2) |
-| Mask present but skip desired | `--no-inpaint` |
+| Mask present but skip desired | `--no-inpaint` or `--anat-mitigation none` |
+| LeAPP-compatible VBT instead of neuroLIT | `--anat-mitigation vbt` |
 | QC failure should abort run | `INPAINT_FAIL_ON_QC=1` |
+
+---
+
+## Anatomical mitigation backend (Step 1.5)
+
+| Goal | Flag | Output directory | Cite when publishing |
+|------|------|------------------|----------------------|
+| Production default (learned inpainting) | `--anat-mitigation neurolit` or *(default)* | `inpainted/` | Pollak et al. 2025 |
+| Deterministic contralesional fill (LeAPP port) | `--anat-mitigation vbt` | `vbt/` | Bey et al. 2024 (LeAPP VBT) |
+| Sensitivity: no anatomical fill | `--anat-mitigation none` | *(Step 1.5 skipped)* | — |
+
+Both backends write the same filename for Step 2: `inpainting_volumes/inpainting_result.nii.gz`. Theory: [Step 1.5 methods](methods/step1_5_inpaint.md).
+
+---
+
+## Lesion-aware ACT (Step 3.5)
+
+| Goal | Flag | Tractogram source for Step 4 | Cite when publishing |
+|------|------|------------------------------|----------------------|
+| Default cohort processing | *(none)* / `--act-mode standard` | QSIRecon iFOD2 + SIFT2 | Smith et al. 2012/2020 (ACT-HSVS) |
+| Insert lesion into 5TT pathology channel | `--act-mode lesion-aware` | Rebuilt iFOD2 + SIFT2 under `lesion_aware_act/` | Bey et al. 2024; Smith et al. 2012 ACT |
+| Re-run Step 3.5 only | `--mode act` | — | — |
+| Deterministic robustness matrices | `--tractography-model both` | Parallel SD_STREAM connectomes | Tournier et al. 2019 |
+
+Requires lesion mask. Uses **original BIDS mask** for 5TT editing (not the inpainted region). Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md).
+
+---
+
+## Experiment arms (anatomy × ACT) {#experiment-arms}
+
+Use when running factorial sensitivity analyses on lesion subjects, following the LeAPP design (Bey et al. 2024). **One arm per `RESULTS_ROOT` tree** (default: `RESULTS_ROOT/arms/<arm>/`).
+
+| Arm | Anatomy | ACT | When to use | Primary citations for contrasts |
+|-----|---------|-----|-------------|-------------------------------|
+| `orig-std` | Original T1w | Standard | Baseline | — |
+| `orig-lesion` | Original T1w | Lesion-aware | Tractography-only lesion handling | Smith et al. 2012; Bey et al. 2024 |
+| `neurolit-std` | neuroLIT | Standard | Inpainting effect on surfaces/DKT | Pollak et al. 2025 |
+| `neurolit-lesion` | neuroLIT | Lesion-aware | Inpainting + pathology ACT | Pollak et al. 2025; Bey et al. 2024 |
+| `vbt-std` | VBT | Standard | Compare VBT vs neuroLIT anatomy | Bey et al. 2024 |
+| `vbt-lesion` | VBT | Lesion-aware | Full factorial (validate on TBI first) | Bey et al. 2024 |
+
+**Publishing guidance:** Report which arms were run and isolate outputs per arm. Do not pool connectomes across arms without harmonizing anatomy and tractography provenance. Cite Bey et al. 2024 for the factorial framework; add backend-specific papers per row above.
+
+```bash
+bash submit.sh --experiment-arm neurolit-lesion
+bash workflow/run_subject.sh all ID --experiment-arm vbt-std
+```
+
+Full flag reference: [Usage — experiment arms](usage.md) · [References § Experiment arms](references.md#experiment-arms-factorial-lesion-processing).
 
 ---
 
 ## Connectome weighting (Steps 4 & 4.5)
 
-| Weighting | When to use | Step 4.5 requirement |
-|-----------|-------------|----------------------|
-| **`count`** (default) | Group comparisons, standard graphs | Use same for disconnectome |
-| **`sift2`** | Quantitative density interpretation | **Must** match Step 4; mismatch invalidates D matrix |
+| Weighting | When to use | Step 4.5 requirement | Cite |
+|-----------|-------------|----------------------|------|
+| **`count`** (default) | Group comparisons, standard graphs | Use same for disconnectome | Tournier et al. 2019 |
+| **`sift2`** | Quantitative density interpretation | **Must** match Step 4; mismatch invalidates D matrix | Smith et al. 2015 |
+
+Step 4 also writes **MeanLength, MeanFA, MeanMD** from the same tractogram. Interpret diffusion metrics cautiously (Jones et al. 2013). See [Step 4 methods](methods/step4_connectome.md#multi-measure-connectomes-one-tractogram).
 
 ---
 
