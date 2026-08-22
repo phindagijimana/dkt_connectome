@@ -21,6 +21,10 @@
 #   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
 #   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV (skips Step 5 too)
 #   ./submit.sh --no-inpaint       # force-skip Step 1.5 even for subjects with a lesion mask
+#   ./submit.sh --anat-mitigation vbt      # LeAPP-compatible virtual brain transplant (Step 1.5)
+#   ./submit.sh --act-mode lesion-aware    # Step 3.5: lesion in 5TT pathology channel
+#   ./submit.sh --experiment-arm neurolit-lesion   # anatomy + ACT arm; writes arms/neurolit-lesion/
+#   ./submit.sh --tractography-model both  # optional SD_STREAM connectomes alongside iFOD2
 #   ./submit.sh --no-node-strength # skip Step 5 only (keep the connectome CSV)
 #   ./submit.sh --syn              # GE / no-fmap subjects: --use-syn-sdc error
 #   ./submit.sh --fmap-retry       # ignore measured fmaps, SyN SDC
@@ -85,13 +89,22 @@ RUN_RECON="${RUN_RECON:-1}"
 RECON_TOOL="${RECON_TOOL:-freesurfer}"
 RECON_FSAPARC="${RECON_FSAPARC:-0}"
 RUN_INPAINT="${RUN_INPAINT:-1}"
+ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
+[[ "${RUN_INPAINT}" == "1" ]] || ANAT_MITIGATION=none
 # RUN_DK_CONNECTOME was the name before Step 4 served both DK and DKT.
 RUN_CONNECTOME="${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}"
+PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-}"
+ACT_MODE="${ACT_MODE:-standard}"
+ACT_STREAMLINES="${ACT_STREAMLINES:-10000000}"
+ACT_RANDOM_SEED="${ACT_RANDOM_SEED:-0}"
+TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-ifod2}"
+EXPERIMENT_ARM="${EXPERIMENT_ARM:-}"
 RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
 PIPELINE_ENGINE="${PIPELINE_ENGINE:-snakemake}"
 RECON_FASTSURFER_DEVICE="${RECON_FASTSURFER_DEVICE:-cpu}"
 INPAINT_DEVICE="${INPAINT_DEVICE:-auto}"
 INPAINT_BATCH_SIZE="${INPAINT_BATCH_SIZE:-4}"
+VBT_SMOOTHING_FACTOR="${VBT_SMOOTHING_FACTOR:-2.0}"
 BIDS_VALIDATE="${BIDS_VALIDATE:-0}"
 BIDS_IGNORE_WARNINGS="${BIDS_IGNORE_WARNINGS:-0}"
 
@@ -124,9 +137,37 @@ while [[ $# -gt 0 ]]; do
       ;;
     --inpaint)
       RUN_INPAINT=1
+      ANAT_MITIGATION=neurolit
       ;;
     --no-inpaint)
       RUN_INPAINT=0
+      ANAT_MITIGATION=none
+      ;;
+    --anat-mitigation)
+      ANAT_MITIGATION="${2:?Need none, neurolit, or vbt}"
+      [[ "${ANAT_MITIGATION}" == "none" ]] && RUN_INPAINT=0 || RUN_INPAINT=1
+      shift 2
+      continue
+      ;;
+    --act-mode)
+      ACT_MODE="${2:?Need standard or lesion-aware}"
+      shift 2
+      continue
+      ;;
+    --act-streamlines)
+      ACT_STREAMLINES="${2:?Need streamline count}"
+      shift 2
+      continue
+      ;;
+    --tractography-model)
+      TRACTOGRAPHY_MODEL="${2:?Need ifod2, sd_stream, or both}"
+      shift 2
+      continue
+      ;;
+    --experiment-arm)
+      EXPERIMENT_ARM="${2:?Need experiment arm}"
+      shift 2
+      continue
       ;;
     --node-strength)
       RUN_NODESTRENGTH=1
@@ -164,12 +205,25 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --anat-mitigation, --act-mode, --experiment-arm, --tractography-model, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
       exit 1
       ;;
   esac
   shift
 done
+
+case "${ANAT_MITIGATION}" in
+  none|neurolit|vbt) ;;
+  *) echo "ERROR: ANAT_MITIGATION must be none, neurolit, or vbt"; exit 2 ;;
+esac
+case "${ACT_MODE}" in
+  standard|lesion-aware) ;;
+  *) echo "ERROR: ACT_MODE must be standard or lesion-aware"; exit 2 ;;
+esac
+case "${TRACTOGRAPHY_MODEL}" in
+  ifod2|sd_stream|both) ;;
+  *) echo "ERROR: TRACTOGRAPHY_MODEL must be ifod2, sd_stream, or both"; exit 2 ;;
+esac
 
 DWI_ROOT="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
@@ -177,6 +231,24 @@ REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
 # --- Defaults (override via environment before ./submit.sh) ---
 BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
 RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
+if [[ -n "${EXPERIMENT_ARM}" ]]; then
+  case "${EXPERIMENT_ARM}" in
+    orig-std)         ANAT_MITIGATION=none;     ACT_MODE=standard ;;
+    orig-lesion)      ANAT_MITIGATION=none;     ACT_MODE=lesion-aware ;;
+    neurolit-std)     ANAT_MITIGATION=neurolit; ACT_MODE=standard ;;
+    neurolit-lesion)  ANAT_MITIGATION=neurolit; ACT_MODE=lesion-aware ;;
+    vbt-std)          ANAT_MITIGATION=vbt;      ACT_MODE=standard ;;
+    vbt-lesion)       ANAT_MITIGATION=vbt;      ACT_MODE=lesion-aware ;;
+    *) echo "ERROR: invalid EXPERIMENT_ARM=${EXPERIMENT_ARM}"; exit 2 ;;
+  esac
+  [[ "${ANAT_MITIGATION}" == "none" ]] && RUN_INPAINT=0 || RUN_INPAINT=1
+  if [[ "${EXPERIMENT_ISOLATE_OUTPUTS:-1}" == "1" ]]; then
+    case "${RESULTS_ROOT}" in
+      */arms/"${EXPERIMENT_ARM}") ;;
+      *) RESULTS_ROOT="${RESULTS_ROOT}/arms/${EXPERIMENT_ARM}" ;;
+    esac
+  fi
+fi
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 SUBJECT_LIST_ONLY_DWI="${SUBJECT_LIST_ONLY_DWI:-1}"
 ARRAY_SCRIPT="${DWI_ROOT}/array.sh"
@@ -250,6 +322,7 @@ echo "  Subjects: ${N} from ${SUBJECT_LIST_FILE}"
 echo "  Array: 1-${N}%${ARRAY_CONCURRENCY}"
 echo "  Mode: ${PIPELINE_MODE}"
 echo "  RESULTS_ROOT: ${RESULTS_ROOT}"
+[[ -n "${EXPERIMENT_ARM}" ]] && echo "  Experiment arm: ${EXPERIMENT_ARM}"
 echo "  QSIRECON_SPEC: ${QSIRECON_SPEC}"
 if [[ -n "${QSIRECON_ATLASES}" ]]; then
   echo "  QSIRECON_ATLASES: ${QSIRECON_ATLASES}"
@@ -269,10 +342,13 @@ if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
   echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  fsaparc=${RECON_FSAPARC}  out=${RECON_OUT}"
 fi
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "inpaint" || "${PIPELINE_MODE}" == "recon" ]]; then
-  echo "  Inpaint (Step 1.5): $([[ ${RUN_INPAINT} == 1 ]] && echo "auto (runs only if a lesion mask is found)" || echo off)"
+  echo "  Anatomy mitigation (Step 1.5): $([[ ${RUN_INPAINT} == 1 ]] && echo "${ANAT_MITIGATION} (runs only if a lesion mask is found)" || echo off)"
 fi
 echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
 echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == connectome ) ]] && echo on || echo off/skip)"
+echo "  ACT mode: ${ACT_MODE}"
+echo "  Tractography model(s): ${TRACTOGRAPHY_MODEL}"
+[[ -n "${PRIMARY_CONNECTOME_MEASURE}" ]] && echo "  Primary connectome measure: ${PRIMARY_CONNECTOME_MEASURE}"
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
   echo "  Node strength (Step 5): $([[ ${RUN_NODESTRENGTH} == 1 ]] && echo on || echo off)"
 fi
@@ -282,7 +358,7 @@ fi
 if [[ -z "${SBATCH_GRES:-}" ]]; then
   case "${PIPELINE_MODE}" in
     all|inpaint|recon)
-      if [[ "${RUN_INPAINT:-1}" == "1" ]]; then
+      if [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
         SBATCH_GRES="gpu:l40s.24g:1"
         echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: Step 1.5 inpaint may need GPU)"
       elif [[ "${RECON_TOOL}" == "fastsurfer" && "${RECON_FASTSURFER_DEVICE}" == "cuda" ]]; then
@@ -310,7 +386,12 @@ export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
 export RUN_RECON RECON_TOOL RECON_FSAPARC RECON_OUT RUN_CONNECTOME RUN_INPAINT RUN_NODESTRENGTH FS_SUBJECTS_DIR
 export RECON_FASTSURFER_DEVICE RECON_SESSION
 export INPAINT_DEVICE INPAINT_BATCH_SIZE INPAINT_DILATE INPAINT_LABELS INPAINT_BINARIZE INPAINT_REQUIRE_MASK INPAINT_FAIL_ON_QC
+export ANAT_MITIGATION VBT_SMOOTHING_FACTOR
 export CONNECTOME_PARCELLATION CONNECTOME_FAIL_ON_EMPTY_NODES CONNECTOME_DETERMINISTIC CONNECTOME_RESAMPLE_TO_DWI
+export PRIMARY_CONNECTOME_MEASURE
+export ACT_MODE ACT_STREAMLINES ACT_RANDOM_SEED
+export TRACTOGRAPHY_MODEL
+export EXPERIMENT_ARM EXPERIMENT_ISOLATE_OUTPUTS
 export NODESTRENGTH_STRENGTH_ONLY NODESTRENGTH_NO_REPORT NODESTRENGTH_OUT
 # Optional container/license overrides (else workflow/config/config.local.yaml)
 export CONTAINER_QSIPREP CONTAINER_QSIRECON CONTAINER_FASTSURFER CONTAINER_FREESURFER

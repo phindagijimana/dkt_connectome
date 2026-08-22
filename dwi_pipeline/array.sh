@@ -95,7 +95,11 @@ fi
 [[ "${RUN_RECON:-1}" == "0" ]] && SUBJECT_ARGS+=(--no-recon)
 [[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "0" && "${PIPELINE_MODE}" == "all" ]] && \
   SUBJECT_ARGS+=(--no-connectome)
-[[ "${RUN_INPAINT:-1}" == "0" ]] && SUBJECT_ARGS+=(--no-inpaint)
+if [[ "${RUN_INPAINT:-1}" == "0" ]]; then
+  SUBJECT_ARGS+=(--no-inpaint)
+elif [[ -n "${ANAT_MITIGATION:-}" ]]; then
+  SUBJECT_ARGS+=(--anat-mitigation "${ANAT_MITIGATION}")
+fi
 [[ "${RUN_NODESTRENGTH:-1}" == "0" ]] && SUBJECT_ARGS+=(--no-node-strength)
 [[ "${NODESTRENGTH_STRENGTH_ONLY:-0}" == "1" ]] && SUBJECT_ARGS+=(--strength-only)
 [[ "${NODESTRENGTH_NO_REPORT:-0}" == "1" ]] && SUBJECT_ARGS+=(--no-report)
@@ -104,6 +108,13 @@ fi
 [[ -z "${DWI_SELECT_JSON:-}" && -n "${DWI_SHELL_B:-}" && "${DWI_SHELL_B}" != "1000" ]] && \
   SUBJECT_ARGS+=(--dwi-shell "${DWI_SHELL_B}")
 [[ -n "${RECON_SESSION:-}" ]] && SUBJECT_ARGS+=(--recon-session "${RECON_SESSION}")
+[[ -n "${PRIMARY_CONNECTOME_MEASURE:-}" ]] && \
+  SUBJECT_ARGS+=(--primary-connectome-measure "${PRIMARY_CONNECTOME_MEASURE}")
+[[ -n "${ACT_MODE:-}" ]] && SUBJECT_ARGS+=(--act-mode "${ACT_MODE}")
+[[ -n "${ACT_STREAMLINES:-}" ]] && SUBJECT_ARGS+=(--act-streamlines "${ACT_STREAMLINES}")
+[[ -n "${TRACTOGRAPHY_MODEL:-}" ]] && \
+  SUBJECT_ARGS+=(--tractography-model "${TRACTOGRAPHY_MODEL}")
+[[ -n "${EXPERIMENT_ARM:-}" ]] && SUBJECT_ARGS+=(--experiment-arm "${EXPERIMENT_ARM}")
 
 if [[ "${PIPELINE_ENGINE}" != "bash" && "${PIPELINE_ENGINE}" != "subject" && "${PIPELINE_ENGINE}" != "subject.sh" ]]; then
   preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --subject "${SUBJECT}" --quick)
@@ -113,7 +124,7 @@ if [[ "${PIPELINE_ENGINE}" != "bash" && "${PIPELINE_ENGINE}" != "subject" && "${
 fi
 
 echo "ACT array task ${SLURM_ARRAY_TASK_ID}: sub-${SUBJECT} mode=${PIPELINE_MODE} engine=${PIPELINE_ENGINE} \
-recon=${RECON_TOOL:-freesurfer} run_recon=${RUN_RECON:-1} run_inpaint=${RUN_INPAINT:-1} \
+recon=${RECON_TOOL:-freesurfer} run_recon=${RUN_RECON:-1} run_inpaint=${RUN_INPAINT:-1} anat_mitigation=${ANAT_MITIGATION:-neurolit} \
 run_nodestrength=${RUN_NODESTRENGTH:-1} \
 NTHREADS=${NTHREADS} syn=${QSIPREP_USE_SYN_SDC:-0} dwi_shell=${DWI_SHELL_B:-1000}"
 exec bash "${PIPELINE}" "${PIPELINE_MODE}" "${SUBJECT}" "${SUBJECT_ARGS[@]}"

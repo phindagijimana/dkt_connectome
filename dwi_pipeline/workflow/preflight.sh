@@ -123,11 +123,20 @@ case "${PIPELINE_MODE}" in
   inpaint) need_inpaint=1 ;;
   recon) need_recon=1 ;;
   qsirecon) need_qsirecon=1 ;;
+  act) need_qsirecon=1 ;;
+  sdstream) need_qsirecon=1; need_connectome=1 ;;
   connectome) need_connectome=1 ;;
   disconnectome) need_connectome=1 ;;
   nodestrength) need_nodestrength=1 ;;
   *) fail "invalid PIPELINE_MODE=${PIPELINE_MODE}" ;;
 esac
+ANAT_MITIGATION="${ANAT_MITIGATION:-$(read_config inpaint.backend)}"
+ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
+case "${ANAT_MITIGATION}" in
+  none|neurolit|vbt) ;;
+  *) fail "invalid ANAT_MITIGATION=${ANAT_MITIGATION} (use none, neurolit, or vbt)" ;;
+esac
+[[ "${ANAT_MITIGATION}" == "none" ]] && need_inpaint=0
 
 # Prefer subject.sh-style env overrides, then config.local.yaml / config.yaml.
 FS_LICENSE="${FS_LICENSE:-$(read_config fs_license)}"
@@ -155,7 +164,11 @@ container_path() {
 ((need_qsiprep)) && check_sif qsiprep "$(container_path qsiprep CONTAINER_QSIPREP)"
 ((need_qsirecon)) && check_sif qsirecon "$(container_path qsirecon CONTAINER_QSIRECON)"
 ((need_connectome)) && check_sif connectome "$(container_path connectome CONTAINER_CONNECTOME)"
-((need_inpaint)) && check_sif lit "$(container_path lit CONTAINER_LIT)"
+if ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
+  check_sif lit "$(container_path lit CONTAINER_LIT)"
+elif ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "vbt" ]]; then
+  check_sif qsiprep-vbt "$(container_path qsiprep CONTAINER_QSIPREP)"
+fi
 ((need_nodestrength)) && check_sif nodestrength "$(container_path nodestrength CONTAINER_NODESTRENGTH)"
 
 if ((need_recon)); then
@@ -175,7 +188,7 @@ FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-$(read_config fs_subjects_dir)}"
 FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT:-${RESULTS_ROOT}/freesurfer}}"
 if ((need_qsirecon)) && [[ "${QSIRECON_SPEC}" == *hsvs* ]]; then
   if [[ -n "${SUBJECT}" ]]; then
-    if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
+    if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "act" || "${PIPELINE_MODE}" == "sdstream" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
       [[ -d "${FS_SUBJECTS_DIR}/sub-${SUBJECT}" ]] || fail \
         "QSIRECON_SPEC=${QSIRECON_SPEC} needs ${FS_SUBJECTS_DIR}/sub-${SUBJECT} (run Step 2 first)"
     elif [[ ! -d "${FS_SUBJECTS_DIR}/sub-${SUBJECT}" && "${RUN_RECON:-1}" == "0" ]]; then
@@ -196,7 +209,7 @@ if ((need_qsiprep)) && [[ "${QSIPREP_FMAP_RETRY}" != "1" && "${QSIPREP_USE_SYN_S
 fi
 
 # GPU recommendation for inpaint / FastSurfer cuda.
-if ((need_inpaint)) && [[ "${RUN_INPAINT:-1}" == "1" ]]; then
+if ((need_inpaint)) && [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
   if [[ -z "${SBATCH_GRES:-}" && -z "${SLURM_JOB_ID:-}" ]]; then
     warn "Step 1.5 (inpaint) needs a GPU slice (gpu:l40s.12g or gpu:l40s.24g). Set SBATCH_GRES before submit."
   fi

@@ -65,8 +65,8 @@ def _disconnectome_extra_args() -> str:
 rule disconnectome:
     input:
         connectome=DISCONNECTOME_DKT_CONNECTOME,
-        mask_prepared=lambda wc: inpaint_paths(wc.subject)["mask_prepared"],
-        mask_json=lambda wc: inpaint_paths(wc.subject)["mask_json"],
+        mask_prepared=lambda wc: lesion_mask_paths(wc.subject)["mask"],
+        mask_json=lambda wc: lesion_mask_paths(wc.subject)["json"],
         qsirecon_marker=lambda wc: qsirecon_marker(wc.subject),
     output:
         json=DISCONNECTOME_JSON_PATTERN,

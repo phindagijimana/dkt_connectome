@@ -60,7 +60,10 @@ mkdir -p "${XDG_CACHE_HOME}"
 _apply_env() {
   local key="$1" val="${2:-}"
   [[ -n "${val}" ]] || return 0
-  [[ -z "${OVERRIDES[$key]+x}" ]] && OVERRIDES["$key"]="$val"
+  if [[ -z "${OVERRIDES[$key]+x}" ]]; then
+    OVERRIDES["$key"]="$val"
+  fi
+  return 0
 }
 [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && _apply_env qsiprep.use_syn_sdc true
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && _apply_env qsiprep.fmap_retry true
@@ -78,6 +81,7 @@ _apply_env recon_out                  "${RECON_OUT:-}"
 _apply_env fs_subjects_dir            "${FS_SUBJECTS_DIR:-}"
 _apply_env nodestrength_out           "${NODESTRENGTH_OUT:-}"
 _apply_env inpaint.enabled            "$([[ "${RUN_INPAINT:-1}" == "1" ]] && echo true || echo false)"
+_apply_env inpaint.backend            "${ANAT_MITIGATION:-}"
 _apply_env inpaint.require_mask       "$([[ "${INPAINT_REQUIRE_MASK:-0}" == "1" ]] && echo true || echo false)"
 _apply_env inpaint.dilate             "${INPAINT_DILATE:-}"
 _apply_env inpaint.device             "${INPAINT_DEVICE:-}"
@@ -85,12 +89,22 @@ _apply_env inpaint.batch_size         "${INPAINT_BATCH_SIZE:-}"
 _apply_env inpaint.labels             "${INPAINT_LABELS:-}"
 _apply_env inpaint.binarize           "$([[ "${INPAINT_BINARIZE:-0}" == "1" ]] && echo true || echo false)"
 _apply_env inpaint.fail_on_qc         "$([[ "${INPAINT_FAIL_ON_QC:-0}" == "1" ]] && echo true || echo false)"
+_apply_env inpaint.vbt.smoothing_factor "${VBT_SMOOTHING_FACTOR:-}"
+_apply_env act.mode                   "${ACT_MODE:-}"
+_apply_env act.streamlines            "${ACT_STREAMLINES:-}"
+_apply_env act.random_seed             "${ACT_RANDOM_SEED:-}"
+_apply_env tractography.model          "${TRACTOGRAPHY_MODEL:-}"
+_apply_env experiment.arm              "${EXPERIMENT_ARM:-}"
 _apply_env connectome.enabled         "$([[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.parcellation    "${CONNECTOME_PARCELLATION:-}"
 _apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
+_apply_env connectome.primary_measure "${PRIMARY_CONNECTOME_MEASURE:-}"
+if [[ -n "${CONNECTOME_ATLASES:-}" ]]; then
+  _apply_env connectome.atlases         "${CONNECTOME_ATLASES}"
+fi
 _apply_env disconnectome.enabled      "$([[ "${RUN_DISCONNECTOME:-0}" == "1" ]] && echo true || echo false)"
 _apply_env disconnectome.core_only    "$([[ "${DISCONNECTOME_CORE_ONLY:-0}" == "1" ]] && echo true || echo false)"
 _apply_env disconnectome.lesion_erode_voxels "${DISCONNECTOME_ERODE_VOXELS:-0}"
@@ -125,8 +139,17 @@ while [[ $# -gt 0 ]]; do
     --fast-fs)             OVERRIDES[recon.tool]=fastsurfer; OVERRIDES[recon.fsaparc]=true ;;
     --no-recon)            OVERRIDES[recon.enabled]=false ;;
     --no-connectome|--no-dk) OVERRIDES[connectome.enabled]=false ;;
-    --inpaint)             OVERRIDES[inpaint.enabled]=true ;;
-    --no-inpaint)          OVERRIDES[inpaint.enabled]=false ;;
+    --inpaint)             OVERRIDES[inpaint.enabled]=true; OVERRIDES[inpaint.backend]=neurolit ;;
+    --no-inpaint)          OVERRIDES[inpaint.enabled]=false; OVERRIDES[inpaint.backend]=none ;;
+    --anat-mitigation)
+      OVERRIDES[inpaint.backend]="${2:?Need none, neurolit, or vbt}"
+      if [[ "${2}" == "none" ]]; then
+        OVERRIDES[inpaint.enabled]=false
+      else
+        OVERRIDES[inpaint.enabled]=true
+      fi
+      shift
+      ;;
     --node-strength)       OVERRIDES[nodestrength.enabled]=true ;;
     --no-node-strength)    OVERRIDES[nodestrength.enabled]=false ;;
     --strength-only)       OVERRIDES[nodestrength.strength_only]=true ;;
@@ -137,6 +160,12 @@ while [[ $# -gt 0 ]]; do
     --recon-session)       OVERRIDES[recon.session]="${2:?Need session after --recon-session}"; shift ;;
     --session-filter)      OVERRIDES[recon.session]="${2:?Need session after --session-filter}"; shift ;;
     --connectome-weighting) OVERRIDES[connectome.weighting]="${2:?Need count or sift2}"; shift ;;
+    --primary-connectome-measure) OVERRIDES[connectome.primary_measure]="${2:?Need count or sift2}"; shift ;;
+    --connectome-atlases)     OVERRIDES[connectome.atlases]="${2:?Need atlas list (e.g. dkt or dkt,lausanne60)}"; shift ;;
+    --act-mode)             OVERRIDES[act.mode]="${2:?Need standard or lesion-aware}"; shift ;;
+    --act-streamlines)      OVERRIDES[act.streamlines]="${2:?Need streamline count}"; shift ;;
+    --tractography-model)   OVERRIDES[tractography.model]="${2:?Need ifod2, sd_stream, or both}"; shift ;;
+    --experiment-arm)       OVERRIDES[experiment.arm]="${2:?Need experiment arm}"; shift ;;
     --no-disconnectome)    OVERRIDES[disconnectome.enabled]=false ;;
     --disconnection|--disconnectome) OVERRIDES[disconnectome.enabled]=true ;;
     --disconnectome-core-only) OVERRIDES[disconnectome.core_only]=true ;;
@@ -159,6 +188,30 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+EXPERIMENT_ARM_EFFECTIVE="${OVERRIDES[experiment.arm]:-${EXPERIMENT_ARM:-}}"
+if [[ -n "${EXPERIMENT_ARM_EFFECTIVE}" ]]; then
+  case "${EXPERIMENT_ARM_EFFECTIVE}" in
+    orig-std)         _arm_backend=none;     _arm_act=standard ;;
+    orig-lesion)      _arm_backend=none;     _arm_act=lesion-aware ;;
+    neurolit-std)     _arm_backend=neurolit; _arm_act=standard ;;
+    neurolit-lesion)  _arm_backend=neurolit; _arm_act=lesion-aware ;;
+    vbt-std)          _arm_backend=vbt;      _arm_act=standard ;;
+    vbt-lesion)       _arm_backend=vbt;      _arm_act=lesion-aware ;;
+    *) echo "Invalid --experiment-arm=${EXPERIMENT_ARM_EFFECTIVE}" >&2; exit 2 ;;
+  esac
+  OVERRIDES[experiment.arm]="${EXPERIMENT_ARM_EFFECTIVE}"
+  OVERRIDES[inpaint.backend]="${_arm_backend}"
+  OVERRIDES[inpaint.enabled]="$([[ "${_arm_backend}" == "none" ]] && echo false || echo true)"
+  OVERRIDES[act.mode]="${_arm_act}"
+  if [[ -n "${RESULTS_ROOT}" && "${EXPERIMENT_ISOLATE_OUTPUTS:-1}" == "1" ]]; then
+    case "${RESULTS_ROOT}" in
+      */arms/"${EXPERIMENT_ARM_EFFECTIVE}") ;;
+      *) RESULTS_ROOT="${RESULTS_ROOT}/arms/${EXPERIMENT_ARM_EFFECTIVE}" ;;
+    esac
+  fi
+  echo "Experiment arm: ${EXPERIMENT_ARM_EFFECTIVE} (anatomy=${_arm_backend}, ACT=${_arm_act})"
+fi
 
 # --- Build merged configfile (Snakemake replaces config on each --configfile) ---
 OVERRIDE_YAML="$(mktemp /tmp/dwi_workflow_override_XXXXXX.yaml)"
@@ -204,7 +257,7 @@ for dotted, raw in overrides.items():
         node = node.setdefault(part, {})
     val = to_scalar(raw)
     if parts[-1] == "atlases" and isinstance(val, str):
-        node[parts[-1]] = val.split()
+        node[parts[-1]] = [part for part in val.replace(",", " ").split() if part]
     else:
         node[parts[-1]] = val
 with open(sys.argv[4], "w") as fh:
@@ -217,12 +270,14 @@ case "${PIPELINE_MODE}" in
   qsiprep)      TARGET="target_qsiprep" ;;
   recon)        TARGET="target_recon" ;;
   qsirecon)     TARGET="target_qsirecon" ;;
+  act)          TARGET="target_act" ;;
+  sdstream)     TARGET="target_sdstream" ;;
   connectome)   TARGET="target_connectome" ;;
   disconnectome) TARGET="target_disconnectome" ;;
   nodestrength) TARGET="target_nodestrength" ;;
   inpaint)      TARGET="target_inpaint" ;;
   *)
-    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength)"
+    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, act, sdstream, connectome, disconnectome, or nodestrength)"
     exit 1
     ;;
 esac
@@ -232,7 +287,11 @@ esac
 # no lesion mask is a silent no-op, not an error, unless require_mask is set.
 if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
   INPAINT_ENABLED="${OVERRIDES[inpaint.enabled]:-true}"
-  if [[ "${INPAINT_ENABLED}" == "true" ]]; then
+  INPAINT_BACKEND="${OVERRIDES[inpaint.backend]:-${ANAT_MITIGATION:-neurolit}}"
+  if [[ "${INPAINT_ENABLED}" != "true" || "${INPAINT_BACKEND}" == "none" ]]; then
+    echo "Anatomy mitigation: disabled (backend=none)"
+    exit 0
+  else
     _results_root="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
     _bids_dir="${BIDS_DIR:-/path/to/BIDS}"
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
@@ -294,9 +353,12 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
   fi
 fi
 
+SNAKEMAKE_WORKDIR="${SNAKEMAKE_WORKDIR:-${DWI_PIPELINE_DIR}}"
+mkdir -p "${SNAKEMAKE_WORKDIR}"
+
 declare -a CMD=(
   snakemake -s "${WORKFLOW_DIR}/Snakefile"
-  --directory "${DWI_PIPELINE_DIR}"
+  --directory "${SNAKEMAKE_WORKDIR}"
   # Single merged configfile: Snakemake replaces (not deep-merges) on each
   # --configfile, so runtime overrides must include the full effective config.
   --configfile "${OVERRIDE_YAML}"

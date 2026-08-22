@@ -25,7 +25,10 @@ include: "rules/qsiprep.smk"
 include: "rules/inpaint.smk"
 include: "rules/recon.smk"
 include: "rules/qsirecon.smk"
+include: "rules/lesion_aware_act.smk"
+include: "rules/lausanne.smk"
 include: "rules/connectome.smk"
+include: "rules/sdstream.smk"
 include: "rules/nodestrength.smk"
 include: "rules/disconnectome.smk"
 include: "rules/subject_qc.smk"
@@ -40,9 +43,12 @@ def subject_targets(subject: str) -> list:
         return targets
     targets.append(recon_aparc(subject))
     targets.append(qsirecon_marker(subject))
+    targets.extend(lesion_act_products(subject))
     if not CONNECTOME_CFG.get("enabled", True):
         return targets
-    targets.append(connectome_matrix(subject))
+    targets.extend(connectome_products(subject))
+    targets.extend(sdstream_products(subject))
+    targets.extend(sdstream_connectome_products(subject))
     if disconnectome_enabled_for(subject):
         targets.append(disconnectome_json(subject))
         if DISCONNECTOME_QC_HTML:
@@ -97,9 +103,25 @@ rule target_qsirecon:
         lambda wc: qsirecon_marker(_config_subject()),
 
 
+rule target_act:
+    input:
+        lambda wc: lesion_act_products(_config_subject()),
+
+
+rule target_sdstream:
+    input:
+        lambda wc: (
+            sdstream_products(_config_subject())
+            + sdstream_connectome_products(_config_subject())
+        ),
+
+
 rule target_connectome:
     input:
-        lambda wc: connectome_matrix(_config_subject()),
+        lambda wc: (
+            connectome_products(_config_subject())
+            + sdstream_connectome_products(_config_subject())
+        ),
 
 
 rule target_nodestrength:

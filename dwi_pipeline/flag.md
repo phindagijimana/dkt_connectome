@@ -60,12 +60,51 @@ Both `--syn` and `--fmap-retry` pass QSIPrep `--use-syn-sdc error` (strict): if 
 |------|----------------|--------------|
 | `--inpaint` | `RUN_INPAINT=1` | Enable inpaint step (default on). Still a no-op per subject unless a lesion mask is found. |
 | `--no-inpaint` | `RUN_INPAINT=0` | Force-skip Step 1.5 even if a lesion mask exists. |
+| `--anat-mitigation none\|neurolit\|vbt` | `ANAT_MITIGATION` | Select original T1w, neuroLIT (default), or LeAPP-compatible virtual brain transplant. `--inpaint` aliases `neurolit`; `--no-inpaint` aliases `none`. |
+
+VBT uses `VBT_SMOOTHING_FACTOR=2.0` by default, matching the Gaussian sigma in
+the published LeAPP code. neuroLIT and VBT use separate output roots so one
+backend cannot overwrite the other.
 
 ### Connectome (Step 4)
 
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--no-connectome` / `--no-dk` | `RUN_CONNECTOME=0` | Skip Step 4 (and Step 5 with it in `all` mode). `--no-dk` is the legacy name. |
+| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Selects the weighting used by downstream disconnectome analysis; both Step 4 matrices are still generated. |
+| `--primary-connectome-measure count\|sift2` | `PRIMARY_CONNECTOME_MEASURE` | Select which matrix is copied to `dkt_connectome.csv`. Default: `count`. |
+
+Step 4 writes `dkt_connectome_count.csv`, `dkt_connectome_sift2.csv`,
+`dkt_connectome_meanlength.csv`, `dkt_connectome_meanfa.csv`, and
+`dkt_connectome_meanmd.csv` from the same tractogram and DKT node image. It
+also derives `dkt_desc-FA_dwi.nii.gz` and `dkt_desc-MD_dwi.nii.gz` from the
+QSIPrep preprocessed DWI. The existing `dkt_connectome.csv` remains the primary
+compatibility alias used by Step 5 and existing analyses.
+
+### ACT and experiment arms (Steps 3.5–4)
+
+| Flag | Env equivalent | What it does |
+|------|----------------|--------------|
+| `--act-mode standard\|lesion-aware` | `ACT_MODE` | Use the QSIRecon tractogram or rebuild matched iFOD2/SIFT2 after inserting the lesion into the fifth 5TT channel. |
+| `--act-streamlines N` | `ACT_STREAMLINES` | Number of lesion-aware streamlines; default `10000000`. |
+| `--tractography-model ifod2\|sd_stream\|both` | `TRACTOGRAPHY_MODEL` | Keep default iFOD2 only, or additionally generate deterministic SD_STREAM with Count/SIFT2/MeanLength/MeanFA/MeanMD matrices. |
+| `--experiment-arm ARM` | `EXPERIMENT_ARM` | Maps an anatomy × ACT arm and isolates it under `RESULTS_ROOT/arms/ARM`. |
+
+Supported arms: `orig-std`, `orig-lesion`, `neurolit-std`,
+`neurolit-lesion`, `vbt-std`, and `vbt-lesion`. Set
+`EXPERIMENT_ISOLATE_OUTPUTS=0` only for deliberate advanced reuse; the default
+prevents one arm from overwriting another.
+
+| Arm | `--anat-mitigation` | `--act-mode` |
+|-----|---------------------|--------------|
+| `orig-std` | `none` | `standard` |
+| `orig-lesion` | `none` | `lesion-aware` |
+| `neurolit-std` | `neurolit` | `standard` |
+| `neurolit-lesion` | `neurolit` | `lesion-aware` |
+| `vbt-std` | `vbt` | `standard` |
+| `vbt-lesion` | `vbt` | `lesion-aware` |
+
+User guide: [docs/usage.md](docs/usage.md) (Read the Docs — experiment arms section).
 
 ### Disconnectome (Step 4.5)
 
@@ -172,6 +211,7 @@ Set before `./submit.sh` or before `subject.sh` / `run_subject.sh`.
 | Variable | Default | What it does |
 |----------|---------|--------------|
 | `CONNECTOME_PARCELLATION` | `dkt` | `dkt` (78 nodes) \| `dk` (84; recon-all / `--fast-fs`) \| `auto` (follow tree; can mix cohort node counts). |
+| `CONNECTOME_ATLASES` | `dkt` | Comma/space-separated Step 4 atlases: `dkt`, `dk`, `auto`, `lausanne60` (e.g. `dkt,lausanne60` for robustness). |
 | `CONNECTOME_LUT_DKT` | package LUT | Path to MRtrix DKT LUT (`fs_dkt.txt`). |
 | `CONNECTOME_FAIL_ON_EMPTY_NODES` | `0` | If `1`, fail when a node has no streamlines. |
 | `CONNECTOME_DETERMINISTIC` | `1` | Pin ITK to 1 thread for a reproducible matrix. |

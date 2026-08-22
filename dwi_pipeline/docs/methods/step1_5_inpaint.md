@@ -81,6 +81,39 @@ Set `INPAINT_FAIL_ON_QC=1` to fail the run on QC violation (default: warn and co
 
 ---
 
+## Virtual brain transplant (`--anat-mitigation vbt`)
+
+**Alternative to neuroLIT:** a deterministic **virtual brain transplant (VBT)** ported from the public [BrainModes/LeAPP](https://github.com/BrainModes/LeAPP) code (Bey et al. 2024). LeAPP adapted enantiomorphic lesion mitigation strategies used in stroke neuroimaging; the pipeline implementation follows LeAPP's released shell/Python sequence rather than running the LeAPP container itself.
+
+### Theory
+
+VBT assumes a **largely unilateral lesion** with an intact **contralateral homologue**:
+
+1. Mirror the T1w across the midline.
+2. Rigidly register the original brain to the mirror using **healthy voxels only** (lesion excluded from the cost function).
+3. Apply **half-transform** midline alignment (`midtrans`) so both hemispheres share a common midline frame.
+4. **Blend** mirrored contralesional signal into the lesion through a **Gaussian-smoothed mask** (default σ = 2 voxels, matching LeAPP defaults).
+5. Inverse-transform the transplant back to native T1w space (`--keepgeom`-equivalent).
+
+Unlike neuroLIT's learned synthesis, VBT is **deterministic**, requires **no GPU**, and does not train on healthy statistics — it explicitly copies contralesional anatomy. It is appropriate as a **sensitivity backend**, not as a claim of biological recovery inside the lesion.
+
+### When to use VBT vs neuroLIT
+
+| | neuroLIT (default) | VBT |
+|--|---------------------|-----|
+| Mechanism | DDPM inpainting (Pollak et al. 2025) | Enantiomorphic mirror + FLIRT (LeAPP port) |
+| GPU | Recommended | CPU only |
+| Assumptions | Learned healthy appearance | Unilateral lesion + usable homologue |
+| Output dir | `inpainted/` | `vbt/` |
+
+### Citation guidance
+
+- Cite **Pollak et al. 2025** when using `--anat-mitigation neurolit`.
+- Cite **Bey et al. 2024 (LeAPP)** when using `--anat-mitigation vbt`, and state that VBT is a **port of LeAPP's released virtual brain transplant code**, not a full LeAPP pipeline run.
+- Do **not** claim equivalence between neuroLIT and VBT — they answer similar anatomical questions with different models.
+
+---
+
 ## References
 
 | Topic | Citation | Link |
@@ -89,8 +122,9 @@ Set `INPAINT_FAIL_ON_QC=1` to fail the run on QC violation (default: warn and co
 | DDPM foundation | Ho J, et al. *NeurIPS* 2020 | [arXiv:2006.11239](https://arxiv.org/abs/2006.11239) |
 | VINN layers | Henschel L, et al. *Medical Image Analysis* 2022 | [10.1016/j.media.2022.102313](https://doi.org/10.1016/j.media.2022.102313) |
 | Inpainting strategy | Lugmayr A, et al. RePaint. *CVPR* 2022 | [10.1109/CVPR52688.2022.01175](https://doi.org/10.1109/CVPR52688.2022.01175) |
+| **VBT / LeAPP (when `--anat-mitigation vbt`)** | Bey P, et al. LeAPP. *Human Brain Mapping* 2024;45(9):e26701. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
 
-Full table: [References § Step 1.5](../references.md#step-15-neurolit-inpainting-optional).
+Full table: [References § Step 1.5](../references.md#step-15-anatomical-lesion-mitigation-optional).
 
 ---
 

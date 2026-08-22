@@ -11,10 +11,11 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Step | Tool / method | Primary references |
 |------|---------------|-------------------|
 | **1** | QSIPrep preprocessing & SDC | Cieslak et al. 2021; Andersson et al. 2003/2016 |
-| **1.5** | neuroLIT lesion inpainting | Pollak et al. 2025; Ho et al. 2020 |
+| **1.5** | neuroLIT inpainting; optional VBT | Pollak et al. 2025; Ho et al. 2020; Bey et al. 2024 (VBT) |
 | **2** | FreeSurfer / FastSurfer recon | Fischl 2012; Henschel et al. 2020; Klein & Tourville 2015 |
 | **3** | QSIRecon + SS3T-CSD + ACT-HSVS | Cieslak et al. 2024; Jeurissen et al. 2014; Smith et al. 2012/2020 |
-| **4** | DKT structural connectome | Tournier et al. 2019; Smith et al. 2015; Desikan et al. 2006 |
+| **3.5** | Lesion-aware ACT (optional) | Bey et al. 2024; Smith et al. 2012 |
+| **4** | DKT connectome (+ multi-measure) | Tournier et al. 2019; Smith et al. 2015; Jones et al. 2013 |
 | **4.5** | Disconnectome | Griffis et al. 2019; Kuceyeski et al. 2013 |
 | **5** | Node strength / report | Rubinov & Sporns 2010; Piper et al. 2026 |
 | **All** | BIDS layout & BIDS App | Gorgolewski et al. 2016; Gorgolewski et al. 2017 |
@@ -37,18 +38,20 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
-## Step 1.5 — neuroLIT inpainting (optional)
+## Step 1.5 — Anatomical lesion mitigation (optional)
 
-**What we use:** [neuroLIT / FastSurfer-LIT](https://github.com/Deep-MI/lit) (`deepmi/lit:0.6.0`) to inpaint lesion regions on the T1w before cortical reconstruction when a BIDS lesion mask is present.
+**What we use:** When a BIDS lesion mask is present, Step 1.5 modifies the T1w before cortical reconstruction. Default backend: [neuroLIT](https://github.com/Deep-MI/lit). Optional backend: **virtual brain transplant (VBT)**, a port of the public LeAPP code (Bey et al. 2024).
 
 | Topic | Reference | DOI / link |
 |-------|-----------|------------|
-| **neuroLIT (required when inpainting)** | Pollak TA, et al. FastSurfer-LIT: Lesion inpainting tool for whole brain MRI segmentation with tumors, cavities and abnormalities. *Imaging Neuroscience* 2025. | [10.1162/imag_a_00446](https://doi.org/10.1162/imag_a_00446) |
+| **neuroLIT (required when `--anat-mitigation neurolit`)** | Pollak TA, et al. FastSurfer-LIT: Lesion inpainting tool for whole brain MRI segmentation with tumors, cavities and abnormalities. *Imaging Neuroscience* 2025. | [10.1162/imag_a_00446](https://doi.org/10.1162/imag_a_00446) |
 | DDPM foundation | Ho J, Jain A, Abbeel P. Denoising diffusion probabilistic models. *NeurIPS* 2020. | [arXiv:2006.11239](https://arxiv.org/abs/2006.11239) |
 | VINN layers (resolution-agnostic) | Henschel L, et al. FastSurferVINN: Building resolution-independent deep segmentation networks. *Medical Image Analysis* 2022. | [10.1016/j.media.2022.102313](https://doi.org/10.1016/j.media.2022.102313) |
 | Inpainting strategy | Lugmayr A, et al. RePaint: Inpainting using denoising diffusion probabilistic models. *CVPR* 2022. | [10.1109/CVPR52688.2022.01175](https://doi.org/10.1109/CVPR52688.2022.01175) |
+| **VBT / LeAPP (when `--anat-mitigation vbt`)** | Bey P, Dhindsa K, Kashyap A, et al. A lesion-aware automated processing framework for clinical stroke magnetic resonance imaging. *Human Brain Mapping* 2024;45(9):e26701. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
+| LeAPP code (VBT implementation source) | BrainModes/LeAPP GitHub repository. | [github.com/BrainModes/LeAPP](https://github.com/BrainModes/LeAPP) |
 
-**Docs:** [Step 1.5 theory](methods/step1_5_inpaint.md) · [Lesion segmentation](lesion_segmentation.md)
+**Docs:** [Step 1.5 theory](methods/step1_5_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [Lesion segmentation](lesion_segmentation.md)
 
 ---
 
@@ -85,14 +88,46 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
+## Step 3.5 — Lesion-aware ACT (optional)
+
+**What we use:** After QSIRecon, optionally rebuild iFOD2 + SIFT2 using a 5TT image edited with `5ttedit -path` so the **original BIDS lesion mask** occupies the pathology channel (`--act-mode lesion-aware`).
+
+| Topic | Reference | DOI / link |
+|-------|-----------|------------|
+| **LeAPP lesion-aware framework (primary context)** | Bey P, et al. *Human Brain Mapping* 2024;45(9):e26701. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
+| ACT tractography | Smith RE, et al. Anatomically-constrained tractography. *NeuroImage* 2012;62(3):1924–1938. | [10.1016/j.neuroimage.2012.02.004](https://doi.org/10.1016/j.neuroimage.2012.02.004) |
+| HSVS 5TT | Smith RE, et al. Hybrid surface/volume segmentation. *NeuroImage* 2020;223:117345. | [10.1016/j.neuroimage.2020.117345](https://doi.org/10.1016/j.neuroimage.2020.117345) |
+| SIFT2 (rebuilt weights) | Smith RE, et al. SIFT2. *NeuroImage* 2015;119:338–351. | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
+
+**Docs:** [Step 3.5 theory](methods/step3_5_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
+
+---
+
+## Experiment arms (factorial lesion processing)
+
+**What we use:** `--experiment-arm` combines Step 1.5 anatomy backend and Step 3.5 ACT mode for controlled sensitivity analyses. Not a separate tool — a preset of flags with isolated output trees under `RESULTS_ROOT/arms/<arm>/`.
+
+| Design element | Reference | DOI / link |
+|----------------|-----------|------------|
+| Factorial anatomy × tractography lesion handling | Bey P, et al. LeAPP. *Human Brain Mapping* 2024. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
+| ACT pathology compartment | Smith RE, et al. ACT. *NeuroImage* 2012. | [10.1016/j.neuroimage.2012.02.004](https://doi.org/10.1016/j.neuroimage.2012.02.004) |
+| neuroLIT anatomical arm | Pollak TA, et al. *Imaging Neuroscience* 2025. | [10.1162/imag_a_00446](https://doi.org/10.1162/imag_a_00446) |
+
+**Docs:** [Decision tables — experiment arms](decision_tables.md#experiment-arms) · [Lesion-aware tractography](lesion_aware.md)
+
+---
+
 ## Step 4 — DKT structural connectome
 
-**What we use:** Subject-native FreeSurfer DKT labels warped to the DWI reference grid; MRtrix3 `tck2connectome` with streamline **counts** by default (optional SIFT2 weighting).
+**What we use:** Subject-native FreeSurfer DKT labels warped to the DWI reference grid; MRtrix3 `tck2connectome` with multiple edge definitions from one tractogram (Count, SIFT2, MeanLength, MeanFA, MeanMD). Default primary alias: **streamline counts**.
 
 | Topic | Reference | DOI / link |
 |-------|-----------|------------|
 | Connectome construction | Tournier JD, et al. MRtrix3 (see Step 3). | [10.1016/j.neuroimage.2019.01.066](https://doi.org/10.1016/j.neuroimage.2019.01.066) |
-| SIFT2 weighting (optional) | Smith RE, et al. SIFT2 (see Step 3). | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
+| SIFT2 weighting | Smith RE, et al. SIFT2 (see Step 3). | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
+| SD_STREAM (optional, `--tractography-model both`) | Tournier JD, et al. MRtrix3. | [10.1016/j.neuroimage.2019.01.066](https://doi.org/10.1016/j.neuroimage.2019.01.066) |
+| **Interpretation of diffusion metrics on tracts** | Jones DK, Knösche TR, Turner R. White matter integrity, fiber count, and other fallacies. *NeuroImage* 2013;73:239–254. | [10.1016/j.neuroimage.2013.06.018](https://doi.org/10.1016/j.neuroimage.2013.06.018) |
+| Multi-measure release precedent (IDEAS II) | Taylor PN, et al. IDEAS II. *Epilepsia* 2026;67(6):2912–2923. | [10.1002/epi.70186](https://doi.org/10.1002/epi.70186) |
 | Parcellation (DKT) | Klein & Tourville 2012 (see Step 2). | [10.3389/fnins.2012.00171](https://doi.org/10.3389/fnins.2012.00171) |
 | Registration (ANTs) | Avants BB, et al. A reproducible evaluation of ANTs similarity metric performance in brain image registration. *NeuroImage* 2011;54(3):2033–2044. | [10.1016/j.neuroimage.2010.09.025](https://doi.org/10.1016/j.neuroimage.2010.09.025) |
 | FreeSurfer label volume | Fischl B, et al. Automatically parcellating the human cerebral cortex. *Cerebral Cortex* 2004;14(1):11–22. | [10.1093/cercor/bhg087](https://doi.org/10.1093/cercor/bhg087) |

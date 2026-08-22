@@ -8,13 +8,16 @@ What happens inside each step of the DKT Connectome. **Theory and rationale:** [
 
 ```text
 Step 1    QSIPrep           DWI + T1w preprocessing, SDC (fmap or SyN)
-Step 1.5  Inpaint           neuroLIT lesion fill (auto when BIDS lesion mask)
+Step 1.5  Inpaint           Lesion anatomical mitigation (neuroLIT default; optional VBT)
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
-Step 4    Connectome        DKT 78-node matrix (default: streamline counts)
+Step 3.5  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
+Step 4    Connectome        DKT 78-node matrices (Count, SIFT2, MeanLength, MeanFA, MeanMD)
 Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 ```
+
+**Experiment arms:** `--experiment-arm` sets Step 1.5 backend and Step 3.5 ACT together — see [Usage — experiment arms](usage.md).
 
 ---
 
@@ -42,19 +45,19 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 ## Step 1.5 — Inpaint (optional)
 
-**Tool:** [neuroLIT](https://github.com/Deep-MI/lit) (`lit_0.6.0.sif`)
+**Tools:** [neuroLIT](https://github.com/Deep-MI/lit) (`lit_0.6.0.sif`, default) or LeAPP-compatible **virtual brain transplant** (`--anat-mitigation vbt`)
 
 **Trigger:** sibling `*_T1w_label-lesion_roi.nii.gz` in BIDS for the session
 
 **Processing:**
 
 1. Resample / dilate lesion mask on T1w grid
-2. Inpaint lesion region on T1w before recon
+2. Fill or transplant lesion region on T1w before recon (`neurolit` or `vbt`)
 3. QC metrics (`inpainting.json`)
 
-**Skip:** `--no-inpaint`, or no mask present (silent no-op)
+**Skip:** `--no-inpaint` / `--anat-mitigation none`, or no mask present (silent no-op)
 
-**References:** [Step 1.5 — Inpainting (methods)](methods/step1_5_inpaint.md) · [References table](references.md#step-15-neurolit-inpainting-optional) (Pollak et al. 2025; Ho et al. 2020).
+**References:** [Step 1.5 — Inpainting (methods)](methods/step1_5_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [References table](references.md#step-15-anatomical-lesion-mitigation-optional) (Pollak et al. 2025; Bey et al. 2024).
 
 ---
 
@@ -94,6 +97,25 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 ---
 
+## Step 3.5 — Lesion-aware ACT (optional)
+
+**Trigger:** `--act-mode lesion-aware` or an `*-lesion` [experiment arm](usage.md)
+
+**Processing:**
+
+1. Resample QSIRecon HSVS 5TT to the DWI/FOD grid
+2. Transform the **original BIDS** lesion mask to DWI space
+3. Insert pathology with `5ttedit -path`; validate with `5ttcheck`
+4. Rebuild matched iFOD2 tractography and SIFT2 weights
+
+**Key outputs:** `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck`, `model-sift2_streamlineweights.csv`
+
+Step 4 uses these tractograms when lesion-aware mode is active.
+
+**References:** [Lesion-aware tractography](lesion_aware.md) · (Bey et al. 2024; Smith et al. 2012).
+
+---
+
 ## Step 4 — Connectome
 
 **Tool:** `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3)
@@ -101,10 +123,13 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 **Processing:**
 
 1. Build DKT parcellation on DWI grid (`nodes.mif`)
-2. Assign streamlines to 78 DKT nodes
-3. Write connectome matrix (default: **streamline counts**)
+2. Assign streamlines to 78 DKT nodes (standard QSIRecon or lesion-aware ACT tractogram)
+3. Write connectome matrices: **Count, SIFT2, MeanLength, MeanFA, MeanMD** (same tractogram)
+4. Copy primary measure to `dkt_connectome.csv` (default: count)
 
 **Primary output:** `connectomes/sub-<ID>/dkt_connectome.csv`
+
+Optional: `--tractography-model both` adds parallel SD_STREAM matrices (`*_model-SDSTREAM_*`).
 
 **References:** [Step 4 — Connectome (methods)](methods/step4_connectome.md) · [References table](references.md#step-4-dkt-structural-connectome) (Tournier et al. 2019; Klein & Tourville 2012).
 

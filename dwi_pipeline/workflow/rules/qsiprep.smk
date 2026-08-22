@@ -23,12 +23,16 @@ rule qsiprep:
         work=lambda wc: f"{INTER_QSP}/_work_qsiprep_{wc.subject}",
         bids_filter=QSIPREP_BIDS_FILTER,
         dwi_select_json=DWI_SELECT_JSON if DWI_SELECT_ENABLED else "",
+        session=str(RECON_CFG.get("session") or ""),
     shell:
         r"""
         exec > {log} 2>&1
         set -euo pipefail
         source {COMMON_SH}
         SUBJECT="{wildcards.subject}"
+        session_label="{params.session}"
+        session_args=()
+        [[ -n "${{session_label}}" ]] && session_args+=(--session "${{session_label}}")
 
         echo "=== QSIPrep (ACT pipeline): sub-${{SUBJECT}} ==="
         rm -rf "{params.work}"
@@ -39,18 +43,9 @@ rule qsiprep:
         if [[ -n "{params.bids_filter}" ]]; then
           [[ -f "{params.bids_filter}" ]] || _pipeline_fail "bids-filter" \
             "missing static bids filter: {params.bids_filter}"
-          cp -f "{params.bids_filter}" "{params.filter_cache}"
-          if python3 -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.bids_filter}')) else 1)"; then
-            has_fmap=1
-          else
-            has_fmap=0
-          fi
-          filter_binds+=( -B "{params.bids_filter}":/bids_filter.json:ro )
-          xtra+=( --bids-filter-file /bids_filter.json )
-          echo "QSIPrep: static bids filter {params.bids_filter}"
-        elif [[ -n "{params.dwi_select_json}" ]]; then
           python3 "{BUILD_BIDS_FILTER}" --bids-dir "{BIDS_DIR}" --subject "${{SUBJECT}}" \
-            --select-json "{params.dwi_select_json}" --output "{params.filter_cache}"
+            --static-filter "{params.bids_filter}" --output "{params.filter_cache}" \
+            "${{session_args[@]}}"
           if python3 -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.filter_cache}')) else 1)"; then
             has_fmap=1
           else
@@ -58,7 +53,19 @@ rule qsiprep:
           fi
           filter_binds+=( -B "{params.filter_cache}":/bids_filter.json:ro )
           xtra+=( --bids-filter-file /bids_filter.json )
-          echo "QSIPrep: dwi-select {params.dwi_select_json} -> {params.filter_cache}"
+          echo "QSIPrep: static bids filter {params.bids_filter} (session=${{session_label:-all}})"
+        elif [[ -n "{params.dwi_select_json}" ]]; then
+          python3 "{BUILD_BIDS_FILTER}" --bids-dir "{BIDS_DIR}" --subject "${{SUBJECT}}" \
+            --select-json "{params.dwi_select_json}" --output "{params.filter_cache}" \
+            "${{session_args[@]}}"
+          if python3 -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.filter_cache}')) else 1)"; then
+            has_fmap=1
+          else
+            has_fmap=0
+          fi
+          filter_binds+=( -B "{params.filter_cache}":/bids_filter.json:ro )
+          xtra+=( --bids-filter-file /bids_filter.json )
+          echo "QSIPrep: dwi-select {params.dwi_select_json} (session=${{session_label:-all}}) -> {params.filter_cache}"
         else
           has_fmap=0
         fi

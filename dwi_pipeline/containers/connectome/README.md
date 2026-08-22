@@ -5,7 +5,9 @@ Shareable **~150 MB** Apptainer image for Step 4 (structural connectome).
 The image is parcellation-neutral: it warps whichever FreeSurfer segmentation it
 is given onto the DWI grid and applies whichever `labelconvert` lookup table it
 is given, so the same image produces the 78-node Desikan–Killiany–Tourville
-matrix (the pipeline default) or the 84-node Desikan–Killiany one.
+matrices (the pipeline default) or the 84-node Desikan–Killiany ones. From one
+tractogram it writes Count, SIFT2, MeanLength, MeanFA, and MeanMD connectomes;
+it also derives voxelwise FA and MD maps from the QSIPrep DWI.
 
 ## Contents (legacy-staged from pipeline SIFs)
 
@@ -76,12 +78,15 @@ reassigning that territory to neighbouring gyri.
 |--------|---------|-------|
 | `--segmentation` | `<subject>/mri/aparc+aseg.mgz` | Pass `aparc.DKTatlas+aseg.mgz` for DKT from a recon-all tree |
 | `--mrtrix-lut` | `fs_default.txt` (DK, 84 nodes) | `fs_dkt.txt` for DKT (78 nodes) |
+| `--preproc-dwi`, `--bval`, `--bvec`, `--brain-mask` | required | QSIPrep products used for tensor fitting and FA/MD |
+| `--sift2-weights` | required by the workflow | Writes the SIFT2 matrix |
+| `--primary-measure` | `count` | Selects the `connectome.csv` compatibility alias (`count` or `sift2`) |
 
 ## Pipeline variables
 
 | Variable | Default | Notes |
 |----------|---------|-------|
 | `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` | Shared image |
-| `CONNECTOME_BIND_ENTRYPOINT` | `0` | Set `1` to override entrypoint from repo |
+| `CONNECTOME_BIND_ENTRYPOINT` | `1` | Uses the versioned repository entrypoint; set `0` only after rebuilding the SIF with matching code |
 
 Legacy dual-container Step 4 (`CONNECTOME_LEGACY_DUAL_CONTAINER=1`): see [workflow/LEGACY.md](../../workflow/LEGACY.md).

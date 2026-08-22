@@ -157,7 +157,6 @@ def discover_paths(
 
     qsirecon = results_root / "qsirecon_single_run_output"
     qsiprep = results_root / "qsiprep_single_run_output"
-    inpaint_root = results_root / "inpainted"
     connectome_dir = results_root / "connectomes" / f"sub-{sub}"
 
     tract_candidates = sorted(
@@ -171,10 +170,21 @@ def discover_paths(
     if not ses:
         raise SystemExit(f"Could not infer session from tractogram: {tractogram}")
 
-    lesion_mask = inpaint_root / f"sub-{sub}" / f"ses-{ses}" / "lesion_mask_prepared.nii.gz"
+    lesion_candidates = [
+        root / f"sub-{sub}" / f"ses-{ses}" / "lesion_mask_prepared.nii.gz"
+        for root in (
+            results_root / "lesion_masks",
+            results_root / "inpainted",
+            results_root / "vbt",
+        )
+    ]
+    lesion_mask = next((path for path in lesion_candidates if path.is_file()), lesion_candidates[0])
     lesion_json = lesion_mask.with_suffix("").with_suffix(".json")
     if not lesion_mask.is_file():
-        raise SystemExit(f"No prepared lesion mask (Step 1.5): {lesion_mask}")
+        raise SystemExit(
+            "No prepared lesion mask. Checked: "
+            + ", ".join(str(path) for path in lesion_candidates)
+        )
 
     nodes_mif = connectome_dir / "nodes.mif"
     primary_connectome = connectome_dir / "dkt_connectome.csv"
