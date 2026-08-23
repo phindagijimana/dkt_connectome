@@ -10,6 +10,8 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 
 **Hosted site:** [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/)
 
+![DKT Connectome pipeline workflow](img/pipeline_overview.svg)
+
 ---
 
 ## Start here
