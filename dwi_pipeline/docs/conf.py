@@ -62,9 +62,9 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 0
 
-# Sphinx 7+ default permalink icon (U+F0C1) needs Font Awesome; hide it on RTD.
-html_permalinks = True
-html_permalinks_icon = ""
+# Disable heading permalinks — Sphinx 7+ default icon (U+F0C1) renders as a broken
+# glyph on Read the Docs without Font Awesome. QSIPrep-style pages use clean headings.
+html_permalinks = False
 
 suppress_warnings = [
     "myst.xref_missing",
