@@ -22,9 +22,9 @@ Snakemake builds this automatically when `qc.subject_html: true` (default).
 Regenerate manually:
 
 ```bash
-bash workflow/run_subject.sh all TBI011011
+bash workflow/run_subject.sh all EXAMPLE
 # or:
-python3 scripts/render_subject_qc.py --results-root OUT --subject TBI011011
+python3 scripts/render_subject_qc.py --results-root OUT --subject EXAMPLE
 ```
 
 ### What to inspect (by step)
@@ -40,7 +40,7 @@ python3 scripts/render_subject_qc.py --results-root OUT --subject TBI011011
 
 Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 
-![Example DKT connectome heatmap from bundled validation subject TBI011011](img/qc/tbi011011_connectome.png)
+Regenerate doc QC figures locally: `python3 scripts/render_qc_doc_figures.py` (requires local dwi_test_TBI outputs; figures are gitignored).
 
 #### Step 1.5 — Inpaint (if lesion mask)
 
@@ -85,8 +85,6 @@ Open `connectomes/sub-<ID>/disconnectome/disconnectome_qc.html`:
 | Disconnection heatmap | Fractional loss D_ij per node pair |
 | Options A / B / C comparison | Spared vs primary connectome |
 | Lesion overlap | Lesion voxels vs DKT nodes on DWI grid |
-
-![Example disconnection matrix (option C) from TBI011011](img/qc/tbi011011_disconnection.png)
 
 Validated examples: [Validation](validation.md).
 
@@ -135,12 +133,12 @@ Set in `workflow/config/config.local.yaml`. Disable per-subject HTML with `qc.su
 After the [Tutorial](tutorial.md) on bundled TBI subjects:
 
 ```text
-dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/qc/sub-TBI011011/subject_qc.html
-dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/connectomes/sub-TBI011011/disconnectome/disconnectome_qc.html
+dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/qc/sub-EXAMPLE/subject_qc.html
+dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/connectomes/sub-EXAMPLE/disconnectome/disconnectome_qc.html
 ```
 
 ```bash
-firefox dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/qc/sub-TBI011011/subject_qc.html
+firefox dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/qc/sub-EXAMPLE/subject_qc.html
 ```
 
 ---

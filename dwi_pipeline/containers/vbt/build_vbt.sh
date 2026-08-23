@@ -17,8 +17,8 @@ APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-${HERE}/.apptainer_tmp}"
 export APPTAINER_TMPDIR SINGULARITY_TMPDIR="${APPTAINER_TMPDIR}" PROOT_TMP_DIR="${APPTAINER_TMPDIR}"
 mkdir -p "${APPTAINER_TMPDIR}"
 
-QSIPREP_SIF="${CONTAINER_QSIPREP:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsiprep.sif}"
-OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_vbt.sif}"
+QSIPREP_SIF="${CONTAINER_QSIPREP:-/path/to/others/containers/qsiprep.sif}"
+OUT_SIF="${OUT_SIF:-/path/to/others/containers/dkt_vbt.sif}"
 IMAGE_TAG="${IMAGE_TAG:-dkt_vbt:latest}"
 FSL_ENV="${FSL_ENV:-/opt/conda/envs/fslqsiprep}"
 

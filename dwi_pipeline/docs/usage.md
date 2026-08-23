@@ -206,10 +206,10 @@ export RESULTS_ROOT=/path/to/results
 bash submit.sh --experiment-arm neurolit-lesion
 
 # Single subject (Snakemake)
-bash workflow/run_subject.sh all TBI011011 --experiment-arm vbt-lesion
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm vbt-lesion
 
 # Equivalent manual flags (no arm prefix on RESULTS_ROOT)
-bash workflow/run_subject.sh all TBI011011 \
+bash workflow/run_subject.sh all EXAMPLE \
   --anat-mitigation vbt --act-mode lesion-aware
 ```
 

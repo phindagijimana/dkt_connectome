@@ -31,10 +31,10 @@ Two subjects (`sub-1`, `sub-6`) from [OpenNeuro ds007401](https://openneuro.org/
 ```text
 dwi_pipeline/dwi_test_TBI/
   bids/                              # BIDS inputs (gitignored — you provide)
-    sub-TBI011011/
-    sub-TBI011204/
-  sub-TBI011011_fastsurfer_inpaint/  # RESULTS_ROOT (example outputs)
-  sub-TBI011204_fastsurfer_inpaint/
+    sub-EXAMPLE/
+    sub-EXAMPLE2/
+  sub-EXAMPLE_fastsurfer_inpaint/  # RESULTS_ROOT (example outputs)
+  sub-EXAMPLE2_fastsurfer_inpaint/
 ```
 
 Naming convention for `RESULTS_ROOT`:
@@ -43,7 +43,7 @@ Naming convention for `RESULTS_ROOT`:
 sub-<SUBJECT>_<recon>[_inpaint]/
 ```
 
-Example: `sub-TBI011011_fastsurfer_inpaint` = FastSurfer + inpainting ran.
+Example: `sub-EXAMPLE_fastsurfer_inpaint` = FastSurfer + inpainting ran.
 
 See [dwi_test_TBI README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/dwi_test_TBI/README.md).
 
@@ -73,10 +73,10 @@ Apptainer images: [Installation → Auto-install](installation.md#auto-install-r
 
 ```bash
 export BIDS_DIR="$(pwd)/dwi_test_TBI/bids"
-export RESULTS_ROOT="$(pwd)/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint"
+export RESULTS_ROOT="$(pwd)/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint"
 
 ./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
-  --participant-label TBI011011 \
+  --participant-label EXAMPLE \
   --session-filter ses-1 \
   --fastsurfer \
   --dry-run
@@ -90,7 +90,7 @@ Review Snakemake rule list: `qsiprep` → `inpaint` (if mask) → `recon` → `q
 
 ```bash
 ./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
-  --participant-label TBI011011 \
+  --participant-label EXAMPLE \
   --session-filter ses-1 \
   --fastsurfer \
   --n-cpus 8
@@ -99,7 +99,7 @@ Review Snakemake rule list: `qsiprep` → `inpaint` (if mask) → `recon` → `q
 HPC equivalent:
 
 ```bash
-bash workflow/run_subject.sh all TBI011011 --session-filter ses-1 --fastsurfer
+bash workflow/run_subject.sh all EXAMPLE --session-filter ses-1 --fastsurfer
 ```
 
 ---
@@ -108,17 +108,17 @@ bash workflow/run_subject.sh all TBI011011 --session-filter ses-1 --fastsurfer
 
 | Artifact | Path |
 |----------|------|
-| QSIPrep | `RESULTS_ROOT/qsiprep_single_run_output/sub-TBI011011/` |
-| Inpaint (if mask) | `RESULTS_ROOT/inpainted/sub-TBI011011/` |
-| Recon | `RESULTS_ROOT/freesurfer/sub-TBI011011/` |
-| QSIRecon | `RESULTS_ROOT/qsirecon_single_run_output/sub-TBI011011/` |
-| **Connectome** | `RESULTS_ROOT/connectomes/sub-TBI011011/dkt_connectome.csv` |
-| Node strength | `RESULTS_ROOT/node_strength/reports/sub-TBI011011/report.pdf` |
-| **QC dashboard** | `RESULTS_ROOT/qc/sub-TBI011011/subject_qc.html` |
+| QSIPrep | `RESULTS_ROOT/qsiprep_single_run_output/sub-EXAMPLE/` |
+| Inpaint (if mask) | `RESULTS_ROOT/inpainted/sub-EXAMPLE/` |
+| Recon | `RESULTS_ROOT/freesurfer/sub-EXAMPLE/` |
+| QSIRecon | `RESULTS_ROOT/qsirecon_single_run_output/sub-EXAMPLE/` |
+| **Connectome** | `RESULTS_ROOT/connectomes/sub-EXAMPLE/dkt_connectome.csv` |
+| Node strength | `RESULTS_ROOT/node_strength/reports/sub-EXAMPLE/report.pdf` |
+| **QC dashboard** | `RESULTS_ROOT/qc/sub-EXAMPLE/subject_qc.html` |
 
 ```bash
 # Open QC in browser
-firefox "${RESULTS_ROOT}/qc/sub-TBI011011/subject_qc.html"
+firefox "${RESULTS_ROOT}/qc/sub-EXAMPLE/subject_qc.html"
 ```
 
 What each panel means: [Quality control](qc.md).
@@ -131,7 +131,7 @@ Step 4.5 is off by default. With a lesion mask and validated settings:
 
 ```bash
 ./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
-  --participant-label TBI011011 \
+  --participant-label EXAMPLE \
   --session-filter ses-1 \
   --disconnection
 ```
@@ -140,7 +140,7 @@ Integrity check:
 
 ```bash
 python3 scripts/evaluate_disconnectome_integrity.py \
-  --disconnectome-dir "${RESULTS_ROOT}/connectomes/sub-TBI011011/disconnectome"
+  --disconnectome-dir "${RESULTS_ROOT}/connectomes/sub-EXAMPLE/disconnectome"
 ```
 
 Expected results for test subjects: [Validation](validation.md).

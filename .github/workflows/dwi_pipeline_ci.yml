@@ -51,6 +51,9 @@ jobs:
         working-directory: dwi_pipeline
         run: bash scripts/run_bids_validator.sh tests/fixtures/bids_minimal --ignore-warnings
 
+      - name: Privacy check (no personal paths in git)
+        run: bash dwi_pipeline/scripts/check_public_repo_privacy.sh
+
       - name: pytest (dwi_pipeline scripts)
         run: pytest -q dwi_pipeline/tests -m "not slow" -c dwi_pipeline/pytest.ini
 
