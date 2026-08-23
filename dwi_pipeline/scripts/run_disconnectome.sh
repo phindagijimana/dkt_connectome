@@ -15,9 +15,9 @@ Standalone Step 4.5 disconnectome on a completed results tree.
 
 Examples:
   $(basename "$0") \\
-    ${PIPELINE_DIR}/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint TBI011011
+    /path/to/RESULTS_ROOT EXAMPLE
   $(basename "$0") \\
-    ${PIPELINE_DIR}/dwi_test_TBI/sub-TBI011204_fastsurfer_inpaint TBI011204 2WK
+    /path/to/RESULTS_ROOT EXAMPLE ses-1
 
 Environment:
   DISCONNECTOME_CONTAINER  Apptainer image (default: dkt_connectome.sif)

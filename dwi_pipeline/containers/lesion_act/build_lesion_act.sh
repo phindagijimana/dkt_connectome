@@ -14,8 +14,8 @@ APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-${HERE}/.apptainer_tmp}"
 export APPTAINER_TMPDIR SINGULARITY_TMPDIR="${APPTAINER_TMPDIR}" PROOT_TMP_DIR="${APPTAINER_TMPDIR}"
 mkdir -p "${APPTAINER_TMPDIR}"
 
-QSI_SIF="${CONTAINER_QSIRECON:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif}"
-OUT_SIF="${OUT_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/dkt_lesion_act.sif}"
+QSI_SIF="${CONTAINER_QSIRECON:-/path/to/others/containers/qsirecon.sif}"
+OUT_SIF="${OUT_SIF:-/path/to/others/containers/dkt_lesion_act.sif}"
 IMAGE_TAG="${IMAGE_TAG:-dkt_lesion_act:latest}"
 
 echo "=== dkt_lesion_act build ==="

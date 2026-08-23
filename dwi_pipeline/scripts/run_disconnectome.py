@@ -27,8 +27,8 @@ does not use SIFT1 streamline culling.)
 
 Usage:
   python3 run_disconnectome.py \\
-    --results-root dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint \\
-    --subject TBI011011
+    --results-root /path/to/RESULTS_ROOT \\
+    --subject EXAMPLE
 """
 
 from __future__ import annotations

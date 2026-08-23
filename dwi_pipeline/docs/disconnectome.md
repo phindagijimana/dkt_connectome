@@ -71,19 +71,14 @@ Option A (parc excision) can reassign streamline endpoints — **WARN** when >5%
 
 ```bash
 python3 dwi_pipeline/scripts/evaluate_disconnectome_integrity.py \
-  --disconnectome-dir dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint/connectomes/sub-TBI011011/disconnectome
+  --disconnectome-dir dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/connectomes/sub-EXAMPLE/disconnectome
 ```
 
 Exit codes: **0** = passed or warned; **1** = FAIL; **2** = missing provenance.
 
-### Validated TBI runs (count weighting, erode 0)
+### Local validation (maintainers)
 
-| Subject | Option B | Option C | Mean D (C) | Edges D > 0 |
-|---------|----------|----------|------------|-------------|
-| TBI011011 | PASS | PASS | 0.045616 | 2124 / 5794 |
-| TBI011204 | PASS | PASS | 0.036309 | 2420 / 5954 |
-
-TBI011011 Option A: **WARN** (444 edges spared > primary — parc reassignment).
+Run `evaluate_disconnectome_integrity.py` on your own completed disconnectome outputs under `dwi_test_TBI/` (or another local `RESULTS_ROOT`). Expect Options B and C to **PASS** under count weighting with zero `spared > primary` edges; Option A may **WARN** when parcellation excision reassigns endpoints. Do not commit per-subject metric tables or participant-derived figures to the public repo.
 
 ### Connectome (Step 4) manual checks
 

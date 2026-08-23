@@ -256,10 +256,10 @@ Legacy `DK_*` env names still work and print a deprecation note (`DK_PARCELLATIO
 ./submit.sh --fast-fs --syn
 
 # Single subject via Snakemake wrapper
-bash workflow/run_subject.sh all TBI011011 --fastsurfer --syn
+bash workflow/run_subject.sh all EXAMPLE --fastsurfer --syn
 
 # Recon only, FastSurfer + DK, GPU
-RECON_FASTSURFER_DEVICE=cuda bash subject.sh recon TBI011011 --fast-fs
+RECON_FASTSURFER_DEVICE=cuda bash subject.sh recon EXAMPLE --fast-fs
 
 # Skip connectome + node strength
 ./submit.sh --fastsurfer --syn --no-connectome

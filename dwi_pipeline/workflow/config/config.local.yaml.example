@@ -34,4 +34,4 @@ fs_license: /path/to/others/data_mining/freesurfer/license.txt
 
 # Local TBI test layout example:
 # bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids
-# results_root: /path/to/dwi_pipeline/dwi_test_TBI/sub-TBI011011_fastsurfer_inpaint
+# results_root: /path/to/dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint

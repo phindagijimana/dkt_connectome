@@ -172,3 +172,16 @@ dwi_pipeline/sample_software_paper/*.pdf
 dwi_pipeline/sample_software_paper/*.docx
 dwi_pipeline/config/bids_repair_phase2_rsfmap.json
 dwi_pipeline/workflow/config/config.local.yaml
+
+# --- Study exports and local cohort data (never public) ------------------------
+dwi_pipeline/networks_URMC/
+dwi_pipeline/sample_software_paper/
+dwi_pipeline/docs/presentations/
+dwi_pipeline/docs/img/qc/tbi011011_*.png
+dwi_pipeline/retry_*.txt
+dwi_pipeline/subject_list_cidur_*.txt
+dwi_pipeline/containers/*/build_ctx/
+dwi_pipeline/containers/*/build.log
+dwi_pipeline/IDEAS_II_derivatives_dwi/
+dwi_pipeline/new_method_lesion_exclusion_algorithm/
+dwi_pipeline/research_paper/

@@ -56,7 +56,7 @@ See [`sample_data/ideas/README.md`](sample_data/ideas/README.md) and [docs/datas
 **Local TBI test data** lives under [`dwi_pipeline/dwi_test_TBI/`](dwi_test_TBI/):
 BIDS inputs in `dwi_test_TBI/bids/`, and one `RESULTS_ROOT` subdirectory per
 subject/settings using `sub-<SUBJECT>_<recon>[_flags]` (e.g.
-`sub-TBI011011_fastsurfer_inpaint`). Keep large cohort archives (e.g.
+`sub-EXAMPLE_fastsurfer_inpaint`). Keep large cohort archives (e.g.
 local BIDS archives) separate from day-to-day pipeline I/O.
 
 ---
@@ -159,16 +159,16 @@ matched iFOD2 tractography and SIFT2 weights from the retained WM FOD.
 
 ```bash
 # Individual controls
-bash workflow/run_subject.sh act TBI011011 \
+bash workflow/run_subject.sh act EXAMPLE \
   --recon-session 2WK --act-mode lesion-aware
 
 # Isolated anatomy × ACT study arms
-bash workflow/run_subject.sh all TBI011011 --experiment-arm orig-std
-bash workflow/run_subject.sh all TBI011011 --experiment-arm orig-lesion
-bash workflow/run_subject.sh all TBI011011 --experiment-arm neurolit-std
-bash workflow/run_subject.sh all TBI011011 --experiment-arm neurolit-lesion
-bash workflow/run_subject.sh all TBI011011 --experiment-arm vbt-std
-bash workflow/run_subject.sh all TBI011011 --experiment-arm vbt-lesion
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm orig-std
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm orig-lesion
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm neurolit-std
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm neurolit-lesion
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm vbt-std
+bash workflow/run_subject.sh all EXAMPLE --experiment-arm vbt-lesion
 ```
 
 The six supported arms are `orig-std`, `orig-lesion`, `neurolit-std`,
