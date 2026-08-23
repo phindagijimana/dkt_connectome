@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 from pathlib import Path
 
@@ -10,10 +11,14 @@ REPO = Path(__file__).resolve().parents[2]
 DWI = REPO / "dwi_pipeline"
 TEST_TBI = DWI / "dwi_test_TBI"
 
-VBT_JSON = TEST_TBI / "phase3_vbt_validation/vbt/sub-TBI011011/ses-2WK/inpainting.json"
+SUBJECT = os.environ.get("VBT_VALIDATION_SUBJECT", "EXAMPLE")
+SESSION = os.environ.get("VBT_VALIDATION_SESSION", "baseline")
+RESULTS_SUFFIX = os.environ.get("VBT_VALIDATION_RESULTS_SUFFIX", "fastsurfer_inpaint")
+
+VBT_JSON = TEST_TBI / f"phase3_vbt_validation/vbt/sub-{SUBJECT}/ses-{SESSION}/inpainting.json"
 ACT_JSON = (
     TEST_TBI
-    / "sub-TBI011011_fastsurfer_inpaint/lesion_aware_act/sub-TBI011011/lesion_aware_act.json"
+    / f"sub-{SUBJECT}_{RESULTS_SUFFIX}/lesion_aware_act/sub-{SUBJECT}/lesion_aware_act.json"
 )
 
 
@@ -27,14 +32,14 @@ def _load_validator():
 
 
 @pytest.mark.skipif(not VBT_JSON.is_file(), reason="VBT validation fixture not present")
-def test_vbt_tbi011011_artifacts_pass():
+def test_vbt_validation_artifacts_pass():
     validator = _load_validator()
     errors = validator.validate_vbt(VBT_JSON)
     assert errors == [], errors
 
 
 @pytest.mark.skipif(not ACT_JSON.is_file(), reason="lesion-aware ACT fixture not present")
-def test_lesion_aware_act_tbi011011_artifacts_pass():
+def test_lesion_aware_act_validation_artifacts_pass():
     validator = _load_validator()
     errors = validator.validate_lesion_aware_act(ACT_JSON)
     assert errors == [], errors

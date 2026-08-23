@@ -2,7 +2,7 @@
 # Production-scale vbt-lesion E2E for one subject (reuse QSIPrep/QSIRecon).
 set -euo pipefail
 
-SUBJECT="${1:?Need subject id (e.g. TBI011011)}"
+SUBJECT="${1:?Need subject id (e.g. EXAMPLE)}"
 DWI_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SUBJECT="${SUBJECT#sub-}"
 SRC="${RESULTS_SRC:-${DWI_ROOT}/dwi_test_TBI/sub-${SUBJECT}_fastsurfer_inpaint}"
