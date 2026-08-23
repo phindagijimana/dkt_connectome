@@ -60,7 +60,11 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
-myst_heading_anchors = 3
+myst_heading_anchors = 0
+
+# Sphinx 7+ default permalink icon (U+F0C1) needs Font Awesome; hide it on RTD.
+html_permalinks = True
+html_permalinks_icon = ""
 
 suppress_warnings = [
     "myst.xref_missing",

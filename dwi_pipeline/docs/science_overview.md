@@ -34,30 +34,12 @@ Inpainting changes **only the T1w that feeds reconstruction and label warping** 
 
 ## End-to-end flow (conceptual)
 
-![Pipeline overview](img/pipeline_overview.svg)
+```{figure} img/pipeline_overview.svg
+:alt: DKT Connectome pipeline overview
+:align: center
+:width: 100%
 
-```text
-BIDS inputs: T1w + DWI [+ fieldmaps] [+ optional lesion mask]
-        │
-        ▼
-Step 1   QSIPrep          Physics: motion, eddy, SDC, denoising, T1w–DWI alignment
-        │
-        ▼ (if lesion mask in BIDS)
-Step 1.5 neuroLIT         Synthesizes plausible tissue inside lesion (DDPM inpainting)
-        │
-        ▼
-Step 2   Recon            Surfaces + DKT parcellation (FreeSurfer or FastSurfer)
-        │
-        ▼
-Step 3   QSIRecon         SS3T-CSD → ACT-HSVS tractography → streamlines + SIFT2
-        │
-        ▼
-Step 4   Connectome       Warp DKT labels to dwiref grid → 78×78 matrix (streamline counts)
-        │
-        ├─► Step 4.5 (optional, --disconnection) Disconnectome — excision / exclusion / D matrix
-        │
-        ▼
-Step 5   Node strength     Graph metrics + ENIGMA-style report from the connectome
+BIDS inputs (T1w, DWI, optional fieldmaps and lesion mask) through QSIPrep, optional neuroLIT inpainting, reconstruction, QSIRecon ACT tractography, DKT connectome, optional disconnectome, and node-strength reporting.
 ```
 
 **Key geometric principle:** streamlines live on a shared **tractography grid** (`dwiref`, ~2 mm, from QSIPrep). FreeSurfer labels start in **conformed surface space**; Step 4 warps them onto `dwiref` before counting streamlines. See [Step 4 — spatial alignment](methods/step4_connectome.md#spatial-alignment).
