@@ -19,34 +19,9 @@ code.literal {
   background-color: #fbfbfb !important;
 }
 
-/* Permalink icons: Sphinx 7+ emits a Font Awesome codepoint without the font loaded */
+/* Safety net if permalinks are ever re-enabled */
 a.headerlink {
-  font-size: 0;
-  line-height: 1;
-  text-decoration: none;
-  margin-left: 0.2em;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-h1:hover > a.headerlink,
-h2:hover > a.headerlink,
-h3:hover > a.headerlink,
-h4:hover > a.headerlink,
-figcaption:hover a.headerlink,
-p:hover > a.headerlink {
-  opacity: 1;
-}
-
-a.headerlink::before {
-  content: "¶";
-  font-size: 0.85em;
-  color: #bdc3c7;
-  font-family: inherit;
-}
-
-a.headerlink:hover::before {
-  color: #2980b9;
+  display: none !important;
 }
 
 /* Pipeline / ASCII diagrams in ```text fences */
