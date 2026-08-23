@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -121,13 +122,15 @@ def test_render_disconnectome_qc_html(tmp_path):
     assert report["overall_status"] in ("PASS", "WARN", "FAIL")
 
 
-def test_collect_subject_qc_tbi_fixture():
+def test_collect_subject_qc_local_fixture():
     collect = _load_module("collect_subject_qc", DWI / "scripts" / "collect_subject_qc.py")
-    rr = DWI / "dwi_test_TBI" / "sub-TBI011011_fastsurfer_inpaint"
+    subject = os.environ.get("QC_TEST_SUBJECT", "EXAMPLE")
+    suffix = os.environ.get("QC_TEST_RESULTS_SUFFIX", "fastsurfer_inpaint")
+    rr = DWI / "dwi_test_TBI" / f"sub-{subject}_{suffix}"
     if not rr.is_dir():
-        pytest.skip("TBI fixture not present")
-    report = collect.collect_subject_qc(rr, "TBI011011")
-    assert report["subject"] == "sub-TBI011011"
+        pytest.skip("local validation fixture not present")
+    report = collect.collect_subject_qc(rr, subject)
+    assert report["subject"] == f"sub-{subject}"
     assert report["overall_status"] in ("PASS", "WARN", "FAIL")
     step_ids = {s["id"] for s in report["steps"]}
     assert "qsiprep" in step_ids

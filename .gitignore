@@ -72,6 +72,16 @@ config/*.local.yaml
 config/*.private.yaml
 config/myconfig*.yaml
 
+# Legacy cohort subject lists and one-off Slurm drivers at repo root (local only).
+/subject_list*.txt
+/run_qsiprep*.sh
+/submit_qsiprep*.sh
+
+# Per-run subject lists under dwi_pipeline/ (use subjects.example or local copies).
+/dwi_pipeline/subjects.txt
+/dwi_pipeline/subjects_dwi_test*.txt
+/dwi_pipeline/subjects_resume.txt
+
 # --- Cached templates / atlases -----------------------------------------------
 /templateflow/
 .cache/
@@ -182,6 +192,10 @@ dwi_pipeline/retry_*.txt
 dwi_pipeline/subject_list_cidur_*.txt
 dwi_pipeline/containers/*/build_ctx/
 dwi_pipeline/containers/*/build.log
+dwi_pipeline/IDEAS_II_derivatives_dwi
 dwi_pipeline/IDEAS_II_derivatives_dwi/
+
+# Study-specific DWI select presets (keep generic b1300 examples in config/ instead).
+dwi_pipeline/config/dwi_select_tracktbi_*.json
 dwi_pipeline/new_method_lesion_exclusion_algorithm/
 dwi_pipeline/research_paper/

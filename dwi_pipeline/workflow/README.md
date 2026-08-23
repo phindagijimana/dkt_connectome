@@ -95,7 +95,7 @@ BIDS_DIR=/path/to/BIDS \
 SUBJECT_LIST_USE_EXISTING=1 \
 SUBJECT_LIST_FILE=<(echo SUBJECT001) \
 bash submit.sh --syn \
-  --dwi-select config/dwi_select_tracktbi_b1300_ses-2WK.json \
+  --dwi-select config/dwi_select_b1300_ses-2WK.json \
   --fast-fs
 ```
 

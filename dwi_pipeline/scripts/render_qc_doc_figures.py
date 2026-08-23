@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Render static QC figures for documentation (from bundled TBI golden runs)."""
+"""Render static QC figures for documentation (from local golden runs).
+
+Reads from a gitignored dwi_test_TBI RESULTS_ROOT and writes to docs/img/qc/.
+Do not commit participant-derived PNGs; regenerate locally when needed.
+"""
 
 from __future__ import annotations
 
 import csv
+import os
 from pathlib import Path
 
 import matplotlib
@@ -13,7 +18,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-TBI = ROOT / "dwi_test_TBI" / "sub-TBI011011_fastsurfer_inpaint"
+SUBJECT = os.environ.get("QC_DOC_SUBJECT", "EXAMPLE")
+RESULTS_SUFFIX = os.environ.get("QC_DOC_RESULTS_SUFFIX", "fastsurfer_inpaint")
+GOLDEN = ROOT / "dwi_test_TBI" / f"sub-{SUBJECT}_{RESULTS_SUFFIX}"
 OUT = ROOT / "docs" / "img" / "qc"
 
 
@@ -44,13 +51,25 @@ def _heatmap(mat: Path, title: str, out: Path, *, vmax: float | None = None) -> 
 
 
 def main() -> None:
-    conn = TBI / "connectomes" / "sub-TBI011011" / "dkt_connectome.csv"
-    disc = TBI / "connectomes" / "sub-TBI011011" / "disconnectome" / "disconnection_matrix_C.csv"
+    conn = GOLDEN / "connectomes" / f"sub-{SUBJECT}" / "dkt_connectome.csv"
+    disc = (
+        GOLDEN
+        / "connectomes"
+        / f"sub-{SUBJECT}"
+        / "disconnectome"
+        / "disconnection_matrix_C.csv"
+    )
     if not conn.is_file():
         raise SystemExit(f"Missing golden connectome: {conn}")
-    _heatmap(conn, "DKT connectome (TBI011011, count)", OUT / "tbi011011_connectome.png")
+    slug = SUBJECT.lower()
+    _heatmap(conn, f"DKT connectome ({SUBJECT}, count)", OUT / f"{slug}_connectome.png")
     if disc.is_file():
-        _heatmap(disc, "Disconnection matrix option C (TBI011011)", OUT / "tbi011011_disconnection.png", vmax=1.0)
+        _heatmap(
+            disc,
+            f"Disconnection matrix option C ({SUBJECT})",
+            OUT / f"{slug}_disconnection.png",
+            vmax=1.0,
+        )
 
 
 if __name__ == "__main__":

@@ -22,6 +22,8 @@ Never commit study-specific exports or identifiers to the shared repository:
 - `networks_URMC/` and other cohort connectome archives
 - `workflow/config/config.local.yaml` (machine-specific paths and credentials)
 - Subject lists, participant IDs, or NFS/home paths (`/mnt/nfs/home/...`)
+- Legacy cohort drivers at the repo root (`subject_list*.txt`, `run_qsiprep*.sh`, `submit_qsiprep*.sh`)
+- Local IDEAS symlink (`IDEAS_II_derivatives_dwi`) and inpainting notes under `Inpainting/`
 - Participant-derived QC figures (e.g. under `docs/img/qc/` from local `dwi_test_TBI` runs)
 
 CI runs `scripts/check_public_repo_privacy.sh` on every push/PR. Keep sensitive outputs local and gitignored; use placeholder IDs (`EXAMPLE`) in documentation only.

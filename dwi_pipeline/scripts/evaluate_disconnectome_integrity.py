@@ -6,7 +6,7 @@ that disconnection indices are internally coherent.
 
 Usage:
   python3 evaluate_disconnectome_integrity.py \\
-    --disconnectome-dir connectomes/sub-TBI011011/disconnectome
+    --disconnectome-dir connectomes/sub-EXAMPLE/disconnectome
   python3 evaluate_disconnectome_integrity.py --disconnectome-dir ... --json-out report.json
 """
 
