@@ -332,6 +332,9 @@ while [[ $# -gt 0 ]]; do
       shift 2
       continue
       ;;
+    --connectome-sift2)
+      CONNECTOME_SIFT2=1
+      ;;
     --no-disconnectome)
       RUN_DISCONNECTOME=0
       ;;
@@ -518,9 +521,10 @@ CONNECTOME_FAIL_ON_EMPTY_NODES="${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}"
 CONNECTOME_DETERMINISTIC="${CONNECTOME_DETERMINISTIC:-1}"
 CONNECTOME_WEIGHTING="${CONNECTOME_WEIGHTING:-count}"
 PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-count}"
+CONNECTOME_SIFT2="${CONNECTOME_SIFT2:-0}"
 CONNECTOME_BIND_ENTRYPOINT="${CONNECTOME_BIND_ENTRYPOINT:-1}"
 ACT_MODE="${ACT_MODE:-standard}"
-TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-ifod2}"
+TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-both}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
 QSIPREP_BIDS_FILTER="${QSIPREP_BIDS_FILTER:-}"
 DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
@@ -1556,17 +1560,23 @@ run_connectome() {
     *) _pipeline_fail "connectome" \
          "invalid PRIMARY_CONNECTOME_MEASURE=${PRIMARY_CONNECTOME_MEASURE} (use count or sift2)" ;;
   esac
+  if [[ "${PRIMARY_CONNECTOME_MEASURE}" == "sift2" && "${CONNECTOME_SIFT2}" != "1" ]]; then
+    _pipeline_fail "connectome" \
+      "PRIMARY_CONNECTOME_MEASURE=sift2 requires CONNECTOME_SIFT2=1 or --connectome-sift2"
+  fi
 
   local sift2_weights="" sift2_args=()
   if [[ "${CONNECTOME_WEIGHTING}" != "count" && "${CONNECTOME_WEIGHTING}" != "sift2" ]]; then
     _pipeline_fail "connectome" "invalid CONNECTOME_WEIGHTING=${CONNECTOME_WEIGHTING} (use count or sift2)"
   fi
-  sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
-    find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
-      -name '*model-sift2_streamlineweights.csv')"
-  local w_rel="${sift2_weights#${QSIRECON_OUT}/}"
-  sift2_args=(--sift2-weights "/qsirecon/${w_rel}")
-  echo "Using SIFT2 weights: ${sift2_weights}"
+  if [[ "${CONNECTOME_SIFT2}" == "1" ]]; then
+    sift2_weights="$(_strict_find_one "connectome/sift2_weights" \
+      find "${QSIRECON_OUT}" -type f -path "*sub-${SUBJECT}*" \
+        -name '*model-sift2_streamlineweights.csv')"
+    local w_rel="${sift2_weights#${QSIRECON_OUT}/}"
+    sift2_args=(--sift2-weights "/qsirecon/${w_rel}")
+    echo "Using SIFT2 weights: ${sift2_weights}"
+  fi
 
   if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" == "1" ]]; then
     echo "[connectome] Using legacy dual-container path (CONNECTOME_LEGACY_DUAL_CONTAINER=1)"
@@ -1662,14 +1672,19 @@ run_connectome() {
   mv -f "${outdir}/connectome.csv" "${matrix}"
   if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
     mv -f "${outdir}/connectome_count.csv" "${count_matrix}"
-    mv -f "${outdir}/connectome_sift2.csv" "${sift2_matrix}"
+    if [[ "${CONNECTOME_SIFT2}" == "1" ]]; then
+      mv -f "${outdir}/connectome_sift2.csv" "${sift2_matrix}"
+      sift2_json="\"${sift2_matrix##*/}\""
+    else
+      rm -f "${outdir}/connectome_sift2.csv"
+      sift2_json="null"
+    fi
     mv -f "${outdir}/connectome_meanlength.csv" "${meanlength_matrix}"
     mv -f "${outdir}/connectome_meanfa.csv" "${meanfa_matrix}"
     mv -f "${outdir}/connectome_meanmd.csv" "${meanmd_matrix}"
     mv -f "${outdir}/desc-FA_dwi.nii.gz" "${fa_map}"
     mv -f "${outdir}/desc-MD_dwi.nii.gz" "${md_map}"
     count_json="\"${count_matrix##*/}\""
-    sift2_json="\"${sift2_matrix##*/}\""
     meanlength_json="\"${meanlength_matrix##*/}\""
     meanfa_json="\"${meanfa_matrix##*/}\""
     meanmd_json="\"${meanmd_matrix##*/}\""
@@ -1740,7 +1755,7 @@ EOF
   echo "Primary connectome: ${matrix} (${PRIMARY_CONNECTOME_MEASURE})"
   echo "Count: ${count_matrix}"
   if [[ "${CONNECTOME_LEGACY_DUAL_CONTAINER:-0}" != "1" ]]; then
-    echo "SIFT2: ${sift2_matrix}"
+    [[ "${CONNECTOME_SIFT2}" == "1" ]] && echo "SIFT2: ${sift2_matrix}"
     echo "MeanLength: ${meanlength_matrix}"
     echo "MeanFA: ${meanfa_matrix}"
     echo "MeanMD: ${meanmd_matrix}"
