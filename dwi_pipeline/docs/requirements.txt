@@ -1,4 +1,5 @@
-mkdocs>=1.6.0
-mkdocs-material>=9.5.0
-mkdocs-redirects>=1.2.1
+sphinx>=4.2.0,<9
+sphinx-rtd-theme>=2.0.0
+myst-parser>=2.0.0
+sphinx-reredirects>=0.1.5
 pygments>=2.17.0

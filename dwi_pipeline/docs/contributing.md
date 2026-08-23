@@ -9,7 +9,7 @@ How to develop, test, and document changes to the DKT Connectome.
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
-pip install snakemake mkdocs
+pip install snakemake sphinx
 export FS_LICENSE=/path/to/license.txt
 ```
 
@@ -27,7 +27,7 @@ Read [Installation](installation.md) for Apptainer images and HPC setup.
 | `workflow/rules/` | Per-step plugin rules |
 | `workflow/config/config.yaml` | Default configuration |
 | `scripts/` | Python/bash utilities |
-| `docs/` | MkDocs site source (user-facing pages on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/)) |
+| `docs/` | Sphinx site source (user-facing pages on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/); QSIPrep-style RTD theme) |
 | `docs/maintainer/` | **GitHub-only** release and registry runbooks (not published on RTD) |
 | `containers/` | In-house image recipes |
 | `schemas/` | JSON Schema for config validation |
@@ -42,9 +42,10 @@ Read [Installation](installation.md) for Apptainer images and HPC setup.
 4. **Run checks locally:**
 
 ```bash
-cd dwi_pipeline
-mkdocs build --strict
-snakemake -s workflow/Snakefile --lint
+cd dwi_pipeline/docs
+pip install -r requirements.txt
+make html
+snakemake -s ../workflow/Snakefile --lint
 # dry-run with test config if available
 ```
 
@@ -54,7 +55,7 @@ snakemake -s workflow/Snakefile --lint
 
 ## Documentation
 
-- Build the **public site** locally: `mkdocs serve` in `dwi_pipeline/`
+- Build the **public site** locally: `cd docs && make html` (or `sphinx-build -b html . _build/html`)
 - User-visible pages publish to [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/)
 - Add Methods content for scientific changes
 - Update [Changelog](changelog.md) for user-visible changes

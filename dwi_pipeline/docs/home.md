@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # DKT Connectome
 
 **BIDS App** for **lesion-aware structural connectomics** — from raw diffusion MRI to DKT connectomes and optional disconnectome mapping.
@@ -18,8 +22,9 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 | **Run** (`./run`, HPC, flags) | [Usage](usage.md) · [BIDS App spec](bids_app.md) |
 | **Methods & citations** | [Methods overview](methods/index.md) · [References](references.md) |
 
-!!! note "Upstream tools"
-    This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. Cite the primary method papers — [References by step](references.md).
+```{note} Upstream tools
+This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. Cite the primary method papers — [References by step](references.md).
+```
 
 ---
 

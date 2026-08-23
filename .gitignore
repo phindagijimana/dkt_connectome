@@ -162,6 +162,7 @@ dwi_pipeline/templateflow/
 
 # MkDocs build output (regenerate with mkdocs build)
 dwi_pipeline/site/
+dwi_pipeline/docs/_build/
 
 # Local reference papers / repair configs with real subject IDs (never commit)
 dwi_pipeline/Inpainting/

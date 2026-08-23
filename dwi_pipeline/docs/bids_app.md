@@ -11,7 +11,7 @@ The DKT Connectome implements the [BIDS Apps](https://bids-apps.neuroimaging.io/
 | [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | Executable entrypoint (`./run`) |
 | [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) | Machine-readable BIDS App metadata |
 | [`dkt_connectome_bids_app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/dkt_connectome_bids_app.json) | Boutiques / BIDS Exec descriptor |
-| [Documentation site](index.md) | Human-readable guide (this site) |
+| [Documentation site](home.md) | Human-readable guide (this site) |
 
 Version string: `./run --version` (matches `app.json` → `PipelineVersion`).
 

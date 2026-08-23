@@ -2,7 +2,7 @@
 
 This note documents **phase-encoding (PE) readout fields** and **fieldmap linking** in BIDS JSON sidecars: what BIDS requires, what QSIPrep needs, and how to repair sparse Siemens exports.
 
-Part of the [DKT Connectome documentation](index.md).
+Part of the [DKT Connectome documentation](home.md).
 
 **Related:**
 
@@ -233,8 +233,9 @@ BandwidthPerPixelPhaseEncode = 1 / (0.000550012 × 96) = 18.938995 Hz/px
 
 ## 9. QSIPrep series selection (`dwi-select`)
 
-!!! note "Pipeline usage"
-    For `./run` / `submit.sh` flags and cohort examples, see [Preparing your data § DWI series selection](preparing_data.md#dwi-series-selection-dwi-select).
+```{note} Pipeline usage
+For `./run` / `submit.sh` flags and cohort examples, see [Preparing your data § DWI series selection](preparing_data.md#dwi-series-selection-dwi-select).
+```
 
 Pipeline config: `dwi_pipeline/config/dwi_select_b1000.json` → generates QSIPrep `--bids-filter-file` per subject via `build_bids_filter.py`.
 
