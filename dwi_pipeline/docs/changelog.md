@@ -19,6 +19,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Changed
 
+- Documentation site switched from **MkDocs Material** to **Sphinx + Read the Docs theme** (QSIPrep-style sidebar layout)
 - Step 1.5 VBT runs via `CONTAINER_VBT` instead of binding into `qsiprep.sif`
 - Step 3.5 runs via `CONTAINER_LESION_ACT` instead of inline `qsirecon.sif` shell
 - `submit.sh` exports `CONTAINER_VBT` and `CONTAINER_LESION_ACT` to Slurm jobs

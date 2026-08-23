@@ -397,7 +397,7 @@ T1w/DWI grid.
 
 ## Further reading
 
-- **[docs/index.md](docs/index.md)** — BIDS App documentation hub (installation, usage, outputs)
+- **[docs/home.md](docs/home.md)** — BIDS App documentation hub (installation, usage, outputs)
 - [`DWI_Connectivity_Pipeline_Documentation.md`](../DWI_Connectivity_Pipeline_Documentation.md) — step-by-step technical reference (warp chain, QC)
 - [`pipeline_science.md`](pipeline_science.md) — the science behind each step
 - [`acquisition.md`](acquisition.md) — how the images are acquired, and why they need the corrections this pipeline applies

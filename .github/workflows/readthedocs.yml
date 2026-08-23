@@ -12,8 +12,6 @@ on:
     branches: [main]
     paths:
       - 'dwi_pipeline/docs/**'
-      - 'dwi_pipeline/mkdocs.yml'
-      - 'dwi_pipeline/overrides/**'
       - '.readthedocs.yaml'
       - '.github/workflows/readthedocs.yml'
   workflow_dispatch: {}
@@ -53,14 +51,13 @@ jobs:
               -d '{}'
           done
 
-      - name: Verify mkdocs title (local sanity check)
+      - name: Verify Sphinx build (local sanity check)
         run: |
           pip install -r dwi_pipeline/docs/requirements.txt
-          mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
-          grep -q 'DKT Connectome' dwi_pipeline/site/index.html
-          ! grep -qi 'TrackTBI Connectome' dwi_pipeline/site/index.html
-          grep -qE 'favicon\.(png|ico)|assets/images/favicon' dwi_pipeline/site/index.html
-          test -f dwi_pipeline/site/img/pipeline_overview.svg
+          sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
+          grep -q 'DKT Connectome' dwi_pipeline/docs/_build/html/index.html
+          ! grep -qi 'TrackTBI Connectome' dwi_pipeline/docs/_build/html/index.html
+          test -f dwi_pipeline/docs/_build/html/img/pipeline_overview.svg
 
       - name: Verify live Read the Docs (science pages)
         if: steps.rtd_trigger.outputs.triggered == 'true'

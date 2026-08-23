@@ -54,8 +54,8 @@ jobs:
       - name: pytest (dwi_pipeline scripts)
         run: pytest -q dwi_pipeline/tests -m "not slow" -c dwi_pipeline/pytest.ini
 
-      - name: MkDocs build (docs site, strict)
-        run: mkdocs build --strict --config-file dwi_pipeline/mkdocs.yml
+      - name: Sphinx build (docs site, strict)
+        run: sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
 
       - name: Validate ./run CLI
         working-directory: dwi_pipeline

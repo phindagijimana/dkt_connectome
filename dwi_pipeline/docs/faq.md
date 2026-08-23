@@ -1,7 +1,5 @@
 # FAQ
 
----
-
 ## General
 
 ### Is this a single Docker image like QSIPrep?
@@ -10,7 +8,7 @@ No. The BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer
 
 ### Where is the scientific / theoretical background explained?
 
-Start with **[How it works — science and theory](science_overview.md)** on the docs home and Getting started tab. Per-step methods with citations: [Methods overview](methods/index.md).
+Start with **[How it works — science and theory](science_overview.md)** on the docs home. Per-step methods with citations: [Methods overview](methods/index.md).
 
 ### What is the recommended way to run on Slurm HPC?
 
@@ -116,7 +114,7 @@ CLI: `python3 scripts/evaluate_disconnectome_integrity.py --disconnectome-dir ..
 
 ### Where is the hosted documentation?
 
-[Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) (built from this `docs/` folder). GitHub mirror: [docs/index.md](index.md).
+[Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) (built from this `docs/` folder). GitHub mirror: [docs/home.md](home.md).
 
 ### Who maintains this pipeline? How do I contact you?
 
@@ -125,4 +123,4 @@ CLI: `python3 scripts/evaluate_disconnectome_integrity.py --disconnectome-dir ..
 - **GitHub:** [phindagijimana/dkt_connectome](https://github.com/phindagijimana/dkt_connectome) (bugs and feature requests via [Issues](https://github.com/phindagijimana/dkt_connectome/issues))
 - **Email:** [phindagiji@gmail.com](mailto:phindagiji@gmail.com)
 
-See also [Home → Contact](index.md#contact).
+See also [Home → Contact](home.md#contact).

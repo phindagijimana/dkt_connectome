@@ -23,7 +23,7 @@ cd dkt_connectome/dwi_pipeline
 chmod +x run install
 ```
 
-Documentation: [index.md](index.md) · Tutorial: [tutorial.md](tutorial.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
+Documentation: [Home](home.md) · Tutorial: [tutorial.md](tutorial.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
 
 ---
 
@@ -117,8 +117,9 @@ mv ~/Downloads/license.txt ~/.freesurfer/license.txt
 chmod 600 ~/.freesurfer/license.txt
 ```
 
-!!! warning "Do not commit the license"
-    Never add `license.txt` to git or upload it to GitHub. The repository and CI **do not** provide a shared license — that is intentional.
+```{warning} Do not commit the license
+Never add `license.txt` to git or upload it to GitHub. The repository and CI **do not** provide a shared license — that is intentional.
+```
 
 ### 3. Export before every run (HPC / Apptainer)
 

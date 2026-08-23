@@ -90,9 +90,10 @@ Record exact `.sif` paths and digests in your methods section.
 
 ## Hosted documentation
 
-Read the Docs builds from [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) and [`mkdocs.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/mkdocs.yml):
+Read the Docs builds from [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) and [`docs/conf.py`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/conf.py) (Sphinx + RTD theme, QSIPrep-style):
 
 ```bash
-pip install mkdocs
-cd dwi_pipeline && mkdocs serve
+pip install -r dwi_pipeline/docs/requirements.txt
+cd dwi_pipeline/docs && make html
+# live preview: python -m http.server --directory _build/html
 ```
