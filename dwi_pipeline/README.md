@@ -5,6 +5,27 @@
 
 **📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md)
 
+## Workflow sketch
+
+![DKT Connectome pipeline workflow](docs/img/pipeline_overview.svg)
+
+```mermaid
+flowchart LR
+  BIDS["BIDS\nT1w + DWI"] --> S1["Step 1\nQSIPrep"]
+  S1 --> S15{"Lesion\nmask?"}
+  S15 -->|yes| INP["Step 1.5\nInpaint"]
+  S15 -->|no| S2["Step 2\nRecon"]
+  INP --> S2
+  S2 --> S3["Step 3\nQSIRecon ACT"]
+  S3 --> S35["Step 3.5\nLesion ACT\n(optional)"]
+  S35 --> S4["Step 4\nDKT connectome"]
+  S3 --> S4
+  S4 --> S45["Step 4.5\nDisconnectome\n(opt-in)"]
+  S4 --> S5["Step 5\nNode strength"]
+```
+
+Dashed boxes in the SVG = optional steps. See [science overview](docs/science_overview.md) for theory and [pipeline steps](docs/pipeline_steps.md) for file paths.
+
 Full **anatomically constrained tractography** pipeline with a post-hoc anatomical connectome step,
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.
 
@@ -45,11 +66,13 @@ local BIDS archives) separate from day-to-day pipeline I/O.
 | Step | Script mode | Tool | Output |
 |------|-------------|------|--------|
 | 1 | `qsiprep` | QSIPrep | Preprocessed DWI, `dwiref`, transforms |
-| 1.5 | `inpaint` | `lit_0.6.0.sif` (neuroLIT/DDPM) — **auto, only if a lesion mask exists** | Lesion-filled T1w, QC report |
+| 1.5 | `inpaint` | `lit_0.6.0.sif` (neuroLIT) or `dkt_vbt.sif` (VBT) — **auto if lesion mask** | Lesion-mitigated T1w, QC report |
 | 2 | `recon` | FreeSurfer / FastSurfer | `aparc+aseg.mgz`, surfaces |
-| 3 | `qsirecon` | QSIRecon (SS3T + ACT-HSVS) | Tractogram (~10M streamlines), optional 4S156 atlas connectome |
-| 4 | `connectome` | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) | DKT Count, SIFT2, MeanLength, MeanFA, MeanMD (78×78), plus FA/MD maps |
-| 5 | `nodestrength` | `nodestrength_0.1.0.sif` ([dwi-AI](https://github.com/phindagijimana/dwi-AI)) — **auto, whenever a connectome exists** | Node strength/AI CSVs, ENIGMA figures, `report.pdf` |
+| 3 | `qsirecon` | QSIRecon (SS3T + ACT-HSVS) | Tractogram, SIFT2 weights, optional 4S156 atlas connectome |
+| 3.5 | `act` | `dkt_lesion_act.sif` — **`--act-mode lesion-aware`** | Lesion-edited 5TT + rebuilt tractography |
+| 4 | `connectome` | `dkt_connectome.sif` | DKT count/length/FA/MD matrices (78×78) |
+| 4.5 | `disconnectome` | host scripts — **`--disconnection`** | Excision / exclusion / D matrices |
+| 5 | `nodestrength` | `nodestrength_0.1.0.sif` — **auto when connectome exists** | Node strength/AI CSVs, ENIGMA report |
 
 `bash workflow/run_subject.sh all SUBJECT` runs steps 1–5 sequentially (1.5 runs inside Step 2 whenever
 a lesion mask is found for that subject/session; 5 runs inside Step 4 whenever a connectome
@@ -272,8 +295,10 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 | `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` |
 | `CONTAINER_FREESURFER` | `.../others/containers/freesurfer_7.4.1.sif` |
 | `CONTAINER_FASTSURFER` | `.../others/containers/fastsurfer_latest.sif` |
-| `CONTAINER_LIT` | `.../others/containers/lit_0.6.0.sif` (only required if a lesion mask is found) |
-| `CONTAINER_NODESTRENGTH` | `.../node_strength/containers/nodestrength_0.1.0.sif` — standalone repo, not built by this pipeline |
+| `CONTAINER_LIT` | `.../others/containers/lit_0.6.0.sif` (neuroLIT inpaint) |
+| `CONTAINER_VBT` | `.../others/containers/dkt_vbt.sif` (VBT inpaint) |
+| `CONTAINER_LESION_ACT` | `.../others/containers/dkt_lesion_act.sif` (Step 3.5) |
+| `CONTAINER_NODESTRENGTH` | `.../node_strength/containers/nodestrength_0.1.0.sif` |
 | `FS_LICENSE` | `.../others/data_mining/freesurfer/license.txt` |
 | `TEMPLATEFLOW_HOME` | `templateflow/` in the repo root |
 

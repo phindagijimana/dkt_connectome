@@ -11,7 +11,7 @@
       .arrow { stroke: #2980b9; stroke-width: 2; fill: none; marker-end: url(#arrow); }
     </style>
   </defs>
-  <text x="460" y="22" text-anchor="middle" class="title" font-size="15">DKT Connectome  BIDS App workflow</text>
+  <text x="460" y="22" text-anchor="middle" class="title" font-size="15">DKT Connectome — BIDS App workflow</text>
   <rect class="box" x="10" y="40" width="100" height="52"/>
   <text x="60" y="62" text-anchor="middle" class="title">BIDS</text>
   <text x="60" y="78" text-anchor="middle" class="sub">T1w + DWI</text>
@@ -22,7 +22,7 @@
   <line class="arrow" x1="230" y1="66" x2="248" y2="66"/>
   <rect class="opt" x="250" y="40" width="100" height="52"/>
   <text x="300" y="58" text-anchor="middle" class="title">Step 1.5</text>
-  <text x="300" y="74" text-anchor="middle" class="sub">neuroLIT</text>
+  <text x="300" y="74" text-anchor="middle" class="sub">Inpaint</text>
   <line class="arrow" x1="350" y1="66" x2="368" y2="66"/>
   <rect class="box" x="370" y="40" width="100" height="52"/>
   <text x="420" y="58" text-anchor="middle" class="title">Step 2</text>
@@ -39,11 +39,16 @@
   <rect class="box" x="730" y="40" width="100" height="52"/>
   <text x="780" y="58" text-anchor="middle" class="title">Step 5</text>
   <text x="780" y="74" text-anchor="middle" class="sub">Node strength</text>
+  <rect class="opt" x="490" y="120" width="130" height="52"/>
+  <text x="555" y="138" text-anchor="middle" class="title">Step 3.5</text>
+  <text x="555" y="154" text-anchor="middle" class="sub">Lesion ACT</text>
+  <line class="arrow" x1="540" y1="92" x2="555" y2="118"/>
   <rect class="opt" x="610" y="120" width="130" height="52"/>
   <text x="675" y="138" text-anchor="middle" class="title">Step 4.5</text>
   <text x="675" y="154" text-anchor="middle" class="sub">Disconnectome</text>
   <line class="arrow" x1="660" y1="92" x2="675" y2="118"/>
   <text x="300" y="110" text-anchor="middle" class="sub">optional when lesion mask present</text>
+  <text x="555" y="188" text-anchor="middle" class="sub">--act-mode lesion-aware</text>
   <text x="675" y="188" text-anchor="middle" class="sub">--disconnection (opt-in)</text>
-  <text x="460" y="205" text-anchor="middle" class="sub">Dashed = optional steps � See Methods section for theory and citations</text>
+  <text x="460" y="205" text-anchor="middle" class="sub">Dashed = optional steps · Theory: docs/science_overview.md</text>
 </svg>
