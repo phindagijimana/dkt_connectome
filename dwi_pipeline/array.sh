@@ -114,6 +114,7 @@ fi
 [[ -n "${ACT_STREAMLINES:-}" ]] && SUBJECT_ARGS+=(--act-streamlines "${ACT_STREAMLINES}")
 [[ -n "${TRACTOGRAPHY_MODEL:-}" ]] && \
   SUBJECT_ARGS+=(--tractography-model "${TRACTOGRAPHY_MODEL}")
+[[ "${CONNECTOME_SIFT2:-0}" == "1" ]] && SUBJECT_ARGS+=(--connectome-sift2)
 [[ -n "${EXPERIMENT_ARM:-}" ]] && SUBJECT_ARGS+=(--experiment-arm "${EXPERIMENT_ARM}")
 
 if [[ "${PIPELINE_ENGINE}" != "bash" && "${PIPELINE_ENGINE}" != "subject" && "${PIPELINE_ENGINE}" != "subject.sh" ]]; then
