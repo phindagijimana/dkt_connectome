@@ -37,13 +37,26 @@ def run(*args: str) -> None:
 
 
 def require_fsl() -> Path:
-    missing = [command for command in REQUIRED_FSL_COMMANDS if not shutil.which(command)]
-    if missing:
-        raise RuntimeError(f"missing FSL commands: {', '.join(missing)}")
-    fsldir = Path(os.environ.get("FSLDIR", ""))
-    identity = fsldir / "etc" / "flirtsch" / "ident.mat"
-    if not identity.is_file():
-        raise RuntimeError(f"missing FSL identity transform: {identity}")
+    candidates = []
+    if os.environ.get("FSLDIR"):
+        candidates.append(os.environ["FSLDIR"])
+    candidates.extend(("/opt/conda/envs/fslqsiprep", "/opt/fsl"))
+    identity: Path | None = None
+    for fsldir in candidates:
+        candidate = Path(fsldir) / "etc" / "flirtsch" / "ident.mat"
+        if candidate.is_file():
+            identity = candidate
+            os.environ.setdefault("FSLDIR", fsldir)
+            os.environ["PATH"] = f"{Path(fsldir) / 'bin'}:{os.environ.get('PATH', '')}"
+            break
+    if identity is None:
+        missing = [command for command in REQUIRED_FSL_COMMANDS if not shutil.which(command)]
+        if missing:
+            raise RuntimeError(f"missing FSL commands: {', '.join(missing)}")
+        fsldir = Path(os.environ.get("FSLDIR", ""))
+        identity = fsldir / "etc" / "flirtsch" / "ident.mat"
+        if not identity.is_file():
+            raise RuntimeError(f"missing FSL identity transform: {identity}")
     return identity
 
 

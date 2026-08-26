@@ -87,7 +87,8 @@ rule prepare_lesion_mask:
     log:
         f"{RESULTS_ROOT}/logs/sub-{{subject}}_ses-{{session}}_lesion_mask.log",
     params:
-        binarize_flag="--binarize" if INPAINT_BINARIZE else "",
+        # Leading space when set — appended on same line as --labels (no trailing \)
+        binarize_suffix=" --binarize" if INPAINT_BINARIZE else "",
     shell:
         r"""
         exec > {log} 2>&1
@@ -96,8 +97,7 @@ rule prepare_lesion_mask:
         python3 "{PREPARE_LESION_MASK}" \
           --t1w "{input.t1w}" --mask "{input.mask}" \
           --out "{output.mask}" --json "{output.json}" \
-          --labels "{INPAINT_LABELS}" \
-          {params.binarize_flag}
+          --labels "{INPAINT_LABELS}"{params.binarize_suffix}
         """
 
 
@@ -122,9 +122,9 @@ rule inpaint:
         backend_container=(
             CONTAINER_LIT
             if ANATOMY_MITIGATION_BACKEND == "neurolit"
-            else CONTAINER_VBT
+            else CONTAINER_QSIPREP
         ),
-        binarize_flag="--binarize" if INPAINT_BINARIZE else "",
+        binarize_suffix=" --binarize" if INPAINT_BINARIZE else "",
         nv_flag="--nv" if INPAINT_DEVICE != "cpu" else "",
     shell:
         r"""
@@ -139,8 +139,7 @@ rule inpaint:
         python3 "{PREPARE_LESION_MASK}" \
           --t1w "{input.t1w}" --mask "{input.mask}" \
           --out "{output.mask_prepared}" --json "{output.mask_json}" \
-          --labels "{INPAINT_LABELS}" \
-          {params.binarize_flag}
+          --labels "{INPAINT_LABELS}"{params.binarize_suffix}
 
         if [[ "{ANATOMY_MITIGATION_BACKEND}" == "neurolit" ]]; then
           apptainer exec {params.nv_flag} --cleanenv --containall \
@@ -158,16 +157,20 @@ rule inpaint:
               --batch_size {INPAINT_BATCH_SIZE}
         elif [[ "{ANATOMY_MITIGATION_BACKEND}" == "vbt" ]]; then
           mkdir -p "$(dirname "{output.result}")"
-          apptainer run --cleanenv --containall \
+          # dkt_vbt.sif FSL midtrans segfaults on Ubuntu 22.04; use qsiprep FSL
+          # (same as subject.sh) with repo run_vbt.py bind-mounted.
+          apptainer exec --cleanenv --containall \
             -B "$(dirname "{input.t1w}")":/t1w_input:ro \
             -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
             -B "{params.outdir}":/out \
-            "{CONTAINER_VBT}" \
-            --t1w "/t1w_input/$(basename "{input.t1w}")" \
-            --mask /mask/lesion_mask_prepared.nii.gz \
-            --output /out/inpainting_volumes/inpainting_result.nii.gz \
-            --smoothing-factor {VBT_SMOOTHING_FACTOR} \
-            --work-dir /out/.vbt_work
+            -B "{RUN_VBT}":/run_vbt.py:ro \
+            "{CONTAINER_QSIPREP}" \
+            python3 /run_vbt.py \
+              --t1w "/t1w_input/$(basename "{input.t1w}")" \
+              --mask /mask/lesion_mask_prepared.nii.gz \
+              --output /out/inpainting_volumes/inpainting_result.nii.gz \
+              --smoothing-factor {VBT_SMOOTHING_FACTOR} \
+              --work-dir /out/.vbt_work
           rm -rf "{params.outdir}/.vbt_work"
         else
           _pipeline_fail "inpaint" \

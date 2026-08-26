@@ -257,7 +257,7 @@ payload = {{
     "empty_nodes": int(empty_nodes),
     "matrices": {{
         "count": "{output.count_matrix}",
-        "sift2": null,
+        "sift2": None,
         "meanlength": "{output.meanlength_matrix}",
         "meanfa": "{output.meanfa_matrix}",
         "meanmd": "{output.meanmd_matrix}",
@@ -319,7 +319,7 @@ payload = json.loads(path.read_text()) if path.is_file() else {{
     "model": "SD_STREAM",
     "act_mode": "{ACT_MODE}",
 }}
-payload.setdefault("matrices", {})["sift2"] = sift2_path
+payload.setdefault("matrices", {{}})["sift2"] = Path(sift2_path).name
 with open(out, "w") as stream:
     json.dump(payload, stream, indent=2)
     stream.write("\n")

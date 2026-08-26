@@ -28,6 +28,10 @@
 set -euo pipefail
 set +H
 
+# Fix HOME/PATH before any Python/Snakemake call (Slurm may inherit wrong HOME).
+# shellcheck source=workflow/lib/slurm_env.sh
+source "${DWI_ROOT:?ERROR [array]: DWI_ROOT not set}/workflow/lib/slurm_env.sh"
+
 # Inside sbatch $0 points to Slurm's spool copy (/var/spool/slurmd/job<id>/slurm_script),
 # so deriving paths from $0 would write into /var/spool/slurmd (Permission denied).
 # Paths must be exported by submit.sh (Slurm spool copy of $0 cannot derive repo paths).
@@ -115,7 +119,25 @@ fi
 [[ -n "${TRACTOGRAPHY_MODEL:-}" ]] && \
   SUBJECT_ARGS+=(--tractography-model "${TRACTOGRAPHY_MODEL}")
 [[ "${CONNECTOME_SIFT2:-0}" == "1" ]] && SUBJECT_ARGS+=(--connectome-sift2)
+[[ "${RUN_DISCONNECTOME:-0}" == "1" ]] && SUBJECT_ARGS+=(--disconnection)
+[[ "${DISCONNECTOME_CORE_ONLY:-0}" == "1" ]] && SUBJECT_ARGS+=(--disconnectome-core-only)
+((DISCONNECTOME_ERODE_VOXELS > 0)) && \
+  SUBJECT_ARGS+=(--disconnectome-erode-voxels "${DISCONNECTOME_ERODE_VOXELS}")
+[[ -n "${DISCONNECTOME_WEIGHTING:-}" ]] && \
+  SUBJECT_ARGS+=(--disconnectome-weighting "${DISCONNECTOME_WEIGHTING}")
 [[ -n "${EXPERIMENT_ARM:-}" ]] && SUBJECT_ARGS+=(--experiment-arm "${EXPERIMENT_ARM}")
+
+# Experiment arms run in parallel — isolate Snakemake locks/metadata per arm
+# (outputs remain under RESULTS_ROOT/arms/<arm>/; existing files are untouched).
+prepare_snakemake_workdir() {
+  if [[ -n "${EXPERIMENT_ARM:-}" && -n "${RESULTS_ROOT:-}" ]]; then
+    export SNAKEMAKE_WORKDIR="${RESULTS_ROOT}/.snakemake_workdir"
+    rm -rf "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+    mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+    echo "Snakemake workdir (experiment arm ${EXPERIMENT_ARM}): ${SNAKEMAKE_WORKDIR}"
+  fi
+}
+prepare_snakemake_workdir
 
 if [[ "${PIPELINE_ENGINE}" != "bash" && "${PIPELINE_ENGINE}" != "subject" && "${PIPELINE_ENGINE}" != "subject.sh" ]]; then
   preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --subject "${SUBJECT}" --quick)

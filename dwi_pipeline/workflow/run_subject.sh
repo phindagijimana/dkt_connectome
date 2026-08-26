@@ -357,8 +357,17 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
   fi
 fi
 
+_experiment_arm="${EXPERIMENT_ARM_EFFECTIVE:-${EXPERIMENT_ARM:-}}"
+if [[ -z "${SNAKEMAKE_WORKDIR:-}" && -n "${_experiment_arm}" && -n "${RESULTS_ROOT:-}" ]]; then
+  # Per-arm metadata dir only; pipeline outputs stay under RESULTS_ROOT (unchanged).
+  SNAKEMAKE_WORKDIR="${RESULTS_ROOT}/.snakemake_workdir"
+fi
 SNAKEMAKE_WORKDIR="${SNAKEMAKE_WORKDIR:-${DWI_PIPELINE_DIR}}"
-mkdir -p "${SNAKEMAKE_WORKDIR}"
+mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+if [[ -n "${_experiment_arm}" ]]; then
+  rm -rf "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+  mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+fi
 
 declare -a CMD=(
   snakemake -s "${WORKFLOW_DIR}/Snakefile"

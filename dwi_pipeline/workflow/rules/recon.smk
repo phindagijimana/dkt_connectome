@@ -51,6 +51,23 @@ rule recon:
         echo "=== Recon ({RECON_TOOL}): sub-${{SUBJECT}} -> {RECON_OUT} ==="
         mkdir -p "{RECON_OUT}"
 
+        APARC="{output.aparc}"
+        MRI_DIR="{params.sd_subj}/mri"
+        if [[ ! -f "$APARC" ]]; then
+          for src in "$MRI_DIR/aparc.DKTatlas+aseg.mapped.mgz" \
+                     "$MRI_DIR/aparc.DKTatlas+aseg.mgz"; do
+            if [[ -f "$src" ]]; then
+              echo "Recon: linking aparc+aseg.mgz -> $(basename "$src")"
+              ln -sf "$(basename "$src")" "$APARC"
+              break
+            fi
+          done
+        fi
+        if [[ -f "$APARC" ]]; then
+          echo "Recon: {RECON_TOOL} OK — $APARC (already present)"
+          exit 0
+        fi
+
         if [[ "{RECON_TOOL}" == "freesurfer" ]]; then
           fs_home="$(apptainer exec --cleanenv "{CONTAINER_FREESURFER}" bash -lc '
             for p in "$FREESURFER_HOME" /opt/freesurfer /usr/local/freesurfer; do
@@ -58,8 +75,8 @@ rule recon:
             done
             exit 1
           ' 2>/dev/null | tail -1)"
-          [[ -n "${{fs_home}}" ]] || _pipeline_fail "recon" "recon-all not found in CONTAINER_FREESURFER"
-          echo "Recon: FREESURFER_HOME inside container = ${{fs_home}}"
+          [[ -n "$fs_home" ]] || _pipeline_fail "recon" "recon-all not found in CONTAINER_FREESURFER"
+          echo "Recon: FREESURFER_HOME inside container = $fs_home"
 
           apptainer exec --cleanenv --containall \
             -B "$(dirname "{input.t1w}")":/t1w_input:ro \
@@ -70,7 +87,15 @@ rule recon:
               set -euo pipefail
               export FS_LICENSE=/.fs_license.txt
               export SUBJECTS_DIR=/sd
-              recon-all -all -s 'sub-${{SUBJECT}}' -i '/t1w_input/$(basename "{input.t1w}")' -openmp {NTHREADS}
+              sd_subj=\"/sd/sub-${{SUBJECT}}\"
+              t1w=\"/t1w_input/$(basename "{input.t1w}")\"
+              if [[ -d \"\$sd_subj\" ]]; then
+                echo \"Recon: resuming existing subjects dir (omit -i)\"
+                recon-all -all -s 'sub-${{SUBJECT}}' -openmp {NTHREADS}
+              else
+                echo \"Recon: new subject (with -i)\"
+                recon-all -all -s 'sub-${{SUBJECT}}' -i \"\$t1w\" -openmp {NTHREADS}
+              fi
             "
         elif [[ "{RECON_TOOL}" == "fastsurfer" ]]; then
           apptainer exec {params.nv_flag} --cleanenv --containall \
@@ -87,6 +112,16 @@ rule recon:
               --threads {NTHREADS} \
               --device {RECON_FASTSURFER_DEVICE} \
               {params.fsaparc_flag}
+          if [[ ! -f "$APARC" ]]; then
+            for src in "$MRI_DIR/aparc.DKTatlas+aseg.mapped.mgz" \
+                       "$MRI_DIR/aparc.DKTatlas+aseg.mgz"; do
+              if [[ -f "$src" ]]; then
+                echo "Recon: linking aparc+aseg.mgz -> $(basename "$src")"
+                ln -sf "$(basename "$src")" "$APARC"
+                break
+              fi
+            done
+          fi
         else
           _pipeline_fail "recon" "invalid recon.tool={RECON_TOOL} (use freesurfer or fastsurfer)"
         fi
