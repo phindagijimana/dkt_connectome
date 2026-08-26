@@ -15,6 +15,10 @@ Requires a local `qsiprep.sif` (default: `/path/to/others/containers/qsiprep.sif
 
 ## Runtime
 
+Production Snakemake (`inpaint.smk`) runs VBT via **qsiprep.sif** FSL + bind-mounted
+`run_vbt.py` (same as `subject.sh`). The lean `dkt_vbt.sif` remains for standalone
+smoke tests; its staged FSL `midtrans` requires Ubuntu 18.04 (see Dockerfile).
+
 ```bash
 apptainer run dkt_vbt.sif \
   --t1w sub-01_T1w.nii.gz \
@@ -26,6 +30,22 @@ apptainer run dkt_vbt.sif \
 
 Wire into the workflow via `containers.vbt` in `config.local.yaml` or
 `CONTAINER_VBT=/path/to/dkt_vbt.sif`.
+
+## Publish (Docker Hub)
+
+After building the SIF:
+
+```bash
+export DOCKERHUB_USER=phindagijimana321
+export DOCKERHUB_TOKEN=...   # access token from hub.docker.com/settings/security
+SIF=/path/to/others/containers/dkt_vbt.sif bash publish_dockerhub.sh
+```
+
+Pull elsewhere: `docker pull phindagijimana321/dkt-vbt:0.1.0` or
+`apptainer pull docker://phindagijimana321/dkt-vbt:0.1.0`.
+
+Primary pin: `ghcr.io/phindagijimana/dkt-vbt:0.1.0` (GitHub Container Registry).
+Docker Hub mirror: `phindagijimana321/dkt-vbt:0.1.0`.
 
 ## Citation
 

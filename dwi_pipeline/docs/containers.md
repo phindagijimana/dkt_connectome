@@ -12,11 +12,11 @@ The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use
 |------|-------|----------------|
 | 1 — QSIPrep | `qsiprep_1.0.0.sif` | `bash install.sh --mode qsiprep` or [QSIPrep releases](https://github.com/pennlinc/qsiprep) |
 | 1.5 — Inpaint (neuroLIT) | `lit_0.6.0.sif` | `install.sh` or [`containers/lit/build_lit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/build_lit.sh) |
-| 1.5 — Inpaint (VBT) | `dkt_vbt.sif` | `install.sh --mode inpaint` (pull/build) or [`containers/vbt/build_vbt.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/vbt/build_vbt.sh) |
+| 1.5 — Inpaint (VBT) | `dkt_vbt.sif` | `install.sh --mode inpaint` or [`containers/vbt/build_vbt.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/vbt/build_vbt.sh) · Docker Hub `phindagijimana321/dkt-vbt:0.1.0` |
 | 2 — Recon | `freesurfer_7.4.1.sif` | `install.sh` or [`containers/pull_freesurfer_sif.sbatch`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/pull_freesurfer_sif.sbatch) |
 | 2 alt | `fastsurfer_latest.sif` | `install.sh` or [FastSurfer](https://github.com/Deep-MI/FastSurfer) |
 | 3 — QSIRecon | `qsirecon_1.2.1.sif` | `install.sh` or [QSIRecon releases](https://github.com/pennlinc/qsirecon) |
-| 3.5 — Lesion-aware ACT | `dkt_lesion_act.sif` | `install.sh --mode act` (pull/build) or [`containers/lesion_act/build_lesion_act.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/build_lesion_act.sh) |
+| 3.5 — Lesion-aware ACT | `dkt_lesion_act.sif` | `install.sh --mode act` or [`containers/lesion_act/build_lesion_act.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/build_lesion_act.sh) · Docker Hub `phindagijimana321/dkt-lesion-act:0.1.0` |
 | 4 — Connectome | `dkt_connectome.sif` | `install.sh` (pull/build fallbacks) or [`containers/connectome/build_connectome.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/build_connectome.sh) |
 | 5 — Node strength | `nodestrength_0.1.0.sif` | `install.sh` or Docker Hub `phindagijimana321/nodestrength:0.1.0` |
 
