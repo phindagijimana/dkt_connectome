@@ -1,6 +1,7 @@
-# dkt_vbt — LeAPP-compatible virtual brain transplant (FSL staged from qsiprep.sif)
+# Staged FSL from qsiprep.sif is built for Ubuntu 18.04 (qsiprep base).
+# Ubuntu 22.04 + those binaries -> midtrans SIGSEGV; use 18.04 for dkt_vbt.sif.
 
-FROM ubuntu:22.04
+FROM ubuntu:18.04
 
 ENV FSLDIR=/opt/fsl \
     FSLOUTPUTTYPE=NIFTI_GZ \

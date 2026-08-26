@@ -26,6 +26,19 @@ apptainer run dkt_lesion_act.sif \
 
 Configure via `containers.lesion_act` or `CONTAINER_LESION_ACT`.
 
+## Publish (Docker Hub)
+
+```bash
+export DOCKERHUB_USER=phindagijimana321
+export DOCKERHUB_TOKEN=...
+SIF=/path/to/others/containers/dkt_lesion_act.sif bash publish_dockerhub.sh
+```
+
+Pull elsewhere: `docker pull phindagijimana321/dkt-lesion-act:0.1.0`.
+
+Primary pin: `ghcr.io/phindagijimana/dkt-lesion-act:0.1.0`.
+Docker Hub mirror: `phindagijimana321/dkt-lesion-act:0.1.0`.
+
 ## Citation
 
 Bey P, et al. *Human Brain Mapping* 2024; Smith et al. ACT 2012.

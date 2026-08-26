@@ -57,6 +57,14 @@ PULL_URI_FALLBACKS: dict[str, tuple[str, ...]] = {
         "phindagijimana321/dkt_connectome:latest",
         "phindagijimana321/dkt_connectome:2.1.0",
     ),
+    "vbt": (
+        "phindagijimana321/dkt-vbt:0.1.0",
+        "oras://index.docker.io/phindagijimana321/dkt-vbt:0.1.0",
+    ),
+    "lesion_act": (
+        "phindagijimana321/dkt-lesion-act:0.1.0",
+        "oras://index.docker.io/phindagijimana321/dkt-lesion-act:0.1.0",
+    ),
     "nodestrength": (
         "ghcr.io/phindagijimana/nodestrength:0.1.0",
         "phindagijimana321/nodestrength:0.1.0",
