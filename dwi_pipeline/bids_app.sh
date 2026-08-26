@@ -99,6 +99,8 @@ run_unit() {
   mkdir -p "${unit_root}"
   BIDS_DIR="${BIDS_DIR}" \
   RESULTS_ROOT="${unit_root}" \
+  RECON_OUT="${unit_root}/freesurfer" \
+  FS_SUBJECTS_DIR="${unit_root}/freesurfer" \
   RECON_SESSION="${session}" \
   SNAKEMAKE_WORKDIR="${unit_root}/.snakemake_workdir" \
     bash "${SCRIPT_DIR}/workflow/run_subject.sh" \

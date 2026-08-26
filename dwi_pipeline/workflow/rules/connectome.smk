@@ -494,6 +494,14 @@ if CONNECTOME_SIFT2_ENABLED:
               act_binds=()
             fi
 
+            mkdir -p "{params.outdir}"
+            if [[ "${{tracks}}" == *.tck.gz ]]; then
+              tck_staged="{params.outdir}/streamlines_sift2.tck"
+              echo "Decompressing ${{tracks}} -> ${{tck_staged}}"
+              gunzip -c "${{tracks}}" > "${{tck_staged}}"
+              tracks_in_container="/connectomes/sub-${{SUBJECT}}/streamlines_sift2.tck"
+            fi
+
             echo "SIFT2 connectome: tractogram=${{tracks}}"
             echo "SIFT2 connectome: weights=${{sift2_weights}}"
 
@@ -520,20 +528,20 @@ if CONNECTOME_SIFT2_ENABLED:
 
             python3 - "{params.parcellation_json}" "{output.sift2_matrix}" \
               "{params.primary_measure}" <<'PY'
-            import json, sys
-            from pathlib import Path
-            json_path, sift2_path, primary = sys.argv[1:4]
-            payload = {}
-            path = Path(json_path)
-            if path.is_file():
-                payload = json.loads(path.read_text())
-            matrices = payload.setdefault("matrices", {})
-            matrices["sift2"] = Path(sift2_path).name
-            if primary == "sift2":
-                payload["primary_measure"] = "sift2"
-                payload["connectome_csv"] = Path(sift2_path).name
-            path.write_text(json.dumps(payload, indent=2) + "\n")
-            PY
+import json, sys
+from pathlib import Path
+json_path, sift2_path, primary = sys.argv[1:4]
+payload = {{}}
+path = Path(json_path)
+if path.is_file():
+    payload = json.loads(path.read_text())
+matrices = payload.setdefault("matrices", {{}})
+matrices["sift2"] = Path(sift2_path).name
+if primary == "sift2":
+    payload["primary_measure"] = "sift2"
+    payload["connectome_csv"] = Path(sift2_path).name
+path.write_text(json.dumps(payload, indent=2) + "\n")
+PY
 
             echo "SIFT2 connectome: {output.sift2_matrix}"
             """

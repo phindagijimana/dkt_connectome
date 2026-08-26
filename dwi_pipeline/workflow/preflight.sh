@@ -73,6 +73,7 @@ warn() { echo "WARNING [preflight]: $*" >&2; }
 echo "preflight: mode=${PIPELINE_MODE} engine=snakemake"
 
 command -v snakemake >/dev/null 2>&1 || fail "snakemake not found (pip install snakemake or module load)"
+snakemake --version >/dev/null 2>&1 || fail "snakemake found but not runnable (check HOME/PYTHONPATH on compute nodes)"
 if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
   command -v apptainer >/dev/null 2>&1 || fail "apptainer not found"
 fi

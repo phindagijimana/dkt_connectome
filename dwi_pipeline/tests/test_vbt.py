@@ -61,8 +61,9 @@ def test_lesion_aware_act_contract():
     assert "run_lesion_aware_act" in (
         DWI / "containers" / "lesion_act" / "run_lesion_aware_act.sh"
     ).read_text()
-    assert "CONTAINER_VBT" in inpaint
-    assert "apptainer run" in inpaint
+    assert "CONTAINER_QSIPREP" in inpaint
+    assert "run_vbt.py" in inpaint
+    assert "apptainer exec" in inpaint
 
 
 def test_experiment_arms_are_isolated():

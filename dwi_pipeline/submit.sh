@@ -99,6 +99,10 @@ ACT_STREAMLINES="${ACT_STREAMLINES:-10000000}"
 ACT_RANDOM_SEED="${ACT_RANDOM_SEED:-0}"
 TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-both}"
 CONNECTOME_SIFT2="${CONNECTOME_SIFT2:-0}"
+RUN_DISCONNECTOME="${RUN_DISCONNECTOME:-0}"
+DISCONNECTOME_CORE_ONLY="${DISCONNECTOME_CORE_ONLY:-0}"
+DISCONNECTOME_ERODE_VOXELS="${DISCONNECTOME_ERODE_VOXELS:-0}"
+DISCONNECTOME_WEIGHTING="${DISCONNECTOME_WEIGHTING:-}"
 EXPERIMENT_ARM="${EXPERIMENT_ARM:-}"
 RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
 PIPELINE_ENGINE="${PIPELINE_ENGINE:-snakemake}"
@@ -167,6 +171,25 @@ while [[ $# -gt 0 ]]; do
       ;;
     --connectome-sift2)
       CONNECTOME_SIFT2=1
+      ;;
+    --disconnection|--disconnectome)
+      RUN_DISCONNECTOME=1
+      ;;
+    --no-disconnectome)
+      RUN_DISCONNECTOME=0
+      ;;
+    --disconnectome-core-only)
+      DISCONNECTOME_CORE_ONLY=1
+      ;;
+    --disconnectome-erode-voxels)
+      DISCONNECTOME_ERODE_VOXELS="${2:?Need N after --disconnectome-erode-voxels}"
+      shift 2
+      continue
+      ;;
+    --disconnectome-weighting)
+      DISCONNECTOME_WEIGHTING="${2:?Need count or sift2 after --disconnectome-weighting}"
+      shift 2
+      continue
       ;;
     --experiment-arm)
       EXPERIMENT_ARM="${2:?Need experiment arm}"
@@ -255,7 +278,7 @@ if [[ -n "${EXPERIMENT_ARM}" ]]; then
 fi
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 SUBJECT_LIST_ONLY_DWI="${SUBJECT_LIST_ONLY_DWI:-1}"
-ARRAY_SCRIPT="${DWI_ROOT}/array.sh"
+ARRAY_SCRIPT="${ARRAY_SCRIPT:-${DWI_ROOT}/array.sh}"
 ARRAY_CONCURRENCY="${ARRAY_CONCURRENCY:-5}"
 NTHREADS="${NTHREADS:-8}"
 OMP_NTHREADS="${OMP_NTHREADS:-8}"
@@ -313,7 +336,7 @@ RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
 FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
 if [[ "${PIPELINE_MODE}" == "qsirecon" || "${PIPELINE_MODE}" == "connectome" ]]; then
   _first_sub="$(head -1 "${SUBJECT_LIST_FILE}")"
-  if [[ ! -d "${FS_SUBJECTS_DIR}/sub-${_first_sub}" ]]; then
+  if [[ ! -d "${FS_SUBJECTS_DIR}/sub-${_first_sub}" && "${RUN_RECON:-1}" == "0" ]]; then
     echo "ERROR [submit/FS_SUBJECTS_DIR]: ${FS_SUBJECTS_DIR}/sub-${_first_sub} not found"
     echo "  Run recon (PIPELINE_MODE=recon or all) before ${PIPELINE_MODE}."
     exit 1
@@ -353,6 +376,7 @@ echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} =
 echo "  ACT mode: ${ACT_MODE}"
 echo "  Tractography model(s): ${TRACTOGRAPHY_MODEL}"
 echo "  Connectome SIFT2 matrix: $([[ ${CONNECTOME_SIFT2} == 1 ]] && echo on || echo off)"
+echo "  Disconnectome (Step 4.5): $([[ ${RUN_DISCONNECTOME} == 1 ]] && echo on || echo off)"
 [[ -n "${PRIMARY_CONNECTOME_MEASURE}" ]] && echo "  Primary connectome measure: ${PRIMARY_CONNECTOME_MEASURE}"
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
   echo "  Node strength (Step 5): $([[ ${RUN_NODESTRENGTH} == 1 ]] && echo on || echo off)"
@@ -375,6 +399,7 @@ if [[ -z "${SBATCH_GRES:-}" ]]; then
 fi
 
 if [[ "${PIPELINE_ENGINE}" != "bash" ]]; then
+  source "${DWI_ROOT}/workflow/lib/slurm_env.sh"
   preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --quick)
   ((BIDS_VALIDATE)) && preflight_args+=(--bids-validation)
   ((BIDS_IGNORE_WARNINGS)) && preflight_args+=(--ignore-warnings)
@@ -384,6 +409,8 @@ fi
 # Passed through to array.sh -> run_subject.sh / subject.sh (sbatch --export=ALL)
 # DWI_ROOT/REPO_ROOT are critical: inside sbatch $0 points to Slurm's spool
 # copy of the script, so array.sh cannot derive them on the compute node.
+_real_home="$(getent passwd "${USER}" 2>/dev/null | cut -d: -f6 || true)"
+[[ -n "${_real_home}" && -d "${_real_home}" ]] && export HOME="${_real_home}"
 export DWI_ROOT REPO_ROOT PIPELINE_ENGINE
 export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREADS QSIRECON_SPEC QSIRECON_ATLASES
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_NO_SDC QSIPREP_BIDS_FILTER DWI_SELECT_JSON
@@ -397,6 +424,7 @@ export PRIMARY_CONNECTOME_MEASURE
 export ACT_MODE ACT_STREAMLINES ACT_RANDOM_SEED
 export TRACTOGRAPHY_MODEL
 export CONNECTOME_SIFT2
+export RUN_DISCONNECTOME DISCONNECTOME_CORE_ONLY DISCONNECTOME_ERODE_VOXELS DISCONNECTOME_WEIGHTING
 export EXPERIMENT_ARM EXPERIMENT_ISOLATE_OUTPUTS
 export NODESTRENGTH_STRENGTH_ONLY NODESTRENGTH_NO_REPORT NODESTRENGTH_OUT
 # Optional container/license overrides (else workflow/config/config.local.yaml)
