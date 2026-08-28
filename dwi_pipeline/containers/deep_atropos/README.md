@@ -3,7 +3,7 @@
 Converts integer Deep Atropos segmentation to MRtrix ACT `base_5tt_native.mif` on the
 **native BIDS T1w grid**. Optional when `act.five_tt_source=deep-atropos-native`.
 
-**Segmentation source:** `dkt_deep_atropos_seg.sif` (`auto`/`generate`), Daniel cohort files
+**Segmentation source:** `dkt_deep_atropos_seg.sif` (`auto`/`generate`), external cohort files
 (`import`), or `derivatives/deep-atropos/` — see [deep_atropos_seg README](../deep_atropos_seg/README.md).
 
 Uses `scripts/convert_deep_atropos_to_5tt.py` (Python mapper; MRtrix 3.0.4 lacks

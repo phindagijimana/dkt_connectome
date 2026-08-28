@@ -35,6 +35,12 @@ if ACT_FIVE_TT_SOURCE == "deep-atropos-native":
                 if DEEP_ATROPOS_CFG.get("antsxnet_cache")
                 else ""
             ),
+            script_bind=lambda wc: (
+                f'-B "{DWI_PIPELINE_DIR}/scripts/run_deep_atropos_seg.py":'
+                f"/opt/deep_atropos_seg/run_deep_atropos_seg.py:ro"
+                if ACT_BIND_MOUNT_DEV
+                else ""
+            ),
         threads: 4
         shell:
             r"""
@@ -60,7 +66,7 @@ if ACT_FIVE_TT_SOURCE == "deep-atropos-native":
             apptainer run --cleanenv --containall \
               -B "$(dirname "{input.t1w}")":/bids_t1w:ro \
               -B "{params.outdir}":/out \
-              -B "{DWI_PIPELINE_DIR}/scripts/run_deep_atropos_seg.py":/opt/deep_atropos_seg/run_deep_atropos_seg.py:ro \
+              {params.script_bind} \
               {params.cache_bind} \
               "{CONTAINER_DEEP_ATROPOS_SEG}" \
               --t1w "/bids_t1w/$(basename "{input.t1w}")" \

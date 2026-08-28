@@ -179,7 +179,7 @@ The app is BIDS-App-compatible without being listed. If you submit later, follow
 
 1. Sign in at [readthedocs.org](https://readthedocs.org/) → import `phindagijimana/dkt_connectome`
 2. Project slug: **`dkt-connectome`**
-3. Config: [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) → `dwi_pipeline/mkdocs.yml`
+3. Config: [`.readthedocs.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.readthedocs.yaml) → `dwi_pipeline/docs/conf.py` (Sphinx)
 
 **Auto-rebuild on push** — pick **Option A** or **Option B** (not both required).
 
@@ -204,7 +204,7 @@ If the secret is missing, CI prints a warning and skips the trigger (docs stay s
 
    ```bash
    pip install -r dwi_pipeline/docs/requirements.txt
-   cd dwi_pipeline && mkdocs build --strict
+   sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
    bash dwi_pipeline/scripts/verify_rtd_live.sh
    ```
 
@@ -212,11 +212,11 @@ If the secret is missing, CI prints a warning and skips the trigger (docs stay s
 
 ```bash
 pip install -r dwi_pipeline/docs/requirements.txt
-cd dwi_pipeline && mkdocs serve
-# http://127.0.0.1:8000
+sphinx-build -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
+# open dwi_pipeline/docs/_build/html/index.html
 ```
 
-Strict build (matches CI): `mkdocs build --strict`
+Strict build (matches CI): `sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html`
 
 ### Doc map (avoid duplicate reading)
 

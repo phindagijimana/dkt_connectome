@@ -6,10 +6,10 @@ QSIRecon image (same toolchain as `dkt_connectome.sif` without FreeSurfer).
 
 ## Two spatial workflows (`--five-tt-source`)
 
-### `hsvs` (default) — Jim's ACPC-first fix
+### `hsvs` (default) — ACPC-first HSVS workflow
 
 1. Load QSIRecon HSVS 5TT (ACPC).
-2. Extract channel 0 as reference grid (`five_tt_ref` ≡ Jim's `vol0000` from `fslsplit`).
+2. Extract channel 0 as reference grid (`five_tt_ref`).
 3. Warp original BIDS lesion → ACPC 5TT grid:
    - primary: QSIPrep `from-T1wNative_to-T1wACPC` (`antsApplyTransforms`, GenericLabel);
    - fallback: empirical affine BIDS T1w → `desc-preproc_T1w`.
@@ -17,7 +17,7 @@ QSIRecon image (same toolchain as `dkt_connectome.sif` without FreeSurfer).
 5. Resample edited 5TT → `dwiref`; clip + renormalize (sum to 1 along axis 4).
 6. `tckgen -act` + `tcksift2`.
 
-### `deep-atropos-native` — Daniel's native-T1 branch
+### `deep-atropos-native` — native-T1 Deep Atropos branch
 
 Requires `base_5tt_native.mif` from `dkt_deep_atropos.sif` (Step 3.5a).
 

@@ -66,14 +66,17 @@ PULL_URI_FALLBACKS: dict[str, tuple[str, ...]] = {
         "oras://index.docker.io/phindagijimana321/dkt-vbt:0.1.0",
     ),
     "lesion_act": (
+        "ghcr.io/phindagijimana/dkt-lesion-act:0.1.0",
         "phindagijimana321/dkt-lesion-act:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-lesion-act:0.1.0",
     ),
     "deep_atropos": (
+        "ghcr.io/phindagijimana/dkt-deep-atropos:0.1.0",
         "phindagijimana321/dkt-deep-atropos:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-deep-atropos:0.1.0",
     ),
     "deep_atropos_seg": (
+        "ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.1.0",
         "phindagijimana321/dkt-deep-atropos-seg:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-deep-atropos-seg:0.1.0",
     ),

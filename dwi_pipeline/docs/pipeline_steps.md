@@ -6,16 +6,22 @@ What happens inside each step of the DKT Connectome. **Theory and rationale:** [
 
 ## Overview
 
+![Pipeline workflow sketch](img/pipeline_overview.svg)
+
 ```text
 Step 1    QSIPrep           DWI + T1w preprocessing, SDC (fmap or SyN)
 Step 1.5  Inpaint           Lesion anatomical mitigation (neuroLIT default; optional VBT)
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
 Step 3.5  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
+          ├─ default        QSIRecon HSVS base 5TT → ACPC 5ttedit → dwiref → tckgen
+          └─ optional       3.5a-seg → 3.5a native 5TT → 3.5 (--act-5tt-source deep-atropos-native)
 Step 4    Connectome        DKT 78-node matrices (Count, MeanLength, MeanFA, MeanMD; optional SIFT2)
 Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 ```
+
+Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 **Experiment arms:** `--experiment-arm` sets Step 1.5 backend and Step 3.5 ACT together — see [Usage — experiment arms](usage.md).
 
@@ -103,7 +109,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 **Trigger:** `--act-mode lesion-aware` or an `*-lesion` [experiment arm](usage.md)
 
-**Processing (shared pathology edit — Jim / Daniel / LeAPP):**
+**Processing (shared pathology edit — LeAPP-style):**
 
 1. Build or load base 5TT (HSVS ACPC **or** Deep Atropos native T1w)
 2. Resample **original BIDS** lesion mask into the **5TT reference grid**
@@ -115,7 +121,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 | Source | Flag | Base 5TT | Edit grid |
 |--------|------|----------|-----------|
-| HSVS (default) | `hsvs` | QSIRecon ACPC HSVS | ACPC (`five_tt_ref` / Jim's `vol0000`) |
+| HSVS (default) | `hsvs` | QSIRecon ACPC HSVS | ACPC (`five_tt_ref` / channel 0) |
 | Deep Atropos | `deep-atropos-native` | `deep_atropos/sub-<ID>/base_5tt_native.mif` | Native BIDS T1w |
 
 **Key outputs:**
@@ -130,7 +136,7 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 Step 4 uses these tractograms when lesion-aware mode is active.
 
-**References:** [Step 3.5 methods](methods/step3_5_lesion_act.md) · [Deep Atropos branch](maintainer/deep_atropos_5tt_plan.md) · (Bey et al. 2024; Smith et al. 2012).
+**References:** [Step 3.5 methods](methods/step3_5_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md) · (Bey et al. 2024; Smith et al. 2012).
 
 ---
 

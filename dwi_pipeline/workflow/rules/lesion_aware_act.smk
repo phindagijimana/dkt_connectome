@@ -1,9 +1,5 @@
 """Step 3.5: rebuild matched iFOD2/SIFT2 tractography with lesion-aware ACT."""
 
-ACT_MODE = str(ACT_CFG.get("mode", "standard")).lower()
-if ACT_MODE not in ("standard", "lesion-aware"):
-    raise WorkflowError(f"invalid act.mode={ACT_MODE} (use standard or lesion-aware)")
-
 if ACT_MODE == "lesion-aware" and ACT_FIVE_TT_SOURCE == "deep-atropos-native":
     # Validated at rule runtime via find_deep_atropos_segmentation when deep_atropos_5tt runs.
     pass

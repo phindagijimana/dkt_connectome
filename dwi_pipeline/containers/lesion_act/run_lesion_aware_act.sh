@@ -2,7 +2,7 @@
 # Step 3.5: lesion-aware ACT — 5ttedit -path, matched iFOD2 tckgen, tcksift2.
 #
 # Spatial workflows:
-#   hsvs (default, Jim / LeAPP ACPC-first):
+#   hsvs (default, LeAPP ACPC-first):
 #     1. Warp original BIDS lesion ROI → ACPC HSVS 5TT grid
 #     2. 5ttedit -path on ACPC grid; QA pathology overlap there
 #     3. Resample edited 5TT → dwiref for iFOD2 / SIFT2

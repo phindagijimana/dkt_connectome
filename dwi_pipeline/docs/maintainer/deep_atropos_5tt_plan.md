@@ -1,10 +1,11 @@
-# Deep Atropos native-T1 5TT (Daniel branch)
+# Deep Atropos native-T1 5TT (maintainer reference)
 
 Reference for optional **native-T1 Deep Atropos** as the Step 3.5 ACT five-tissue-type
-(5TT) source, alongside the default **QSIRecon ACPC HSVS** path (Jim's fix).
+(5TT) source, alongside the default **QSIRecon ACPC HSVS** path.
+
+**Public doc:** [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) (Read the Docs).
 
 **Status:** **Implemented** (Aug 2026). Pilot on `sub-TBI011011` with `--deep-atropos-seg-mode generate`.  
-**Owner:** Philbert + Daniel (input contract for cohort segs).  
 **Related:** [Step 3.5 methods](../methods/step3_5_lesion_act.md) · [Publication strategy § Paper 3](../publication_strategy.md).
 
 ---
@@ -14,10 +15,10 @@ Reference for optional **native-T1 Deep Atropos** as the Step 3.5 ACT five-tissu
 | Current default (`hsvs`) | Pain point |
 |--------------------------|------------|
 | QSIRecon **ACPC HSVS** 5TT from inpainted recon | Lesion mask on **native BIDS T1w**; 5TT in **ACPC** → extra warp chain |
-| Jim's ACPC-first fix (`5ttedit` on ACPC grid) | Works; production default for factorial arms |
+| ACPC-first HSVS workflow (`5ttedit` on ACPC grid) | Works; production default for factorial arms |
 | MRtrix 3.0.4 in `qsirecon.sif` | **No `5ttgen deep_atropos`** |
 
-Daniel's branch: segment on **native T1w** with **ANTsPyNet Deep Atropos**, build ACT 5TT,
+Native-T1 branch: segment on **native T1w** with **ANTsPyNet Deep Atropos**, build ACT 5TT,
 assign pathology from the **original lesion ROI on the same grid**, then resample to `dwiref`
 for `tckgen`. Cohort segs can be imported when available.
 
@@ -108,7 +109,7 @@ WM FOD (dwiref) ──► tckgen -act + tcksift2
 **Difference from `hsvs`:** skip ACPC HSVS and `from-T1wNative_to-T1wACPC` for the
 `5ttedit` step; lesion and base 5TT already share native T1w.
 
-Daniel's pathology recipe (resample contusion → inject 5TT channel 5 → renormalize) is identical; only the segmentation grid differs.
+The shared pathology recipe (resample contusion → inject 5TT channel 5 → renormalize) is identical; only the segmentation grid differs.
 
 ---
 
@@ -147,6 +148,10 @@ First ANTsPyNet run downloads model weights (~few GB). On compute nodes, Figshar
 - Rewrite URLs to `ndownloader.figshare.com`
 - Call `antspynet.set_antsxnet_cache_directory()`
 - Prefetch required weights into bind-mounted cache
+- **`--prefetch-only`** CLI for login-node warmup before batch submit
+
+**Dev override:** set `ACT_BIND_MOUNT_DEV=1` to bind-mount repo Python scripts over
+in-container copies (pilot iteration only; default off for published runs).
 
 Set persistent cache:
 
@@ -200,9 +205,9 @@ DEEP_ATROPOS_ANTSXNET_CACHE=.../.cache/antsxnet \
 
 ---
 
-## Open questions for Daniel
+## Open questions (cohort segmentation contract)
 
-1. Exact filename pattern and root directory for cohort Deep Atropos outputs?
+1. Exact filename pattern and root directory for external Deep Atropos outputs?
 2. Confirm Deep Atropos was run on **original BIDS T1w** (pipeline assumes yes).
 3. Prefer `import` mode once cohort paths are on NFS?
 

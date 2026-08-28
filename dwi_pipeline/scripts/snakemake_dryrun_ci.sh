@@ -14,6 +14,8 @@ TARGETS=(
   target_inpaint
   target_recon
   target_qsirecon
+  target_act
+  target_sdstream
   target_connectome
   target_disconnectome
   target_nodestrength
@@ -28,4 +30,11 @@ for target in "${TARGETS[@]}"; do
     -n "${target}"
 done
 
-echo "Snakemake full-workflow dry-run OK (${#TARGETS[@]} targets)"
+echo "=== snakemake dry-run: target_act (Deep Atropos branch) ==="
+# shellcheck source=/dev/null
+eval "$("${SCRIPT_DIR}/snakemake_act_ci_setup.sh")"
+snakemake -s workflow/Snakefile --directory . \
+  --configfile "${ACT_OVERRIDE}" \
+  -n target_act
+
+echo "Snakemake full-workflow dry-run OK (${#TARGETS[@]} targets + ACT deep-atropos)"

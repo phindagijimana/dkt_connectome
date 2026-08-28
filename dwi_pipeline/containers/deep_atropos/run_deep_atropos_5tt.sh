@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Step 3.5a: Daniel Deep Atropos segmentation → base_5tt_native.mif on BIDS T1w grid.
+# Step 3.5a: Deep Atropos segmentation → base_5tt_native.mif on BIDS T1w grid.
 set -euo pipefail
 
 usage() {

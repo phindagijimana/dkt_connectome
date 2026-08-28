@@ -65,13 +65,13 @@ rule sdstream_tractography:
         mkdir -p "{params.outdir}"
 
         wm_fod="$(_strict_find_one "sdstream/wm-fod" \
-          find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
+          find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
             -name '*model-ss3t_param-fod_label-WM_dwimap.mif.gz')"
         dwiref="$(_strict_find_one "sdstream/dwiref" \
-          find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
+          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
             -name '*space-T1w_dwiref.nii.gz')"
         five_tt="$(_strict_find_one "sdstream/5tt" \
-          find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/anat/*" \
+          find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/anat/*" \
             -name '*space-ACPC_seg-hsvs_probseg.nii.gz')"
         wm_fod_rel="${{wm_fod#{QSIRECON_OUT}/}}"
         dwiref_rel="${{dwiref#{QSIPREP_OUT}/}}"

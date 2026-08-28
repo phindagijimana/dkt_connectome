@@ -189,14 +189,14 @@ Two base-5TT sources are supported when `--act-mode lesion-aware`:
 
 | Source | Flag | When to use |
 |--------|------|-------------|
-| **HSVS ACPC** (default) | `--act-5tt-source hsvs` | Production factorial arms; Jim's ACPC-first `5ttedit` workflow |
-| **Deep Atropos native** | `--act-5tt-source deep-atropos-native` | Daniel sensitivity branch; lesion and 5TT share native BIDS T1w |
+| **HSVS ACPC** (default) | `--act-5tt-source hsvs` | Production factorial arms; ACPC-first `5ttedit` workflow |
+| **Deep Atropos native** | `--act-5tt-source deep-atropos-native` | Native-T1 sensitivity branch; lesion and 5TT share native BIDS T1w |
 
 ```bash
-# Default HSVS path (Jim's ACPC fix)
+# Default HSVS path (ACPC-first)
 bash workflow/run_subject.sh act EXAMPLE --act-mode lesion-aware
 
-# Deep Atropos native path (import Daniel seg or generate with ANTsPyNet)
+# Deep Atropos native path (import external seg or generate with ANTsPyNet)
 bash workflow/run_subject.sh act EXAMPLE \
   --act-mode lesion-aware \
   --act-5tt-source deep-atropos-native \
@@ -210,7 +210,7 @@ bash workflow/run_subject.sh act EXAMPLE \
   --recon-session 2WK
 ```
 
-Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a persistent NFS directory for ANTsXNet model weights. Details: [Deep Atropos implementation](maintainer/deep_atropos_5tt_plan.md).
+Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a persistent NFS directory for ANTsXNet model weights. Details: [Deep Atropos branch](deep_atropos_5tt.md).
 
 ### Theory: SD_STREAM (`--tractography-model both`)
 

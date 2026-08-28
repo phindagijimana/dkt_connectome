@@ -27,8 +27,8 @@ Do **not** tag v1.0 until P4.3–P4.4 complete and [container digests](container
 |---|------|-------|-------------------|
 | P4.1 | Freeze **v1.0** + release notes (4 SDC modes) | Philbert | `dwi_pipeline/RELEASE_NOTES.md`, `git tag v1.0` |
 | P4.2 | Pin container digests + supplement S4 | Philbert | `bash scripts/install.sh --mode all` → `python3 scripts/generate_container_digests_md.py` |
-| P4.3 | URMC **n=61** end-to-end + QC CSV | Daniel + Philbert | `submit.sh` + `batch_postprocess.sh` → `cohort_qc.html` |
-| P4.4 | HCP-YA **n=10** baseline stats | Daniel | Public HCP IDs in supplement S6 |
+| P4.3 | URMC **n=61** end-to-end + QC CSV | cohort team | `submit.sh` + `batch_postprocess.sh` → `cohort_qc.html` |
+| P4.4 | HCP-YA **n=10** baseline stats | methods team | Public HCP IDs in supplement S6 |
 | P4.5 | Radiological review rubric | James | Supplement S5 |
 | P4.6 | Comparison Table 1 finalized | Nishant | `paper_plan.md` |
 | P4.7 | Figures 1–7 journal DPI | Team | `sample_software_paper/` |

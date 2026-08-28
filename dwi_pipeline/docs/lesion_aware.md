@@ -51,8 +51,8 @@ lesion mask** into the MRtrix pathology channel. Two base-5TT sources:
 
 | Source | Flag | Edit grid | Reference |
 |--------|------|-----------|-----------|
-| HSVS ACPC (default) | `--act-5tt-source hsvs` | QSIRecon ACPC HSVS (Jim's `vol0000` ref) | Jim ACPC-first fix |
-| Deep Atropos native | `--act-5tt-source deep-atropos-native` | Native BIDS T1w | Daniel contusion workflow |
+| HSVS ACPC (default) | `--act-5tt-source hsvs` | QSIRecon ACPC HSVS (channel-0 ref) | ACPC-first HSVS workflow |
+| Deep Atropos native | `--act-5tt-source deep-atropos-native` | Native BIDS T1w | Native-T1 pathology ACT workflow |
 
 Shared steps after base 5TT is loaded:
 
@@ -64,7 +64,7 @@ Shared steps after base 5TT is loaded:
 Primary warp (HSVS): QSIPrep `T1wNative→ACPC`; fallback: empirical
 affine BIDS T1w → `desc-preproc_T1w` (same as Step 4 connectome).
 
-Daniel's recipe (segmentation strategy flexible): resample contusion into segmentation
+The native-T1 pathology ACT recipe (segmentation strategy flexible): resample contusion into segmentation
 space, add to 4D 5TT pathology channel, renormalize so fractions sum to 1 — implemented
 in both paths via `5ttedit -path` and `clip_renormalize_5tt()`.
 
@@ -134,7 +134,7 @@ that DWI abnormality persists at that location.
 
 **Important:** LeAPP validated ischemic stroke. TBI lesions require cohort-specific QC before treating any arm as production-default. Do not pool connectomes across arms without tracking provenance.
 
-Theory pages: [Step 1.5 — Inpainting](methods/step1_5_inpaint.md) · [Step 3.5 — Lesion-aware ACT](methods/step3_5_lesion_act.md).
+Theory pages: [Step 1.5 — Inpainting](methods/step1_5_inpaint.md) · [Step 3.5 — Lesion-aware ACT](methods/step3_5_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md).
 
 CLI examples and Slurm usage: [Usage — experiment arms](usage.md).
 Decision guide: [Decision tables — experiment arms](decision_tables.md).

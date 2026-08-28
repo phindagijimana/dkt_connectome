@@ -90,7 +90,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ## Step 3.5 — Lesion-aware ACT (optional)
 
-**What we use:** After QSIRecon, optionally rebuild iFOD2 + SIFT2 using a 5TT image edited with `5ttedit -path` so the **original BIDS lesion mask** occupies the pathology channel (`--act-mode lesion-aware`). Default base 5TT: QSIRecon ACPC HSVS (`--act-5tt-source hsvs`, Jim's ACPC-first workflow). Optional: native Deep Atropos (`--act-5tt-source deep-atropos-native`, Daniel branch).
+**What we use:** After QSIRecon, optionally rebuild iFOD2 + SIFT2 using a 5TT image edited with `5ttedit -path` so the **original BIDS lesion mask** occupies the pathology channel (`--act-mode lesion-aware`). Default base 5TT: QSIRecon ACPC HSVS (`--act-5tt-source hsvs`, ACPC-first workflow). Optional: native Deep Atropos (`--act-5tt-source deep-atropos-native`). See [Deep Atropos branch](deep_atropos_5tt.md).
 
 | Topic | Reference | DOI / link |
 |-------|-----------|------------|

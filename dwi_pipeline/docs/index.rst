@@ -44,6 +44,7 @@ Contents
    methods/step2_recon
    methods/step3_qsirecon
    methods/step3_5_lesion_act
+   deep_atropos_5tt
    lesion_aware
    publication_strategy
    methods/step4_connectome

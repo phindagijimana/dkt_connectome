@@ -53,7 +53,7 @@ same ~100 subjects unless reviewers explicitly request it (rare).
 
 | Topic | Treatment |
 |-------|-----------|
-| ACPC-first lesion → 5TT warp (Jim workflow) | Methods subsection + supplement |
+| ACPC-first lesion → 5TT warp (HSVS path) | Methods subsection + supplement |
 | neuroLIT vs VBT only | Part of factorial — not its own paper |
 | Registration / pathology QA metrics | Supplementary tables |
 | Pipeline / Snakemake / containers | Methods + data availability — not a standalone software paper unless scope is deliberately narrowed |

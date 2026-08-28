@@ -23,7 +23,8 @@ export FS_LICENSE=/path/to/your/license.txt
 | Workflow | Default behavior | License needed? |
 |----------|------------------|-----------------|
 | `dwi_pipeline_ci.yml` | Stubs + dry-run | No (`BIDS_APP_CI=1`) |
-| `install_smoke.yml` | Apptainer pull | No |
+| `install_smoke.yml` | Apptainer pull (qsiprep; **act** on schedule/release) | No |
+| `act_containers_publish.yml` | Build/push Step 3.5 ACT images to GHCR | No |
 | `integration_qsiprep.yml` | Pull QSIPrep + `qsiprep --version` | No |
 | `integration_ideas.yml` | OpenNeuro download + **dry-run** | No (`BIDS_APP_CI=1` + stub file) |
 | `docker_auto_install_smoke.yml` | Docker dry-run | No (stub file) |

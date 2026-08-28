@@ -67,9 +67,6 @@ CONTAINER_CONNECTOME = _containers["connectome"]
 CONTAINER_LIT = _containers["lit"]
 CONTAINER_NODESTRENGTH = _containers["nodestrength"]
 CONTAINER_VBT = _containers.get("vbt") or _containers["qsiprep"]
-CONTAINER_LESION_ACT = _containers.get("lesion_act") or _containers["qsirecon"]
-CONTAINER_DEEP_ATROPOS = _containers.get("deep_atropos") or _containers.get("lesion_act") or _containers["qsirecon"]
-CONTAINER_DEEP_ATROPOS_SEG = _containers.get("deep_atropos_seg") or _containers.get("deep_atropos") or _containers["qsirecon"]
 
 FS_LICENSE = config["fs_license"]
 FS_LUT = config.get("fs_lut") or str(Path(FS_LICENSE).parent / "FreeSurferColorLUT.txt")
@@ -125,6 +122,55 @@ if ACT_DEEP_ATROPOS_SEG_MODE not in ("auto", "import", "generate"):
         f"invalid act.deep_atropos.segmentation_mode={ACT_DEEP_ATROPOS_SEG_MODE} "
         "(use auto, import, or generate)"
     )
+
+ACT_MODE = str(ACT_CFG.get("mode", "standard")).lower()
+if ACT_MODE not in ("standard", "lesion-aware"):
+    raise WorkflowError(f"invalid act.mode={ACT_MODE} (use standard or lesion-aware)")
+
+# Dev-only: bind-mount repo scripts over in-container copies (pilot iteration).
+ACT_BIND_MOUNT_DEV = os.environ.get("ACT_BIND_MOUNT_DEV", "0") == "1"
+
+
+def _require_act_container(key: str, label: str) -> str:
+    path = _containers.get(key)
+    if not path:
+        raise WorkflowError(
+            f"act.mode=lesion-aware requires containers.{key} ({label}); "
+            "do not rely on qsirecon fallback"
+        )
+    return str(path)
+
+
+if ACT_MODE == "lesion-aware":
+    CONTAINER_LESION_ACT = _require_act_container("lesion_act", "dkt_lesion_act.sif")
+    if ACT_FIVE_TT_SOURCE == "deep-atropos-native":
+        CONTAINER_DEEP_ATROPOS = _require_act_container("deep_atropos", "dkt_deep_atropos.sif")
+        if ACT_DEEP_ATROPOS_SEG_MODE != "import":
+            CONTAINER_DEEP_ATROPOS_SEG = _require_act_container(
+                "deep_atropos_seg", "dkt_deep_atropos_seg.sif"
+            )
+        else:
+            CONTAINER_DEEP_ATROPOS_SEG = (
+                _containers.get("deep_atropos_seg")
+                or _containers.get("deep_atropos")
+                or CONTAINER_LESION_ACT
+            )
+    else:
+        CONTAINER_DEEP_ATROPOS = _containers.get("deep_atropos") or CONTAINER_LESION_ACT
+        CONTAINER_DEEP_ATROPOS_SEG = (
+            _containers.get("deep_atropos_seg") or CONTAINER_DEEP_ATROPOS
+        )
+else:
+    CONTAINER_LESION_ACT = _containers.get("lesion_act") or _containers["qsirecon"]
+    CONTAINER_DEEP_ATROPOS = (
+        _containers.get("deep_atropos") or _containers.get("lesion_act") or _containers["qsirecon"]
+    )
+    CONTAINER_DEEP_ATROPOS_SEG = (
+        _containers.get("deep_atropos_seg")
+        or _containers.get("deep_atropos")
+        or _containers["qsirecon"]
+    )
+
 TRACTOGRAPHY_CFG = config.get("tractography", {})
 EXPERIMENT_CFG = config.get("experiment", {})
 CONNECTOME_CFG = config.get("connectome", {})
@@ -222,7 +268,7 @@ def subject_has_lesion_mask(subject: str) -> bool:
 
 @functools.lru_cache(maxsize=None)
 def _find_external_deep_atropos_segmentation(subject: str, session: str) -> str | None:
-    """Return Daniel/external Deep Atropos seg if configured on disk, else None."""
+    """Return external Deep Atropos seg if configured on disk, else None."""
     explicit = DEEP_ATROPOS_CFG.get("segmentation")
     if explicit:
         raw = str(explicit)

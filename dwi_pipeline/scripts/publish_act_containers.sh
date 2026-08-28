@@ -20,7 +20,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CONTAINER_DIR="${CONTAINER_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers}"
+CONTAINER_DIR="${CONTAINER_DIR:-${HOME}/.cache/dkt-connectome/containers}"
 IMAGE_TAG="${IMAGE_TAG:-0.1.0}"
 DOCKERHUB_USER="${DOCKERHUB_USER:-phindagijimana321}"
 GHCR_OWNER="${GHCR_OWNER:-phindagijimana}"
