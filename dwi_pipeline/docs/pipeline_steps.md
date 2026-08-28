@@ -8,6 +8,18 @@ What happens inside each step of the DKT Connectome. **Theory and rationale:** [
 
 ![Pipeline workflow sketch](img/pipeline_overview.svg)
 
+| Step | Label |
+|------|-------|
+| **1** | QSIPrep preprocessing |
+| **1.1** | Lesion inpainting (neuroLIT; optional VBT) |
+| **2** | Cortical reconstruction |
+| **3** | QSIRecon tractography |
+| **3.1** | Lesion-aware ACT tractography |
+| **3.2** | Deep Atropos native-T1 5TT (optional branch) |
+| **4** | DKT structural connectome |
+| **4.1** | Structural disconnectome |
+| **5** | Node strength report |
+
 ```text
 Step 1    QSIPrep           DWI + T1w preprocessing, SDC (fmap or SyN)
 Step 1.1  Inpaint           Lesion anatomical mitigation (neuroLIT default; optional VBT)
@@ -15,7 +27,7 @@ Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
 Step 3.1  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
           ├─ default        QSIRecon HSVS base 5TT → ACPC 5ttedit → dwiref → tckgen
-          └─ optional       3.2-seg → 3.2 native 5TT → 3.1 (--act-5tt-source deep-atropos-native)
+          └─ optional       Step 3.2 seg → native 5TT → Step 3.1 (--act-5tt-source deep-atropos-native)
 Step 4    Connectome        DKT 78-node matrices (Count, MeanLength, MeanFA, MeanMD; optional SIFT2)
 Step 4.1  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
@@ -136,7 +148,25 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 Step 4 uses these tractograms when lesion-aware mode is active.
 
-**References:** [Step 3.1 methods](methods/step3_1_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md) · (Bey et al. 2024; Smith et al. 2012).
+**References:** [Step 3.1 methods](methods/step3_1_lesion_act.md) · [Step 3.2 — Deep Atropos branch](deep_atropos_5tt.md) · (Bey et al. 2024; Smith et al. 2012).
+
+---
+
+## Step 3.2 — Deep Atropos native-T1 5TT (optional)
+
+**Tools:** `dkt_deep_atropos_seg.sif` (ANTsPyNet segmentation) + `dkt_deep_atropos.sif` (integer seg → native 5TT)
+
+**Trigger:** `--act-mode lesion-aware` with `--act-5tt-source deep-atropos-native`
+
+**Processing:**
+
+1. Segment native BIDS T1w with Deep Atropos (`auto`, `import`, or `generate`)
+2. Convert segmentation to `base_5tt_native.mif` on the T1w grid
+3. Feed base 5TT into Step 3.1 for pathology edit and tractography rebuild
+
+**Skip:** default `--act-5tt-source hsvs` (QSIRecon ACPC HSVS path; no Step 3.2 containers)
+
+**References:** [Step 3.2 — Deep Atropos native-T1 5TT](deep_atropos_5tt.md) · [Containers § Step 3.2](containers.md).
 
 ---
 

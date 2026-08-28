@@ -4,15 +4,15 @@ The **canonical execution engine** for the DKT Connectome is the Snakemake workf
 
 Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, Deep Atropos seg/5TT, lesion-aware ACT, connectome, SD_STREAM, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
 
-**Step 3.1 optional branch** (`--act-5tt-source deep-atropos-native`):
+**Step 3.2 optional branch** (`--act-5tt-source deep-atropos-native`):
 
 | Sub-step | Rule file | Container |
 |----------|-----------|-----------|
-| 3.2-seg | `deep_atropos_seg.smk` | `dkt_deep_atropos_seg.sif` |
-| 3.2 | `deep_atropos_5tt.smk` | `dkt_deep_atropos.sif` |
+| 3.2 (seg) | `deep_atropos_seg.smk` | `dkt_deep_atropos_seg.sif` |
+| 3.2 (5TT) | `deep_atropos_5tt.smk` | `dkt_deep_atropos.sif` |
 | 3.1 | `lesion_aware_act.smk` | `dkt_lesion_act.sif` |
 
-Details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md) · [Pipeline steps § 3.1](pipeline_steps.md#step-31-lesion-aware-act-optional).
+Details: [Step 3.2 — Deep Atropos native-T1 5TT](deep_atropos_5tt.md) · [Pipeline steps § 3.1](pipeline_steps.md#step-31-lesion-aware-act-optional).
 
 ---
 

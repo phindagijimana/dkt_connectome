@@ -13,8 +13,8 @@ RESULTS_ROOT/
 ├── inpainted/sub-<ID>/ses-<Y>/             Step 1.1 neuroLIT (lesion subjects)
 ├── vbt/sub-<ID>/ses-<Y>/                   Step 1.1 VBT (--anat-mitigation vbt)
 ├── lesion_aware_act/sub-<ID>/              Step 3.1 (--act-mode lesion-aware)
-├── deep_atropos_seg/sub-<ID>/              Step 3.2 (segmentation) (--act-5tt-source deep-atropos-native)
-├── deep_atropos/sub-<ID>/                  Step 3.2 (--act-5tt-source deep-atropos-native)
+├── deep_atropos_seg/sub-<ID>/              Step 3.2 (seg) (--act-5tt-source deep-atropos-native)
+├── deep_atropos/sub-<ID>/                  Step 3.2 (5TT) (--act-5tt-source deep-atropos-native)
 ├── freesurfer/sub-<ID>/                    Step 2
 ├── qsirecon_single_run_output/sub-<ID>/    Step 3
 ├── connectomes/sub-<ID>/                   Step 4 (+ optional 4.1/)

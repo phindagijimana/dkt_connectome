@@ -19,8 +19,9 @@ flowchart TB
   S2 --> S3["Step 3\nQSIRecon ACT-HSVS"]
   S3 --> S31{"Step 3.1\nlesion-aware?"}
   S31 -->|hsvs default| S31H["5ttedit on ACPC HSVS"]
-  S31 -->|deep-atropos-native| S31S["3.2-seg → 3.2 native 5TT"]
-  S31S --> S31E["3.1 lesion ACT\ntckgen + SIFT2"]
+  S31 -->|deep-atropos-native| S32S["Step 3.2\nDeep Atropos seg"]
+  S32S --> S32T["Step 3.2\nnative 5TT"]
+  S32T --> S31E["Step 3.1\nlesion ACT\ntckgen + SIFT2"]
   S31H --> S31E
   S31 -->|standard| S4
   S31E --> S4["Step 4\nDKT connectome"]
@@ -29,7 +30,7 @@ flowchart TB
   S4 --> S5["Step 5\nNode strength"]
 ```
 
-Dashed boxes in the SVG = optional steps. Deep Atropos sub-stages (3.2-seg, 3.2) apply when
+Dashed boxes in the SVG = optional steps. Step 3.2 (Deep Atropos seg + native 5TT) applies when
 `--act-5tt-source deep-atropos-native`. See [science overview](docs/science_overview.md),
 [pipeline steps](docs/pipeline_steps.md), and [Deep Atropos branch](docs/deep_atropos_5tt.md).
 
