@@ -129,6 +129,30 @@ def csv_row_count(path: Path) -> int:
         return sum(1 for _ in csv.reader(stream)) - 1
 
 
+def read_tsv_rows(path: Path) -> list[dict[str, str]]:
+    if not path.is_file():
+        return []
+    with path.open(newline="") as stream:
+        return list(csv.DictReader(stream, delimiter="\t"))
+
+
+def merge_tsv_rows(
+    existing: list[dict[str, str]],
+    new_rows: list[dict[str, object]],
+    *,
+    key_fields: tuple[str, ...],
+    replace_subjects: set[str],
+) -> list[dict[str, str]]:
+    """Keep prior rows unless the subject is being refreshed in this export."""
+    kept = [
+        row
+        for row in existing
+        if row.get(key_fields[0], "").replace("sub-", "") not in replace_subjects
+    ]
+    merged = kept + [{key: str(value) for key, value in row.items()} for row in new_rows]
+    return merged
+
+
 def resolve_session(results_root: Path, subject: str) -> str:
     qsirecon = results_root / "qsirecon_single_run_output"
     sessions = {
@@ -174,13 +198,24 @@ def write_node_lookup(lut: Path, destination: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pipeline-root", type=Path, required=True)
+    parser.add_argument(
+        "--results-root",
+        type=Path,
+        default=None,
+        help="Pipeline results directory (default: <pipeline-root>/results)",
+    )
     parser.add_argument("--subject-list", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--group", default="Group 1")
+    parser.add_argument(
+        "--merge-existing",
+        action="store_true",
+        help="Keep prior exported subjects not listed in --subject-list",
+    )
     args = parser.parse_args()
 
     pipeline_root = args.pipeline_root.resolve()
-    results_root = pipeline_root / "results"
+    results_root = (args.results_root or (pipeline_root / "results")).resolve()
     output = args.output.resolve()
     matrix_root = output / "probabilistic_tractography" / "DKT-78"
     deterministic_root = output / "deterministic_tractography" / "DKT-78"
@@ -506,6 +541,43 @@ def main() -> None:
         "exported_file",
         "sha256",
     ]
+    artifact_fields = [
+        "subject",
+        "session",
+        "artifact",
+        "rows",
+        "source",
+        "exported_file",
+        "sha256",
+    ]
+    skipped_artifact_fields = ["subject", "session", "artifact", "reason"]
+    replace_subjects = set(subjects)
+    if args.merge_existing:
+        exported = merge_tsv_rows(
+            read_tsv_rows(output / "manifest.tsv"),
+            exported,
+            key_fields=("subject",),
+            replace_subjects=replace_subjects,
+        )
+        artifacts = merge_tsv_rows(
+            read_tsv_rows(output / "artifacts_manifest.tsv"),
+            artifacts,
+            key_fields=("subject",),
+            replace_subjects=replace_subjects,
+        )
+        skipped = merge_tsv_rows(
+            read_tsv_rows(output / "skipped.tsv"),
+            skipped,
+            key_fields=("subject",),
+            replace_subjects=replace_subjects,
+        )
+        skipped_artifacts = merge_tsv_rows(
+            read_tsv_rows(output / "skipped_artifacts.tsv"),
+            skipped_artifacts,
+            key_fields=("subject",),
+            replace_subjects=replace_subjects,
+        )
+
     with (output / "manifest.tsv").open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=manifest_fields, delimiter="\t")
         writer.writeheader()
@@ -516,15 +588,6 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(skipped)
 
-    artifact_fields = [
-        "subject",
-        "session",
-        "artifact",
-        "rows",
-        "source",
-        "exported_file",
-        "sha256",
-    ]
     with (output / "artifacts_manifest.tsv").open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=artifact_fields, delimiter="\t")
         writer.writeheader()
@@ -533,7 +596,7 @@ def main() -> None:
     with (output / "skipped_artifacts.tsv").open("w", newline="") as stream:
         writer = csv.DictWriter(
             stream,
-            fieldnames=["subject", "session", "artifact", "reason"],
+            fieldnames=skipped_artifact_fields,
             delimiter="\t",
         )
         writer.writeheader()

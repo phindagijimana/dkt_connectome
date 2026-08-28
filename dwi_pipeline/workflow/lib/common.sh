@@ -62,6 +62,24 @@ find_qsiprep_preproc_t1w() {
     \) -type f
 }
 
+# QSIPrep packaged T1wNative -> T1wACPC transform (0 or 1). Echoes nothing if absent.
+find_qsiprep_native_to_acpc() {
+  local qsiprep_out="$1" subject="$2" session="$3"
+  local -a matches=()
+  mapfile -t matches < <(
+    find "${qsiprep_out}/sub-${subject}" \( \
+      -path "*/ses-${session}/anat/*from-T1wNative_to-T1wACPC_mode-image_xfm.mat" -o \
+      -path "*/ses-${session}/anat/*from-T1wNative_to-T1wACPC_mode-image_xfm.txt" -o \
+      -path "*/anat/*from-T1wNative_to-T1wACPC_mode-image_xfm.mat" -o \
+      -path "*/anat/*from-T1wNative_to-T1wACPC_mode-image_xfm.txt" \
+    \) -type f 2>/dev/null | LC_ALL=C sort -u
+  )
+  ((${#matches[@]})) || return 0
+  ((${#matches[@]} == 1)) || _pipeline_fail "lesion-aware-act/T1wNative→ACPC" \
+    "expected 0 or 1 native→ACPC transform, found ${#matches[@]}" "${matches[@]}"
+  echo "${matches[0]}"
+}
+
 # BIDS T1w for the target session (exactly one match required).
 find_bids_t1w() {
   local subject="$1" session="$2"

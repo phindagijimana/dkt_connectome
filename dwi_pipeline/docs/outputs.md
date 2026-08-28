@@ -13,6 +13,8 @@ RESULTS_ROOT/
 ├── inpainted/sub-<ID>/ses-<Y>/             Step 1.5 neuroLIT (lesion subjects)
 ├── vbt/sub-<ID>/ses-<Y>/                   Step 1.5 VBT (--anat-mitigation vbt)
 ├── lesion_aware_act/sub-<ID>/              Step 3.5 (--act-mode lesion-aware)
+├── deep_atropos_seg/sub-<ID>/              Step 3.5a-seg (--act-5tt-source deep-atropos-native)
+├── deep_atropos/sub-<ID>/                  Step 3.5a (--act-5tt-source deep-atropos-native)
 ├── freesurfer/sub-<ID>/                    Step 2
 ├── qsirecon_single_run_output/sub-<ID>/    Step 3
 ├── connectomes/sub-<ID>/                   Step 4 (+ optional 4.5/)
@@ -59,11 +61,22 @@ When `--act-mode lesion-aware` or a `*-lesion` experiment arm:
 
 | Path | Description |
 |------|-------------|
-| `lesion_aware_act/sub-<ID>/lesion_aware_5tt.mif` | 5TT with pathology channel |
+| `lesion_aware_act/sub-<ID>/lesion_aware_5tt.mif` | 5TT with pathology channel (dwiref grid) |
+| `lesion_aware_act/sub-<ID>/lesion_aware_5tt_acpc.mif` | Edited 5TT on ACPC grid (`hsvs` source only) |
+| `lesion_aware_act/sub-<ID>/lesion_aware_5tt_native.mif` | Edited 5TT on native grid (`deep-atropos-native` only) |
 | `lesion_aware_act/sub-<ID>/lesion_mask_in_dwi.nii.gz` | Mask in DWI space |
 | `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck` | Rebuilt tractogram |
 | `lesion_aware_act/sub-<ID>/model-sift2_streamlineweights.csv` | SIFT2 weights |
-| `lesion_aware_act/sub-<ID>/lesion_aware_act.json` | Provenance |
+| `lesion_aware_act/sub-<ID>/lesion_aware_act.json` | Provenance (`five_tt_source`, warp method, factorial fields) |
+
+### Step 3.5a — Deep Atropos (optional, `--act-5tt-source deep-atropos-native`)
+
+| Path | Description |
+|------|-------------|
+| `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` | Integer Deep Atropos seg (labels 0–6) |
+| `deep_atropos_seg/sub-<ID>/deep_atropos_seg.json` | Seg provenance (`segmentation_source`: import or generated) |
+| `deep_atropos/sub-<ID>/base_5tt_native.mif` | Base 5TT on native BIDS T1w grid |
+| `deep_atropos/sub-<ID>/deep_atropos_5tt.json` | Conversion provenance |
 
 ---
 

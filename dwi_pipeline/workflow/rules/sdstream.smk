@@ -130,7 +130,7 @@ rule sdstream_tractography:
               -nthreads {threads}
           "
 
-        python3 - "{output.provenance}" "${{wm_fod}}" "${{dwiref}}" "${{five_tt}}" <<'PY'
+        {PIPELINE_PYTHON} - "{output.provenance}" "${{wm_fod}}" "${{dwiref}}" "${{five_tt}}" <<'PY'
 import json, sys
 out, wm_fod, dwiref, five_tt = sys.argv[1:]
 payload = {{
@@ -246,7 +246,7 @@ rule sdstream_connectome:
           "
 
         empty_nodes="$(_count_empty_nodes "{output.count_matrix}")"
-        python3 - "{output.provenance}" "${{empty_nodes}}" <<'PY'
+        {PIPELINE_PYTHON} - "{output.provenance}" "${{empty_nodes}}" <<'PY'
 import json, sys
 out, empty_nodes = sys.argv[1:]
 payload = {{
@@ -308,7 +308,7 @@ if CONNECTOME_SIFT2_ENABLED:
                   -symmetric -zero_diagonal -tck_weights_in \${{weights}}
               "
 
-            python3 - "{params.provenance}" "{output.sift2_matrix}" <<'PY'
+            {PIPELINE_PYTHON} - "{params.provenance}" "{output.sift2_matrix}" <<'PY'
 import json, sys
 from pathlib import Path
 out, sift2_path = sys.argv[1:3]

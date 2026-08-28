@@ -152,15 +152,28 @@ layers, QC methodology).
 
 ## Lesion-aware ACT and experiment arms (Step 3.5)
 
-`--act-mode lesion-aware` resamples QSIRecon's retained HSVS 5TT to the DWI/FOD
-grid, inserts the transformed lesion into its fifth pathological-tissue
-channel with `5ttedit -path`, validates the result with `5ttcheck`, and rebuilds
-matched iFOD2 tractography and SIFT2 weights from the retained WM FOD.
+`--act-mode lesion-aware` inserts the **original BIDS lesion mask** into the MRtrix
+5TT pathology channel with `5ttedit -path`, validates with `5ttcheck`, clip/renormalizes
+tissue fractions, and rebuilds matched iFOD2 tractography and SIFT2 weights from the
+retained WM FOD.
+
+**Default (`--act-5tt-source hsvs`):** Jim's ACPC-first workflow — warp lesion to QSIRecon
+HSVS 5TT grid (channel-0 reference ≡ `vol0000`), edit on ACPC, resample to `dwiref`.
+
+**Optional (`--act-5tt-source deep-atropos-native`):** Daniel's native-T1 branch — ANTsPyNet
+or imported Deep Atropos seg → `base_5tt_native.mif`, edit on native BIDS T1w, resample to
+`dwiref`. See [Deep Atropos plan](docs/maintainer/deep_atropos_5tt_plan.md).
 
 ```bash
-# Individual controls
+# HSVS ACPC path (default)
 bash workflow/run_subject.sh act EXAMPLE \
   --recon-session 2WK --act-mode lesion-aware
+
+# Deep Atropos native path
+bash workflow/run_subject.sh act EXAMPLE \
+  --recon-session 2WK --act-mode lesion-aware \
+  --act-5tt-source deep-atropos-native \
+  --deep-atropos-seg-mode auto
 
 # Isolated anatomy × ACT study arms
 bash workflow/run_subject.sh all EXAMPLE --experiment-arm orig-std

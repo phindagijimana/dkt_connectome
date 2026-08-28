@@ -74,6 +74,10 @@ Both backends write the same filename for Step 2: `inpainting_volumes/inpainting
 |------|------|------------------------------|----------------------|
 | Default cohort processing | *(none)* / `--act-mode standard` | QSIRecon iFOD2 + SIFT2 | Smith et al. 2012/2020 (ACT-HSVS) |
 | Insert lesion into 5TT pathology channel | `--act-mode lesion-aware` | Rebuilt iFOD2 + SIFT2 under `lesion_aware_act/` | Bey et al. 2024; Smith et al. 2012 ACT |
+| HSVS ACPC base 5TT (Jim's fix) | `--act-5tt-source hsvs` (default) | QSIRecon HSVS → ACPC `5ttedit` → dwiref | Smith et al. 2020 HSVS |
+| Native Deep Atropos base 5TT | `--act-5tt-source deep-atropos-native` | ANTsPyNet seg → native `5ttedit` → dwiref | Sensitivity vs HSVS; [plan](maintainer/deep_atropos_5tt_plan.md) |
+| Import Daniel cohort segs | `--deep-atropos-seg-mode import` | Skip ANTsPyNet; require external seg | — |
+| Generate segs in-pipeline | `--deep-atropos-seg-mode generate` | Run `dkt_deep_atropos_seg.sif` | Pilot / no external segs |
 | Re-run Step 3.5 only | `--mode act` | — | — |
 | Deterministic robustness matrices | `--tractography-model both` | Parallel SD_STREAM connectomes | Tournier et al. 2019 |
 

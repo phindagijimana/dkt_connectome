@@ -71,19 +71,35 @@ def validate_lesion_aware_act(act_json: Path) -> list[str]:
     if payload.get("act_mode") != "lesion-aware":
         errors.append(f"expected act_mode=lesion-aware, got {payload.get('act_mode')!r}")
 
+    five_tt_source = payload.get("five_tt_source", "hsvs")
+    spatial = payload.get("spatial_workflow", "acpc_5tt_edit_then_dwiref_resample")
+
     required = (
         "lesion_mask_source",
         "lesion_mask_in_dwi",
+        "lesion_warp_method",
+        "spatial_workflow",
         "lesion_aware_5tt",
         "tractogram",
         "sift2_weights",
+        "five_tt_source",
     )
+    if spatial == "acpc_5tt_edit_then_dwiref_resample":
+        required += ("lesion_mask_in_acpc_5tt",)
+    elif spatial == "native_5tt_edit_then_dwiref_resample":
+        required += ("lesion_mask_in_native_5tt", "deep_atropos_segmentation")
     for key in required:
         path = payload.get(key)
         if not path:
             errors.append(f"provenance missing {key}")
             continue
-        _require_file(Path(path), key, errors)
+        if key.endswith("_5tt") or key in (
+            "lesion_mask_in_dwi",
+            "lesion_aware_5tt",
+            "tractogram",
+            "sift2_weights",
+        ):
+            _require_file(Path(path), key, errors)
 
     tractogram = Path(payload["tractogram"])
     if tractogram.is_file() and tractogram.stat().st_size < 1024:

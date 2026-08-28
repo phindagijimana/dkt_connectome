@@ -90,6 +90,9 @@ existing analyses (count by default).
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--act-mode standard\|lesion-aware` | `ACT_MODE` | Use the QSIRecon tractogram or rebuild matched iFOD2/SIFT2 after inserting the lesion into the fifth 5TT channel. |
+| `--act-5tt-source hsvs\|deep-atropos-native` | `ACT_FIVE_TT_SOURCE` | Base 5TT for lesion-aware ACT: QSIRecon ACPC HSVS (default) or native Deep Atropos. |
+| `--deep-atropos-seg PATH` | `DEEP_ATROPOS_SEG` | Path to Deep Atropos integer segmentation (optional; `{subject}` `{session}` placeholders). |
+| `--deep-atropos-seg-mode auto\|import\|generate` | `DEEP_ATROPOS_SEG_MODE` | Seg discovery: auto (default), require external, or always run ANTsPyNet. |
 | `--act-streamlines N` | `ACT_STREAMLINES` | Number of lesion-aware streamlines; default `10000000`. |
 | `--tractography-model ifod2\|sd_stream\|both` | `TRACTOGRAPHY_MODEL` | Default `both`: iFOD2 (QSIRecon) plus deterministic SD_STREAM Count/MeanLength/MeanFA/MeanMD matrices. |
 | `--experiment-arm ARM` | `EXPERIMENT_ARM` | Maps an anatomy × ACT arm and isolates it under `RESULTS_ROOT/arms/ARM`. |

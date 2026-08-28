@@ -2,7 +2,7 @@
 
 The **canonical execution engine** for the DKT Connectome is the Snakemake workflow under [`dwi_pipeline/workflow/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/workflow).
 
-Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, lesion-aware ACT, connectome, SD_STREAM, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
+Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, Deep Atropos seg/5TT, lesion-aware ACT, connectome, SD_STREAM, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
 
 ---
 

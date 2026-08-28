@@ -90,7 +90,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ## Step 3.5 — Lesion-aware ACT (optional)
 
-**What we use:** After QSIRecon, optionally rebuild iFOD2 + SIFT2 using a 5TT image edited with `5ttedit -path` so the **original BIDS lesion mask** occupies the pathology channel (`--act-mode lesion-aware`).
+**What we use:** After QSIRecon, optionally rebuild iFOD2 + SIFT2 using a 5TT image edited with `5ttedit -path` so the **original BIDS lesion mask** occupies the pathology channel (`--act-mode lesion-aware`). Default base 5TT: QSIRecon ACPC HSVS (`--act-5tt-source hsvs`, Jim's ACPC-first workflow). Optional: native Deep Atropos (`--act-5tt-source deep-atropos-native`, Daniel branch).
 
 | Topic | Reference | DOI / link |
 |-------|-----------|------------|
@@ -99,7 +99,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | HSVS 5TT | Smith RE, et al. Hybrid surface/volume segmentation. *NeuroImage* 2020;223:117345. | [10.1016/j.neuroimage.2020.117345](https://doi.org/10.1016/j.neuroimage.2020.117345) |
 | SIFT2 (rebuilt weights) | Smith RE, et al. SIFT2. *NeuroImage* 2015;119:338–351. | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
 
-**Docs:** [Step 3.5 theory](methods/step3_5_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
+**Docs:** [Step 3.5 theory](methods/step3_5_lesion_act.md) · [Deep Atropos implementation](maintainer/deep_atropos_5tt_plan.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
 
 ---
 

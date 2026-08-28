@@ -5,6 +5,19 @@
 # Python user-site lookup for ~/.local/lib/python3.12/site-packages/snakemake.
 # Source this at the top of array job scripts before calling run_subject.sh.
 
+_pipeline_resolve_python() {
+  if [[ -n "${PIPELINE_PYTHON:-}" ]]; then
+    return
+  fi
+  if command -v python3.12 >/dev/null 2>&1; then
+    export PIPELINE_PYTHON=python3.12
+  elif command -v python3 >/dev/null 2>&1; then
+    export PIPELINE_PYTHON=python3
+  else
+    export PIPELINE_PYTHON=python3.12
+  fi
+}
+
 _slurm_fix_user_env() {
   local real_home=""
   if [[ -n "${USER:-}" ]]; then
@@ -38,3 +51,4 @@ _slurm_fix_user_env() {
 }
 
 _slurm_fix_user_env
+_pipeline_resolve_python

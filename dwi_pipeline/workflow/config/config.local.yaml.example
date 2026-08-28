@@ -12,6 +12,8 @@ container_pins:
   connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
   vbt: ghcr.io/phindagijimana/dkt-vbt:0.1.0
   lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.1.0
+  deep_atropos: ghcr.io/phindagijimana/dkt-deep-atropos:0.1.0
+  deep_atropos_seg: ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.1.0
   lit: deepmi/lit:0.6.0
   nodestrength: phindagijimana321/nodestrength:0.1.0
 
@@ -23,10 +25,19 @@ containers:
   connectome: /path/to/others/containers/dkt_connectome.sif
   vbt: /path/to/others/containers/dkt_vbt.sif
   lesion_act: /path/to/others/containers/dkt_lesion_act.sif
+  deep_atropos: /path/to/others/containers/dkt_deep_atropos.sif
+  deep_atropos_seg: /path/to/others/containers/dkt_deep_atropos_seg.sif
   lit: /path/to/others/containers/lit_0.6.0.sif
   nodestrength: /path/to/node_strength/containers/nodestrength_0.1.0.sif
 
 fs_license: /path/to/others/data_mining/freesurfer/license.txt
+
+# Optional: Deep Atropos native 5TT branch (--act-5tt-source deep-atropos-native)
+# act:
+#   five_tt_source: deep-atropos-native
+#   deep_atropos:
+#     segmentation_mode: auto   # auto | import | generate
+#     antsxnet_cache: /path/to/shared/.cache/antsxnet   # persistent ANTsXNet weights (HPC)
 
 # Optional: validate BIDS before every run
 # bids:

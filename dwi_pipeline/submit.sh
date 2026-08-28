@@ -34,7 +34,8 @@
 #   ./submit.sh --bids-validation    # run bids-validator on BIDS_DIR before submit
 #
 # Common overrides:
-#   PIPELINE_ENGINE=snakemake     # default; use bash for legacy subject.sh path
+#   PIPELINE_ENGINE=snakemake      # default on HPC (host Snakemake + Apptainer step .sif)
+#   PIPELINE_ENGINE=bids_app       # optional: BIDS App ./run inside orchestrator SIF
 #   ARRAY_CONCURRENCY=5          # Slurm %K throttle
 #   PIPELINE_MODE=qsiprep        # only QSIPrep
 #   PIPELINE_MODE=inpaint        # only Step 1.5 (needs a lesion mask for the subject)
@@ -95,6 +96,9 @@ ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
 RUN_CONNECTOME="${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}"
 PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-}"
 ACT_MODE="${ACT_MODE:-standard}"
+ACT_FIVE_TT_SOURCE="${ACT_FIVE_TT_SOURCE:-hsvs}"
+DEEP_ATROPOS_SEG="${DEEP_ATROPOS_SEG:-}"
+DEEP_ATROPOS_SEG_MODE="${DEEP_ATROPOS_SEG_MODE:-auto}"
 ACT_STREAMLINES="${ACT_STREAMLINES:-10000000}"
 ACT_RANDOM_SEED="${ACT_RANDOM_SEED:-0}"
 TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-both}"
@@ -156,6 +160,21 @@ while [[ $# -gt 0 ]]; do
       ;;
     --act-mode)
       ACT_MODE="${2:?Need standard or lesion-aware}"
+      shift 2
+      continue
+      ;;
+    --act-5tt-source)
+      ACT_FIVE_TT_SOURCE="${2:?Need hsvs or deep-atropos-native}"
+      shift 2
+      continue
+      ;;
+    --deep-atropos-seg)
+      DEEP_ATROPOS_SEG="${2:?Need path to Deep Atropos segmentation}"
+      shift 2
+      continue
+      ;;
+    --deep-atropos-seg-mode)
+      DEEP_ATROPOS_SEG_MODE="${2:?Need auto, import, or generate}"
       shift 2
       continue
       ;;
@@ -247,6 +266,18 @@ case "${ACT_MODE}" in
   standard|lesion-aware) ;;
   *) echo "ERROR: ACT_MODE must be standard or lesion-aware"; exit 2 ;;
 esac
+case "${ACT_FIVE_TT_SOURCE}" in
+  hsvs|deep-atropos-native) ;;
+  *) echo "ERROR: ACT_FIVE_TT_SOURCE must be hsvs or deep-atropos-native"; exit 2 ;;
+esac
+case "${DEEP_ATROPOS_SEG_MODE}" in
+  auto|import|generate) ;;
+  *) echo "ERROR: DEEP_ATROPOS_SEG_MODE must be auto, import, or generate"; exit 2 ;;
+esac
+if [[ "${ACT_FIVE_TT_SOURCE}" == "deep-atropos-native" && "${ACT_MODE}" != "lesion-aware" ]]; then
+  echo "ERROR: --act-5tt-source deep-atropos-native requires --act-mode lesion-aware"
+  exit 2
+fi
 case "${TRACTOGRAPHY_MODEL}" in
   ifod2|sd_stream|both) ;;
   *) echo "ERROR: TRACTOGRAPHY_MODEL must be ifod2, sd_stream, or both"; exit 2 ;;
@@ -374,6 +405,8 @@ fi
 echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
 echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == connectome ) ]] && echo on || echo off/skip)"
 echo "  ACT mode: ${ACT_MODE}"
+echo "  ACT 5TT source: ${ACT_FIVE_TT_SOURCE}"
+echo "  Deep Atropos seg mode: ${DEEP_ATROPOS_SEG_MODE}"
 echo "  Tractography model(s): ${TRACTOGRAPHY_MODEL}"
 echo "  Connectome SIFT2 matrix: $([[ ${CONNECTOME_SIFT2} == 1 ]] && echo on || echo off)"
 echo "  Disconnectome (Step 4.5): $([[ ${RUN_DISCONNECTOME} == 1 ]] && echo on || echo off)"
@@ -399,8 +432,20 @@ if [[ -z "${SBATCH_GRES:-}" ]]; then
 fi
 
 if [[ "${PIPELINE_ENGINE}" != "bash" ]]; then
+  export DKT_CONTAINER_CACHE="${DKT_CONTAINER_CACHE:-${HOME}/.cache/dkt-connectome/containers}"
+  case "${PIPELINE_ENGINE}" in
+    bids_app|orchestrator|bids-app)
+      if [[ -z "${CONTAINER_ORCHESTRATOR:-}" ]]; then
+        # shellcheck source=workflow/lib/orchestrator.sh
+        source "${DWI_ROOT}/workflow/lib/orchestrator.sh"
+        CONTAINER_ORCHESTRATOR="$(resolve_orchestrator_sif 2>/dev/null || true)"
+        export CONTAINER_ORCHESTRATOR
+      fi
+      ;;
+  esac
   source "${DWI_ROOT}/workflow/lib/slurm_env.sh"
   preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --quick)
+  export PIPELINE_ENGINE
   ((BIDS_VALIDATE)) && preflight_args+=(--bids-validation)
   ((BIDS_IGNORE_WARNINGS)) && preflight_args+=(--ignore-warnings)
   "${preflight_args[@]}" || exit 1
@@ -421,15 +466,16 @@ export INPAINT_DEVICE INPAINT_BATCH_SIZE INPAINT_DILATE INPAINT_LABELS INPAINT_B
 export ANAT_MITIGATION VBT_SMOOTHING_FACTOR
 export CONNECTOME_PARCELLATION CONNECTOME_FAIL_ON_EMPTY_NODES CONNECTOME_DETERMINISTIC CONNECTOME_RESAMPLE_TO_DWI
 export PRIMARY_CONNECTOME_MEASURE
-export ACT_MODE ACT_STREAMLINES ACT_RANDOM_SEED
+export ACT_MODE ACT_FIVE_TT_SOURCE ACT_STREAMLINES ACT_RANDOM_SEED DEEP_ATROPOS_SEG DEEP_ATROPOS_SEG_MODE
 export TRACTOGRAPHY_MODEL
 export CONNECTOME_SIFT2
 export RUN_DISCONNECTOME DISCONNECTOME_CORE_ONLY DISCONNECTOME_ERODE_VOXELS DISCONNECTOME_WEIGHTING
 export EXPERIMENT_ARM EXPERIMENT_ISOLATE_OUTPUTS
 export NODESTRENGTH_STRENGTH_ONLY NODESTRENGTH_NO_REPORT NODESTRENGTH_OUT
 # Optional container/license overrides (else workflow/config/config.local.yaml)
+export CONTAINER_ORCHESTRATOR DKT_CONTAINER_CACHE DKT_ORCHESTRATOR_VERSION
 export CONTAINER_QSIPREP CONTAINER_QSIRECON CONTAINER_FASTSURFER CONTAINER_FREESURFER
-export CONTAINER_CONNECTOME CONTAINER_VBT CONTAINER_LESION_ACT CONTAINER_LIT CONTAINER_NODESTRENGTH FS_LICENSE TEMPLATEFLOW_HOME
+export CONTAINER_CONNECTOME CONTAINER_VBT CONTAINER_LESION_ACT CONTAINER_DEEP_ATROPOS CONTAINER_DEEP_ATROPOS_SEG CONTAINER_LIT CONTAINER_NODESTRENGTH FS_LICENSE TEMPLATEFLOW_HOME
 export BIDS_VALIDATE BIDS_IGNORE_WARNINGS
 
 SBATCH_EXTRA=()

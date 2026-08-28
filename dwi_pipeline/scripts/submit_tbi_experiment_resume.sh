@@ -2,16 +2,22 @@
 # Resume TBI factorial experiment arms from Gugger Lab archive.
 #
 # Usage:
-#   bash scripts/submit_tbi_experiment_resume.sh wave1   # 4 arms in parallel
-#   bash scripts/submit_tbi_experiment_resume.sh wave2   # VBT arms (after wave1 or VBT fix)
-#   bash scripts/submit_tbi_experiment_resume.sh all     # wave1 then wave2 (no wait between)
+#   bash scripts/submit_tbi_experiment_resume.sh prep          # backfill markers + clean stale Step 3.5 (all arms)
+#   bash scripts/submit_tbi_experiment_resume.sh wave1         # 4 arms in parallel
+#   bash scripts/submit_tbi_experiment_resume.sh wave2         # VBT arms (after wave1 or VBT fix)
+#   bash scripts/submit_tbi_experiment_resume.sh all           # wave1 then wave2 (no wait between)
 #   bash scripts/submit_tbi_experiment_resume.sh arm orig-lesion   # single arm
+#   bash scripts/submit_tbi_experiment_resume.sh remaining       # incomplete arms, sequential (skips running)
+#
+# Requires rebuilt dkt_lesion_act.sif (ACPC-first Step 3.5 + mrstats QA fix):
+#   CONTAINER_QSIRECON=/path/to/qsirecon.sif OUT_SIF=/path/to/dkt_lesion_act.sif \
+#     bash containers/lesion_act/build_lesion_act.sh
 #
 # Outputs: ${ARCH}/sub-<SUBJECT>_fastsurfer_experiment/arms/<arm>/
 
 set -euo pipefail
 
-WAVE="${1:?Usage: $0 wave1|wave2|all|arm [ARM] [SUBJECT]}"
+WAVE="${1:?Usage: $0 prep|wave1|wave2|all|remaining|arm [ARM] [SUBJECT]}"
 SUBJECT="${2:-TBI011011}"
 if [[ "${WAVE}" == "arm" ]]; then
   SINGLE_ARM="${2:?Usage: $0 arm <arm-name> [SUBJECT]}"
@@ -35,6 +41,8 @@ export EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork05}"
 export SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-/tmp/tbi_experiment_subjects.txt}"
 
 ARMS_ROOT="${RESULTS_ROOT}/arms"
+ALL_ARMS=(orig-std orig-lesion neurolit-std neurolit-lesion vbt-std vbt-lesion)
+LESION_ARMS=(orig-lesion neurolit-lesion vbt-lesion)
 
 # TBI experiment: SyN SDC + b=1300 ses-2WK dwi-select only.
 TBI_DWI_SHELL="${TBI_DWI_SHELL:-1300}"
@@ -58,6 +66,100 @@ preflight_dwi_select() {
   echo "Preflight dwi-select OK: ${TBI_DWI_SELECT}"
 }
 
+preclean_arm_locks() {
+  local arm="$1"
+  local wd="${ARMS_ROOT}/${arm}/.snakemake_workdir/.snakemake"
+  rm -rf "${wd}/locks" "${wd}/incomplete" 2>/dev/null || true
+  mkdir -p "${wd}/locks"
+}
+
+preclean_failed_lesion_act() {
+  local arm="$1"
+  if arm_is_running "${arm}"; then
+    echo "  ${arm}: skip Step 3.5 cleanup (Slurm job running)"
+    return 0
+  fi
+  local arm_root="${ARMS_ROOT}/${arm}"
+  local log="${arm_root}/logs/sub-${SUBJECT}_lesion_aware_act.log"
+  local act_json="${arm_root}/lesion_aware_act/sub-${SUBJECT}/lesion_aware_act.json"
+  local act_ok=0
+  [[ -f "${act_json}" ]] && act_ok=1
+  if [[ -f "${log}" ]] && grep -q "ERROR \[lesion-aware-act\]" "${log}"; then
+    act_ok=0
+  fi
+  if [[ "${act_ok}" -eq 1 ]]; then
+    return 0
+  fi
+  if [[ -d "${arm_root}/lesion_aware_act" ]] || [[ -f "${log}" ]]; then
+    echo "  ${arm}: clearing stale Step 3.5 outputs (failed or incomplete lesion-aware ACT)"
+    rm -rf "${arm_root}/lesion_aware_act"
+    : > "${log}" 2>/dev/null || true
+    rm -rf "${arm_root}/connectomes/sub-${SUBJECT}" \
+      "${arm_root}/disconnectome/sub-${SUBJECT}" 2>/dev/null || true
+  fi
+}
+
+backfill_arm_markers() {
+  local arm="$1"
+  local arm_root="${ARMS_ROOT}/${arm}"
+  [[ -d "${arm_root}" ]] || return 0
+  echo "  ${arm}: backfill Snakemake markers (skip hung QSIRecon tckgen when FOD+5TT exist)"
+  RESULTS_ROOT="${arm_root}" bash "${DWI_ROOT}/workflow/backfill_markers.sh" "${SUBJECT}"
+}
+
+prep_arm() {
+  local arm="$1"
+  local arm_root="${ARMS_ROOT}/${arm}"
+  [[ -d "${arm_root}" ]] || {
+    echo "  ${arm}: skip (no arm directory)"
+    return 0
+  }
+  preclean_arm_locks "${arm}"
+  backfill_arm_markers "${arm}"
+  case "${arm}" in
+    *-lesion) preclean_failed_lesion_act "${arm}" ;;
+  esac
+}
+
+prep_all_arms() {
+  echo "=== Prep all experiment arms (sub-${SUBJECT}) ==="
+  local lesion_act_sif
+  lesion_act_sif="$(python3 - <<PY 2>/dev/null || true
+import yaml
+from pathlib import Path
+local = Path("${DWI_ROOT}/workflow/config/config.local.yaml")
+if local.is_file():
+    cfg = yaml.safe_load(local.read_text()) or {}
+    print(cfg.get("containers", {}).get("lesion_act", ""))
+PY
+)"
+  if [[ -n "${lesion_act_sif}" && -f "${lesion_act_sif}" ]]; then
+    echo "  lesion_act container: ${lesion_act_sif} ($(du -h "${lesion_act_sif}" | awk '{print $1}'), mtime $(date -r "${lesion_act_sif}" '+%Y-%m-%d %H:%M'))"
+  else
+    echo "WARNING: dkt_lesion_act.sif not found — rebuild before *-lesion arms:" >&2
+    echo "  bash containers/lesion_act/build_lesion_act.sh" >&2
+  fi
+  preclean_orig_lesion
+  preclean_vbt_work
+  preclean_stale_vbt_std_connectome
+  for arm in "${ALL_ARMS[@]}"; do
+    prep_arm "${arm}"
+  done
+  echo "=== Prep done ==="
+}
+
+arm_is_running() {
+  local arm="$1"
+  local slug="${arm//-/_}"
+  squeue -u "${USER}" -n "tbi_${SUBJECT,,}_${slug}" -h 2>/dev/null | grep -q .
+}
+
+arm_is_complete() {
+  local arm="$1"
+  local arm_root="${ARMS_ROOT}/${arm}"
+  [[ -f "${arm_root}/connectomes/sub-${SUBJECT}/dkt_connectome_sift2.csv" ]]
+}
+
 preclean_orig_lesion() {
   local fs="${ARMS_ROOT}/orig-lesion/freesurfer/sub-${SUBJECT}"
   if [[ -d "${fs}" ]] && [[ ! -f "${fs}/mri/aparc+aseg.mgz" ]]; then
@@ -78,12 +180,30 @@ preclean_vbt_work() {
   done
 }
 
+preclean_arm_locks() {
+  local arm="$1"
+  local wd="${ARMS_ROOT}/${arm}/.snakemake_workdir/.snakemake"
+  rm -rf "${wd}/locks" "${wd}/incomplete" 2>/dev/null || true
+  mkdir -p "${wd}/locks"
+}
+
+preclean_stale_vbt_std_connectome() {
+  local conn="${ARMS_ROOT}/vbt-std/connectomes/sub-${SUBJECT}"
+  if [[ -d "${conn}" ]] && [[ ! -f "${conn}/dkt_connectome_sift2.csv" ]]; then
+    echo "Removing stale partial vbt-std connectome outputs (no sift2): ${conn}"
+    rm -rf "${conn}"
+  fi
+}
+
 submit_arms() {
   local arms_csv="$1"
+  local sequential="${2:-0}"
+  export PIPELINE_ENGINE="${PIPELINE_ENGINE:-snakemake}"
   preflight_dwi_select
   cd "${DWI_ROOT}"
-  bash scripts/submit_all_experiment_arms.sh "${SUBJECT}" --arms "${arms_csv}" \
-    "${TBI_SUBMIT_FLAGS[@]}"
+  local -a extra=(--arms "${arms_csv}" "${TBI_SUBMIT_FLAGS[@]}")
+  [[ "${sequential}" == "1" ]] && extra=(--sequential "${extra[@]}")
+  bash scripts/submit_all_experiment_arms.sh "${SUBJECT}" "${extra[@]}"
 }
 
 run_wave1() {
@@ -96,14 +216,43 @@ run_wave1() {
     echo "ERROR: missing arms root: ${ARMS_ROOT}" >&2
     exit 1
   }
-  preclean_orig_lesion
+  prep_all_arms
   submit_arms "orig-std,orig-lesion,neurolit-std,neurolit-lesion"
 }
 
 run_wave2() {
   echo "=== Wave 2: vbt-std, vbt-lesion ==="
-  preclean_vbt_work
+  prep_all_arms
   submit_arms "vbt-std,vbt-lesion"
+}
+
+run_remaining() {
+  echo "=== Remaining incomplete arms (sequential) ==="
+  [[ -d "${BIDS_DIR}/sub-${SUBJECT}" ]] || {
+    echo "ERROR: missing BIDS: ${BIDS_DIR}/sub-${SUBJECT}" >&2
+    exit 1
+  }
+  prep_all_arms
+  local -a todo=()
+  for arm in orig-lesion neurolit-lesion vbt-std vbt-lesion; do
+    if arm_is_complete "${arm}"; then
+      echo "  skip ${arm}: connectome complete"
+      continue
+    fi
+    if arm_is_running "${arm}"; then
+      echo "  skip ${arm}: Slurm job already running"
+      continue
+    fi
+    todo+=("${arm}")
+  done
+  if ((${#todo[@]} == 0)); then
+    echo "No remaining arms to submit."
+    return 0
+  fi
+  local arms_csv
+  arms_csv="$(IFS=,; echo "${todo[*]}")"
+  echo "  Submitting: ${arms_csv}"
+  submit_arms "${arms_csv}" 1
 }
 
 run_single_arm() {
@@ -112,24 +261,27 @@ run_single_arm() {
     echo "ERROR: missing BIDS: ${BIDS_DIR}/sub-${SUBJECT}" >&2
     exit 1
   }
-  if [[ "${SINGLE_ARM}" == "orig-lesion" ]]; then
-    preclean_orig_lesion
-  fi
+  prep_arm "${SINGLE_ARM}"
+  preclean_orig_lesion
+  [[ "${SINGLE_ARM}" == vbt-std || "${SINGLE_ARM}" == vbt-lesion ]] && preclean_vbt_work
   submit_arms "${SINGLE_ARM}"
 }
 
 case "${WAVE}" in
+  prep) prep_all_arms ;;
   wave1) run_wave1 ;;
   wave2) run_wave2 ;;
+  remaining) run_remaining ;;
   arm) run_single_arm ;;
   all)
+    prep_all_arms
     run_wave1
     echo ""
     echo "Note: wave2 submits immediately; monitor VBT arms separately."
     run_wave2
     ;;
   *)
-    echo "ERROR: unknown wave ${WAVE} (use wave1, wave2, arm, or all)" >&2
+    echo "ERROR: unknown wave ${WAVE} (use prep, wave1, wave2, arm, remaining, or all)" >&2
     exit 2
     ;;
 esac

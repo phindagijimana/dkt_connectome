@@ -52,7 +52,7 @@ rule lausanne60_parcellation:
           --env FS_LICENSE=/opt/freesurfer/license.txt \
           "{CONTAINER_FREESURFER}")
 
-        python3 {BUILD_LAUSANNE_PARC} \
+        {PIPELINE_PYTHON} {BUILD_LAUSANNE_PARC} \
           --freesurfer-subject "{params.fs_dir}" \
           --subjects-dir "{FS_SUBJECTS_DIR}" \
           --atlas-dir "{LAUSANNE_ATLAS_DIR}" \

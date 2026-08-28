@@ -10,8 +10,8 @@ The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with opti
 
 | Cohort | Role |
 |--------|------|
-| **TRACK-TBI** (~14 centers) | Multi-site TBI diffusion MRI |
-| **URMC clinical MRI** | Local acquisition variants, lesion masks |
+| **TRACK-TBI** (~14 centers) | Multi-site TBI diffusion MRI; **~100 subjects with manual lesion masks** for factorial validation and manuscript analyses |
+| **URMC clinical MRI** | Local acquisition variants, lesion masks; CIDUR controls for normative or synthetic-lesion validation |
 
 Cite cohort data use separately from pipeline software — see [Citation](citation.md).
 
@@ -111,6 +111,7 @@ Maintainers: re-run integrity scripts after changing connectome or disconnectome
 2. State pipeline version (`./run --version` → `app.json`)
 3. Document flags: recon tool, SDC mode, weighting, disconnectome opt-in
 4. Report integrity QC pass/fail for disconnectome cohorts
+5. For the six-arm factorial on lesion subjects: report per-arm completion, Step 3.5 pathology QA, and pre-specified contrasts — see **[Publication strategy](publication_strategy.md)**
 
 ---
 

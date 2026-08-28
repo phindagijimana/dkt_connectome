@@ -65,6 +65,8 @@ workflow/
     inpaint.smk               # Step 1.5 (lit_0.6.0.sif or dkt_vbt.sif) — lesion subjects only
     recon.smk                  # Step 2  (plugin: freesurfer_7.4.1.sif or fastsurfer_latest.sif)
     qsirecon.smk                # Step 3  (plugin: qsirecon.sif)
+    deep_atropos_seg.smk        # Step 3.5a-seg (dkt_deep_atropos_seg.sif; deep-atropos-native only)
+    deep_atropos_5tt.smk        # Step 3.5a (dkt_deep_atropos.sif; seg → base_5tt_native.mif)
     lesion_aware_act.smk        # Step 3.5 (plugin: dkt_lesion_act.sif; act.mode=lesion-aware)
     sdstream.smk                # Step 3b/4b optional SD_STREAM tractography + connectomes
     lausanne.smk                # Optional Lausanne-60 parcellation (connectome.atlases)
@@ -133,6 +135,8 @@ bash workflow/run_subject.sh qsiprep 014                 # one plugin at a time.
 bash workflow/run_subject.sh inpaint 014                 #   (no-op if no lesion mask, like subject.sh)
 bash workflow/run_subject.sh recon 014 --fastsurfer
 bash workflow/run_subject.sh qsirecon 014
+bash workflow/run_subject.sh act 014 --act-mode lesion-aware
+bash workflow/run_subject.sh act 014 --act-mode lesion-aware --act-5tt-source deep-atropos-native
 bash workflow/run_subject.sh connectome 014
 bash workflow/run_subject.sh disconnectome 014   # Step 4.5 only (lesion subjects)
 bash workflow/run_subject.sh nodestrength 014
@@ -171,6 +175,7 @@ exactly) or a custom `--configfile`/`--config`.
 | `RUN_INPAINT`, `INPAINT_REQUIRE_MASK`, `INPAINT_DILATE`, ... | `inpaint.enabled`, `inpaint.require_mask`, `inpaint.dilate`, ... |
 | `RUN_RECON`, `RECON_TOOL`, `RECON_FSAPARC`, `RECON_FASTSURFER_DEVICE`, `RECON_SESSION` | `recon.enabled`, `recon.tool`, `recon.fsaparc`, `recon.fastsurfer_device`, `recon.session` |
 | `QSIRECON_SPEC`, `QSIRECON_ATLASES` | `qsirecon.spec`, `qsirecon.atlases` |
+| `ACT_MODE`, `ACT_FIVE_TT_SOURCE`, `DEEP_ATROPOS_SEG`, `DEEP_ATROPOS_SEG_MODE`, `DEEP_ATROPOS_ANTSXNET_CACHE` | `act.mode`, `act.five_tt_source`, `act.deep_atropos.*` |
 | `RUN_CONNECTOME`, `CONNECTOME_PARCELLATION`, `CONNECTOME_DETERMINISTIC`, ... | `connectome.enabled`, `connectome.parcellation`, `connectome.deterministic`, ... |
 | `RUN_NODESTRENGTH`, `NODESTRENGTH_STRENGTH_ONLY`, `NODESTRENGTH_NO_REPORT` | `nodestrength.enabled`, `nodestrength.strength_only`, `nodestrength.no_report` |
 | `DWI_SHELL_B`, `DWI_SELECT_JSON`, `QSIPREP_NO_DWI_FILTER` | `dwi_select.shell_b`, `dwi_select.json`, `dwi_select.enabled` |
