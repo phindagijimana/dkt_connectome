@@ -1,4 +1,4 @@
-# Deep Atropos native-T1 5TT (optional Step 3.1 branch)
+# Step 3.2 — Deep Atropos native-T1 5TT (optional branch)
 
 Optional **base five-tissue-type (5TT) source** for lesion-aware ACT when you want tissue
 priors built on **native BIDS T1w** instead of the default QSIRecon ACPC HSVS grid.
@@ -6,7 +6,8 @@ priors built on **native BIDS T1w** instead of the default QSIRecon ACPC HSVS gr
 **Default:** `--act-5tt-source hsvs` (QSIRecon ACT-HSVS on ACPC).  
 **This branch:** `--act-5tt-source deep-atropos-native`.
 
-Operational reference: [Pipeline steps § Step 3.1](pipeline_steps.md#step-31-lesion-aware-act-optional) ·
+Operational reference: [Pipeline steps § Step 3.2](pipeline_steps.md#step-32-deep-atropos-native-t1-5tt-optional) ·
+[Pipeline steps § Step 3.1](pipeline_steps.md#step-31-lesion-aware-act-optional) ·
 [Step 3.1 methods](methods/step3_1_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md) ·
 [Containers](containers.md).
 
@@ -27,15 +28,15 @@ matched iFOD2 + SIFT2 in `dkt_lesion_act.sif` (LeAPP-style; Bey et al. 2024).
 
 ---
 
-## Workflow sketch (Step 3.1 branch)
+## Workflow sketch (Step 3.2 branch)
 
 ```text
                     ┌── default: QSIRecon HSVS 5TT (ACPC)
                     │
-Step 3 QSIRecon ────┼── optional Deep Atropos branch:
-                    │       Step 3.2 (segmentation)  ANTsPyNet deep_atropos on native T1w
+Step 3 QSIRecon ────┼── optional Step 3.2 branch:
+                    │       ANTsPyNet deep_atropos on native T1w
                     │            ↓
-                    │       Step 3.2    seg → base_5tt_native.mif
+                    │       seg → base_5tt_native.mif
                     │            ↓
                     └──► Step 3.1  lesion-aware ACT (5ttedit + tckgen + SIFT2)
                               ↓
@@ -44,8 +45,8 @@ Step 3 QSIRecon ────┼── optional Deep Atropos branch:
 
 | Sub-step | Snakemake rule | Container | Output |
 |----------|----------------|-----------|--------|
-| **3.2-seg** | `deep_atropos_seg` | `dkt_deep_atropos_seg.sif` | `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` |
-| **3.2** | `deep_atropos_5tt` | `dkt_deep_atropos.sif` | `deep_atropos/sub-<ID>/base_5tt_native.mif` |
+| **3.2 (seg)** | `deep_atropos_seg` | `dkt_deep_atropos_seg.sif` | `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` |
+| **3.2 (5TT)** | `deep_atropos_5tt` | `dkt_deep_atropos.sif` | `deep_atropos/sub-<ID>/base_5tt_native.mif` |
 | **3.1** | `lesion_aware_act` | `dkt_lesion_act.sif` | `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck`, SIFT2 weights, JSON |
 
 Rules activate only when `act.mode=lesion-aware` and `act.five_tt_source=deep-atropos-native`.

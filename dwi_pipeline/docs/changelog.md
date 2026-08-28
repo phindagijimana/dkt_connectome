@@ -29,6 +29,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Changed
 
+- **Step renumbering in docs** — optional substeps renamed for clarity: 1.5→**1.1**, 3.5→**3.1**, 3.5a→**3.2**, 4.5→**4.1**; methods pages, pipeline overview SVG, and RTD redirects updated
 - **`run_lesion_aware_act.sh`** — split HSVS ACPC (`run_hsvs_acpc_workflow`) and Deep Atropos native (`run_deep_atropos_native_workflow`) paths; shared clip/renormalize and tractography
 - **`lesion_aware_act.smk`** — `find -L` for QSIRecon discovery when outputs are symlinked
 - **`sdstream.smk`**, **`connectome.smk`** — `find -L` for symlinked qsiprep/qsirecon trees
@@ -37,7 +38,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Container fallbacks** — `act.mode=lesion-aware` fails fast if dedicated ACT SIF keys missing
 - Pinned Python deps in ACT Dockerfiles/Apptainer.defs (`act_python_requirements.txt`)
 - **`container_install.py`** — GHCR fallbacks for ACT images
-- **Documentation** — removed person-specific workflow labels; new public [Deep Atropos branch](deep_atropos_5tt.md); updated pipeline SVG sketch with Step 3.2 (segmentation) / 3.2
+- **Documentation** — removed person-specific workflow labels; [Step 3.2 — Deep Atropos branch](deep_atropos_5tt.md); updated pipeline SVG with Step 3.2 labels
 - Step 3.1 methods docs — HSVS ACPC workflow, Deep Atropos native branch, three-container architecture
 - README workflow sketch (SVG + mermaid) on GitHub; updated stages and container tables
 - Documentation site switched from **MkDocs Material** to **Sphinx + Read the Docs theme** (QSIPrep-style sidebar layout)

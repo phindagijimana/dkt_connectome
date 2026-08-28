@@ -60,7 +60,7 @@ QSIPrep preprocessing, anatomical reconstruction, and SS3T-CSD FOD estimation ar
 
 When `--act-5tt-source deep-atropos-native`:
 
-### Step 3.2 (segmentation) — Segmentation (`dkt_deep_atropos_seg.sif`, optional)
+### Step 3.2 (seg) — Deep Atropos segmentation (`dkt_deep_atropos_seg.sif`, optional)
 
 | `act.deep_atropos.segmentation_mode` | Behavior |
 |--------------------------------------|----------|
@@ -72,7 +72,7 @@ Discovery order: `--deep-atropos-seg` / config path → `derivatives/deep-atropo
 
 Output: `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` (integer labels 0–6).
 
-### Step 3.2 — Seg → base 5TT (`dkt_deep_atropos.sif`)
+### Step 3.2 (5TT) — Seg → base 5TT (`dkt_deep_atropos.sif`)
 
 `scripts/convert_deep_atropos_to_5tt.py` maps Deep Atropos labels to MRtrix ACT channels on the **native BIDS T1w grid** (Python fallback; MRtrix 3.0.4 lacks `5ttgen deep_atropos`).
 
