@@ -47,6 +47,40 @@ authfile_ghcr() {
   echo "${f}"
 }
 
+resolve_authfile() {
+  if [[ -n "${DOCKERHUB_TOKEN:-}" ]]; then
+    authfile_dockerhub
+    return
+  fi
+  for candidate in \
+    "${XDG_RUNTIME_DIR}/containers/auth.json" \
+    "${HOME}/.config/containers/auth.json" \
+    "${HOME}/.docker/config.json"; do
+    if [[ -f "${candidate}" ]]; then
+      echo "${candidate}"
+      return
+    fi
+  done
+  return 1
+}
+
+resolve_ghcr_authfile() {
+  if [[ -n "${GHCR_TOKEN:-}" ]]; then
+    authfile_ghcr
+    return
+  fi
+  for candidate in \
+    "${XDG_RUNTIME_DIR}/containers/auth.json" \
+    "${HOME}/.config/containers/auth.json" \
+    "${HOME}/.docker/config.json"; do
+    if [[ -f "${candidate}" ]]; then
+      echo "${candidate}"
+      return
+    fi
+  done
+  return 1
+}
+
 push_sif() {
   local sif="$1" registry="$2" repo="$3" authfile="$4"
   apptainer push --allow-unsigned --authfile "${authfile}" "${sif}" \
@@ -59,19 +93,25 @@ publish_one() {
   echo "=== ${dh_repo} ==="
   if [[ "${PUSH_DOCKERHUB}" == "1" ]]; then
     local dh_auth
-    dh_auth="$(authfile_dockerhub)" || { echo "ERROR: DOCKERHUB_TOKEN required" >&2; exit 1; }
+    dh_auth="$(resolve_authfile)" || { echo "ERROR: set DOCKERHUB_TOKEN or podman/apptainer login docker.io" >&2; exit 1; }
     trap '[[ "${dh_auth}" == /tmp/* ]] && rm -f "${dh_auth}"' RETURN
     push_sif "${sif}" "registry-1.docker.io/${DOCKERHUB_USER}" "${dh_repo}" "${dh_auth}"
     echo "  Docker Hub: docker pull ${DOCKERHUB_USER}/${dh_repo}:${IMAGE_TAG}"
   fi
   if [[ "${PUSH_GHCR}" == "1" ]]; then
     local gh_auth
-    gh_auth="$(authfile_ghcr)" || { echo "ERROR: GHCR_TOKEN required" >&2; exit 1; }
+    gh_auth="$(resolve_ghcr_authfile)" || { echo "ERROR: set GHCR_TOKEN or podman/apptainer login ghcr.io" >&2; exit 1; }
     trap '[[ "${gh_auth}" == /tmp/* ]] && rm -f "${gh_auth}"' RETURN
     push_sif "${sif}" "ghcr.io/${GHCR_OWNER}" "${ghcr_repo}" "${gh_auth}"
     echo "  GHCR: oras://ghcr.io/${GHCR_OWNER}/${ghcr_repo}:${IMAGE_TAG}"
   fi
 }
+
+# Auto-push when credentials or logged-in registries are available
+if [[ "${PUSH_DOCKERHUB}" == "0" && "${PUSH_GHCR}" == "0" ]]; then
+  resolve_authfile >/dev/null 2>&1 && PUSH_DOCKERHUB=1 || true
+  resolve_ghcr_authfile >/dev/null 2>&1 && PUSH_GHCR=1 || true
+fi
 
 if [[ "${SKIP_BUILD}" != "1" ]]; then
   echo "=== Rebuild dkt_lesion_act.sif ==="
