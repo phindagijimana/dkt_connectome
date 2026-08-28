@@ -70,14 +70,28 @@ PY
 fail() { echo "ERROR [preflight]: $*" >&2; exit 1; }
 warn() { echo "WARNING [preflight]: $*" >&2; }
 
-echo "preflight: mode=${PIPELINE_MODE} engine=snakemake"
+echo "preflight: mode=${PIPELINE_MODE} engine=${PIPELINE_ENGINE:-snakemake}"
 
-command -v snakemake >/dev/null 2>&1 || fail "snakemake not found (pip install snakemake or module load)"
-snakemake --version >/dev/null 2>&1 || fail "snakemake found but not runnable (check HOME/PYTHONPATH on compute nodes)"
+ENGINE="${PIPELINE_ENGINE:-snakemake}"
+case "${ENGINE}" in
+  bids_app|orchestrator|bids-app)
+    # shellcheck source=lib/orchestrator.sh
+    source "${WORKFLOW_DIR}/lib/orchestrator.sh"
+    orch="$(resolve_orchestrator_sif 2>/dev/null || true)"
+    [[ -n "${orch}" && -f "${orch}" ]] || fail \
+      "orchestrator SIF missing (run: bash dwi_pipeline/scripts/build_orchestrator_sif.sh)"
+    echo "preflight: orchestrator=${orch}"
+    ;;
+  *)
+    command -v snakemake >/dev/null 2>&1 || fail "snakemake not found (pip install snakemake or module load)"
+    snakemake --version >/dev/null 2>&1 || fail "snakemake found but not runnable (check HOME/PYTHONPATH on compute nodes)"
+    command -v python3 >/dev/null 2>&1 || fail "python3 not found"
+    ;;
+esac
+
 if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
   command -v apptainer >/dev/null 2>&1 || fail "apptainer not found"
 fi
-command -v python3 >/dev/null 2>&1 || fail "python3 not found"
 
 [[ -d "${BIDS_DIR}" ]] || fail "BIDS_DIR missing: ${BIDS_DIR}"
 [[ -f "${BIDS_DIR}/dataset_description.json" ]] || warn "BIDS root missing dataset_description.json"
@@ -172,8 +186,18 @@ elif ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "vbt" ]]; then
 fi
 ACT_MODE="${ACT_MODE:-$(read_config act.mode)}"
 ACT_MODE="${ACT_MODE:-standard}"
+ACT_FIVE_TT_SOURCE="${ACT_FIVE_TT_SOURCE:-$(read_config act.five_tt_source)}"
+ACT_FIVE_TT_SOURCE="${ACT_FIVE_TT_SOURCE:-hsvs}"
+DEEP_ATROPOS_SEG_MODE="${DEEP_ATROPOS_SEG_MODE:-$(read_config act.deep_atropos.segmentation_mode)}"
+DEEP_ATROPOS_SEG_MODE="${DEEP_ATROPOS_SEG_MODE:-auto}"
 if [[ "${PIPELINE_MODE}" == "act" || ( "${PIPELINE_MODE}" == "all" && "${ACT_MODE}" == "lesion-aware" ) ]]; then
   check_sif lesion_act "$(container_path lesion_act CONTAINER_LESION_ACT)"
+  if [[ "${ACT_FIVE_TT_SOURCE}" == "deep-atropos-native" ]]; then
+    check_sif deep_atropos "$(container_path deep_atropos CONTAINER_DEEP_ATROPOS)"
+    if [[ "${DEEP_ATROPOS_SEG_MODE}" != "import" ]]; then
+      check_sif deep_atropos_seg "$(container_path deep_atropos_seg CONTAINER_DEEP_ATROPOS_SEG)"
+    fi
+  fi
 fi
 ((need_nodestrength)) && check_sif nodestrength "$(container_path nodestrength CONTAINER_NODESTRENGTH)"
 
@@ -229,8 +253,16 @@ fi
 # Per-subject DAG dry-run when a subject is given (catches dwi-select / session errors early).
 if [[ -n "${SUBJECT}" ]]; then
   echo "preflight: dry-run DAG for sub-${SUBJECT} ..."
-  bash "${WORKFLOW_DIR}/run_subject.sh" "${PIPELINE_MODE}" "${SUBJECT}" --dry-run >/dev/null \
-    || fail "dry-run failed for sub-${SUBJECT} (check dwi-select / --syn / session settings)"
+  case "${ENGINE}" in
+    bids_app|orchestrator|bids-app)
+      run_orchestrator_participant "${SUBJECT}" "${PIPELINE_MODE}" --dry-run >/dev/null \
+        || fail "dry-run failed for sub-${SUBJECT} (orchestrator / BIDS App flags)"
+      ;;
+    *)
+      bash "${WORKFLOW_DIR}/run_subject.sh" "${PIPELINE_MODE}" "${SUBJECT}" --dry-run >/dev/null \
+        || fail "dry-run failed for sub-${SUBJECT} (check dwi-select / --syn / session settings)"
+      ;;
+  esac
 fi
 
 echo "preflight: OK"

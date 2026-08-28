@@ -8,6 +8,8 @@ dwi_pipeline/workflow/README.md for the full env-var <-> config key mapping.
 
 import functools
 import json
+import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -27,6 +29,24 @@ RUN_VBT = DWI_PIPELINE_DIR / "scripts" / "run_vbt.py"
 BUILD_LAUSANNE_PARC = DWI_PIPELINE_DIR / "scripts" / "build_lausanne_parcellation.py"
 BUILD_BIDS_FILTER = DWI_PIPELINE_DIR / "scripts" / "build_bids_filter.py"
 MAKE_DWI_SELECT_CONFIG = DWI_PIPELINE_DIR / "scripts" / "make_dwi_select_config.py"
+
+def _resolve_pipeline_python() -> str:
+    """Host Python for numpy/nibabel scripts on compute nodes.
+
+    Must match slurm_env.sh PIPELINE_PYTHON (3.12 user site-packages), not
+    /usr/bin/python3 (3.9) which breaks when PYTHONPATH points at cp312 wheels.
+    """
+    if os.environ.get("PIPELINE_PYTHON"):
+        return os.environ["PIPELINE_PYTHON"]
+    if config.get("pipeline_python"):
+        return str(config["pipeline_python"])
+    for candidate in ("python3.12", "python3"):
+        if shutil.which(candidate):
+            return candidate
+    return "python3.12"
+
+
+PIPELINE_PYTHON = _resolve_pipeline_python()
 
 wildcard_constraints:
     subject=r"[^/]+"
@@ -48,6 +68,8 @@ CONTAINER_LIT = _containers["lit"]
 CONTAINER_NODESTRENGTH = _containers["nodestrength"]
 CONTAINER_VBT = _containers.get("vbt") or _containers["qsiprep"]
 CONTAINER_LESION_ACT = _containers.get("lesion_act") or _containers["qsirecon"]
+CONTAINER_DEEP_ATROPOS = _containers.get("deep_atropos") or _containers.get("lesion_act") or _containers["qsirecon"]
+CONTAINER_DEEP_ATROPOS_SEG = _containers.get("deep_atropos_seg") or _containers.get("deep_atropos") or _containers["qsirecon"]
 
 FS_LICENSE = config["fs_license"]
 FS_LUT = config.get("fs_lut") or str(Path(FS_LICENSE).parent / "FreeSurferColorLUT.txt")
@@ -61,6 +83,8 @@ FS_SUBJECTS_DIR = config.get("fs_subjects_dir") or RECON_OUT
 INPAINT_OUT = f"{RESULTS_ROOT}/inpainted"
 LESION_MASK_OUT = f"{RESULTS_ROOT}/lesion_masks"
 LESION_AWARE_ACT_OUT = f"{RESULTS_ROOT}/lesion_aware_act"
+DEEP_ATROPOS_OUT = f"{RESULTS_ROOT}/deep_atropos"
+DEEP_ATROPOS_SEG_OUT = f"{RESULTS_ROOT}/deep_atropos_seg"
 TRACTOGRAPHY_OUT = f"{RESULTS_ROOT}/tractography"
 CONNECTOME_OUT = f"{RESULTS_ROOT}/connectomes"
 NODESTRENGTH_OUT = config.get("nodestrength_out") or f"{RESULTS_ROOT}/node_strength"
@@ -88,6 +112,19 @@ INPAINT_CFG = config.get("inpaint", {})
 RECON_CFG = config.get("recon", {})
 QSIRECON_CFG = config.get("qsirecon", {})
 ACT_CFG = config.get("act", {})
+ACT_FIVE_TT_SOURCE = str(ACT_CFG.get("five_tt_source", "hsvs")).lower()
+if ACT_FIVE_TT_SOURCE not in ("hsvs", "deep-atropos-native"):
+    raise WorkflowError(
+        f"invalid act.five_tt_source={ACT_FIVE_TT_SOURCE} "
+        "(use hsvs or deep-atropos-native)"
+    )
+DEEP_ATROPOS_CFG = ACT_CFG.get("deep_atropos") or {}
+ACT_DEEP_ATROPOS_SEG_MODE = str(DEEP_ATROPOS_CFG.get("segmentation_mode", "auto")).lower()
+if ACT_DEEP_ATROPOS_SEG_MODE not in ("auto", "import", "generate"):
+    raise WorkflowError(
+        f"invalid act.deep_atropos.segmentation_mode={ACT_DEEP_ATROPOS_SEG_MODE} "
+        "(use auto, import, or generate)"
+    )
 TRACTOGRAPHY_CFG = config.get("tractography", {})
 EXPERIMENT_CFG = config.get("experiment", {})
 CONNECTOME_CFG = config.get("connectome", {})
@@ -134,7 +171,7 @@ def resolve_session(subject: str) -> str:
     filter_cache = f"{INTER_QSP}/bids_filter_sub-{subject}.json"
     Path(INTER_QSP).mkdir(parents=True, exist_ok=True)
     cmd = [
-        "python3", str(RESOLVE_SESSION_PY),
+        PIPELINE_PYTHON, str(RESOLVE_SESSION_PY),
         "--bids-dir", BIDS_DIR,
         "--subject", subject,
         "--filter-cache", filter_cache,
@@ -181,6 +218,79 @@ def find_lesion_mask(subject: str, session: str) -> str | None:
 def subject_has_lesion_mask(subject: str) -> bool:
     session = resolve_session(subject)
     return find_lesion_mask(subject, session) is not None
+
+
+@functools.lru_cache(maxsize=None)
+def _find_external_deep_atropos_segmentation(subject: str, session: str) -> str | None:
+    """Return Daniel/external Deep Atropos seg if configured on disk, else None."""
+    explicit = DEEP_ATROPOS_CFG.get("segmentation")
+    if explicit:
+        raw = str(explicit)
+        for candidate in (
+            raw.format(subject=subject, session=session),
+            raw.replace("{subject}", subject).replace("{session}", session),
+            raw,
+        ):
+            path = Path(candidate)
+            if path.is_file():
+                return str(path)
+        return None
+
+    env_path = os.environ.get("DEEP_ATROPOS_SEG")
+    if env_path and Path(env_path).is_file():
+        return env_path
+
+    search_roots = [
+        Path(BIDS_DIR).parent / "derivatives" / "deep-atropos",
+        Path(BIDS_DIR) / "derivatives" / "deep-atropos",
+        DWI_PIPELINE_DIR / "derivatives" / "deep-atropos",
+    ]
+    patterns = (
+        f"sub-{subject}/ses-{session}/anat/*deep_atropos*seg*.nii.gz",
+        f"sub-{subject}/ses-{session}/anat/*deep_atropos*.nii.gz",
+        f"sub-{subject}/anat/*deep_atropos*seg*.nii.gz",
+    )
+    matches: list[Path] = []
+    for root in search_roots:
+        if not root.is_dir():
+            continue
+        for pattern in patterns:
+            matches.extend(sorted(root.glob(pattern)))
+    matches = sorted({str(p): p for p in matches}.values(), key=str)
+    if len(matches) == 1:
+        return str(matches[0])
+    if len(matches) > 1:
+        raise WorkflowError(
+            f"expected 0 or 1 external Deep Atropos segmentation for sub-{subject} "
+            f"ses-{session}, found {len(matches)}: {matches}"
+        )
+    return None
+
+
+def deep_atropos_seg_resolved(subject: str) -> str:
+    """Canonical seg path under results_root (import symlink or generated)."""
+    return f"{DEEP_ATROPOS_SEG_OUT}/sub-{subject}/desc-deepatropos_seg.nii.gz"
+
+
+@functools.lru_cache(maxsize=None)
+def find_deep_atropos_segmentation(subject: str, session: str) -> str:
+    """Resolve Deep Atropos integer segmentation for Step 3.5."""
+    if ACT_FIVE_TT_SOURCE != "deep-atropos-native":
+        raise WorkflowError(
+            "find_deep_atropos_segmentation called with act.five_tt_source="
+            f"{ACT_FIVE_TT_SOURCE}"
+        )
+    external = _find_external_deep_atropos_segmentation(subject, session)
+    if ACT_DEEP_ATROPOS_SEG_MODE == "generate":
+        return deep_atropos_seg_resolved(subject)
+    if ACT_DEEP_ATROPOS_SEG_MODE == "import" and not external:
+        raise WorkflowError(
+            f"act.deep_atropos.segmentation_mode=import requires an external "
+            f"Deep Atropos segmentation for sub-{subject} ses-{session}. "
+            f"Set act.deep_atropos.segmentation, DEEP_ATROPOS_SEG, or place seg "
+            f"under derivatives/deep-atropos/."
+        )
+    return deep_atropos_seg_resolved(subject)
 
 
 def mitigation_enabled_for(subject: str) -> bool:

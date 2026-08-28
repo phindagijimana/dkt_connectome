@@ -43,10 +43,10 @@ rule qsiprep:
         if [[ -n "{params.bids_filter}" ]]; then
           [[ -f "{params.bids_filter}" ]] || _pipeline_fail "bids-filter" \
             "missing static bids filter: {params.bids_filter}"
-          python3 "{BUILD_BIDS_FILTER}" --bids-dir "{BIDS_DIR}" --subject "${{SUBJECT}}" \
+          {PIPELINE_PYTHON} "{BUILD_BIDS_FILTER}" --bids-dir "{BIDS_DIR}" --subject "${{SUBJECT}}" \
             --static-filter "{params.bids_filter}" --output "{params.filter_cache}" \
             "${{session_args[@]}}"
-          if python3 -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.filter_cache}')) else 1)"; then
+          if {PIPELINE_PYTHON} -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.filter_cache}')) else 1)"; then
             has_fmap=1
           else
             has_fmap=0
@@ -55,10 +55,10 @@ rule qsiprep:
           xtra+=( --bids-filter-file /bids_filter.json )
           echo "QSIPrep: static bids filter {params.bids_filter} (session=${{session_label:-all}})"
         elif [[ -n "{params.dwi_select_json}" ]]; then
-          python3 "{BUILD_BIDS_FILTER}" --bids-dir "{BIDS_DIR}" --subject "${{SUBJECT}}" \
+          {PIPELINE_PYTHON} "{BUILD_BIDS_FILTER}" --bids-dir "{BIDS_DIR}" --subject "${{SUBJECT}}" \
             --select-json "{params.dwi_select_json}" --output "{params.filter_cache}" \
             "${{session_args[@]}}"
-          if python3 -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.filter_cache}')) else 1)"; then
+          if {PIPELINE_PYTHON} -c "import json,sys; sys.exit(0 if 'fmap' in json.load(open('{params.filter_cache}')) else 1)"; then
             has_fmap=1
           else
             has_fmap=0

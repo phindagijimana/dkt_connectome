@@ -65,7 +65,7 @@ docker run --rm \
 
 HPC: `sbatch containers/pull_freesurfer_sif.sbatch` for FreeSurfer only on a compute node; full install on a login node with network.
 
-**VBT and lesion-aware ACT images** are built locally when GHCR pull fails (`install.sh` falls back to `containers/vbt/build_vbt.sh` and `containers/lesion_act/build_lesion_act.sh`, which stage tools from your existing `qsiprep.sif` / `qsirecon.sif`). See [Containers](containers.md).
+**VBT, lesion-aware ACT, and Deep Atropos images** are built locally when GHCR pull fails (`install.sh` falls back to `containers/vbt/build_vbt.sh`, `containers/lesion_act/build_lesion_act.sh`, `containers/deep_atropos/build_deep_atropos.sh`, and `containers/deep_atropos_seg/build_deep_atropos_seg.sh`, staging tools from your existing `qsiprep.sif` / `qsirecon.sif`). Use `bash install.sh --mode act` for all Step 3.5 containers. See [Containers](containers.md).
 
 **Docker Compose** (orchestrator + persistent cache volume):
 

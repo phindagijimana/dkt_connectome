@@ -84,7 +84,7 @@ rule disconnectome:
         source {COMMON_SH}
 
         echo "=== Disconnectome (Step 4.5): sub-{wildcards.subject} ses-{params.session} ==="
-        python3 "{RUN_DISCONNECTOME}" \
+        {PIPELINE_PYTHON} "{RUN_DISCONNECTOME}" \
           --results-root "{RESULTS_ROOT}" \
           --subject "{wildcards.subject}" \
           --session "{params.session}" \
@@ -109,7 +109,7 @@ rule disconnectome_qc:
         r"""
         exec > {log} 2>&1
         set -euo pipefail
-        python3 "{RENDER_DISCONNECTOME_QC}" \
+        {PIPELINE_PYTHON} "{RENDER_DISCONNECTOME_QC}" \
           --disconnectome-dir "$(dirname "{input.json}")" \
           --html-out "{output.html}"
         [[ -f "{output.html}" ]] || _pipeline_fail "disconnectome_qc" "missing {output.html}"

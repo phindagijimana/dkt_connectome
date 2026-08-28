@@ -45,7 +45,7 @@ rule subject_qc:
         r"""
         exec > {log} 2>&1
         set -euo pipefail
-        python3 "{RENDER_SUBJECT_QC}" \
+        {PIPELINE_PYTHON} "{RENDER_SUBJECT_QC}" \
           --results-root "{RESULTS_ROOT}" \
           --subject "{wildcards.subject}" \
           --html-out "{output.html}" \

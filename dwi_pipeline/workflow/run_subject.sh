@@ -35,8 +35,13 @@ set +H
 WORKFLOW_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DWI_PIPELINE_DIR="$(dirname "${WORKFLOW_DIR}")"
 COMMON_SH="${WORKFLOW_DIR}/lib/common.sh"
+SLURM_ENV_SH="${WORKFLOW_DIR}/lib/slurm_env.sh"
 RESOLVE_SESSION_PY="${WORKFLOW_DIR}/lib/resolve_session.py"
 source "${COMMON_SH}"
+# shellcheck source=workflow/lib/slurm_env.sh
+if [[ -z "${DKT_ORCHESTRATOR_RUNTIME:-}" ]]; then
+  source "${SLURM_ENV_SH}"
+fi
 
 PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength}"
 [[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
@@ -91,6 +96,10 @@ _apply_env inpaint.binarize           "$([[ "${INPAINT_BINARIZE:-0}" == "1" ]] &
 _apply_env inpaint.fail_on_qc         "$([[ "${INPAINT_FAIL_ON_QC:-0}" == "1" ]] && echo true || echo false)"
 _apply_env inpaint.vbt.smoothing_factor "${VBT_SMOOTHING_FACTOR:-}"
 _apply_env act.mode                   "${ACT_MODE:-}"
+_apply_env act.five_tt_source         "${ACT_FIVE_TT_SOURCE:-}"
+_apply_env act.deep_atropos.segmentation "${DEEP_ATROPOS_SEG:-}"
+_apply_env act.deep_atropos.segmentation_mode "${DEEP_ATROPOS_SEG_MODE:-}"
+_apply_env act.deep_atropos.antsxnet_cache "${DEEP_ATROPOS_ANTSXNET_CACHE:-}"
 _apply_env act.streamlines            "${ACT_STREAMLINES:-}"
 _apply_env act.random_seed             "${ACT_RANDOM_SEED:-}"
 _apply_env tractography.model          "${TRACTOGRAPHY_MODEL:-}"
@@ -126,6 +135,8 @@ _apply_env containers.freesurfer      "${CONTAINER_FREESURFER:-}"
 _apply_env containers.connectome      "${CONTAINER_CONNECTOME:-}"
 _apply_env containers.vbt              "${CONTAINER_VBT:-}"
 _apply_env containers.lesion_act       "${CONTAINER_LESION_ACT:-}"
+_apply_env containers.deep_atropos    "${CONTAINER_DEEP_ATROPOS:-}"
+_apply_env containers.deep_atropos_seg "${CONTAINER_DEEP_ATROPOS_SEG:-}"
 _apply_env containers.lit             "${CONTAINER_LIT:-}"
 _apply_env containers.nodestrength    "${CONTAINER_NODESTRENGTH:-}"
 _apply_env fs_license                 "${FS_LICENSE:-}"
@@ -166,6 +177,9 @@ while [[ $# -gt 0 ]]; do
     --primary-connectome-measure) OVERRIDES[connectome.primary_measure]="${2:?Need count or sift2}"; shift ;;
     --connectome-atlases)     OVERRIDES[connectome.atlases]="${2:?Need atlas list (e.g. dkt or dkt,lausanne60)}"; shift ;;
     --act-mode)             OVERRIDES[act.mode]="${2:?Need standard or lesion-aware}"; shift ;;
+    --act-5tt-source)       OVERRIDES[act.five_tt_source]="${2:?Need hsvs or deep-atropos-native}"; shift ;;
+    --deep-atropos-seg)     OVERRIDES[act.deep_atropos.segmentation]="${2:?Need segmentation path}"; shift ;;
+    --deep-atropos-seg-mode) OVERRIDES[act.deep_atropos.segmentation_mode]="${2:?Need auto, import, or generate}"; shift ;;
     --act-streamlines)      OVERRIDES[act.streamlines]="${2:?Need streamline count}"; shift ;;
     --tractography-model)   OVERRIDES[tractography.model]="${2:?Need ifod2, sd_stream, or both}"; shift ;;
     --connectome-sift2)      OVERRIDES[connectome.sift2]=true ;;
@@ -228,7 +242,7 @@ LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
   [[ -n "${BIDS_DIR}" ]]     && echo "bids_dir: \"${BIDS_DIR}\""
   echo "nthreads: ${NTHREADS}"
 } > "${OVERRIDE_YAML}.runtime"
-python3 - "${BASE_CONFIG}" "${LOCAL_CONFIG}" "${OVERRIDE_YAML}.runtime" "${OVERRIDE_YAML}" <<PY
+${PIPELINE_PYTHON} - "${BASE_CONFIG}" "${LOCAL_CONFIG}" "${OVERRIDE_YAML}.runtime" "${OVERRIDE_YAML}" <<PY
 import sys, yaml
 from pathlib import Path
 
@@ -311,7 +325,7 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
     else
       _resolve_session_args+=(--dwi-select-json "${_dwi_select_json}")
     fi
-    _session="$(python3 "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
+    _session="$("${PIPELINE_PYTHON}" "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
     BIDS_DIR="${_bids_dir}"
     _mask="$(find_lesion_mask "${SUBJECT}" "${_session}")"
     if [[ -z "${_mask}" ]]; then
@@ -344,7 +358,7 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
     else
       _resolve_session_args+=(--dwi-select-json "${_dwi_select_json}")
     fi
-    _session="$(python3 "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
+    _session="$("${PIPELINE_PYTHON}" "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
     _mask_prepared="${_results_root}/inpainted/sub-${SUBJECT}/ses-${_session}/lesion_mask_prepared.nii.gz"
     _dkt_matrix="${_results_root}/connectomes/sub-${SUBJECT}/dkt_connectome.csv"
     if [[ ! -f "${_mask_prepared}" ]]; then

@@ -77,13 +77,20 @@ fi
 export PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-sift2}"
 export DISCONNECTOME_WEIGHTING="${DISCONNECTOME_WEIGHTING:-sift2}"
 
-COMMON_FLAGS=(
+BASE_FLAGS=(
   --fastsurfer
   --tractography-model both
   --connectome-sift2
-  --disconnection
-  --disconnectome-weighting sift2
 )
+
+arm_submit_flags() {
+  local arm="$1"
+  local -a flags=("${BASE_FLAGS[@]}")
+  if [[ "${arm}" == *"-lesion" ]]; then
+    flags+=(--disconnection --disconnectome-weighting sift2)
+  fi
+  printf '%s\n' "${flags[@]}"
+}
 
 echo "Batch submit: sub-${SUBJECT}"
 echo "  BIDS_DIR=${BIDS_DIR}"
@@ -112,11 +119,13 @@ for arm in "${ARMS[@]}"; do
   echo "=== Submitting arm: ${arm} (job-name=${SBATCH_JOB_NAME}) ==="
   [[ -n "${SBATCH_DEPENDENCY:-}" ]] && echo "  Depends on: ${SBATCH_DEPENDENCY}"
 
+  mapfile -t ARM_FLAGS < <(arm_submit_flags "${arm}")
+
   set +e
   submit_out="$(
     cd "${DWI_ROOT}" && ./submit.sh \
       --experiment-arm "${arm}" \
-      "${COMMON_FLAGS[@]}" \
+      "${ARM_FLAGS[@]}" \
       "${EXTRA_SUBMIT_FLAGS[@]}" 2>&1
   )"
   rc=$?

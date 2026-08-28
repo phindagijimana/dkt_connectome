@@ -45,6 +45,7 @@ Contents
    methods/step3_qsirecon
    methods/step3_5_lesion_act
    lesion_aware
+   publication_strategy
    methods/step4_connectome
    methods/step4_5_disconnectome
    methods/step5_node_strength

@@ -46,12 +46,27 @@ midline shift require separate TBI validation.
 
 ### Lesion-aware ACT implementation
 
-`--act-mode lesion-aware` uses QSIRecon's retained ACPC HSVS 5TT and WM FOD.
-The 5TT is linearly resampled to the DWI/FOD grid, clipped and renormalized so
-its tissue fractions remain valid, and edited with `5ttedit -path` after the
-lesion mask is transformed with nearest-neighbor interpolation. The workflow
-requires `5ttcheck` to pass and verifies that every lesion voxel is assigned
-to the pathological channel before running matched iFOD2 and SIFT2.
+`--act-mode lesion-aware` rebuilds iFOD2 + SIFT2 after inserting the **original BIDS
+lesion mask** into the MRtrix pathology channel. Two base-5TT sources:
+
+| Source | Flag | Edit grid | Reference |
+|--------|------|-----------|-----------|
+| HSVS ACPC (default) | `--act-5tt-source hsvs` | QSIRecon ACPC HSVS (Jim's `vol0000` ref) | Jim ACPC-first fix |
+| Deep Atropos native | `--act-5tt-source deep-atropos-native` | Native BIDS T1w | Daniel contusion workflow |
+
+Shared steps after base 5TT is loaded:
+
+1. Resample lesion → 5TT reference grid (label-preserving).
+2. `5ttedit -path`; `5ttcheck`; pathology overlap QA.
+3. Resample edited 5TT → `dwiref`; clip and renormalize tissue fractions.
+4. Matched iFOD2 and SIFT2 in `dkt_lesion_act.sif`.
+
+Primary warp (HSVS): QSIPrep `T1wNative→ACPC`; fallback: empirical
+affine BIDS T1w → `desc-preproc_T1w` (same as Step 4 connectome).
+
+Daniel's recipe (segmentation strategy flexible): resample contusion into segmentation
+space, add to 4D 5TT pathology channel, renormalize so fractions sum to 1 — implemented
+in both paths via `5ttedit -path` and `clip_renormalize_5tt()`.
 
 The corrected or approximated anatomy is used for processing, while the
 original lesion mask is retained as biological information. Inpainting is not
@@ -75,6 +90,48 @@ Each arm writes to an isolated tree under `RESULTS_ROOT/arms/<arm>/` by default.
 | `vbt-std` | VBT | Standard | Deterministic contralesional fill vs neuroLIT | Bey et al. 2024 |
 | `vbt-lesion` | VBT | Lesion-aware | Full LeAPP-style factorial | Bey et al. 2024 |
 
+### Intentional cross-source design on `*-lesion` inpainted arms
+
+On **`neurolit-lesion`** and **`vbt-lesion`**, Step 2–3 and Step 3.5 deliberately
+use **different anatomical references**:
+
+| Processing layer | Source | Purpose |
+|------------------|--------|---------|
+| Recon + HSVS 5TT | Inpainted T1w (Step 1.5) | Surfaces, parcellation, tissue segmentation |
+| ACT pathology channel | **Original BIDS lesion ROI** | Biological injury location for tractography priors |
+| DWI / WM FOD | Unmodified QSIPrep output | Diffusion signal at the lesion site is real, not inpainted |
+
+This is **not a registration bug** when grids align. It is the **LeAPP factorial
+contrast** (Bey et al. 2024): anatomical mitigation and lesion-aware ACT are
+**orthogonal factors**. Inpainting asks whether corrected T1w improves
+reconstruction; lesion-aware ACT asks whether marking the **original injury ROI**
+as pathological changes tractography **given** that corrected anatomy—and **given**
+that DWI abnormality persists at that location.
+
+**Hypotheses the inpainted `*-lesion` arms test:**
+
+1. **Main effect of inpainting** (`neurolit-std` vs `orig-std`, `vbt-std` vs `orig-std`): connectome/parcellation change from anatomical mitigation alone.
+2. **Main effect of lesion-aware ACT** (`orig-lesion` vs `orig-std`): tractography change from pathology channel alone, without inpainting.
+3. **Interaction** (`neurolit-lesion` vs `neurolit-std`, `vbt-lesion` vs `vbt-std`): incremental effect of pathology ACT **after** inpainting—does ACT still matter when recon already sees “healthy” tissue at the lesion site?
+
+**How to describe this in methods text:**
+
+> Structural T1w was lesion-mitigated before cortical reconstruction (neuroLIT or
+> virtual brain transplant). HSVS five-tissue-type images were derived from that
+> mitigated anatomy. For lesion-aware ACT, the **clinician-traced lesion mask on
+> the original pre-mitigation T1w** was retained, transformed to diffusion space,
+> and assigned to the MRtrix pathology compartment (`5ttedit -path`). Diffusion
+> MRI was not inpainted. This follows the factorial lesion-processing framework
+> of Bey et al. (2024): corrected anatomy for segmentation, original lesion extent
+> for tractography priors.
+
+**Required QC for inpainted `*-lesion` arms:**
+
+- Overlay original lesion ROI on inpainted T1w and on HSVS WM/GM channels.
+- Confirm pathology channel after `5ttedit` matches the transformed original ROI.
+- Compare tractography statistics across the 2×2 (or 3×2) arm grid; do not merge
+  arms without provenance.
+
 **Important:** LeAPP validated ischemic stroke. TBI lesions require cohort-specific QC before treating any arm as production-default. Do not pool connectomes across arms without tracking provenance.
 
 Theory pages: [Step 1.5 — Inpainting](methods/step1_5_inpaint.md) · [Step 3.5 — Lesion-aware ACT](methods/step3_5_lesion_act.md).
@@ -82,6 +139,13 @@ Theory pages: [Step 1.5 — Inpainting](methods/step1_5_inpaint.md) · [Step 3.5
 CLI examples and Slurm usage: [Usage — experiment arms](usage.md).
 Decision guide: [Decision tables — experiment arms](decision_tables.md).
 Citations: [References § Experiment arms](references.md#experiment-arms-factorial-lesion-processing).
+
+### Publication planning
+
+For cohort scale (~100 TrackTBI lesion subjects), manuscript portfolio (flagship
+vs clinical disconnectome vs optional Deep Atropos branch), pre-specified factorial
+contrasts, journal targets, and reporting checklist, see
+**[Publication strategy — TBI lesion-aware connectomics](publication_strategy.md)**.
 
 ### Clinical DWI requires an appropriate preprocessing workflow
 

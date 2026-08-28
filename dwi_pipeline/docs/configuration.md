@@ -100,10 +100,14 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 | Key | CLI / env | Default |
 |-----|-----------|---------|
 | `mode` | `--act-mode`, `ACT_MODE` | `standard` |
+| `five_tt_source` | `--act-5tt-source`, `ACT_FIVE_TT_SOURCE` | `hsvs` |
 | `streamlines` | `--act-streamlines`, `ACT_STREAMLINES` | `10000000` |
 | `random_seed` | `ACT_RANDOM_SEED`, `--random-seed` | `0` |
+| `deep_atropos.segmentation` | `--deep-atropos-seg`, `DEEP_ATROPOS_SEG` | *(unset)* |
+| `deep_atropos.segmentation_mode` | `--deep-atropos-seg-mode`, `DEEP_ATROPOS_SEG_MODE` | `auto` |
+| `deep_atropos.antsxnet_cache` | `DEEP_ATROPOS_ANTSXNET_CACHE` | *(unset)* |
 
-Lesion-aware mode requires a BIDS lesion mask. Output: `lesion_aware_act/sub-<ID>/`.
+Lesion-aware mode requires a BIDS lesion mask. Outputs: `lesion_aware_act/sub-<ID>/`; with Deep Atropos also `deep_atropos_seg/` and `deep_atropos/`. See [Deep Atropos plan](maintainer/deep_atropos_5tt_plan.md).
 
 ---
 

@@ -104,6 +104,7 @@ BibTeX and acknowledgment text: [Citation](citation.md) · [References by step](
 ## Validation and scope
 
 - **Integrity checks** and benchmark notes: [Validation](validation.md)  
+- **Manuscript planning** (TrackTBI ~100 lesion cohort, factorial arms, journal targets): [Publication strategy](publication_strategy.md)  
 - **Compared to QSIPrep-only, MRtrix3_connectome, micapipe:** [Comparisons](comparisons.md)  
 - **Developer reference** (~800 lines, registration math, alternatives): [pipeline_science.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md)
 

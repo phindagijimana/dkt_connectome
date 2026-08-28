@@ -2,7 +2,9 @@
 
 Runbook for **QSIPrep-level trust**: cohort validation, paper artifacts, and the **v1.0** release. This does **not** block BIDS App usage at v0.2.x.
 
-**Paper plan (living):** [`sample_software_paper/paper_plan.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md) §11.
+**Paper plan (living):** [Publication strategy — TBI lesion-aware connectomics](../publication_strategy.md) (factorial TrackTBI cohort, journal targets, reporting checklist).
+
+**Deep Atropos native-T1 5TT (implemented):** [deep_atropos_5tt_plan.md](deep_atropos_5tt_plan.md).
 
 **Engineering prerequisite:** [Integration CI](integration_ci.md) green with real QSIPrep before claiming v1.0 reproducibility.
 

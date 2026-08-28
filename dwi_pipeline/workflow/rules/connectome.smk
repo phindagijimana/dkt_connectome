@@ -526,7 +526,7 @@ if CONNECTOME_SIFT2_ENABLED:
               echo "Primary connectome alias updated from SIFT2: {params.primary_matrix}"
             fi
 
-            python3 - "{params.parcellation_json}" "{output.sift2_matrix}" \
+            {PIPELINE_PYTHON} - "{params.parcellation_json}" "{output.sift2_matrix}" \
               "{params.primary_measure}" <<'PY'
 import json, sys
 from pathlib import Path

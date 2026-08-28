@@ -154,6 +154,11 @@ while [[ $# -gt 0 ]]; do
     --dwi-select) EXTRA+=(--dwi-select "$2"); shift 2 ;;
     --bids-filter|--bids-filter-file) EXTRA+=(--bids-filter "$2"); shift 2 ;;
     --disconnectome-erode-voxels) EXTRA+=(--disconnectome-erode-voxels "$2"); shift 2 ;;
+    --primary-connectome-measure) EXTRA+=(--primary-connectome-measure "$2"); shift 2 ;;
+    --act-mode|--act-streamlines|--tractography-model|--experiment-arm|--anat-mitigation|--recon-session)
+      EXTRA+=("$1" "$2"); shift 2 ;;
+    --connectome-sift2)
+      EXTRA+=("$1"); shift ;;
     --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
       EXTRA+=("$1"); shift ;;
     --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnection|--disconnectome)

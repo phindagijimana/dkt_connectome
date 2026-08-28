@@ -94,7 +94,7 @@ rule prepare_lesion_mask:
         exec > {log} 2>&1
         set -euo pipefail
         mkdir -p "$(dirname "{output.mask}")"
-        python3 "{PREPARE_LESION_MASK}" \
+        {PIPELINE_PYTHON} "{PREPARE_LESION_MASK}" \
           --t1w "{input.t1w}" --mask "{input.mask}" \
           --out "{output.mask}" --json "{output.json}" \
           --labels "{INPAINT_LABELS}"{params.binarize_suffix}
@@ -136,7 +136,7 @@ rule inpaint:
         echo "=== Anatomical mitigation ({ANATOMY_MITIGATION_BACKEND}): sub-${{SUBJECT}} ses-{params.session} ==="
         mkdir -p "{params.outdir}"
 
-        python3 "{PREPARE_LESION_MASK}" \
+        {PIPELINE_PYTHON} "{PREPARE_LESION_MASK}" \
           --t1w "{input.t1w}" --mask "{input.mask}" \
           --out "{output.mask_prepared}" --json "{output.mask_json}" \
           --labels "{INPAINT_LABELS}"{params.binarize_suffix}
@@ -180,13 +180,13 @@ rule inpaint:
         [[ -f "{output.result}" ]] || _pipeline_fail "inpaint" \
           "lit-inpainting finished but {output.result} was not produced"
 
-        python3 "{CHECK_INPAINTING}" \
+        {PIPELINE_PYTHON} "{CHECK_INPAINTING}" \
           --original "{input.t1w}" --inpainted "{output.result}" --mask "{output.mask_prepared}" \
           --json "{params.qc_json}" \
           --min-outside-corr {INPAINT_MIN_OUTSIDE_CORR} \
           --max-corr-drop {INPAINT_MAX_CORR_DROP}
 
-        qc_ok="$(python3 -c "import json; print(json.load(open('{params.qc_json}'))['ok'])")"
+        qc_ok="$({PIPELINE_PYTHON} -c "import json; print(json.load(open('{params.qc_json}'))['ok'])")"
         if [[ "${{qc_ok}}" != "True" ]]; then
           echo "WARNING: Inpaint QC failed for sub-${{SUBJECT}} ses-{params.session} — see {params.qc_json}"
           if [[ "{INPAINT_FAIL_ON_QC}" == "True" ]]; then
@@ -194,7 +194,7 @@ rule inpaint:
           fi
         fi
 
-        python3 - "{input.t1w}" "{input.mask}" "{output.mask_prepared}" "{output.result}" \
+        {PIPELINE_PYTHON} - "{input.t1w}" "{input.mask}" "{output.mask_prepared}" "{output.result}" \
           "{output.mask_json}" "{params.qc_json}" "{output.final_json}" \
           "sub-${{SUBJECT}}" "ses-{params.session}" "{params.backend_container}" "{INPAINT_LABELS}" \
           {INPAINT_DILATE} {INPAINT_DEVICE} {INPAINT_BATCH_SIZE} \

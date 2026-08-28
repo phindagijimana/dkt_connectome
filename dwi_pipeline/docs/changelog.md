@@ -8,6 +8,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Added
 
+- **`dkt_deep_atropos.sif`** — Deep Atropos integer seg → `base_5tt_native.mif` on BIDS T1w grid (`containers/deep_atropos/`)
+- **`dkt_deep_atropos_seg.sif`** — ANTsPyNet `deep_atropos` segmentation on native T1w (`containers/deep_atropos_seg/`)
+- **Snakemake rules** `deep_atropos_seg.smk`, `deep_atropos_5tt.smk` for optional native-T1 5TT branch
+- **`--act-5tt-source hsvs|deep-atropos-native`** — HSVS ACPC (Jim's fix, default) vs Daniel native Deep Atropos
+- **`--deep-atropos-seg-mode auto|import|generate`** and **`--deep-atropos-seg PATH`** — segmentation discovery / import / ANTsPyNet generate
+- **`scripts/convert_deep_atropos_to_5tt.py`**, **`scripts/run_deep_atropos_seg.py`** — label→5TT conversion and ANTsPyNet wrapper
+- **`act.deep_atropos.antsxnet_cache`** — persistent ANTsXNet weight cache for HPC
 - **`dkt_vbt.sif`** — dedicated Step 1.5 virtual brain transplant container (`containers/vbt/`, FSL staged from `qsiprep.sif`)
 - **`dkt_lesion_act.sif`** — dedicated Step 3.5 post-QSIRecon lesion-aware ACT container (`containers/lesion_act/`)
 - **Snakemake rules** `lesion_aware_act.smk`, `sdstream.smk` with `target_act` / `target_sdstream` modes
@@ -19,6 +26,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Changed
 
+- **`run_lesion_aware_act.sh`** — split HSVS ACPC (`run_hsvs_acpc_workflow`) and Deep Atropos native (`run_deep_atropos_native_workflow`) paths; shared clip/renormalize and tractography
+- **`lesion_aware_act.smk`** — `find -L` for QSIRecon discovery when outputs are symlinked; Deep Atropos 5TT bind-mount
+- Step 3.5 methods docs — Jim ACPC workflow, Daniel native branch, three-container architecture
 - README workflow sketch (SVG + mermaid) on GitHub; updated stages and container tables
 - Documentation site switched from **MkDocs Material** to **Sphinx + Read the Docs theme** (QSIPrep-style sidebar layout)
 - Step 1.5 VBT runs via `CONTAINER_VBT` instead of binding into `qsiprep.sif`

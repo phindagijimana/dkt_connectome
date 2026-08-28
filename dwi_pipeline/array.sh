@@ -49,8 +49,13 @@ case "${PIPELINE_ENGINE}" in
     export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
     mkdir -p "${XDG_CACHE_HOME}"
     ;;
+  bids_app|orchestrator|bids-app)
+    ORCHESTRATOR_SH="${DWI_ROOT}/workflow/lib/orchestrator.sh"
+    # shellcheck source=workflow/lib/orchestrator.sh
+    source "${ORCHESTRATOR_SH}"
+    ;;
   *)
-    echo "ERROR [array]: invalid PIPELINE_ENGINE=${PIPELINE_ENGINE} (use bash or snakemake)"
+    echo "ERROR [array]: invalid PIPELINE_ENGINE=${PIPELINE_ENGINE} (use snakemake, bids_app, or bash)"
     exit 1
     ;;
 esac
@@ -63,7 +68,12 @@ export OMP_NTHREADS="${OMP_NTHREADS:-4}"
 
 mkdir -p "${REPO_ROOT}/logs"
 
-[[ -f "${PIPELINE}" ]] || { echo "Missing ${PIPELINE}"; exit 1; }
+case "${PIPELINE_ENGINE}" in
+  bids_app|orchestrator|bids-app) ;;
+  *)
+    [[ -f "${PIPELINE}" ]] || { echo "Missing ${PIPELINE}"; exit 1; }
+    ;;
+esac
 [[ -f "${SUBJECT_LIST_FILE}" ]] || { echo "Missing subject list: ${SUBJECT_LIST_FILE}"; exit 1; }
 [[ -n "${SLURM_ARRAY_TASK_ID:-}" ]] || { echo "Need SLURM_ARRAY_TASK_ID"; exit 1; }
 
@@ -143,6 +153,7 @@ if [[ "${PIPELINE_ENGINE}" != "bash" && "${PIPELINE_ENGINE}" != "subject" && "${
   preflight_args=(bash "${DWI_ROOT}/workflow/preflight.sh" --mode "${PIPELINE_MODE}" --subject "${SUBJECT}" --quick)
   ((BIDS_VALIDATE)) && preflight_args+=(--bids-validation)
   ((BIDS_IGNORE_WARNINGS)) && preflight_args+=(--ignore-warnings)
+  export PIPELINE_ENGINE
   "${preflight_args[@]}" || exit 1
 fi
 
@@ -150,4 +161,12 @@ echo "ACT array task ${SLURM_ARRAY_TASK_ID}: sub-${SUBJECT} mode=${PIPELINE_MODE
 recon=${RECON_TOOL:-freesurfer} run_recon=${RUN_RECON:-1} run_inpaint=${RUN_INPAINT:-1} anat_mitigation=${ANAT_MITIGATION:-neurolit} \
 run_nodestrength=${RUN_NODESTRENGTH:-1} \
 NTHREADS=${NTHREADS} syn=${QSIPREP_USE_SYN_SDC:-0} dwi_shell=${DWI_SHELL_B:-1000}"
-exec bash "${PIPELINE}" "${PIPELINE_MODE}" "${SUBJECT}" "${SUBJECT_ARGS[@]}"
+
+case "${PIPELINE_ENGINE}" in
+  bids_app|orchestrator|bids-app)
+    run_orchestrator_participant "${SUBJECT}" "${PIPELINE_MODE}" "${SUBJECT_ARGS[@]}"
+    ;;
+  *)
+    exec bash "${PIPELINE}" "${PIPELINE_MODE}" "${SUBJECT}" "${SUBJECT_ARGS[@]}"
+    ;;
+esac

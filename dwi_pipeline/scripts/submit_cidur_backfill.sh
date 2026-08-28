@@ -14,6 +14,9 @@ REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
 
 export BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
 export RESULTS_ROOT="${RESULTS_ROOT:-/mnt/nfs/Gugger_Lab/NIR/dwi_CIDUR/results}"
+unset RECON_SESSION
+export DWI_SELECT_JSON="${DWI_SELECT_JSON:-${DWI_ROOT}/config/dwi_select_64dirax_with_fmap.json}"
+export DWI_SHELL_B="${DWI_SHELL_B:-1000}"
 export SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subject_list_cidur_backfill.txt}"
 export SUBJECT_LIST_USE_EXISTING=1
 export ARRAY_SCRIPT="${DWI_ROOT}/scripts/array_cidur_backfill.sh"

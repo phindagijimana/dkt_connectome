@@ -174,6 +174,9 @@ You can combine them (e.g. VBT-filled T1w + lesion in the pathology channel). Th
 | Flag | Env | Description |
 |------|-----|-------------|
 | `--act-mode standard\|lesion-aware` | `ACT_MODE` | **standard** — QSIRecon iFOD2/SIFT2 (default); **lesion-aware** — rebuild tractography after `5ttedit -path` |
+| `--act-5tt-source hsvs\|deep-atropos-native` | `ACT_FIVE_TT_SOURCE` | Base 5TT for lesion-aware ACT: QSIRecon ACPC HSVS (default) or native Deep Atropos |
+| `--deep-atropos-seg PATH` | `DEEP_ATROPOS_SEG` | Override Deep Atropos segmentation path (`{subject}` `{session}` placeholders) |
+| `--deep-atropos-seg-mode auto\|import\|generate` | `DEEP_ATROPOS_SEG_MODE` | Seg source: auto-discover, require external, or always run ANTsPyNet (default `auto`) |
 | `--act-streamlines N` | `ACT_STREAMLINES` | Streamline count for lesion-aware ACT (default `10000000`) |
 | `--tractography-model ifod2\|sd_stream\|both` | `TRACTOGRAPHY_MODEL` | Optional deterministic SD_STREAM matrices alongside iFOD2 (Tournier et al. 2019; robustness, not replacement) |
 | `--experiment-arm ARM` | `EXPERIMENT_ARM` | Set anatomy + ACT together and write under `RESULTS_ROOT/arms/ARM/` (see table below) |
@@ -182,13 +185,40 @@ You can combine them (e.g. VBT-filled T1w + lesion in the pathology channel). Th
 
 Standard ACT builds a five-tissue-type (5TT) image from the T1w that Step 2 received. If Step 1.5 inpainted the lesion, the HSVS 5TT may label that region as healthy GM/WM. Lesion-aware ACT re-inserts the **original lesion mask** into the pathology compartment so streamlines seed and terminate under pathology priors rather than false healthy tissue (Smith et al. 2012; Bey et al. 2024). The pathology channel is **not** a hard mask — it signals unreliable tissue priors, not proof of axonal absence.
 
+Two base-5TT sources are supported when `--act-mode lesion-aware`:
+
+| Source | Flag | When to use |
+|--------|------|-------------|
+| **HSVS ACPC** (default) | `--act-5tt-source hsvs` | Production factorial arms; Jim's ACPC-first `5ttedit` workflow |
+| **Deep Atropos native** | `--act-5tt-source deep-atropos-native` | Daniel sensitivity branch; lesion and 5TT share native BIDS T1w |
+
+```bash
+# Default HSVS path (Jim's ACPC fix)
+bash workflow/run_subject.sh act EXAMPLE --act-mode lesion-aware
+
+# Deep Atropos native path (import Daniel seg or generate with ANTsPyNet)
+bash workflow/run_subject.sh act EXAMPLE \
+  --act-mode lesion-aware \
+  --act-5tt-source deep-atropos-native \
+  --deep-atropos-seg-mode auto
+
+# Force ANTsPyNet when no external segs exist
+bash workflow/run_subject.sh act EXAMPLE \
+  --act-mode lesion-aware \
+  --act-5tt-source deep-atropos-native \
+  --deep-atropos-seg-mode generate \
+  --recon-session 2WK
+```
+
+Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a persistent NFS directory for ANTsXNet model weights. Details: [Deep Atropos implementation](maintainer/deep_atropos_5tt_plan.md).
+
 ### Theory: SD_STREAM (`--tractography-model both`)
 
 **SD_STREAM** (Tournier et al. 2019) provides a deterministic complement to probabilistic iFOD2. The pipeline writes parallel `dkt_model-SDSTREAM_connectome_*.csv` files. Use for robustness checks; disagreement in crossing-fibre regions is expected.
 
 ### Experiment arms (`--experiment-arm`) {#experiment-arms-experiment-arm}
 
-Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.5. Factorial design follows Bey et al. 2024 (LeAPP).
+Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.5. Factorial design follows Bey et al. 2024 (LeAPP). For cohort-scale manuscript planning (~100 TrackTBI lesion subjects), pre-specified contrasts, and journal targets, see [Publication strategy](publication_strategy.md).
 
 | Arm | Step 1.5 anatomy | Step 3.5 ACT | Typical contrast | Cite when contrasting |
 |-----|------------------|--------------|------------------|------------------------|

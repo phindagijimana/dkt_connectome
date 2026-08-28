@@ -99,22 +99,38 @@ Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 
 ## Step 3.5 — Lesion-aware ACT (optional)
 
-**Tool:** `dkt_lesion_act.sif` (ANTs + MRtrix staged from `qsirecon.sif`; see [containers/lesion_act/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md))
+**Tools:** `dkt_lesion_act.sif` (always); optionally `dkt_deep_atropos_seg.sif` + `dkt_deep_atropos.sif` when `--act-5tt-source deep-atropos-native`
 
 **Trigger:** `--act-mode lesion-aware` or an `*-lesion` [experiment arm](usage.md)
 
-**Processing:**
+**Processing (shared pathology edit — Jim / Daniel / LeAPP):**
 
-1. Resample QSIRecon HSVS 5TT to the DWI/FOD grid
-2. Transform the **original BIDS** lesion mask to DWI space
+1. Build or load base 5TT (HSVS ACPC **or** Deep Atropos native T1w)
+2. Resample **original BIDS** lesion mask into the **5TT reference grid**
 3. Insert pathology with `5ttedit -path`; validate with `5ttcheck`
-4. Rebuild matched iFOD2 tractography and SIFT2 weights
+4. Resample edited 5TT → `dwiref`; clip and renormalize tissue fractions (sum to 1)
+5. Rebuild matched iFOD2 tractography and SIFT2 weights
 
-**Key outputs:** `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck`, `model-sift2_streamlineweights.csv`
+**5TT sources:**
+
+| Source | Flag | Base 5TT | Edit grid |
+|--------|------|----------|-----------|
+| HSVS (default) | `hsvs` | QSIRecon ACPC HSVS | ACPC (`five_tt_ref` / Jim's `vol0000`) |
+| Deep Atropos | `deep-atropos-native` | `deep_atropos/sub-<ID>/base_5tt_native.mif` | Native BIDS T1w |
+
+**Key outputs:**
+
+| Path | Description |
+|------|-------------|
+| `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck` | Rebuilt tractogram |
+| `lesion_aware_act/sub-<ID>/model-sift2_streamlineweights.csv` | SIFT2 weights |
+| `lesion_aware_act/sub-<ID>/lesion_aware_act.json` | Provenance |
+| `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` | Deep Atropos seg (optional branch) |
+| `deep_atropos/sub-<ID>/base_5tt_native.mif` | Native 5TT (optional branch) |
 
 Step 4 uses these tractograms when lesion-aware mode is active.
 
-**References:** [Lesion-aware tractography](lesion_aware.md) · (Bey et al. 2024; Smith et al. 2012).
+**References:** [Step 3.5 methods](methods/step3_5_lesion_act.md) · [Deep Atropos branch](maintainer/deep_atropos_5tt_plan.md) · (Bey et al. 2024; Smith et al. 2012).
 
 ---
 

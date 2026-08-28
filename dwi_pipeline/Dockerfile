@@ -1,6 +1,6 @@
-# DKT Connectome — OPTIONAL Docker orchestrator (not used on HPC).
+# DKT Connectome — BIDS App orchestrator (Docker + Apptainer on HPC via build_orchestrator_sif.sh).
 #
-# Production on URMC HPC: use submit.sh + Apptainer .sif files (see docs/installation.md).
+# Production on URMC HPC: submit.sh with PIPELINE_ENGINE=bids_app (default).
 # This Dockerfile is for cloud/docker-only deployments if needed later.
 #
 # Bundles Python + Snakemake + ./run only. Step images must still be mounted at runtime.
@@ -8,7 +8,7 @@
 # Local build (from repo root):
 #   docker build -f dwi_pipeline/Dockerfile -t dkt-connectome:local .
 
-FROM python:3.11-slim-bookworm
+FROM python:3.12-slim-bookworm
 
 LABEL org.opencontainers.image.title="DKT Connectome"
 LABEL org.opencontainers.image.version="0.2.0"
