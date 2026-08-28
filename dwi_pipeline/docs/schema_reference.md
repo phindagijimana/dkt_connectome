@@ -78,7 +78,7 @@ Modern config uses nested blocks — see `workflow/config/config.yaml` for `qsip
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `enabled` | bool | false | Step 4.5 opt-in |
+| `enabled` | bool | false | Step 4.1 opt-in |
 | `lesion_erode_voxels` | int | 0 | Lesion erosion |
 | `core_only` | bool | false | Core label only |
 | `disconnection_spared` | string | `C` | Spared matrix for D |

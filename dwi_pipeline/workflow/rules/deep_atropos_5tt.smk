@@ -1,4 +1,4 @@
-"""Step 3.5a: Deep Atropos segmentation → base_5tt_native.mif."""
+"""Step 3.2: Deep Atropos segmentation → base_5tt_native.mif."""
 
 DEEP_ATROPOS_5TT_PATTERN = f"{DEEP_ATROPOS_OUT}/sub-{{subject}}/base_5tt_native.mif"
 DEEP_ATROPOS_JSON_PATTERN = f"{DEEP_ATROPOS_OUT}/sub-{{subject}}/deep_atropos_5tt.json"

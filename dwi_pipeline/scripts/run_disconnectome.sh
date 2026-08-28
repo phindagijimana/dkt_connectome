@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Thin wrapper for run_disconnectome.py (Step 4.5 standalone test).
+# Thin wrapper for run_disconnectome.py (Step 4.1 standalone test).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,7 +11,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") <results-root> <subject-id> [session]
 
-Standalone Step 4.5 disconnectome on a completed results tree.
+Standalone Step 4.1 disconnectome on a completed results tree.
 
 Examples:
   $(basename "$0") \\

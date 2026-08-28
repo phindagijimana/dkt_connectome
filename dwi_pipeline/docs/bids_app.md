@@ -37,7 +37,7 @@ Subject IDs may be given with or without the `sub-` prefix. Full CLI tables: **[
 
 | Level | Behavior |
 |-------|----------|
-| **`participant`** | Full per-subject pipeline (Steps 1–5; optional 1.5 / 4.5 when inputs and flags allow) |
+| **`participant`** | Full per-subject pipeline (Steps 1–5; optional 1.1 / 4.1 when inputs and flags allow) |
 | **`group`** | Cohort QC HTML indexes + BIDS Derivatives export to `derivatives/` (no reprocessing) |
 
 Group-level outputs include `cohort_qc.html` and, when disconnectome was run, `disconnectome_cohort_qc.html`. See **[Quality control](qc.md)**.
@@ -54,7 +54,7 @@ Per [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_
 | `T1w` | Yes | Structural reference for recon and ACT tractography |
 | `fmap` | Recommended | Enables measured SDC; otherwise pass `--syn` (see [Preparing your data](preparing_data.md#fieldmaps-and-sdc)) |
 
-Optional BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) enables Step 1.5 inpainting and Step 4.5 disconnectome when requested.
+Optional BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) enables Step 1.1 inpainting and Step 4.1 disconnectome when requested.
 
 ---
 

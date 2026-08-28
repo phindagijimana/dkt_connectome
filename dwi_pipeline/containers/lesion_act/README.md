@@ -1,4 +1,4 @@
-# `dkt_lesion_act.sif` — Post-QSIRecon lesion-aware ACT (Step 3.5)
+# `dkt_lesion_act.sif` — Post-QSIRecon lesion-aware ACT (Step 3.1)
 
 Rebuilds matched iFOD2 + SIFT2 after `5ttedit -path` inserts the lesion into the
 MRtrix pathology channel. ANTs and MRtrix are staged from the pipeline's
@@ -19,7 +19,7 @@ QSIRecon image (same toolchain as `dkt_connectome.sif` without FreeSurfer).
 
 ### `deep-atropos-native` — native-T1 Deep Atropos branch
 
-Requires `base_5tt_native.mif` from `dkt_deep_atropos.sif` (Step 3.5a).
+Requires `base_5tt_native.mif` from `dkt_deep_atropos.sif` (Step 3.2).
 
 1. Resample prepared lesion → native 5TT grid (same as BIDS T1w).
 2. `5ttedit -path` on native grid (no ACPC warp for edit).
@@ -77,7 +77,7 @@ Primary pin: `ghcr.io/phindagijimana/dkt-lesion-act:0.1.0`.
 
 ## See also
 
-- [Step 3.5 methods](../../docs/methods/step3_5_lesion_act.md)
+- [Step 3.1 methods](../../docs/methods/step3_1_lesion_act.md)
 - [Deep Atropos branch](../../docs/maintainer/deep_atropos_5tt_plan.md)
 
 ## Citation

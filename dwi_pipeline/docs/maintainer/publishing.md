@@ -44,7 +44,7 @@ Use this page as a **pre-flight checklist** before tagging. Step-by-step runbook
 | `integration_ideas.yml` | IDEAS OpenNeuro golden (monthly / manual) |
 | `docker_auto_install_smoke.yml` | `DKT_AUTO_INSTALL=1` in orchestrator image |
 | `docker_publish.yml` | Build orchestrator → GHCR (+ Docker Hub if secrets set) |
-| `act_containers_publish.yml` | Build Step 3.5 ACT images → GHCR (+ Docker Hub if secrets set) |
+| `act_containers_publish.yml` | Build Step 3.1 ACT images → GHCR (+ Docker Hub if secrets set) |
 | `readthedocs.yml` | Trigger RTD rebuild |
 
 Details: [Integration CI](integration_ci.md) · [Maintainer one-shot tasks](maintainer_tasks.md).

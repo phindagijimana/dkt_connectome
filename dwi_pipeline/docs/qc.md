@@ -2,7 +2,7 @@
 
 HTML reports summarize pipeline outputs for Steps 1–5. This page covers **where to find reports**, **how to regenerate them**, and **what to inspect** in each panel.
 
-Pipeline overview diagram: [How it works — science & theory](science_overview.md). Step 4.5 theory: [Disconnectome methods](methods/step4_5_disconnectome.md). Automated disconnectome checks: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
+Pipeline overview diagram: [How it works — science & theory](science_overview.md). Step 4.1 theory: [Disconnectome methods](methods/step4_1_disconnectome.md). Automated disconnectome checks: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
 
 ---
 
@@ -42,7 +42,7 @@ Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 
 Regenerate doc QC figures locally: `python3 scripts/render_qc_doc_figures.py` (requires local dwi_test_TBI outputs; figures are gitignored).
 
-#### Step 1.5 — Inpaint (if lesion mask)
+#### Step 1.1 — Inpaint (if lesion mask)
 
 | Panel | What to look for |
 |-------|------------------|
@@ -76,7 +76,7 @@ Inspect with FreeView or FastSurfer QC tools if segmentation looks wrong near le
 | `dkt_connectome.csv` | Symmetric; no all-zero rows except post-resection |
 | `nodes.mif` | Overlay on `dwiref` — labels align with anatomy |
 
-#### Step 4.5 — Disconnectome (if enabled)
+#### Step 4.1 — Disconnectome (if enabled)
 
 Open `connectomes/sub-<ID>/disconnectome/disconnectome_qc.html`:
 
@@ -106,7 +106,7 @@ Validated examples: [Validation](validation.md).
 | File | Contents |
 |------|----------|
 | `OUT/cohort_qc.html` | All subjects, Steps 1–5 rollup |
-| `OUT/disconnectome_cohort_qc.html` | Step 4.5 integrity across cohort |
+| `OUT/disconnectome_cohort_qc.html` | Step 4.1 integrity across cohort |
 
 Regenerate manually:
 
@@ -146,5 +146,5 @@ firefox dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/qc/sub-EXAMPLE/
 ## See also
 
 - [Outputs](outputs.md) — full derivatives layout
-- [Disconnectome](disconnectome.md) — Step 4.5 CLI defaults and detail QC
+- [Disconnectome](disconnectome.md) — Step 4.1 CLI defaults and detail QC
 - [Pipeline steps](pipeline_steps.md) — internal workflow reference

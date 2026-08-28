@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage Docker build contexts for Step 3.5 ACT containers in CI.
+# Stage Docker build contexts for Step 3.1 ACT containers in CI.
 #
 # Usage:
 #   bash scripts/ci_stage_act_build_context.sh all

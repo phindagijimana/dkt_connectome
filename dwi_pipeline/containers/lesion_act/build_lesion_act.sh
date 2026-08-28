@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build dkt_lesion_act.sif — Post-QSIRecon lesion-aware ACT (Step 3.5).
+# Build dkt_lesion_act.sif — Post-QSIRecon lesion-aware ACT (Step 3.1).
 #
 # Stages ANTs + MRtrix from qsirecon.sif (same as dkt_connectome without FreeSurfer).
 #

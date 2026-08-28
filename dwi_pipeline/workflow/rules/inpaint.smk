@@ -1,5 +1,5 @@
 """
-inpaint.smk — Step 1.5 plugin: selectable anatomical lesion mitigation before
+inpaint.smk — Step 1.1 plugin: selectable anatomical lesion mitigation before
 Step 2 (neuroLIT or LeAPP-inspired virtual brain transplant).
 
 Only ever included in the DAG for a subject when subject_has_lesion_mask()
@@ -45,7 +45,7 @@ def inpaint_paths(subject: str) -> dict:
 
 
 def inpainted_t1w_for(subject: str) -> str | None:
-    """Path to the Step 1.5 result for `subject`, or None when no lesion mask
+    """Path to the Step 1.1 result for `subject`, or None when no lesion mask
     exists (the common case -- Step 2/4 then use the raw BIDS T1w)."""
     if not mitigation_enabled_for(subject):
         return None

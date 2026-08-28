@@ -127,7 +127,7 @@ What each panel means: [Quality control](qc.md).
 
 ## 6. Optional — disconnectome
 
-Step 4.5 is off by default. With a lesion mask and validated settings:
+Step 4.1 is off by default. With a lesion mask and validated settings:
 
 ```bash
 ./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \

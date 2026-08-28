@@ -1,4 +1,4 @@
-"""Step 3.5a-seg: resolve Deep Atropos segmentation (import symlink or ANTsPyNet)."""
+"""Step 3.2 (segmentation): resolve Deep Atropos segmentation (import symlink or ANTsPyNet)."""
 
 DEEP_ATROPOS_SEG_PATTERN = f"{DEEP_ATROPOS_SEG_OUT}/sub-{{subject}}/desc-deepatropos_seg.nii.gz"
 DEEP_ATROPOS_SEG_JSON_PATTERN = f"{DEEP_ATROPOS_SEG_OUT}/sub-{{subject}}/deep_atropos_seg.json"

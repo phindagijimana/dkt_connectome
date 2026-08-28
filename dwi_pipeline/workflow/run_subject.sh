@@ -15,11 +15,11 @@
 #   bash run_subject.sh all 014 --no-inpaint
 #   bash run_subject.sh all 014 --no-node-strength
 #   bash run_subject.sh qsiprep 014
-#   bash run_subject.sh inpaint 014               # Step 1.5 only (needs a lesion mask)
+#   bash run_subject.sh inpaint 014               # Step 1.1 only (needs a lesion mask)
 #   bash run_subject.sh recon 014 --fastsurfer
 #   bash run_subject.sh qsirecon 014
 #   bash run_subject.sh connectome 014
-#   bash run_subject.sh disconnectome 014   # Step 4.5 (needs lesion mask + DKT connectome)
+#   bash run_subject.sh disconnectome 014   # Step 4.1 (needs lesion mask + DKT connectome)
 #   bash run_subject.sh nodestrength 014
 #
 # Not yet ported from subject.sh (use subject.sh directly for these):
@@ -300,7 +300,7 @@ case "${PIPELINE_MODE}" in
     ;;
 esac
 
-# --- Step 1.5 no-op guard for standalone `inpaint` mode -----------------------
+# --- Step 1.1 no-op guard for standalone `inpaint` mode -----------------------
 # Mirrors subject.sh's run_inpaint(): calling the plugin for a subject with
 # no lesion mask is a silent no-op, not an error, unless require_mask is set.
 if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
@@ -333,13 +333,13 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
       if [[ "${_require_mask}" == "true" ]]; then
         _pipeline_fail "inpaint" "require_mask=true but no lesion mask found for sub-${SUBJECT} ses-${_session}"
       fi
-      echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${_session} — skipping Step 1.5 (no-op, same as subject.sh)"
+      echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${_session} — skipping Step 1.1 (no-op, same as subject.sh)"
       exit 0
     fi
   fi
 fi
 
-# --- Step 4.5 no-op guard for standalone `disconnectome` mode ----------------
+# --- Step 4.1 no-op guard for standalone `disconnectome` mode ----------------
 if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
   DISCONNECTOME_ENABLED="${OVERRIDES[disconnectome.enabled]:-true}"
   if [[ "${DISCONNECTOME_ENABLED}" == "true" ]]; then
@@ -362,7 +362,7 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
     _mask_prepared="${_results_root}/inpainted/sub-${SUBJECT}/ses-${_session}/lesion_mask_prepared.nii.gz"
     _dkt_matrix="${_results_root}/connectomes/sub-${SUBJECT}/dkt_connectome.csv"
     if [[ ! -f "${_mask_prepared}" ]]; then
-      echo "Disconnectome: no prepared lesion mask at ${_mask_prepared} — skipping Step 4.5 (no-op)"
+      echo "Disconnectome: no prepared lesion mask at ${_mask_prepared} — skipping Step 4.1 (no-op)"
       exit 0
     fi
     if [[ ! -f "${_dkt_matrix}" ]]; then

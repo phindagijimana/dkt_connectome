@@ -2,7 +2,7 @@
 
 CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow/run_subject.sh`. Most flags are shared; a few are entry-point specific (noted below).
 
-**Pipeline steps:** QSIPrep → Inpaint (1.5) → Recon → QSIRecon → Lesion-aware ACT (3.5, optional) → Connectome → Node strength
+**Pipeline steps:** QSIPrep → Inpaint (1.1) → Recon → QSIRecon → Lesion-aware ACT (3.1, optional) → Connectome → Node strength
 
 **Modes** (`PIPELINE_MODE` or first arg to `subject.sh` / `run_subject.sh`):
 
@@ -10,13 +10,13 @@ CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow
 |------|-----------|
 | `all` | Full pipeline (default for submit) |
 | `qsiprep` | Step 1 only |
-| `inpaint` | Step 1.5 only (needs lesion mask) |
+| `inpaint` | Step 1.1 only (needs lesion mask) |
 | `recon` | Step 2 only |
 | `qsirecon` | Step 3 only (needs QSIPrep) |
-| `act` | Step 3.5 only (needs QSIRecon + lesion mask) |
+| `act` | Step 3.1 only (needs QSIRecon + lesion mask) |
 | `sdstream` | SD_STREAM tractography + connectomes (needs QSIRecon + Step 4 nodes) |
 | `connectome` | Step 4 (+ SD connectomes if `tractography.model: both`) |
-| `disconnectome` | Step 4.5 only (needs lesion mask + DKT connectome) |
+| `disconnectome` | Step 4.1 only (needs lesion mask + DKT connectome) |
 | `nodestrength` | Step 5 only (needs connectome CSV) |
 | `dk` | Alias for `connectome` (legacy) |
 
@@ -56,12 +56,12 @@ Both `--syn` and `--fmap-retry` pass QSIPrep `--use-syn-sdc error` (strict): if 
 | `--fast-fs` | `RECON_TOOL=fastsurfer` + `RECON_FSAPARC=1` | FastSurfer **plus** `--fsaparc`: also writes classic **DK-68** aparc/ribbon alongside native DKT. Needed if you want both DK and DKT from FastSurfer. |
 | `--no-recon` | `RUN_RECON=0` | Skip Step 2 in `all` mode. For QSIRecon ACT-hsvs you must already have an FS subjects dir, or switch to an ACT-fast spec. |
 
-### Inpaint (Step 1.5)
+### Inpaint (Step 1.1)
 
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--inpaint` | `RUN_INPAINT=1` | Enable inpaint step (default on). Still a no-op per subject unless a lesion mask is found. |
-| `--no-inpaint` | `RUN_INPAINT=0` | Force-skip Step 1.5 even if a lesion mask exists. |
+| `--no-inpaint` | `RUN_INPAINT=0` | Force-skip Step 1.1 even if a lesion mask exists. |
 | `--anat-mitigation none\|neurolit\|vbt` | `ANAT_MITIGATION` | Select original T1w, neuroLIT (default), or LeAPP-compatible virtual brain transplant. `--inpaint` aliases `neurolit`; `--no-inpaint` aliases `none`. |
 
 VBT uses `VBT_SMOOTHING_FACTOR=2.0` by default, matching the Gaussian sigma in
@@ -73,7 +73,7 @@ backend cannot overwrite the other.
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--no-connectome` / `--no-dk` | `RUN_CONNECTOME=0` | Skip Step 4 (and Step 5 with it in `all` mode). `--no-dk` is the legacy name. |
-| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Edge weights for disconnectome (default `count`); must match any SIFT2 matrix you use in Step 4.5. |
+| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Edge weights for disconnectome (default `count`); must match any SIFT2 matrix you use in Step 4.1. |
 | `--primary-connectome-measure count\|sift2` | `PRIMARY_CONNECTOME_MEASURE` | Select which matrix is copied to `dkt_connectome.csv`. Default: `count`. Requires `--connectome-sift2` when set to `sift2`. |
 | `--connectome-sift2` | `CONNECTOME_SIFT2=1` | Optional extra Step 4 job: write `*_connectome_sift2.csv` (and SD_STREAM SIFT2 when `--tractography-model both`). |
 
@@ -85,7 +85,7 @@ tractogram and DKT node image. Enable `--connectome-sift2` for
 `dkt_connectome.csv` remains the primary compatibility alias used by Step 5 and
 existing analyses (count by default).
 
-### ACT and experiment arms (Steps 3.5–4)
+### ACT and experiment arms (Steps 3.1–4)
 
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
@@ -113,16 +113,16 @@ prevents one arm from overwriting another.
 
 User guide: [docs/usage.md](docs/usage.md) (Read the Docs — experiment arms section).
 
-### Disconnectome (Step 4.5)
+### Disconnectome (Step 4.1)
 
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
-| `--disconnection` | `RUN_DISCONNECTOME=1` | Opt in to Step 4.5 disconnectome (default **off**; method under validation). Requires lesion mask + DKT connectome. |
+| `--disconnection` | `RUN_DISCONNECTOME=1` | Opt in to Step 4.1 disconnectome (default **off**; method under validation). Requires lesion mask + DKT connectome. |
 | `--disconnectome` | `RUN_DISCONNECTOME=1` | Alias for `--disconnection`. |
-| `--no-disconnectome` | `RUN_DISCONNECTOME=0` | Explicitly skip Step 4.5. |
+| `--no-disconnectome` | `RUN_DISCONNECTOME=0` | Explicitly skip Step 4.1. |
 | `--disconnectome-core-only` | `DISCONNECTOME_CORE_ONLY=1` | Sensitivity: core lesion label only. |
 | `--disconnectome-erode-voxels N` | `DISCONNECTOME_ERODE_VOXELS=N` | Erode lesion mask by N voxels before excision. |
-| `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Edge weighting for Step 4.5 (must match Step 4). |
+| `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Edge weighting for Step 4.1 (must match Step 4). |
 
 Standalone: `subject.sh disconnectome <ID>` or `--mode disconnectome` (does not require `--disconnection`).
 
@@ -179,8 +179,8 @@ Set before `./submit.sh` or before `subject.sh` / `run_subject.sh`.
 | `CONTAINER_FREESURFER` | FreeSurfer `recon-all` image |
 | `CONTAINER_CONNECTOME` | Connectome / DKT tooling image |
 | `CONTAINER_LIT` | LIT inpainting image |
-| `CONTAINER_VBT` | Virtual brain transplant (Step 1.5 VBT) image |
-| `CONTAINER_LESION_ACT` | Post-QSIRecon lesion-aware ACT (Step 3.5) image |
+| `CONTAINER_VBT` | Virtual brain transplant (Step 1.1 VBT) image |
+| `CONTAINER_LESION_ACT` | Post-QSIRecon lesion-aware ACT (Step 3.1) image |
 | `CONTAINER_NODESTRENGTH` | Node strength / ENIGMA report image |
 | `FS_LICENSE` | FreeSurfer license file |
 | `TEMPLATEFLOW_HOME` | TemplateFlow cache directory |

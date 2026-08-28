@@ -1,7 +1,7 @@
 """
-disconnectome.smk — Step 4.5 plugin: lesion-aware disconnectome (Options A/B/C).
+disconnectome.smk — Step 4.1 plugin: lesion-aware disconnectome (Options A/B/C).
 
-Runs only when a lesion mask was prepared in Step 1.5 and Step 4 produced a
+Runs only when a lesion mask was prepared in Step 1.1 and Step 4 produced a
 DKT connectome (78 nodes). Invokes scripts/run_disconnectome.py on the host.
 """
 
@@ -83,7 +83,7 @@ rule disconnectome:
         set -euo pipefail
         source {COMMON_SH}
 
-        echo "=== Disconnectome (Step 4.5): sub-{wildcards.subject} ses-{params.session} ==="
+        echo "=== Disconnectome (Step 4.1): sub-{wildcards.subject} ses-{params.session} ==="
         {PIPELINE_PYTHON} "{RUN_DISCONNECTOME}" \
           --results-root "{RESULTS_ROOT}" \
           --subject "{wildcards.subject}" \

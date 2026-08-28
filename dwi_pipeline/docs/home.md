@@ -19,7 +19,7 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 | If you want… | Read… |
 |--------------|--------|
 | **Why** the workflow exists (science, lesions, SDC) | [How it works — science & theory](science_overview.md) |
-| **Pipeline stages** (Steps 1–5, 3.5 branches) | [Pipeline steps](pipeline_steps.md) · [Deep Atropos branch](deep_atropos_5tt.md) |
+| **Pipeline stages** (Steps 1–5, 3.1–3.2 branches) | [Pipeline steps](pipeline_steps.md) · [Deep Atropos branch](deep_atropos_5tt.md) |
 | **First run** (install, tutorial, sample data) | [Installation](installation.md) → [Tutorial](tutorial.md) |
 | **Prepare BIDS** (fieldmaps, masks, sidecars) | [Preparing your data](preparing_data.md) |
 | **Run** (`./run`, HPC, flags) | [Usage](usage.md) · [BIDS App spec](bids_app.md) |

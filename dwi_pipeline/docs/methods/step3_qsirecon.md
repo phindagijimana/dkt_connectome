@@ -68,7 +68,7 @@ Seeds are typically placed in **white matter** voxels. ~10 million streamlines a
 | Streamline counts | Yes | Simple group comparisons, count-based graphs |
 | SIFT2 weights | Optional (`--connectome-weighting sift2`) | Quantitative density interpretation |
 
-SIFT2 weights are always computed in Step 3 and stored alongside the tractogram; Step 4 and Step 4.5 can optionally use them.
+SIFT2 weights are always computed in Step 3 and stored alongside the tractogram; Step 4 and Step 4.1 can optionally use them.
 
 ---
 

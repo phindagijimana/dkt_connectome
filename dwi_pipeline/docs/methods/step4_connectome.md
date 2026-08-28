@@ -67,7 +67,7 @@ connectomes/sub-<ID>/
   dkt_connectome.csv       # 78×78 symmetric matrix (default)
   nodes.mif                # parcellation on dwiref grid
   parcellation.json        # provenance: atlas, LUT, empty nodes
-  native_to_preproc_T1w_0GenericAffine.mat   # reused by Step 4.5
+  native_to_preproc_T1w_0GenericAffine.mat   # reused by Step 4.1
 ```
 
 ---
@@ -114,7 +114,7 @@ Voxelwise **`dkt_desc-FA_dwi.nii.gz`** and **`dkt_desc-MD_dwi.nii.gz`** are deri
 | Container | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) |
 | Tractogram | QSIRecon `*_streamlines.tck.gz` |
 | Parcellation | DKT from Step 2 (78 nodes default) |
-| Registration T1w | Inpainted T1w when Step 1.5 ran; else BIDS T1w |
+| Registration T1w | Inpainted T1w when Step 1.1 ran; else BIDS T1w |
 
 ---
 
@@ -136,6 +136,6 @@ Full table: [References § Step 4](../references.md#step-4-dkt-structural-connec
 ## See also
 
 - [Step 3 — Tractography](step3_qsirecon.md)
-- [Step 4.5 — Disconnectome](step4_5_disconnectome.md)
+- [Step 4.1 — Disconnectome](step4_1_disconnectome.md)
 - [Disconnectome § Integrity QC](../disconnectome.md#integrity-qc)
 - [Container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md)

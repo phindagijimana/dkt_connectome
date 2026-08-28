@@ -11,7 +11,7 @@ Input requirements and preprocessing decisions before running `./run`.
 | `dwi/` | Yes | At least one diffusion series |
 | `anat/T1w` | Yes | Structural reference for ACT tractography |
 | `fmap/` | Recommended | Enables fieldmap SDC; otherwise use `--syn` |
-| Lesion mask | Optional | `*_T1w_label-lesion_roi.nii.gz` triggers Steps 1.5 and 4.5 |
+| Lesion mask | Optional | `*_T1w_label-lesion_roi.nii.gz` triggers Steps 1.1 and 4.1 |
 
 Validate with:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a self-contained HTML QC report for Step 4.5 disconnectome outputs."""
+"""Render a self-contained HTML QC report for Step 4.1 disconnectome outputs."""
 
 from __future__ import annotations
 

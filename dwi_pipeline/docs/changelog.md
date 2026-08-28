@@ -15,17 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **`--deep-atropos-seg-mode auto|import|generate`** and **`--deep-atropos-seg PATH`** — segmentation discovery / import / ANTsPyNet generate
 - **`scripts/convert_deep_atropos_to_5tt.py`**, **`scripts/run_deep_atropos_seg.py`** — label→5TT conversion and ANTsPyNet wrapper
 - **`act.deep_atropos.antsxnet_cache`** — persistent ANTsXNet weight cache for HPC
-- **`dkt_vbt.sif`** — dedicated Step 1.5 virtual brain transplant container (`containers/vbt/`, FSL staged from `qsiprep.sif`)
-- **`dkt_lesion_act.sif`** — dedicated Step 3.5 post-QSIRecon lesion-aware ACT container (`containers/lesion_act/`)
+- **`dkt_vbt.sif`** — dedicated Step 1.1 virtual brain transplant container (`containers/vbt/`, FSL staged from `qsiprep.sif`)
+- **`dkt_lesion_act.sif`** — dedicated Step 3.1 post-QSIRecon lesion-aware ACT container (`containers/lesion_act/`)
 - **Snakemake rules** `lesion_aware_act.smk`, `sdstream.smk` with `target_act` / `target_sdstream` modes
 - **`--connectome-sift2`** — optional Step 4 SIFT2 matrix (default primary remains count)
 - **`--tractography-model both`** (default) — iFOD2 + deterministic SD_STREAM connectomes
 - **`--experiment-arm`** presets (`orig-std`, `vbt-lesion`, …) with isolated `RESULTS_ROOT/arms/<arm>/`
-- **`scripts/publish_act_containers.sh`** — Docker Hub + GHCR publish for Step 3.5 images
+- **`scripts/publish_act_containers.sh`** — Docker Hub + GHCR publish for Step 3.1 images
 - **`act_containers_publish.yml`** — CI build/push for `dkt-lesion-act`, `dkt-deep-atropos`, `dkt-deep-atropos-seg`
 - **`--prefetch-only`** on `run_deep_atropos_seg.py` — login-node ANTsXNet weight warmup
 - **ACT Snakemake CI dry-run** — `target_act` + Deep Atropos branch via `snakemake_act_ci_setup.sh`
-- **Theory docs** — methods pages for Steps 1.5, 3.5, 4 multi-measure outputs; experiment-arm citations
+- **Theory docs** — methods pages for Steps 1.1, 3.1, 4 multi-measure outputs; experiment-arm citations
 
 ### Changed
 
@@ -37,12 +37,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Container fallbacks** — `act.mode=lesion-aware` fails fast if dedicated ACT SIF keys missing
 - Pinned Python deps in ACT Dockerfiles/Apptainer.defs (`act_python_requirements.txt`)
 - **`container_install.py`** — GHCR fallbacks for ACT images
-- **Documentation** — removed person-specific workflow labels; new public [Deep Atropos branch](deep_atropos_5tt.md); updated pipeline SVG sketch with Step 3.5a-seg / 3.5a
-- Step 3.5 methods docs — HSVS ACPC workflow, Deep Atropos native branch, three-container architecture
+- **Documentation** — removed person-specific workflow labels; new public [Deep Atropos branch](deep_atropos_5tt.md); updated pipeline SVG sketch with Step 3.2 (segmentation) / 3.2
+- Step 3.1 methods docs — HSVS ACPC workflow, Deep Atropos native branch, three-container architecture
 - README workflow sketch (SVG + mermaid) on GitHub; updated stages and container tables
 - Documentation site switched from **MkDocs Material** to **Sphinx + Read the Docs theme** (QSIPrep-style sidebar layout)
-- Step 1.5 VBT runs via `CONTAINER_VBT` instead of binding into `qsiprep.sif`
-- Step 3.5 runs via `CONTAINER_LESION_ACT` instead of inline `qsirecon.sif` shell
+- Step 1.1 VBT runs via `CONTAINER_VBT` instead of binding into `qsiprep.sif`
+- Step 3.1 runs via `CONTAINER_LESION_ACT` instead of inline `qsirecon.sif` shell
 - `submit.sh` exports `CONTAINER_VBT` and `CONTAINER_LESION_ACT` to Slurm jobs
 - `connectome.sift2` default **false**; count remains primary `dkt_connectome.csv`
 - Documentation: containers catalog, Snakemake targets, config examples updated for new images
@@ -87,7 +87,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 - GitHub Actions Snakemake dry-run (`--quiet` vs target name collision on Snakemake 8+)
 - Docker publish workflow: `dkt-connectome` image name + graceful skip when Hub secrets missing
-- Disconnectome integrity: count weighting aligned between Step 4 and 4.5
+- Disconnectome integrity: count weighting aligned between Step 4 and 4.1
 - Documentation test stats and SIFT2 example snippets corrected
 
 ## [0.1.0] - 2026-05

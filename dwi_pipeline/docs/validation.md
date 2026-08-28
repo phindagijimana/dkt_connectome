@@ -49,7 +49,7 @@ Walkthrough: [Tutorial](tutorial.md).
 
 ---
 
-## Disconnectome integrity (Step 4.5)
+## Disconnectome integrity (Step 4.1)
 
 Script: `scripts/evaluate_disconnectome_integrity.py`
 
@@ -65,7 +65,7 @@ After a full disconnectome run on local test data, run `scripts/evaluate_disconn
 | `disconnection_matrix.csv` | Matches spared option C (default) |
 | D values | In [0, 1]; symmetric |
 
-Full spec: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) · [Methods § Step 4.5](methods/step4_5_disconnectome.md).
+Full spec: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) · [Methods § Step 4.1](methods/step4_1_disconnectome.md).
 
 ---
 
@@ -80,7 +80,7 @@ Full spec: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) · [Me
 
 ---
 
-## Inpainting QC (Step 1.5)
+## Inpainting QC (Step 1.1)
 
 From `inpainting_qc.json` / `check_inpainting.py`:
 
@@ -89,7 +89,7 @@ From `inpainting_qc.json` / `check_inpainting.py`:
 | Outside-lesion correlation | ≥ 0.995 |
 | Correlation drop vs resampling control | ≤ 0.01 |
 
-Details: [Methods § Step 1.5](methods/step1_5_inpaint.md).
+Details: [Methods § Step 1.1](methods/step1_1_inpaint.md).
 
 ---
 
@@ -111,7 +111,7 @@ Maintainers: re-run integrity scripts after changing connectome or disconnectome
 2. State pipeline version (`./run --version` → `app.json`)
 3. Document flags: recon tool, SDC mode, weighting, disconnectome opt-in
 4. Report integrity QC pass/fail for disconnectome cohorts
-5. For the six-arm factorial on lesion subjects: report per-arm completion, Step 3.5 pathology QA, and pre-specified contrasts — see **[Publication strategy](publication_strategy.md)**
+5. For the six-arm factorial on lesion subjects: report per-arm completion, Step 3.1 pathology QA, and pre-specified contrasts — see **[Publication strategy](publication_strategy.md)**
 
 ---
 

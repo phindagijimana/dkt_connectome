@@ -1,4 +1,4 @@
-# Deep Atropos native-T1 5TT (optional Step 3.5 branch)
+# Deep Atropos native-T1 5TT (optional Step 3.1 branch)
 
 Optional **base five-tissue-type (5TT) source** for lesion-aware ACT when you want tissue
 priors built on **native BIDS T1w** instead of the default QSIRecon ACPC HSVS grid.
@@ -6,8 +6,8 @@ priors built on **native BIDS T1w** instead of the default QSIRecon ACPC HSVS gr
 **Default:** `--act-5tt-source hsvs` (QSIRecon ACT-HSVS on ACPC).  
 **This branch:** `--act-5tt-source deep-atropos-native`.
 
-Operational reference: [Pipeline steps § Step 3.5](pipeline_steps.md#step-35-lesion-aware-act-optional) ·
-[Step 3.5 methods](methods/step3_5_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md) ·
+Operational reference: [Pipeline steps § Step 3.1](pipeline_steps.md#step-31-lesion-aware-act-optional) ·
+[Step 3.1 methods](methods/step3_1_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md) ·
 [Containers](containers.md).
 
 ---
@@ -27,26 +27,26 @@ matched iFOD2 + SIFT2 in `dkt_lesion_act.sif` (LeAPP-style; Bey et al. 2024).
 
 ---
 
-## Workflow sketch (Step 3.5 branch)
+## Workflow sketch (Step 3.1 branch)
 
 ```text
                     ┌── default: QSIRecon HSVS 5TT (ACPC)
                     │
 Step 3 QSIRecon ────┼── optional Deep Atropos branch:
-                    │       Step 3.5a-seg  ANTsPyNet deep_atropos on native T1w
+                    │       Step 3.2 (segmentation)  ANTsPyNet deep_atropos on native T1w
                     │            ↓
-                    │       Step 3.5a    seg → base_5tt_native.mif
+                    │       Step 3.2    seg → base_5tt_native.mif
                     │            ↓
-                    └──► Step 3.5  lesion-aware ACT (5ttedit + tckgen + SIFT2)
+                    └──► Step 3.1  lesion-aware ACT (5ttedit + tckgen + SIFT2)
                               ↓
                          Step 4 connectome (uses rebuilt tractogram)
 ```
 
 | Sub-step | Snakemake rule | Container | Output |
 |----------|----------------|-----------|--------|
-| **3.5a-seg** | `deep_atropos_seg` | `dkt_deep_atropos_seg.sif` | `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` |
-| **3.5a** | `deep_atropos_5tt` | `dkt_deep_atropos.sif` | `deep_atropos/sub-<ID>/base_5tt_native.mif` |
-| **3.5** | `lesion_aware_act` | `dkt_lesion_act.sif` | `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck`, SIFT2 weights, JSON |
+| **3.2-seg** | `deep_atropos_seg` | `dkt_deep_atropos_seg.sif` | `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` |
+| **3.2** | `deep_atropos_5tt` | `dkt_deep_atropos.sif` | `deep_atropos/sub-<ID>/base_5tt_native.mif` |
+| **3.1** | `lesion_aware_act` | `dkt_lesion_act.sif` | `lesion_aware_act/sub-<ID>/model-ifod2_streamlines.tck`, SIFT2 weights, JSON |
 
 Rules activate only when `act.mode=lesion-aware` and `act.five_tt_source=deep-atropos-native`.
 
@@ -95,7 +95,7 @@ python3 dwi_pipeline/scripts/run_deep_atropos_seg.py \
 
 Preflight **requires** `act.deep_atropos.antsxnet_cache` when seg mode is `auto` or `generate`.
 
-Details: [Troubleshooting § Step 3.5](troubleshooting.md#step-35-lesion-aware-act) ·
+Details: [Troubleshooting § Step 3.1](troubleshooting.md#step-31-lesion-aware-act) ·
 [containers/deep_atropos_seg README on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos_seg/README.md).
 
 ---
@@ -138,7 +138,7 @@ Install: `bash install.sh --mode act` — [Containers](containers.md).
 
 On inpainted experiment arms (`neurolit-lesion`, `vbt-lesion`), Deep Atropos seg and base 5TT
 use **original BIDS T1w**, while the lesion ROI for `5ttedit` remains the **original BIDS
-mask**. This is intentional: anatomical mitigation (Step 1.5) and pathology ACT (Step 3.5) are
+mask**. This is intentional: anatomical mitigation (Step 1.1) and pathology ACT (Step 3.1) are
 orthogonal factors. Provenance is recorded in `lesion_aware_act.json`.
 
 See [Lesion-aware § Intentional cross-source design](lesion_aware.md#intentional-cross-source-design-on--lesion-inpainted-arms).
@@ -147,6 +147,6 @@ See [Lesion-aware § Intentional cross-source design](lesion_aware.md#intentiona
 
 ## See also
 
-- [Step 3.5 — Lesion-aware ACT (methods)](methods/step3_5_lesion_act.md)
+- [Step 3.1 — Lesion-aware ACT (methods)](methods/step3_1_lesion_act.md)
 - [Publication strategy](publication_strategy.md) — when to report HSVS vs Deep Atropos as a sensitivity analysis
 - [Snakemake workflow](snakemake_workflow.md) — `target_act` and plugin rules

@@ -9,7 +9,7 @@
 #   3. Exports env vars so each array task runs the pipeline engine with the same settings
 #
 # Pipeline per subject (see subject.sh / workflow/run_subject.sh):
-#   QSIPrep -> Inpaint (Step 1.5, only if a lesion mask exists) ->
+#   QSIPrep -> Inpaint (Step 1.1, only if a lesion mask exists) ->
 #   Recon (recon-all by default, FastSurfer with --fastsurfer) ->
 #   QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> connectome ->
 #   Node strength / ENIGMA report (Step 5, auto-on when the connectome ran)
@@ -20,9 +20,9 @@
 #   ./submit.sh --fast-fs          # FastSurfer + --fsaparc (adds a DK-68 atlas too)
 #   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
 #   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV (skips Step 5 too)
-#   ./submit.sh --no-inpaint       # force-skip Step 1.5 even for subjects with a lesion mask
-#   ./submit.sh --anat-mitigation vbt      # LeAPP-compatible virtual brain transplant (Step 1.5)
-#   ./submit.sh --act-mode lesion-aware    # Step 3.5: lesion in 5TT pathology channel
+#   ./submit.sh --no-inpaint       # force-skip Step 1.1 even for subjects with a lesion mask
+#   ./submit.sh --anat-mitigation vbt      # LeAPP-compatible virtual brain transplant (Step 1.1)
+#   ./submit.sh --act-mode lesion-aware    # Step 3.1: lesion in 5TT pathology channel
 #   ./submit.sh --experiment-arm neurolit-lesion   # anatomy + ACT arm; writes arms/neurolit-lesion/
 #   ./submit.sh --tractography-model both  # optional SD_STREAM connectomes alongside iFOD2
 #   ./submit.sh --no-node-strength # skip Step 5 only (keep the connectome CSV)
@@ -38,7 +38,7 @@
 #   PIPELINE_ENGINE=bids_app       # optional: BIDS App ./run inside orchestrator SIF
 #   ARRAY_CONCURRENCY=5          # Slurm %K throttle
 #   PIPELINE_MODE=qsiprep        # only QSIPrep
-#   PIPELINE_MODE=inpaint        # only Step 1.5 (needs a lesion mask for the subject)
+#   PIPELINE_MODE=inpaint        # only Step 1.1 (needs a lesion mask for the subject)
 #   PIPELINE_MODE=recon          # only Step 2 (recon-all / FastSurfer)
 #   PIPELINE_MODE=qsirecon       # only QSIRecon (QSIPrep must already exist)
 #   PIPELINE_MODE=connectome     # only Step 4 (needs QSIRecon + FS outputs)
@@ -62,7 +62,7 @@
 #   DWI_SHELL_B=1000             # b-value for default dwi-select config
 #   QSIPREP_NO_DWI_FILTER=1      # same as --no-dwi-filter
 #   EXCLUDE_NODES=smdodwork05    # comma-list passed to sbatch --exclude
-#   SBATCH_GRES=gpu:l40s.24g:1   # GPU for Step 1.5 inpainting (auto-set when inpaint on)
+#   SBATCH_GRES=gpu:l40s.24g:1   # GPU for Step 1.1 inpainting (auto-set when inpaint on)
 #   SBATCH_DEPENDENCY=afterok:JOBID
 #                                # chain this submission after another Slurm job
 #                                # (e.g. PIPELINE_MODE=qsirecon SBATCH_DEPENDENCY=afterok:44600)
@@ -400,7 +400,7 @@ if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
   echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  fsaparc=${RECON_FSAPARC}  out=${RECON_OUT}"
 fi
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "inpaint" || "${PIPELINE_MODE}" == "recon" ]]; then
-  echo "  Anatomy mitigation (Step 1.5): $([[ ${RUN_INPAINT} == 1 ]] && echo "${ANAT_MITIGATION} (runs only if a lesion mask is found)" || echo off)"
+  echo "  Anatomy mitigation (Step 1.1): $([[ ${RUN_INPAINT} == 1 ]] && echo "${ANAT_MITIGATION} (runs only if a lesion mask is found)" || echo off)"
 fi
 echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
 echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == connectome ) ]] && echo on || echo off/skip)"
@@ -409,20 +409,20 @@ echo "  ACT 5TT source: ${ACT_FIVE_TT_SOURCE}"
 echo "  Deep Atropos seg mode: ${DEEP_ATROPOS_SEG_MODE}"
 echo "  Tractography model(s): ${TRACTOGRAPHY_MODEL}"
 echo "  Connectome SIFT2 matrix: $([[ ${CONNECTOME_SIFT2} == 1 ]] && echo on || echo off)"
-echo "  Disconnectome (Step 4.5): $([[ ${RUN_DISCONNECTOME} == 1 ]] && echo on || echo off)"
+echo "  Disconnectome (Step 4.1): $([[ ${RUN_DISCONNECTOME} == 1 ]] && echo on || echo off)"
 [[ -n "${PRIMARY_CONNECTOME_MEASURE}" ]] && echo "  Primary connectome measure: ${PRIMARY_CONNECTOME_MEASURE}"
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "connectome" || "${PIPELINE_MODE}" == "nodestrength" ]]; then
   echo "  Node strength (Step 5): $([[ ${RUN_NODESTRENGTH} == 1 ]] && echo on || echo off)"
 fi
 [[ -n "${EXCLUDE_NODES}" ]] && echo "  Exclude nodes: ${EXCLUDE_NODES}"
 
-# Auto-request a GPU slice when inpainting may run (Step 1.5 needs >=12g MIG).
+# Auto-request a GPU slice when inpainting may run (Step 1.1 needs >=12g MIG).
 if [[ -z "${SBATCH_GRES:-}" ]]; then
   case "${PIPELINE_MODE}" in
     all|inpaint|recon)
       if [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
         SBATCH_GRES="gpu:l40s.24g:1"
-        echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: Step 1.5 inpaint may need GPU)"
+        echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: Step 1.1 inpaint may need GPU)"
       elif [[ "${RECON_TOOL}" == "fastsurfer" && "${RECON_FASTSURFER_DEVICE}" == "cuda" ]]; then
         SBATCH_GRES="gpu:l40s.24g:1"
         echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: FastSurfer cuda)"

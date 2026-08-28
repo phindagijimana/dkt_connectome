@@ -18,10 +18,10 @@ The internal layout remains the default write target during processing. A post-r
 | Directory | Step | Notes |
 |-----------|------|-------|
 | `qsiprep_single_run_output/` | 1 | QSIPrep default output |
-| `inpainted/` | 1.5 | Lesion inpainting |
+| `inpainted/` | 1.1 | Lesion inpainting |
 | `freesurfer/` | 2 | FreeSurfer / FastSurfer |
 | `qsirecon_single_run_output/` | 3 | QSIRecon |
-| `connectomes/` | 4 + 4.5 | DKT connectome + disconnectome |
+| `connectomes/` | 4 + 4.1 | DKT connectome + disconnectome |
 | `qc/` | QC | Unified subject dashboards |
 | `node_strength/` | 5 | Node strength / ENIGMA report |
 

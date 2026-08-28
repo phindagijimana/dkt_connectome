@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build dkt_vbt.sif — lean LeAPP-compatible virtual brain transplant (Step 1.5).
+# Build dkt_vbt.sif — lean LeAPP-compatible virtual brain transplant (Step 1.1).
 #
 # Stages the FSL conda env from qsiprep.sif (same tools used in validation) plus
 # run_vbt.py. Python deps (nibabel, numpy, scipy) are installed in the image.

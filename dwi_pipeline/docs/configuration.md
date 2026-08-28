@@ -60,7 +60,7 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 
 ---
 
-## Step 1.5 — Inpaint (`inpaint`)
+## Step 1.1 — Inpaint (`inpaint`)
 
 | Key | CLI / env | Description |
 |-----|-----------|-------------|
@@ -95,7 +95,7 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 
 ---
 
-## Step 3.5 — Lesion-aware ACT (`act`)
+## Step 3.1 — Lesion-aware ACT (`act`)
 
 | Key | CLI / env | Default |
 |-----|-----------|---------|
@@ -147,7 +147,7 @@ When `arm` is set, the workflow applies the anatomy + ACT mapping from [Usage �
 
 ---
 
-## Step 4.5 — Disconnectome (`disconnectome`)
+## Step 4.1 — Disconnectome (`disconnectome`)
 
 | Key | CLI | Default |
 |-----|-----|---------|

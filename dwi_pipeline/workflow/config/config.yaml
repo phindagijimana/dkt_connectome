@@ -69,7 +69,7 @@ dwi_select:
   shell_b: 1000
   json: null   # explicit override path; default: config/dwi_select_b<shell_b>.json
 
-# --- Step 1.5: Anatomical lesion mitigation ---
+# --- Step 1.1: Anatomical lesion mitigation ---
 inpaint:
   enabled: true            # auto-on; no-op per subject unless a lesion mask is found
   backend: neurolit        # none | neurolit | vbt
@@ -98,7 +98,7 @@ qsirecon:
   spec: mrtrix_singleshell_ss3t_ACT-hsvs
   atlases: ["4S156Parcels"]
 
-# --- Step 3.5: ACT anatomy ---
+# --- Step 3.1: ACT anatomy ---
 act:
   mode: standard            # standard | lesion-aware
   five_tt_source: hsvs      # hsvs | deep-atropos-native
@@ -128,14 +128,14 @@ connectome:
   fail_on_empty_nodes: false
   deterministic: true
   resample_to_dwi: true
-  weighting: count          # count | sift2 — must match Step 4.5 disconnectome weighting
+  weighting: count          # count | sift2 — must match Step 4.1 disconnectome weighting
   primary_measure: count     # dkt_connectome.csv remains count unless explicitly overridden
   sift2: false               # --connectome-sift2 / CONNECTOME_SIFT2=1 — optional SIFT2 matrix step
   # Step 4 always writes *_connectome_count.csv, *_connectome_meanlength.csv,
   # *_connectome_meanfa.csv, *_connectome_meanmd.csv, and voxelwise FA/MD maps.
   # Enable sift2 for an additional *_connectome_sift2.csv (and SD_STREAM SIFT2 when both models run).
 
-# --- Step 4.5: Disconnectome (opt-in via --disconnection / disconnectome.enabled) ---
+# --- Step 4.1: Disconnectome (opt-in via --disconnection / disconnectome.enabled) ---
 disconnectome:
   enabled: false
   weighting: null           # default: connectome.weighting
@@ -145,7 +145,7 @@ disconnectome:
   option_a: true
   option_b: true
   option_c: true
-  qc_html: true              # write disconnectome_qc.html after Step 4.5
+  qc_html: true              # write disconnectome_qc.html after Step 4.1
 
 # --- Unified QC dashboard (Steps 1-5) ----------------------------------------
 qc:

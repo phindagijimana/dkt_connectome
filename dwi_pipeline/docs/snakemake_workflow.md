@@ -4,15 +4,15 @@ The **canonical execution engine** for the DKT Connectome is the Snakemake workf
 
 Each pipeline step is a **plugin rule** (QSIPrep, inpaint, recon, QSIRecon, Deep Atropos seg/5TT, lesion-aware ACT, connectome, SD_STREAM, disconnectome, nodestrength, subject QC). Snakemake builds the DAG from declared inputs and outputs — declarative, resumable, and skip-if-done.
 
-**Step 3.5 optional branch** (`--act-5tt-source deep-atropos-native`):
+**Step 3.1 optional branch** (`--act-5tt-source deep-atropos-native`):
 
 | Sub-step | Rule file | Container |
 |----------|-----------|-----------|
-| 3.5a-seg | `deep_atropos_seg.smk` | `dkt_deep_atropos_seg.sif` |
-| 3.5a | `deep_atropos_5tt.smk` | `dkt_deep_atropos.sif` |
-| 3.5 | `lesion_aware_act.smk` | `dkt_lesion_act.sif` |
+| 3.2-seg | `deep_atropos_seg.smk` | `dkt_deep_atropos_seg.sif` |
+| 3.2 | `deep_atropos_5tt.smk` | `dkt_deep_atropos.sif` |
+| 3.1 | `lesion_aware_act.smk` | `dkt_lesion_act.sif` |
 
-Details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md) · [Pipeline steps § 3.5](pipeline_steps.md#step-35-lesion-aware-act-optional).
+Details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md) · [Pipeline steps § 3.1](pipeline_steps.md#step-31-lesion-aware-act-optional).
 
 ---
 
@@ -35,13 +35,13 @@ These wildcard-free targets map 1:1 to `./run --mode` and `run_subject.sh` modes
 | Snakemake target | Pipeline step | `./run --mode` / `run_subject.sh` |
 |------------------|---------------|-------------------------------------|
 | `target_qsiprep` | Step 1 — QSIPrep | `qsiprep` |
-| `target_inpaint` | Step 1.5 — neuroLIT or VBT | `inpaint` |
+| `target_inpaint` | Step 1.1 — neuroLIT or VBT | `inpaint` |
 | `target_recon` | Step 2 — FreeSurfer/FastSurfer | `recon` |
 | `target_qsirecon` | Step 3 — QSIRecon | `qsirecon` |
-| `target_act` | Step 3.5 — lesion-aware ACT | `act` |
+| `target_act` | Step 3.1 — lesion-aware ACT | `act` |
 | `target_sdstream` | SD_STREAM tractography + connectomes | `sdstream` |
 | `target_connectome` | Step 4 — DKT connectome (+ SD if `both`) | `connectome` |
-| `target_disconnectome` | Step 4.5 — disconnectome | `disconnectome` |
+| `target_disconnectome` | Step 4.1 — disconnectome | `disconnectome` |
 | `target_nodestrength` | Step 5 — node strength | `nodestrength` |
 | `target_subject_qc` | Unified QC HTML | (part of participant run) |
 | `all` | Full participant pipeline | `all` |

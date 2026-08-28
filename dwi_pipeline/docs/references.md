@@ -11,12 +11,12 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Step | Tool / method | Primary references |
 |------|---------------|-------------------|
 | **1** | QSIPrep preprocessing & SDC | Cieslak et al. 2021; Andersson et al. 2003/2016 |
-| **1.5** | neuroLIT inpainting; optional VBT | Pollak et al. 2025; Ho et al. 2020; Bey et al. 2024 (VBT) |
+| **1.1** | neuroLIT inpainting; optional VBT | Pollak et al. 2025; Ho et al. 2020; Bey et al. 2024 (VBT) |
 | **2** | FreeSurfer / FastSurfer recon | Fischl 2012; Henschel et al. 2020; Klein & Tourville 2015 |
 | **3** | QSIRecon + SS3T-CSD + ACT-HSVS | Cieslak et al. 2024; Jeurissen et al. 2014; Smith et al. 2012/2020 |
-| **3.5** | Lesion-aware ACT (optional) | Bey et al. 2024; Smith et al. 2012 |
+| **3.1** | Lesion-aware ACT (optional) | Bey et al. 2024; Smith et al. 2012 |
 | **4** | DKT connectome (+ multi-measure) | Tournier et al. 2019; Smith et al. 2015; Jones et al. 2013 |
-| **4.5** | Disconnectome | Griffis et al. 2019; Kuceyeski et al. 2013 |
+| **4.1** | Disconnectome | Griffis et al. 2019; Kuceyeski et al. 2013 |
 | **5** | Node strength / report | Rubinov & Sporns 2010; Piper et al. 2026 |
 | **All** | BIDS layout & BIDS App | Gorgolewski et al. 2016; Gorgolewski et al. 2017 |
 
@@ -38,9 +38,9 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
-## Step 1.5 — Anatomical lesion mitigation (optional)
+## Step 1.1 — Anatomical lesion mitigation (optional)
 
-**What we use:** When a BIDS lesion mask is present, Step 1.5 modifies the T1w before cortical reconstruction. Default backend: [neuroLIT](https://github.com/Deep-MI/lit). Optional backend: **virtual brain transplant (VBT)**, a port of the public LeAPP code (Bey et al. 2024).
+**What we use:** When a BIDS lesion mask is present, Step 1.1 modifies the T1w before cortical reconstruction. Default backend: [neuroLIT](https://github.com/Deep-MI/lit). Optional backend: **virtual brain transplant (VBT)**, a port of the public LeAPP code (Bey et al. 2024).
 
 | Topic | Reference | DOI / link |
 |-------|-----------|------------|
@@ -51,7 +51,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | **VBT / LeAPP (when `--anat-mitigation vbt`)** | Bey P, Dhindsa K, Kashyap A, et al. A lesion-aware automated processing framework for clinical stroke magnetic resonance imaging. *Human Brain Mapping* 2024;45(9):e26701. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
 | LeAPP code (VBT implementation source) | BrainModes/LeAPP GitHub repository. | [github.com/BrainModes/LeAPP](https://github.com/BrainModes/LeAPP) |
 
-**Docs:** [Step 1.5 theory](methods/step1_5_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [Lesion segmentation](lesion_segmentation.md)
+**Docs:** [Step 1.1 theory](methods/step1_1_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [Lesion segmentation](lesion_segmentation.md)
 
 ---
 
@@ -88,7 +88,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
-## Step 3.5 — Lesion-aware ACT (optional)
+## Step 3.1 — Lesion-aware ACT (optional)
 
 **What we use:** After QSIRecon, optionally rebuild iFOD2 + SIFT2 using a 5TT image edited with `5ttedit -path` so the **original BIDS lesion mask** occupies the pathology channel (`--act-mode lesion-aware`). Default base 5TT: QSIRecon ACPC HSVS (`--act-5tt-source hsvs`, ACPC-first workflow). Optional: native Deep Atropos (`--act-5tt-source deep-atropos-native`). See [Deep Atropos branch](deep_atropos_5tt.md).
 
@@ -99,13 +99,13 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | HSVS 5TT | Smith RE, et al. Hybrid surface/volume segmentation. *NeuroImage* 2020;223:117345. | [10.1016/j.neuroimage.2020.117345](https://doi.org/10.1016/j.neuroimage.2020.117345) |
 | SIFT2 (rebuilt weights) | Smith RE, et al. SIFT2. *NeuroImage* 2015;119:338–351. | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
 
-**Docs:** [Step 3.5 theory](methods/step3_5_lesion_act.md) · [Deep Atropos implementation](maintainer/deep_atropos_5tt_plan.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
+**Docs:** [Step 3.1 theory](methods/step3_1_lesion_act.md) · [Deep Atropos implementation](maintainer/deep_atropos_5tt_plan.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
 
 ---
 
 ## Experiment arms (factorial lesion processing)
 
-**What we use:** `--experiment-arm` combines Step 1.5 anatomy backend and Step 3.5 ACT mode for controlled sensitivity analyses. Not a separate tool — a preset of flags with isolated output trees under `RESULTS_ROOT/arms/<arm>/`.
+**What we use:** `--experiment-arm` combines Step 1.1 anatomy backend and Step 3.1 ACT mode for controlled sensitivity analyses. Not a separate tool — a preset of flags with isolated output trees under `RESULTS_ROOT/arms/<arm>/`.
 
 | Design element | Reference | DOI / link |
 |----------------|-----------|------------|
@@ -136,7 +136,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
-## Step 4.5 — Disconnectome (optional)
+## Step 4.1 — Disconnectome (optional)
 
 **What we use:** Lesion-aware structural disconnectome with Options A (parcellation excision), B (streamline exclusion), and C (both); disconnection matrix **D = 1 − spared/primary**.
 
@@ -146,7 +146,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | Virtual lesion / disconnection index | Kuceyeski R, et al. The Network Modification (NeMo) Tool: a structural connectivity-based tool for lesion localization. *NeuroImage: Clinical* 2013;2:1–8. | [10.1016/j.nicl.2012.10.003](https://doi.org/10.1016/j.nicl.2012.10.003) |
 | Connectome excision literature | Internal synthesis | [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md) |
 
-**Docs:** [Step 4.5 theory](methods/step4_5_disconnectome.md) · [Disconnectome](disconnectome.md)
+**Docs:** [Step 4.1 theory](methods/step4_1_disconnectome.md) · [Disconnectome](disconnectome.md)
 
 ---
 

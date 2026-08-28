@@ -1,12 +1,12 @@
-# Step 3.5 — Lesion-aware ACT tractography
+# Step 3.1 — Lesion-aware ACT tractography
 
-**Theory and methods** for rebuilding iFOD2/SIFT2 after inserting the lesion into the MRtrix five-tissue-type (5TT) pathology channel. Operational details: [Pipeline steps § Step 3.5](../pipeline_steps.md#step-35-lesion-aware-act-optional) · [Usage § lesion-aware flags](../usage.md) · [Lesion-aware tractography](../lesion_aware.md) · [Deep Atropos branch](../deep_atropos_5tt.md).
+**Theory and methods** for rebuilding iFOD2/SIFT2 after inserting the lesion into the MRtrix five-tissue-type (5TT) pathology channel. Operational details: [Pipeline steps § Step 3.1](../pipeline_steps.md#step-31-lesion-aware-act-optional) · [Usage § lesion-aware flags](../usage.md) · [Lesion-aware tractography](../lesion_aware.md) · [Deep Atropos branch](../deep_atropos_5tt.md).
 
 ---
 
 ## Background
 
-Standard **Anatomically Constrained Tractography (ACT)** uses a 5TT image with cortical GM, subcortical GM, WM, CSF, and a fifth **pathological / undefined** compartment (Smith et al. 2012). In the default QSIRecon spec (`mrtrix_singleshell_ss3t_ACT-hsvs`), that 5TT is built from FreeSurfer/FastSurfer segmentation on the T1w that Step 2 received — including any Step 1.5 anatomical mitigation.
+Standard **Anatomically Constrained Tractography (ACT)** uses a 5TT image with cortical GM, subcortical GM, WM, CSF, and a fifth **pathological / undefined** compartment (Smith et al. 2012). In the default QSIRecon spec (`mrtrix_singleshell_ss3t_ACT-hsvs`), that 5TT is built from FreeSurfer/FastSurfer segmentation on the T1w that Step 2 received — including any Step 1.1 anatomical mitigation.
 
 If the lesion was **inpainted or transplanted**, the HSVS 5TT may label the former lesion site as apparently healthy tissue. Streamlines can then seed and terminate there under normal GM/WM priors, even though the underlying biology is pathological.
 
@@ -60,7 +60,7 @@ QSIPrep preprocessing, anatomical reconstruction, and SS3T-CSD FOD estimation ar
 
 When `--act-5tt-source deep-atropos-native`:
 
-### Step 3.5a-seg — Segmentation (`dkt_deep_atropos_seg.sif`, optional)
+### Step 3.2 (segmentation) — Segmentation (`dkt_deep_atropos_seg.sif`, optional)
 
 | `act.deep_atropos.segmentation_mode` | Behavior |
 |--------------------------------------|----------|
@@ -72,24 +72,24 @@ Discovery order: `--deep-atropos-seg` / config path → `derivatives/deep-atropo
 
 Output: `deep_atropos_seg/sub-<ID>/desc-deepatropos_seg.nii.gz` (integer labels 0–6).
 
-### Step 3.5a — Seg → base 5TT (`dkt_deep_atropos.sif`)
+### Step 3.2 — Seg → base 5TT (`dkt_deep_atropos.sif`)
 
 `scripts/convert_deep_atropos_to_5tt.py` maps Deep Atropos labels to MRtrix ACT channels on the **native BIDS T1w grid** (Python fallback; MRtrix 3.0.4 lacks `5ttgen deep_atropos`).
 
 Output: `deep_atropos/sub-<ID>/base_5tt_native.mif`.
 
-### Step 3.5 — Lesion edit + tractography (`dkt_lesion_act.sif`)
+### Step 3.1 — Lesion edit + tractography (`dkt_lesion_act.sif`)
 
 1. Resample prepared lesion mask → native 5TT grid (`five_tt_ref` from channel 0).
 2. `5ttedit -path` on **native grid** (no ACPC warp for edit).
 3. Resample edited 5TT → `dwiref` via `desc-preproc_T1w` intermediate.
 4. Clip + renormalize; iFOD2 + SIFT2 (same as HSVS path).
 
-On inpainted factorial arms, Deep Atropos seg and base 5TT use **original BIDS T1w** while the lesion ROI remains the **original BIDS mask** (orthogonal to Step 1.5 anatomy).
+On inpainted factorial arms, Deep Atropos seg and base 5TT use **original BIDS T1w** while the lesion ROI remains the **original BIDS mask** (orthogonal to Step 1.1 anatomy).
 
 ---
 
-## Relationship to Step 1.5 and experiment arms
+## Relationship to Step 1.1 and experiment arms
 
 | Layer | Flag | Question addressed |
 |-------|------|-------------------|
@@ -101,7 +101,7 @@ These are **orthogonal factors** in a deliberate factorial design (LeAPP; Bey et
 
 ### Intentional cross-source design (`neurolit-lesion`, `vbt-lesion`)
 
-When Step 1.5 runs, recon and QSIRecon HSVS 5TT reflect **inpainted** anatomy,
+When Step 1.1 runs, recon and QSIRecon HSVS 5TT reflect **inpainted** anatomy,
 but lesion-aware ACT always uses the **original BIDS lesion ROI** (traced on
 pre-mitigation T1w). DWI is never modified.
 
@@ -146,7 +146,7 @@ Manuscript planning for the TrackTBI factorial cohort: [Publication strategy](..
 | **SIFT2** | Smith RE, et al. SIFT2. *NeuroImage* 2015;119:338–351. | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
 | MRtrix ACT docs | Smith RE, Tournier JD. | [ACT documentation](https://mrtrix.readthedocs.io/en/latest/quantitative_structural_connectivity/act.html) |
 
-Full table: [References § Step 3.5](../references.md#step-35-lesion-aware-act-optional).
+Full table: [References § Step 3.1](../references.md#step-31-lesion-aware-act-optional).
 
 ---
 
@@ -154,7 +154,7 @@ Full table: [References § Step 3.5](../references.md#step-35-lesion-aware-act-o
 
 - [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md)
 - [Lesion-aware tractography](../lesion_aware.md)
-- [Step 1.5 — Inpainting](step1_5_inpaint.md)
+- [Step 1.1 — Inpainting](step1_1_inpaint.md)
 - [Step 4 — Connectome](step4_connectome.md)
 - [Lesion-aware ACT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md)
 - [Disconnectome](../disconnectome.md) — post-hoc lesion disconnection (different question)

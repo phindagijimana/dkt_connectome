@@ -2,14 +2,14 @@
 # Resume TBI factorial experiment arms from Gugger Lab archive.
 #
 # Usage:
-#   bash scripts/submit_tbi_experiment_resume.sh prep          # backfill markers + clean stale Step 3.5 (all arms)
+#   bash scripts/submit_tbi_experiment_resume.sh prep          # backfill markers + clean stale Step 3.1 (all arms)
 #   bash scripts/submit_tbi_experiment_resume.sh wave1         # 4 arms in parallel
 #   bash scripts/submit_tbi_experiment_resume.sh wave2         # VBT arms (after wave1 or VBT fix)
 #   bash scripts/submit_tbi_experiment_resume.sh all           # wave1 then wave2 (no wait between)
 #   bash scripts/submit_tbi_experiment_resume.sh arm orig-lesion   # single arm
 #   bash scripts/submit_tbi_experiment_resume.sh remaining       # incomplete arms, sequential (skips running)
 #
-# Requires rebuilt dkt_lesion_act.sif (ACPC-first Step 3.5 + mrstats QA fix):
+# Requires rebuilt dkt_lesion_act.sif (ACPC-first Step 3.1 + mrstats QA fix):
 #   CONTAINER_QSIRECON=/path/to/qsirecon.sif OUT_SIF=/path/to/dkt_lesion_act.sif \
 #     bash containers/lesion_act/build_lesion_act.sh
 #
@@ -76,7 +76,7 @@ preclean_arm_locks() {
 preclean_failed_lesion_act() {
   local arm="$1"
   if arm_is_running "${arm}"; then
-    echo "  ${arm}: skip Step 3.5 cleanup (Slurm job running)"
+    echo "  ${arm}: skip Step 3.1 cleanup (Slurm job running)"
     return 0
   fi
   local arm_root="${ARMS_ROOT}/${arm}"
@@ -91,7 +91,7 @@ preclean_failed_lesion_act() {
     return 0
   fi
   if [[ -d "${arm_root}/lesion_aware_act" ]] || [[ -f "${log}" ]]; then
-    echo "  ${arm}: clearing stale Step 3.5 outputs (failed or incomplete lesion-aware ACT)"
+    echo "  ${arm}: clearing stale Step 3.1 outputs (failed or incomplete lesion-aware ACT)"
     rm -rf "${arm_root}/lesion_aware_act"
     : > "${log}" 2>/dev/null || true
     rm -rf "${arm_root}/connectomes/sub-${SUBJECT}" \

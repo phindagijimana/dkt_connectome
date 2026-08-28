@@ -10,14 +10,14 @@ Derivatives written under `RESULTS_ROOT` (the BIDS App `<output_dir>`). Paths us
 RESULTS_ROOT/
 ├── dataset_description.json   # derivative dataset provenance (auto-written by ./run)
 ├── qsiprep_single_run_output/sub-<ID>/     Step 1
-├── inpainted/sub-<ID>/ses-<Y>/             Step 1.5 neuroLIT (lesion subjects)
-├── vbt/sub-<ID>/ses-<Y>/                   Step 1.5 VBT (--anat-mitigation vbt)
-├── lesion_aware_act/sub-<ID>/              Step 3.5 (--act-mode lesion-aware)
-├── deep_atropos_seg/sub-<ID>/              Step 3.5a-seg (--act-5tt-source deep-atropos-native)
-├── deep_atropos/sub-<ID>/                  Step 3.5a (--act-5tt-source deep-atropos-native)
+├── inpainted/sub-<ID>/ses-<Y>/             Step 1.1 neuroLIT (lesion subjects)
+├── vbt/sub-<ID>/ses-<Y>/                   Step 1.1 VBT (--anat-mitigation vbt)
+├── lesion_aware_act/sub-<ID>/              Step 3.1 (--act-mode lesion-aware)
+├── deep_atropos_seg/sub-<ID>/              Step 3.2 (segmentation) (--act-5tt-source deep-atropos-native)
+├── deep_atropos/sub-<ID>/                  Step 3.2 (--act-5tt-source deep-atropos-native)
 ├── freesurfer/sub-<ID>/                    Step 2
 ├── qsirecon_single_run_output/sub-<ID>/    Step 3
-├── connectomes/sub-<ID>/                   Step 4 (+ optional 4.5/)
+├── connectomes/sub-<ID>/                   Step 4 (+ optional 4.1/)
 ├── arms/<arm>/                             Experiment-arm isolated runs (optional)
 ├── qc/sub-<ID>/subject_qc.html             Unified QC dashboard (Steps 1–5)
 ├── cohort_qc.html                          Group-level QC index (./run group)
@@ -40,7 +40,7 @@ RESULTS_ROOT/
 
 ---
 
-## Step 1.5 — Inpaint
+## Step 1.1 — Inpaint
 
 Only when `*_T1w_label-lesion_roi.nii.gz` exists for the session:
 
@@ -55,7 +55,7 @@ Only when `*_T1w_label-lesion_roi.nii.gz` exists for the session:
 
 ---
 
-## Step 3.5 — Lesion-aware ACT
+## Step 3.1 — Lesion-aware ACT
 
 When `--act-mode lesion-aware` or a `*-lesion` experiment arm:
 
@@ -69,7 +69,7 @@ When `--act-mode lesion-aware` or a `*-lesion` experiment arm:
 | `lesion_aware_act/sub-<ID>/model-sift2_streamlineweights.csv` | SIFT2 weights |
 | `lesion_aware_act/sub-<ID>/lesion_aware_act.json` | Provenance (`five_tt_source`, warp method, factorial fields) |
 
-### Step 3.5a — Deep Atropos (optional, `--act-5tt-source deep-atropos-native`)
+### Step 3.2 — Deep Atropos (optional, `--act-5tt-source deep-atropos-native`)
 
 | Path | Description |
 |------|-------------|
@@ -115,7 +115,7 @@ Under `connectomes/sub-<ID>/`:
 | `dkt_desc-FA_dwi.nii.gz`, `dkt_desc-MD_dwi.nii.gz` | Voxelwise tensor maps |
 | `dkt_nodes.mif` | DKT parcellation on DWI grid |
 | `parcellation.json` | Atlas metadata |
-| `native_to_preproc_T1w_0GenericAffine.mat` | Registration used for lesion warp (4.5) |
+| `native_to_preproc_T1w_0GenericAffine.mat` | Registration used for lesion warp (4.1) |
 | `assignments.csv` | Streamline–node assignments (debug) |
 
 With `--tractography-model both`: additional `dkt_model-SDSTREAM_connectome_*.csv` files.
@@ -124,7 +124,7 @@ With `CONNECTOME_PARCELLATION=dk`: `dk_connectome.csv` (84 nodes, recon-all only
 
 ---
 
-## Step 4.5 — Disconnectome (optional, manual)
+## Step 4.1 — Disconnectome (optional, manual)
 
 Under `connectomes/sub-<ID>/disconnectome/`:
 
@@ -154,7 +154,7 @@ Cohort-level directory `node_strength/` with per-subject subfolders under `repor
 
 ## Weighting consistency
 
-Step 4 and Step 4.5 must use the same edge weighting (`count` by default). Mismatch invalidates the disconnection matrix — see [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
+Step 4 and Step 4.1 must use the same edge weighting (`count` by default). Mismatch invalidates the disconnection matrix — see [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
 
 ---
 

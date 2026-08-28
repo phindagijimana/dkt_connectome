@@ -62,16 +62,16 @@ workflow/
   rules/
     common.smk              # config loading, path constants, Python helpers
     qsiprep.smk              # Step 1  (plugin: qsiprep.sif)
-    inpaint.smk               # Step 1.5 (lit_0.6.0.sif or dkt_vbt.sif) — lesion subjects only
+    inpaint.smk               # Step 1.1 (lit_0.6.0.sif or dkt_vbt.sif) — lesion subjects only
     recon.smk                  # Step 2  (plugin: freesurfer_7.4.1.sif or fastsurfer_latest.sif)
     qsirecon.smk                # Step 3  (plugin: qsirecon.sif)
-    deep_atropos_seg.smk        # Step 3.5a-seg (dkt_deep_atropos_seg.sif; deep-atropos-native only)
-    deep_atropos_5tt.smk        # Step 3.5a (dkt_deep_atropos.sif; seg → base_5tt_native.mif)
-    lesion_aware_act.smk        # Step 3.5 (plugin: dkt_lesion_act.sif; act.mode=lesion-aware)
+    deep_atropos_seg.smk        # Step 3.2 (segmentation) (dkt_deep_atropos_seg.sif; deep-atropos-native only)
+    deep_atropos_5tt.smk        # Step 3.2 (dkt_deep_atropos.sif; seg → base_5tt_native.mif)
+    lesion_aware_act.smk        # Step 3.1 (plugin: dkt_lesion_act.sif; act.mode=lesion-aware)
     sdstream.smk                # Step 3b/4b optional SD_STREAM tractography + connectomes
     lausanne.smk                # Optional Lausanne-60 parcellation (connectome.atlases)
     connectome.smk                # Step 4  (plugin: dkt_connectome.sif)
-    disconnectome.smk             # Step 4.5 (opt-in via --disconnection)
+    disconnectome.smk             # Step 4.1 (opt-in via --disconnection)
     nodestrength.smk               # Step 5  (plugin: nodestrength_0.1.0.sif)
     subject_qc.smk                # Unified QC HTML dashboard
 ```
@@ -101,7 +101,7 @@ bash submit.sh --syn \
   --fast-fs
 ```
 
-`submit.sh` auto-requests `SBATCH_GRES=gpu:l40s.24g:1` when Step 1.5 inpaint
+`submit.sh` auto-requests `SBATCH_GRES=gpu:l40s.24g:1` when Step 1.1 inpaint
 is enabled. Override with `SBATCH_GRES=` or a different slice if needed.
 
 If you still need the bash engine or dual-container connectome, see **[LEGACY.md](LEGACY.md)**.
@@ -138,7 +138,7 @@ bash workflow/run_subject.sh qsirecon 014
 bash workflow/run_subject.sh act 014 --act-mode lesion-aware
 bash workflow/run_subject.sh act 014 --act-mode lesion-aware --act-5tt-source deep-atropos-native
 bash workflow/run_subject.sh connectome 014
-bash workflow/run_subject.sh disconnectome 014   # Step 4.5 only (lesion subjects)
+bash workflow/run_subject.sh disconnectome 014   # Step 4.1 only (lesion subjects)
 bash workflow/run_subject.sh nodestrength 014
 bash workflow/run_subject.sh all 014 --dry-run            # show the plan, run nothing (-n)
 ```
@@ -290,13 +290,13 @@ Both groups run through Snakemake via `submit.sh`.
   `run_subject.sh inpaint SUBJECT001 --recon-session 2WK` (`BIDS_DIR` pointed
   at a BIDS tree with an actual `*_T1w_label-lesion_roi.nii.gz` for this
   subject; note `--recon-session` / `RECON_SESSION` takes the bare label,
-  e.g. `2WK`, not `ses-2WK`) ran the full Step 1.5 chain for real on a GPU
+  e.g. `2WK`, not `ses-2WK`) ran the full Step 1.1 chain for real on a GPU
   node: `prepare_lesion_mask.py` → `lit-inpainting` (neuroLIT, `cuda`) →
   `check_inpainting.py`. Result: `inpainting_qc.json` reports `"ok": true`
   (`outside_lesion_correlation=0.996`, `correlation_drop_vs_control=0.0027`,
   `geometry_matches_original=true`) and `inpainting.json` was written with
   full provenance. This is the first time the mask-present branch of the
-  Step 1.5 DAG (as opposed to the no-mask no-op branch, tested earlier) and
+  Step 1.1 DAG (as opposed to the no-mask no-op branch, tested earlier) and
   a real `apptainer --nv` GPU container have run through the new engine, and
   the first time the new engine ran under `sbatch` rather than interactively.
   One gotcha found and worth keeping in mind operationally, not a code bug:

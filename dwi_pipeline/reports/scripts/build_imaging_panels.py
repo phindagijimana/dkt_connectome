@@ -109,7 +109,7 @@ def panel_i_inpainting_montage():
                   title="inpainted (pseudo-healthy)", annotate=False)
     nlp.plot_roi(mask_img, bg_img=result, display_mode="z", cut_coords=[lesion_z], axes=axes[2],
                  title="lesion mask, for reference", cmap="autumn", alpha=0.7, annotate=False)
-    fig.suptitle(f"{SUBJECT} -- Step 1.5 inpainting: before / after (slice through lesion centroid)")
+    fig.suptitle(f"{SUBJECT} -- Step 1.1 inpainting: before / after (slice through lesion centroid)")
     fig.savefig(OUT / "I_inpainting_fullbrain_montage.png", dpi=150)
     plt.close(fig)
 

@@ -10,7 +10,7 @@ How the DKT Connectome relates to other BIDS Apps and connectome tools.
 |--|-------------------|----------------|
 | Scope | Preprocessing + reconstruction | Full connectome through DKT matrix + optional disconnectome |
 | Parcellation | Atlas connectomes (e.g. 4S156) | **DKT 78-node** structural connectome (Step 4) |
-| Lesion handling | Cost-function masking only | Inpainting (1.5) + disconnectome (4.5) |
+| Lesion handling | Cost-function masking only | Inpainting (1.1) + disconnectome (4.1) |
 | Output | `derivatives/qsiprep`, `qsirecon` | Custom `RESULTS_ROOT` + optional BIDS export |
 
 This pipeline **uses** QSIPrep and QSIRecon as Steps 1 and 3.
@@ -33,8 +33,8 @@ This pipeline **uses** QSIPrep and QSIRecon as Steps 1 and 3.
 | | connectomemapper3 / micapipe | DKT Connectome |
 |--|------------------------------|----------------|
 | Focus | General multi-modal connectomics | Lesion-aware structural connectome + disconnectome |
-| Lesion inpainting | No | neuroLIT Step 1.5 |
-| Disconnection index | No | Step 4.5 (Griffis-style) |
+| Lesion inpainting | No | neuroLIT Step 1.1 |
+| Disconnection index | No | Step 4.1 (Griffis-style) |
 | HPC | Docker-first | Apptainer + Slurm native |
 
 ---

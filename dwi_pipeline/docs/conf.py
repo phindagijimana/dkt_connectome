@@ -86,6 +86,9 @@ redirects = {
     "readthedocs_setup": "contributing.html#repository-local-documentation",
     "config_catalog": "contributing.html#repository-local-documentation",
     "schema_reference": "contributing.html#repository-local-documentation",
+    "methods/step1_5_inpaint": "methods/step1_1_inpaint.html",
+    "methods/step3_5_lesion_act": "methods/step3_1_lesion_act.html",
+    "methods/step4_5_disconnectome": "methods/step4_1_disconnectome.html",
 }
 
 html_theme = "sphinx_rtd_theme"

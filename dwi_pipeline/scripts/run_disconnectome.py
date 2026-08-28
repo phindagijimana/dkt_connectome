@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Standalone Step 4.5 — lesion-aware disconnectome (Options A, B, C).
+"""Standalone Step 4.1 — lesion-aware disconnectome (Options A, B, C).
 
 Runs outside subject.sh so you can test on a completed results tree before
-wiring it into the pipeline. Requires Step 1.5 (lesion_mask_prepared), Step 3
+wiring it into the pipeline. Requires Step 1.1 (lesion_mask_prepared), Step 3
 (tractogram + SIFT2 weights), and Step 4 (nodes.mif + dkt_connectome.csv).
 
 Outputs under ``connectomes/sub-<ID>/disconnectome/``:
@@ -660,7 +660,7 @@ def main() -> None:
             log(f"Wrote {disconnection_csv} (spared=Option {cfg.disconnection_spared})")
 
     provenance = {
-        "step": "4.5_disconnectome",
+        "step": "4.1_disconnectome",
         "subject": f"sub-{paths.subject}",
         "session": f"ses-{paths.session}",
         "results_root": str(paths.results_root),
