@@ -16,6 +16,10 @@ touch /tmp/dkt_ci_license.txt
 for c in qsiprep qsirecon fastsurfer freesurfer connectome lit nodestrength; do
   touch "/tmp/dkt_ci_${c}.sif"
 done
+# Optional ACT stubs (also created by snakemake_act_ci_setup.sh)
+for c in lesion_act deep_atropos deep_atropos_seg; do
+  touch "/tmp/dkt_ci_${c}.sif" 2>/dev/null || true
+done
 
 cat > "${OVERRIDE}" <<YAML
 subject: "CITEST"

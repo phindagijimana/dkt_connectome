@@ -38,6 +38,24 @@ act:
 `run_deep_atropos_seg.py` rewrites Figshare URLs to `ndownloader.figshare.com` and
 prefetches required weights when the cache is empty.
 
+**Login-node warmup** (before batch submit):
+
+```bash
+python3 dwi_pipeline/scripts/run_deep_atropos_seg.py \
+  --prefetch-only \
+  --cache-dir /path/to/shared/.cache/antsxnet
+```
+
+Or inside the container:
+
+```bash
+apptainer run -B /path/to/cache:/opt/antsxnet_cache dkt_deep_atropos_seg.sif \
+  --prefetch-only --cache-dir /opt/antsxnet_cache
+```
+
+Preflight **requires** `act.deep_atropos.antsxnet_cache` when seg mode is `auto` or
+`generate`.
+
 ## Manual run
 
 ```bash

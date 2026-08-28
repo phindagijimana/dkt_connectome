@@ -10,21 +10,28 @@
 ![DKT Connectome pipeline workflow](docs/img/pipeline_overview.svg)
 
 ```mermaid
-flowchart LR
+flowchart TB
   BIDS["BIDS\nT1w + DWI"] --> S1["Step 1\nQSIPrep"]
   S1 --> S15{"Lesion\nmask?"}
   S15 -->|yes| INP["Step 1.5\nInpaint"]
   S15 -->|no| S2["Step 2\nRecon"]
   INP --> S2
-  S2 --> S3["Step 3\nQSIRecon ACT"]
-  S3 --> S35["Step 3.5\nLesion ACT\n(optional)"]
-  S35 --> S4["Step 4\nDKT connectome"]
+  S2 --> S3["Step 3\nQSIRecon ACT-HSVS"]
+  S3 --> S35{"Step 3.5\nlesion-aware?"}
+  S35 -->|hsvs default| S35H["5ttedit on ACPC HSVS"]
+  S35 -->|deep-atropos-native| S35S["3.5a-seg → 3.5a native 5TT"]
+  S35S --> S35E["3.5 lesion ACT\ntckgen + SIFT2"]
+  S35H --> S35E
+  S35 -->|standard| S4
+  S35E --> S4["Step 4\nDKT connectome"]
   S3 --> S4
   S4 --> S45["Step 4.5\nDisconnectome\n(opt-in)"]
   S4 --> S5["Step 5\nNode strength"]
 ```
 
-Dashed boxes in the SVG = optional steps. See [science overview](docs/science_overview.md) for theory and [pipeline steps](docs/pipeline_steps.md) for file paths.
+Dashed boxes in the SVG = optional steps. Deep Atropos sub-stages (3.5a-seg, 3.5a) apply when
+`--act-5tt-source deep-atropos-native`. See [science overview](docs/science_overview.md),
+[pipeline steps](docs/pipeline_steps.md), and [Deep Atropos branch](docs/deep_atropos_5tt.md).
 
 Full **anatomically constrained tractography** pipeline with a post-hoc anatomical connectome step,
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.
@@ -157,12 +164,12 @@ layers, QC methodology).
 tissue fractions, and rebuilds matched iFOD2 tractography and SIFT2 weights from the
 retained WM FOD.
 
-**Default (`--act-5tt-source hsvs`):** Jim's ACPC-first workflow — warp lesion to QSIRecon
-HSVS 5TT grid (channel-0 reference ≡ `vol0000`), edit on ACPC, resample to `dwiref`.
+**Default (`--act-5tt-source hsvs`):** ACPC-first HSVS workflow — warp lesion to QSIRecon
+HSVS 5TT grid (channel-0 reference), edit on ACPC, resample to `dwiref`.
 
-**Optional (`--act-5tt-source deep-atropos-native`):** Daniel's native-T1 branch — ANTsPyNet
+**Optional (`--act-5tt-source deep-atropos-native`):** Native-T1 Deep Atropos branch — ANTsPyNet
 or imported Deep Atropos seg → `base_5tt_native.mif`, edit on native BIDS T1w, resample to
-`dwiref`. See [Deep Atropos plan](docs/maintainer/deep_atropos_5tt_plan.md).
+`dwiref`. See [Deep Atropos branch](docs/deep_atropos_5tt.md).
 
 ```bash
 # HSVS ACPC path (default)

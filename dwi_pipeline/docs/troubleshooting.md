@@ -63,9 +63,11 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | `no file found for sub-*` (wm-fod) | QSIRecon not finished; if `qsirecon_single_run_output` is a **symlink**, pipeline uses `find -L` — verify target has `*model-ss3t_param-fod_label-WM_dwimap.mif.gz` |
 | Empty lesion in ACPC grid | Check QSIPrep `from-T1wNative_to-T1wACPC`; pipeline falls back to empirical BIDS→preproc affine |
 | `lesion voxels were not fully assigned to 5TT pathology` | Lesion mask misaligned to 5TT ref; check `lesion_aware_act.json` `lesion_warp_method` |
-| ANTsPyNet `math domain error` / Figshare download fail | Set `act.deep_atropos.antsxnet_cache` to persistent NFS; prefetch weights from login node — [deep_atropos_seg README](../containers/deep_atropos_seg/README.md) |
+| ANTsPyNet `math domain error` / Figshare download fail | Set `act.deep_atropos.antsxnet_cache` to persistent NFS; run `run_deep_atropos_seg.py --prefetch-only` from login node — [deep_atropos_seg README](../containers/deep_atropos_seg/README.md) |
+| Preflight: `requires act.deep_atropos.antsxnet_cache` | Create shared cache dir and prefetch before submit (required for `auto`/`generate` seg modes) |
 | `missing Deep Atropos segmentation` with `import` mode | Provide `--deep-atropos-seg` or cohort files under `derivatives/deep-atropos/` |
-| `TripWireError: scipy` in 5TT conversion | Rebuild `dkt_deep_atropos.sif` (includes scipy) or ensure seg/T1w share grid (bind-mount updated convert script) |
+| `TripWireError: scipy` in 5TT conversion | Rebuild `dkt_deep_atropos.sif` (Dockerfile + Apptainer.def include scipy) |
+| Script changes not in published SIF | Set `ACT_BIND_MOUNT_DEV=1` for dev only, or rebuild/publish containers |
 | Slow `tckgen` | Default 10M streamlines; reduce with `--act-streamlines` for pilots |
 
 Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md) · Deep Atropos: [maintainer plan](maintainer/deep_atropos_5tt_plan.md).

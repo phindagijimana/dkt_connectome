@@ -9,7 +9,8 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates python3 python3-pip libgomp1 \
     && pip3 install --no-cache-dir \
-      numpy nibabel ants antspynet \
+      numpy==1.26.4 nibabel==5.2.1 scipy==1.11.4 \
+      ants==0.4.2 antspynet==0.2.7 \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /opt/antsxnet_cache /opt/deep_atropos_seg
 

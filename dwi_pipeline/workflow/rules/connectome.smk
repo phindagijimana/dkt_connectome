@@ -260,24 +260,24 @@ rule connectome:
           tracks_in_container="/lesion_act/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
         else
           tracks="$(_strict_find_one "connectome/tractogram" \
-            find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+            find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
               \( -name '*.tck' -o -name '*.tck.gz' \))"
           tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
           tracks_in_container="/qsirecon/${{tracks_rel}}"
         fi
 
         dwiref="$(_strict_find_one "connectome/dwiref" \
-          find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
+          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
             -name '*space-T1w_dwiref.nii.gz')"
         preproc_dwi="$(_strict_find_one "connectome/preproc_dwi" \
-          find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
+          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
             -name '*space-T1w_desc-preproc_dwi.nii.gz')"
         bval="${{preproc_dwi%.nii.gz}}.bval"
         bvec="${{preproc_dwi%.nii.gz}}.bvec"
         [[ -f "${{bval}}" ]] || _pipeline_fail "connectome/tensor" "missing b-values: ${{bval}}"
         [[ -f "${{bvec}}" ]] || _pipeline_fail "connectome/tensor" "missing b-vectors: ${{bvec}}"
         brain_mask="$(_strict_find_one "connectome/brain_mask" \
-          find "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
+          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
             -name '*space-T1w_desc-brain_mask.nii.gz')"
         preproc_t1w="$(find_qsiprep_preproc_t1w "{QSIPREP_OUT}" "${{SUBJECT}}" "${{ses}}")"
 
@@ -482,12 +482,12 @@ if CONNECTOME_SIFT2_ENABLED:
               act_binds=(-B "{LESION_AWARE_ACT_OUT}":/lesion_act:ro)
             else
               tracks="$(_strict_find_one "connectome_sift2/tractogram" \
-                find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+                find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
                   \( -name '*.tck' -o -name '*.tck.gz' \))"
               tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
               tracks_in_container="/qsirecon/${{tracks_rel}}"
               sift2_weights="$(_strict_find_one "connectome_sift2/sift2_weights" \
-                find "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+                find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
                   -name '*model-sift2_streamlineweights.csv')"
               w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
               weights_in_container="/qsirecon/${{w_rel}}"

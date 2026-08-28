@@ -30,6 +30,12 @@ if ACT_FIVE_TT_SOURCE == "deep-atropos-native":
             f"{RESULTS_ROOT}/logs/sub-{{subject}}_deep_atropos_5tt.log",
         params:
             outdir=lambda wc: f"{DEEP_ATROPOS_OUT}/sub-{wc.subject}",
+            convert_bind=lambda wc: (
+                f'-B "{DWI_PIPELINE_DIR}/scripts/convert_deep_atropos_to_5tt.py":'
+                f"/opt/deep_atropos/convert_deep_atropos_to_5tt.py:ro"
+                if ACT_BIND_MOUNT_DEV
+                else ""
+            ),
         shell:
             r"""
             exec > {log} 2>&1
@@ -45,7 +51,7 @@ if ACT_FIVE_TT_SOURCE == "deep-atropos-native":
               -B "$(dirname "{input.t1w}")":/bids_t1w:ro \
               -B "$(dirname "{input.segmentation}")":/seg:ro \
               -B "{params.outdir}":/out \
-              -B "{DWI_PIPELINE_DIR}/scripts/convert_deep_atropos_to_5tt.py":/opt/deep_atropos/convert_deep_atropos_to_5tt.py:ro \
+              {params.convert_bind} \
               "{CONTAINER_DEEP_ATROPOS}" \
               --t1w "/bids_t1w/$(basename "{input.t1w}")" \
               --segmentation "/seg/$(basename "{input.segmentation}")" \

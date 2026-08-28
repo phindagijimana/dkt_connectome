@@ -196,6 +196,16 @@ if [[ "${PIPELINE_MODE}" == "act" || ( "${PIPELINE_MODE}" == "all" && "${ACT_MOD
     check_sif deep_atropos "$(container_path deep_atropos CONTAINER_DEEP_ATROPOS)"
     if [[ "${DEEP_ATROPOS_SEG_MODE}" != "import" ]]; then
       check_sif deep_atropos_seg "$(container_path deep_atropos_seg CONTAINER_DEEP_ATROPOS_SEG)"
+      if [[ "${DEEP_ATROPOS_SEG_MODE}" == "auto" || "${DEEP_ATROPOS_SEG_MODE}" == "generate" ]]; then
+        cache="$(read_config act.deep_atropos.antsxnet_cache)"
+        if [[ -z "${cache}" || "${cache}" == "null" ]]; then
+          cache="${DEEP_ATROPOS_ANTSXNET_CACHE:-}"
+        fi
+        if [[ -z "${cache}" || ! -d "${cache}" ]]; then
+          fail "deep-atropos seg mode=${DEEP_ATROPOS_SEG_MODE} requires act.deep_atropos.antsxnet_cache" \
+            "(persistent NFS dir with ANTsXNet weights; prefetch from login node — see containers/deep_atropos_seg/README.md)"
+        fi
+      fi
     fi
   fi
 fi

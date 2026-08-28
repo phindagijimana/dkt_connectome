@@ -11,7 +11,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **`dkt_deep_atropos.sif`** — Deep Atropos integer seg → `base_5tt_native.mif` on BIDS T1w grid (`containers/deep_atropos/`)
 - **`dkt_deep_atropos_seg.sif`** — ANTsPyNet `deep_atropos` segmentation on native T1w (`containers/deep_atropos_seg/`)
 - **Snakemake rules** `deep_atropos_seg.smk`, `deep_atropos_5tt.smk` for optional native-T1 5TT branch
-- **`--act-5tt-source hsvs|deep-atropos-native`** — HSVS ACPC (Jim's fix, default) vs Daniel native Deep Atropos
+- **`--act-5tt-source hsvs|deep-atropos-native`** — HSVS ACPC (default) vs native Deep Atropos
 - **`--deep-atropos-seg-mode auto|import|generate`** and **`--deep-atropos-seg PATH`** — segmentation discovery / import / ANTsPyNet generate
 - **`scripts/convert_deep_atropos_to_5tt.py`**, **`scripts/run_deep_atropos_seg.py`** — label→5TT conversion and ANTsPyNet wrapper
 - **`act.deep_atropos.antsxnet_cache`** — persistent ANTsXNet weight cache for HPC
@@ -21,14 +21,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **`--connectome-sift2`** — optional Step 4 SIFT2 matrix (default primary remains count)
 - **`--tractography-model both`** (default) — iFOD2 + deterministic SD_STREAM connectomes
 - **`--experiment-arm`** presets (`orig-std`, `vbt-lesion`, …) with isolated `RESULTS_ROOT/arms/<arm>/`
-- **Validation** — `scripts/validate_vbt_lesion_act.py` + unit tests
+- **`scripts/publish_act_containers.sh`** — Docker Hub + GHCR publish for Step 3.5 images
+- **`act_containers_publish.yml`** — CI build/push for `dkt-lesion-act`, `dkt-deep-atropos`, `dkt-deep-atropos-seg`
+- **`--prefetch-only`** on `run_deep_atropos_seg.py` — login-node ANTsXNet weight warmup
+- **ACT Snakemake CI dry-run** — `target_act` + Deep Atropos branch via `snakemake_act_ci_setup.sh`
 - **Theory docs** — methods pages for Steps 1.5, 3.5, 4 multi-measure outputs; experiment-arm citations
 
 ### Changed
 
 - **`run_lesion_aware_act.sh`** — split HSVS ACPC (`run_hsvs_acpc_workflow`) and Deep Atropos native (`run_deep_atropos_native_workflow`) paths; shared clip/renormalize and tractography
-- **`lesion_aware_act.smk`** — `find -L` for QSIRecon discovery when outputs are symlinked; Deep Atropos 5TT bind-mount
-- Step 3.5 methods docs — Jim ACPC workflow, Daniel native branch, three-container architecture
+- **`lesion_aware_act.smk`** — `find -L` for QSIRecon discovery when outputs are symlinked
+- **`sdstream.smk`**, **`connectome.smk`** — `find -L` for symlinked qsiprep/qsirecon trees
+- **Deep Atropos bind-mounts** gated behind `ACT_BIND_MOUNT_DEV=1` (default: in-container scripts)
+- **Preflight** requires `antsxnet_cache` when Deep Atropos seg mode is `auto`/`generate`
+- **Container fallbacks** — `act.mode=lesion-aware` fails fast if dedicated ACT SIF keys missing
+- Pinned Python deps in ACT Dockerfiles/Apptainer.defs (`act_python_requirements.txt`)
+- **`container_install.py`** — GHCR fallbacks for ACT images
+- **Documentation** — removed person-specific workflow labels; new public [Deep Atropos branch](deep_atropos_5tt.md); updated pipeline SVG sketch with Step 3.5a-seg / 3.5a
+- Step 3.5 methods docs — HSVS ACPC workflow, Deep Atropos native branch, three-container architecture
 - README workflow sketch (SVG + mermaid) on GitHub; updated stages and container tables
 - Documentation site switched from **MkDocs Material** to **Sphinx + Read the Docs theme** (QSIPrep-style sidebar layout)
 - Step 1.5 VBT runs via `CONTAINER_VBT` instead of binding into `qsiprep.sif`

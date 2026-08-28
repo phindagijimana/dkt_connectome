@@ -21,7 +21,8 @@ From: ubuntu:22.04
     apt-get install -y --no-install-recommends \
         ca-certificates python3 python3-pip libgomp1 libgfortran5 zlib1g \
         libtiff5 libpng16-16 libfftw3-double3 \
-    && pip3 install --no-cache-dir nibabel numpy \
+    && pip3 install --no-cache-dir \
+        numpy==1.26.4 nibabel==5.2.1 scipy==1.11.4 \
     && rm -rf /var/lib/apt/lists/*
     chmod +x /usr/local/bin/run_deep_atropos_5tt
 

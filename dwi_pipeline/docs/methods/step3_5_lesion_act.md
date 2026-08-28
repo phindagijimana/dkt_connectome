@@ -1,6 +1,6 @@
 # Step 3.5 — Lesion-aware ACT tractography
 
-**Theory and methods** for rebuilding iFOD2/SIFT2 after inserting the lesion into the MRtrix five-tissue-type (5TT) pathology channel. Operational details: [Pipeline steps § Step 3.5](../pipeline_steps.md#step-35-lesion-aware-act-optional) · [Usage § lesion-aware flags](../usage.md) · [Lesion-aware tractography](../lesion_aware.md).
+**Theory and methods** for rebuilding iFOD2/SIFT2 after inserting the lesion into the MRtrix five-tissue-type (5TT) pathology channel. Operational details: [Pipeline steps § Step 3.5](../pipeline_steps.md#step-35-lesion-aware-act-optional) · [Usage § lesion-aware flags](../usage.md) · [Lesion-aware tractography](../lesion_aware.md) · [Deep Atropos branch](../deep_atropos_5tt.md).
 
 ---
 
@@ -12,7 +12,7 @@ If the lesion was **inpainted or transplanted**, the HSVS 5TT may label the form
 
 **Lesion-aware ACT** keeps the mitigated anatomy for parcellation and registration, but transforms the **original BIDS lesion mask** into the 5TT reference grid and assigns those voxels to the **pathology channel** with `5ttedit -path` before matched `tckgen` and `tcksift2` (LeAPP-style workflow; Bey et al. 2024).
 
-Daniel's contusion workflow and Jim's ACPC HSVS fix share the same pathology edit (resample lesion → `5ttedit -path` → renormalize tissue fractions). They differ only in **where the base 5TT lives** before that edit.
+The **HSVS ACPC path** and the **Deep Atropos native-T1 path** share the same pathology edit (resample lesion → `5ttedit -path` → renormalize tissue fractions). They differ only in **where the base 5TT lives** before that edit.
 
 ---
 
@@ -28,20 +28,22 @@ Lesion-aware ACT therefore answers: *How should tractography behave where anatom
 
 | Source | Flag / config | Base 5TT grid | Lesion warp for `5ttedit` | Typical use |
 |--------|---------------|---------------|---------------------------|-------------|
-| **HSVS (default)** | `hsvs` | QSIRecon ACPC HSVS | BIDS native T1w → ACPC 5TT ref (Jim's `vol0000`) | Production factorial arms |
-| **Deep Atropos native** | `deep-atropos-native` | Native BIDS T1w (from Deep Atropos seg) | Already on native T1w | Daniel sensitivity branch |
+| **HSVS (default)** | `hsvs` | QSIRecon ACPC HSVS | BIDS native T1w → ACPC 5TT ref (channel 0) | Production factorial arms |
+| **Deep Atropos native** | `deep-atropos-native` | Native BIDS T1w (from Deep Atropos seg) | Already on native T1w | Sensitivity / native-T1 priors |
 
 Both paths then **resample the edited 5TT → `dwiref`**, clip, renormalize, and run matched iFOD2 + SIFT2 in `dkt_lesion_act.sif`.
 
+Full Deep Atropos branch reference: [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md).
+
 ---
 
-## Processing sequence — HSVS / ACPC (Jim's fix)
+## Processing sequence — HSVS / ACPC (default)
 
-Jim's manual recipe (Aug 2026) maps directly to `run_hsvs_acpc_workflow()` in `containers/lesion_act/run_lesion_aware_act.sh`:
+Maps to `run_hsvs_acpc_workflow()` in `containers/lesion_act/run_lesion_aware_act.sh`:
 
 1. Load QSIRecon HSVS 5TT (ACPC) and WM FOD (`dwiref` grid).
 2. Prepare **original BIDS** lesion mask on native T1w (`prepare_lesion_mask.py`).
-3. Extract 5TT channel 0 as the ACPC reference grid (`five_tt_ref` ≡ Jim's `vol0000` from `fslsplit`).
+3. Extract 5TT channel 0 as the ACPC reference grid (`five_tt_ref`).
 4. Binarize / label-select lesion; warp lesion → ACPC 5TT grid:
    - primary: QSIPrep `from-T1wNative_to-T1wACPC` transform (`antsApplyTransforms`, GenericLabel);
    - fallback: empirical affine BIDS T1w → `desc-preproc_T1w` (Step 4 recipe).
@@ -54,7 +56,7 @@ QSIPrep preprocessing, anatomical reconstruction, and SS3T-CSD FOD estimation ar
 
 ---
 
-## Processing sequence — Deep Atropos native (Daniel's branch)
+## Processing sequence — Deep Atropos native
 
 When `--act-5tt-source deep-atropos-native`:
 
@@ -63,7 +65,7 @@ When `--act-5tt-source deep-atropos-native`:
 | `act.deep_atropos.segmentation_mode` | Behavior |
 |--------------------------------------|----------|
 | `auto` (default) | Use external seg if found; else run ANTsPyNet |
-| `import` | External seg required (Daniel cohort files) |
+| `import` | External seg required (precomputed cohort files) |
 | `generate` | Always run ANTsPyNet on native BIDS T1w |
 
 Discovery order: `--deep-atropos-seg` / config path → `derivatives/deep-atropos/` → `<results>/deep_atropos_seg/sub-<ID>/`.
@@ -84,8 +86,6 @@ Output: `deep_atropos/sub-<ID>/base_5tt_native.mif`.
 4. Clip + renormalize; iFOD2 + SIFT2 (same as HSVS path).
 
 On inpainted factorial arms, Deep Atropos seg and base 5TT use **original BIDS T1w** while the lesion ROI remains the **original BIDS mask** (orthogonal to Step 1.5 anatomy).
-
-Maintainer reference: [deep_atropos_5tt_plan.md](../maintainer/deep_atropos_5tt_plan.md).
 
 ---
 
@@ -152,8 +152,8 @@ Full table: [References § Step 3.5](../references.md#step-35-lesion-aware-act-o
 
 ## See also
 
+- [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md)
 - [Lesion-aware tractography](../lesion_aware.md)
-- [Deep Atropos implementation](../maintainer/deep_atropos_5tt_plan.md)
 - [Step 1.5 — Inpainting](step1_5_inpaint.md)
 - [Step 4 — Connectome](step4_connectome.md)
 - [Lesion-aware ACT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md)

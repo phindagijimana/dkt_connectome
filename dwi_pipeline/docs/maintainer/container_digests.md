@@ -8,6 +8,10 @@
 | Step | Pin | SIF file | Size (MB) | SHA256 |
 |------|-----|----------|-----------|--------|
 | qsiprep | *(run install.sh to populate)* | | | `(not cached)` |
+| qsirecon | *(run install.sh to populate)* | | | `(not cached)` |
+| lesion_act | `ghcr.io/phindagijimana/dkt-lesion-act:0.1.0` | `dkt_lesion_act.sif` | | `(not cached)` |
+| deep_atropos | `ghcr.io/phindagijimana/dkt-deep-atropos:0.1.0` | `dkt_deep_atropos.sif` | | `(not cached)` |
+| deep_atropos_seg | `ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.1.0` | `dkt_deep_atropos_seg.sif` | | `(not cached)` |
 
 Primary pins live in [`workflow/config/config.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/config/config.yaml).
 

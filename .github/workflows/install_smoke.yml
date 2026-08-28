@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  apptainer-pull:
+  apptainer-pull-qsiprep:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -35,28 +35,55 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Pull pinned containers
+      - name: Pull pinned containers (qsiprep)
         working-directory: dwi_pipeline
-        env:
-          SMOKE_MODE: ${{ inputs.mode || 'qsiprep' }}
         run: |
           python3 -m pip install pyyaml
           export DKT_CONTAINER_CACHE="${{ runner.temp }}/dkt_containers"
           bash scripts/install.sh \
             --cache "${DKT_CONTAINER_CACHE}" \
-            --mode "${SMOKE_MODE}" \
+            --mode qsiprep \
             --missing-only \
             --no-doctor
 
-      - name: Verify registry pins (HTTP)
+      - name: Verify registry pins (qsiprep)
         working-directory: dwi_pipeline
-        env:
-          SMOKE_MODE: ${{ inputs.mode || 'qsiprep' }}
-        run: python3 scripts/container_install.py verify --mode "${SMOKE_MODE}"
+        run: python3 scripts/container_install.py verify --mode qsiprep
 
-      - name: Write config and list cache
+  apptainer-pull-act:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: github.event_name == 'schedule' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'act')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Apptainer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget -q -O /tmp/apptainer.deb \
+            https://github.com/apptainer/apptainer/releases/download/v1.3.4/apptainer_1.3.4_amd64.deb
+          sudo dpkg -i /tmp/apptainer.deb || sudo apt-get install -f -y
+          apptainer --version
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Pull pinned ACT containers
         working-directory: dwi_pipeline
         run: |
-          export DKT_CONTAINER_CACHE="${{ runner.temp }}/dkt_containers"
-          python3 scripts/container_install.py write-config --cache "${DKT_CONTAINER_CACHE}"
-          ls -lh "${DKT_CONTAINER_CACHE}"
+          python3 -m pip install pyyaml
+          export DKT_CONTAINER_CACHE="${{ runner.temp }}/dkt_containers_act"
+          bash scripts/install.sh \
+            --cache "${DKT_CONTAINER_CACHE}" \
+            --mode act \
+            --missing-only \
+            --no-doctor
+
+      - name: Verify registry pins (act)
+        working-directory: dwi_pipeline
+        run: python3 scripts/container_install.py verify --mode act
+
+      - name: List ACT cache
+        run: ls -lh "${{ runner.temp }}/dkt_containers_act" || true

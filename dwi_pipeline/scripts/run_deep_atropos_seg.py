@@ -26,6 +26,14 @@ def _patch_figshare_downloads() -> None:
         return original_get_file(fname, origin, *args, **kwargs)
 
     tf.keras.utils.get_file = get_file_with_ndownloader
+    return original_get_file
+
+
+def prefetch_deep_atropos_assets(*, cache_dir: Path, verbose: bool = True) -> None:
+    """Download ANTsPyNet weights into cache_dir (login-node warmup)."""
+    import antspynet
+
+    _prefetch_deep_atropos_assets(cache_dir=cache_dir, verbose=verbose)
 
 
 def _prefetch_deep_atropos_assets(*, cache_dir: Path, verbose: bool = True) -> None:
@@ -120,8 +128,8 @@ def run_deep_atropos_seg(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--t1w", type=Path, required=True, help="Native BIDS T1w NIfTI")
-    parser.add_argument("--output", type=Path, required=True, help="Output integer seg NIfTI")
+    parser.add_argument("--t1w", type=Path, help="Native BIDS T1w NIfTI")
+    parser.add_argument("--output", type=Path, help="Output integer seg NIfTI")
     parser.add_argument("--json", type=Path, default=None, help="Optional provenance JSON")
     parser.add_argument(
         "--no-preprocessing",
@@ -141,8 +149,29 @@ def main() -> None:
         default=Path("/opt/antsxnet_cache"),
         help="Directory for ANTsXNet model weights",
     )
+    parser.add_argument(
+        "--prefetch-only",
+        action="store_true",
+        help="Download ANTsPyNet weights to --cache-dir and exit (login-node warmup)",
+    )
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
+
+    if args.prefetch_only:
+        cache = args.cache_dir.resolve()
+        cache.mkdir(parents=True, exist_ok=True)
+        import antspynet
+
+        os.environ["ANTSXNET_CACHE"] = str(cache)
+        os.environ["KERAS_HOME"] = str(cache)
+        antspynet.set_antsxnet_cache_directory(str(cache))
+        _patch_figshare_downloads()
+        prefetch_deep_atropos_assets(cache_dir=cache, verbose=not args.quiet)
+        print(f"[deep-atropos-seg] prefetch complete: {cache}", flush=True)
+        return
+
+    if not args.t1w or not args.output:
+        parser.error("--t1w and --output are required unless --prefetch-only")
 
     run_deep_atropos_seg(
         t1w=args.t1w,

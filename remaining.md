@@ -96,8 +96,8 @@ Does **not** block using the BIDS App today. Runbook: [v1_science_track.md](dwi_
 |------|-------|
 | Freeze **v1.0** tag + SDC release notes | Philbert |
 | **Container digest table** (S4) | Philbert — `generate_container_digests_md.py` after full `install.sh` |
-| URMC **n=61** end-to-end + QC CSV | Daniel + HPC |
-| HCP-YA **n=10** baseline stats | Daniel |
+| URMC **n=61** end-to-end + QC CSV | cohort team + HPC |
+| HCP-YA **n=10** baseline stats | methods team |
 | Radiological review rubric | James |
 | Table 1 + Figures 1–7 | Team |
 | **bioRxiv** preprint | Philbert |
