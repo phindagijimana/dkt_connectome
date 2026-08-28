@@ -75,7 +75,7 @@ equivalent to deleting or ignoring the lesion.
 ### Experiment arms (anatomy × ACT)
 
 For factorial sensitivity analyses on lesion subjects, use `--experiment-arm`
-to set Step 1.5 backend and Step 3.5 ACT together. The design follows the
+to set Step 1.1 backend and Step 3.1 ACT together. The design follows the
 **LeAPP factorial framework** (Bey et al. 2024): anatomical mitigation and
 lesion-aware tractography are **orthogonal** — inpainting fixes surfaces and
 parcellation; ACT pathology editing fixes streamline priors during tractography.
@@ -92,12 +92,12 @@ Each arm writes to an isolated tree under `RESULTS_ROOT/arms/<arm>/` by default.
 
 ### Intentional cross-source design on `*-lesion` inpainted arms
 
-On **`neurolit-lesion`** and **`vbt-lesion`**, Step 2–3 and Step 3.5 deliberately
+On **`neurolit-lesion`** and **`vbt-lesion`**, Step 2–3 and Step 3.1 deliberately
 use **different anatomical references**:
 
 | Processing layer | Source | Purpose |
 |------------------|--------|---------|
-| Recon + HSVS 5TT | Inpainted T1w (Step 1.5) | Surfaces, parcellation, tissue segmentation |
+| Recon + HSVS 5TT | Inpainted T1w (Step 1.1) | Surfaces, parcellation, tissue segmentation |
 | ACT pathology channel | **Original BIDS lesion ROI** | Biological injury location for tractography priors |
 | DWI / WM FOD | Unmodified QSIPrep output | Diffusion signal at the lesion site is real, not inpainted |
 
@@ -134,7 +134,7 @@ that DWI abnormality persists at that location.
 
 **Important:** LeAPP validated ischemic stroke. TBI lesions require cohort-specific QC before treating any arm as production-default. Do not pool connectomes across arms without tracking provenance.
 
-Theory pages: [Step 1.5 — Inpainting](methods/step1_5_inpaint.md) · [Step 3.5 — Lesion-aware ACT](methods/step3_5_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md).
+Theory pages: [Step 1.1 — Inpainting](methods/step1_1_inpaint.md) · [Step 3.1 — Lesion-aware ACT](methods/step3_1_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md).
 
 CLI examples and Slurm usage: [Usage — experiment arms](usage.md).
 Decision guide: [Decision tables — experiment arms](decision_tables.md).

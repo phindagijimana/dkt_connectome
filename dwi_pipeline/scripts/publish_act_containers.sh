@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build (optional) and publish Step 3.5 containers to Docker Hub and GHCR.
+# Build (optional) and publish Step 3.1 containers to Docker Hub and GHCR.
 #
 # Images (tag 0.1.0):
 #   dkt-lesion-act, dkt-deep-atropos, dkt-deep-atropos-seg

@@ -11,7 +11,7 @@
 #   license inside the container for anatomical steps (not a separate recon-all
 #   job on the host).
 #
-# Step 1.5 — Inpaint (container, default auto-on; skipped when no lesion mask):
+# Step 1.1 — Inpaint (container, default auto-on; skipped when no lesion mask):
 #   Runs neuroLIT (deepmi/lit, a DDPM lesion-inpainting model with VINN layers)
 #   on the subject's T1w *before* Step 2, filling in the manually-traced lesion
 #   region so a lesion doesn't throw off recon-all/FastSurfer's atlas-based
@@ -34,7 +34,7 @@
 #   Build the container: bash dwi_pipeline/containers/lit/build_lit.sh
 #
 # Step 2 — Recon (container, default ON; tools: recon-all OR FastSurfer):
-#   Runs anatomical surface reconstruction on the subject's T1w (the Step 1.5
+#   Runs anatomical surface reconstruction on the subject's T1w (the Step 1.1
 #   inpainted T1w when that ran, else the raw BIDS T1w) to produce a
 #   FreeSurfer-style subjects directory (aparc+aseg.mgz, surfaces, labels,
 #   etc.) at RECON_OUT/sub-XXX/.
@@ -102,10 +102,10 @@
 #   bash subject.sh all 014 --fast-fs        # FastSurfer + --fsaparc (adds DK-68)
 #   bash subject.sh all 014 --no-recon       # skip Step 2 (set ACT-fast or FS dir)
 #   bash subject.sh all 014 --no-connectome  # skip Step 4 (and Step 5 with it)
-#   bash subject.sh all 014 --no-inpaint     # force-skip Step 1.5 even if a mask exists
+#   bash subject.sh all 014 --no-inpaint     # force-skip Step 1.1 even if a mask exists
 #   bash subject.sh all 014 --no-node-strength  # skip Step 5 only
 #   bash subject.sh qsiprep 014              # preprocessing only
-#   bash subject.sh inpaint 014              # Step 1.5 only (needs a lesion mask)
+#   bash subject.sh inpaint 014              # Step 1.1 only (needs a lesion mask)
 #   bash subject.sh recon 014                # Step 2 only (recon-all by default)
 #   bash subject.sh recon 014 --fastsurfer   # Step 2 only via FastSurfer
 #   bash subject.sh qsirecon 014             # Step 3 only (QSIPrep must exist)
@@ -132,7 +132,7 @@
 #   RESULTS_ROOT, BIDS_DIR, NTHREADS, OMP_NTHREADS, OUTPUT_RES
 #   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER, CONTAINER_LIT, CONTAINER_NODESTRENGTH
 #   FS_LICENSE, TEMPLATEFLOW_HOME
-#   RUN_INPAINT=0|1        Step 1.5 in mode=all/recon (default 1: auto-runs only if a
+#   RUN_INPAINT=0|1        Step 1.1 in mode=all/recon (default 1: auto-runs only if a
 #                          lesion mask is found; --no-inpaint or 0 forces a skip)
 #   INPAINT_REQUIRE_MASK=1 fail instead of silently skipping when no lesion mask is found
 #   INPAINT_OUT            inpainted-T1w output dir (default: RESULTS_ROOT/inpainted)
@@ -170,7 +170,7 @@
 #   RECON_SKIP_IF_EXISTS=1  skip recon when aparc+aseg.mgz already exists (default: fail)
 #   RECON_SESSION=2WK         override session for recon T1w (default: from dwi-select filter)
 #   RUN_NODESTRENGTH=0|1   Step 5 in mode=all/connectome (default 1 when Step 4 ran)
-#   RUN_DISCONNECTOME=0|1  Step 4.5 in mode=all/connectome (default 0; pass --disconnection)
+#   RUN_DISCONNECTOME=0|1  Step 4.1 in mode=all/connectome (default 0; pass --disconnection)
 #   DISCONNECTOME_CORE_ONLY=0|1
 #   DISCONNECTOME_ERODE_VOXELS=N   default 0
 #   NODESTRENGTH_OUT       Step 5 output dir (default: RESULTS_ROOT/node_strength; cohort-shared,
@@ -394,7 +394,7 @@ if [[ -z "${CONTAINER_FREESURFER:-}" ]]; then
 fi
 _CONNECTOME_SIF_DEFAULT="/path/to/others/containers/dkt_connectome.sif"
 CONTAINER_CONNECTOME="${CONTAINER_CONNECTOME:-${_CONNECTOME_SIF_DEFAULT}}"
-# Step 1.5 (deepmi/lit). Only required when a lesion mask is actually found for
+# Step 1.1 (deepmi/lit). Only required when a lesion mask is actually found for
 # a subject/session; see run_inpaint(). Build: bash dwi_pipeline/containers/lit/build_lit.sh
 CONTAINER_LIT="${CONTAINER_LIT:-/path/to/others/containers/lit_0.6.0.sif}"
 # Step 5 (nodestrength / dwi-AI). Standalone repo+container, not built from
@@ -407,10 +407,10 @@ FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
 # with the host-side FS install (next to the license).
 FS_LUT="${FS_LUT:-${FS_LICENSE%/*}/FreeSurferColorLUT.txt}"
 
-# --- Inpaint (Step 1.5) defaults ---
+# --- Inpaint (Step 1.1) defaults ---
 # Auto-on: only actually runs when find_lesion_mask() finds a mask for this
 # subject/session (see run_inpaint). Most subjects have none, so this is a
-# no-op for them and the pipeline behaves exactly as it did before Step 1.5
+# no-op for them and the pipeline behaves exactly as it did before Step 1.1
 # existed. --no-inpaint / RUN_INPAINT=0 forces a skip even when a mask exists.
 RUN_INPAINT="${RUN_INPAINT:-1}"
 ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
@@ -477,11 +477,11 @@ QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RUN_CONNECTOME="${RUN_CONNECTOME:-1}"
 # Step 5 (nodestrength): auto-on whenever Step 4 ran. Cheap (~20s CPU, no GPU)
 # and atlas-agnostic (auto-detects 78-node DKT vs. 84-node DK from the
-# connectome's own shape), so unlike Step 1.5 there is no precondition to gate
+# connectome's own shape), so unlike Step 1.1 there is no precondition to gate
 # on -- every subject with a connectome gets a report. --no-node-strength /
 # RUN_NODESTRENGTH=0 to skip.
 RUN_NODESTRENGTH="${RUN_NODESTRENGTH:-1}"
-# Step 4.5 (disconnectome) is opt-in via --disconnection; still under validation.
+# Step 4.1 (disconnectome) is opt-in via --disconnection; still under validation.
 RUN_DISCONNECTOME="${RUN_DISCONNECTOME:-0}"
 DISCONNECTOME_CORE_ONLY="${DISCONNECTOME_CORE_ONLY:-0}"
 DISCONNECTOME_ERODE_VOXELS="${DISCONNECTOME_ERODE_VOXELS:-0}"
@@ -757,11 +757,11 @@ find_lesion_mask() {
 }
 
 # -----------------------------------------------------------------------------
-# run_inpaint — Step 1.5: neuroLIT fills the lesion on the T1w before Step 2.
+# run_inpaint — Step 1.1: neuroLIT fills the lesion on the T1w before Step 2.
 #   No-op (not a failure) when no lesion mask exists for this subject/session,
 #   unless INPAINT_REQUIRE_MASK=1. Sets INPAINTED_T1W when it actually ran, so
 #   run_recon/run_connectome can pick up the result; leaves it empty otherwise
-#   so they fall back to the raw BIDS T1w exactly as before Step 1.5 existed.
+#   so they fall back to the raw BIDS T1w exactly as before Step 1.1 existed.
 #   Idempotent per call (only does real work once per subject.sh invocation)
 #   and, across invocations, skips when INPAINT_SKIP_IF_EXISTS=1 (default) and
 #   a prior inpainting.json + result already exist.
@@ -790,7 +790,7 @@ run_inpaint() {
       _pipeline_fail "inpaint" "INPAINT_REQUIRE_MASK=1 but no lesion mask found for sub-${SUBJECT} ses-${target_ses}" \
         "Expected ${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat/*_T1w_label-lesion_roi.nii.gz"
     fi
-    echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${target_ses} — skipping Step 1.5 (Step 2 uses the raw T1w)"
+    echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${target_ses} — skipping Step 1.1 (Step 2 uses the raw T1w)"
     return 0
   fi
   echo "Inpaint: found lesion mask ${mask}"
@@ -957,7 +957,7 @@ run_recon() {
   local t1w
   if [[ -n "${INPAINTED_T1W}" ]]; then
     t1w="${INPAINTED_T1W}"
-    echo "Recon: T1w input: ${t1w} (Step 1.5 inpainted — lesion mask was found)"
+    echo "Recon: T1w input: ${t1w} (Step 1.1 inpainted — lesion mask was found)"
   else
     t1w="$(_strict_find_one "recon/T1w" \
       find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
@@ -1029,7 +1029,7 @@ _run_recon_freesurfer() {
   echo "Recon: FREESURFER_HOME inside container = ${fs_home}"
 
   # Bind each T1w's own parent directory at a neutral mount point rather than
-  # assuming it lives under BIDS_DIR — the Step 1.5 inpainted T1w lives under
+  # assuming it lives under BIDS_DIR — the Step 1.1 inpainted T1w lives under
   # INPAINT_OUT instead, and this way recon-all doesn't care which it got.
   local -a i_args=()
   local -a t1_binds=()
@@ -1172,12 +1172,12 @@ find_bids_t1w() {
 
 # T1w to use as the Step 4b-1 affine-registration source. Step 2's recon-all/
 # FastSurfer read whichever T1w run_inpaint() (in this invocation, or a prior
-# one) actually produced a subjects dir from; if that was the Step 1.5
+# one) actually produced a subjects dir from; if that was the Step 1.1
 # inpainted T1w, register *that* to QSIPrep's T1w rather than the still-
 # lesioned raw BIDS one, since --keepgeom means their geometry is identical
 # but only the inpainted one is intensity-consistent with what recon-all saw.
 # Falls back to the raw BIDS T1w whenever no inpainting result exists yet
-# (the common case, and the pre-Step-1.5 behaviour of this pipeline).
+# (the common case, and the pre-Step-1.1 behaviour of this pipeline).
 _resolve_registration_t1w() {
   local subject="$1" session="$2"
   if [[ -n "${INPAINTED_T1W}" ]]; then
@@ -1186,7 +1186,7 @@ _resolve_registration_t1w() {
   fi
   local cached="${INPAINT_OUT}/sub-${subject}/ses-${session}/inpainting_volumes/inpainting_result.nii.gz"
   if [[ "${RUN_INPAINT}" == "1" && -f "${cached}" ]]; then
-    echo "Connectome: reusing cached Step 1.5 result from a prior run: ${cached}" >&2
+    echo "Connectome: reusing cached Step 1.1 result from a prior run: ${cached}" >&2
     echo "${cached}"
     return 0
   fi
@@ -1533,7 +1533,7 @@ run_connectome() {
   local brain_mask_in_container="/qsiprep/${brain_mask_rel}"
 
   # bids_t1w is usually under BIDS_DIR (already bound at /bids below), but
-  # when Step 1.5 ran it's the inpainted T1w under INPAINT_OUT instead — bind
+  # when Step 1.1 ran it's the inpainted T1w under INPAINT_OUT instead — bind
   # its own parent directory rather than assuming BIDS_DIR covers it.
   local -a _CONNECTOME_T1W_OVERRIDE_BINDS=()
   if [[ "${bids_t1w}" == "${BIDS_DIR}"/* ]]; then
@@ -1780,7 +1780,7 @@ run_disconnectome() {
     if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
       RUN_DISCONNECTOME=1
     else
-      echo "Disconnectome (Step 4.5): skipped (pass --disconnection to opt in; method still under validation)"
+      echo "Disconnectome (Step 4.1): skipped (pass --disconnection to opt in; method still under validation)"
       return 0
     fi
   fi
@@ -1789,7 +1789,7 @@ run_disconnectome() {
   target_ses="$(_resolve_target_session)" || return 0
   mask_raw="$(find_lesion_mask "${SUBJECT}" "${target_ses}")"
   if [[ -z "${mask_raw}" ]]; then
-    echo "Disconnectome (Step 4.5): no BIDS lesion mask — skipping"
+    echo "Disconnectome (Step 4.1): no BIDS lesion mask — skipping"
     return 0
   fi
   mask_prepared="${RESULTS_ROOT}/lesion_masks/sub-${SUBJECT}/ses-${target_ses}/lesion_mask_prepared.nii.gz"
@@ -1813,7 +1813,7 @@ run_disconnectome() {
     _pipeline_fail "disconnectome" "missing ${dkt_matrix}" "Run Step 4 (connectome) first."
   fi
 
-  echo "=== Disconnectome (Step 4.5): sub-${SUBJECT} ses-${target_ses} ==="
+  echo "=== Disconnectome (Step 4.1): sub-${SUBJECT} ses-${target_ses} ==="
 
   local -a extra_args=(--connectome-weighting "${DISCONNECTOME_WEIGHTING}")
   [[ "${DISCONNECTOME_CORE_ONLY}" == "1" ]] && extra_args+=(--core-only)

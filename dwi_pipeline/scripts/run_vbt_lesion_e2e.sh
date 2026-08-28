@@ -70,13 +70,13 @@ COMMON=(
 bash "${DWI_ROOT}/workflow/preflight.sh" --mode inpaint --subject "${SUBJECT}" --quick \
   || { echo "Preflight inpaint failed"; exit 1; }
 
-echo "--- Step 1.5: VBT ---"
+echo "--- Step 1.1: VBT ---"
 bash "${RUN}" inpaint "${SUBJECT}" "${COMMON[@]}"
 
 echo "--- Step 2: Recon (FastSurfer on VBT T1w) ---"
 bash "${RUN}" recon "${SUBJECT}" "${COMMON[@]}" --fastsurfer
 
-echo "--- Step 3.5: Lesion-aware ACT (${ACT_STREAMLINES} streamlines) ---"
+echo "--- Step 3.1: Lesion-aware ACT (${ACT_STREAMLINES} streamlines) ---"
 bash "${RUN}" act "${SUBJECT}" "${COMMON[@]}" --act-streamlines "${ACT_STREAMLINES}"
 
 echo "--- Step 4: Connectome (+ SD_STREAM when tractography.model=both) ---"

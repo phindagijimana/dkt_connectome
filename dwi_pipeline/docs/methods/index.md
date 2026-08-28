@@ -17,13 +17,13 @@ This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods 
 | Step | Page | Primary tools | What you cite |
 |------|------|---------------|---------------|
 | **1** | [QSIPrep preprocessing](step1_qsiprep.md) | QSIPrep, TOPUP/SyN | Cieslak et al. 2021 |
-| **1.5** | [Lesion inpainting & VBT](step1_5_inpaint.md) | neuroLIT (DDPM); optional VBT | Pollak et al. 2025; Bey et al. 2024 (VBT) |
+| **1.1** | [Lesion inpainting & VBT](step1_1_inpaint.md) | neuroLIT (DDPM); optional VBT | Pollak et al. 2025; Bey et al. 2024 (VBT) |
 | **2** | [Cortical reconstruction](step2_recon.md) | FreeSurfer / FastSurfer | Fischl 2012; Klein & Tourville 2012 |
 | **3** | [Tractography](step3_qsirecon.md) | QSIRecon, MRtrix3 SS3T-ACT-HSVS | Cieslak et al. 2024; Smith et al. 2012 |
-| **3.5** | [Lesion-aware ACT](step3_5_lesion_act.md) | MRtrix3 `5ttedit -path` + iFOD2/SIFT2; optional Deep Atropos native 5TT | Bey et al. 2024; Smith et al. 2012 |
-| **3.5a** | [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) | `dkt_deep_atropos_seg.sif` + `dkt_deep_atropos.sif` (optional branch) | Sensitivity vs HSVS ACPC |
+| **3.1** | [Lesion-aware ACT](step3_1_lesion_act.md) | MRtrix3 `5ttedit -path` + iFOD2/SIFT2; optional Deep Atropos native 5TT | Bey et al. 2024; Smith et al. 2012 |
+| **3.2** | [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) | `dkt_deep_atropos_seg.sif` + `dkt_deep_atropos.sif` (optional branch) | Sensitivity vs HSVS ACPC |
 | **4** | [DKT connectome](step4_connectome.md) | ANTs + MRtrix3 (multi-measure) | Tournier et al. 2019; Jones et al. 2013 |
-| **4.5** | [Disconnectome](step4_5_disconnectome.md) | Custom excision | Griffis et al. 2019 |
+| **4.1** | [Disconnectome](step4_1_disconnectome.md) | Custom excision | Griffis et al. 2019 |
 | **5** | [Node strength report](step5_node_strength.md) | nodestrength container | Rubinov & Sporns 2010; Piper et al. 2026 |
 
 ---
@@ -32,8 +32,8 @@ This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods 
 
 - [Science overview](../science_overview.md) — end-to-end flow, physics summary, default choices
 - [Publication strategy](../publication_strategy.md) — TrackTBI cohort manuscripts, factorial contrasts, journal targets
-- [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) — optional Step 3.5a-seg / 3.5a branch
+- [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) — optional Step 3.2 (segmentation) / 3.2 branch
 - [Pipeline steps](../pipeline_steps.md) — operational reference
-- [Disconnectome](../disconnectome.md) — CLI defaults and QC (Step 4.5 user guide)
+- [Disconnectome](../disconnectome.md) — CLI defaults and QC (Step 4.1 user guide)
 - [Comparisons](../comparisons.md) — vs other pipelines
 - Developer deep-dive: [pipeline_science.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md)

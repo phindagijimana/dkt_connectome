@@ -13,23 +13,23 @@
 flowchart TB
   BIDS["BIDS\nT1w + DWI"] --> S1["Step 1\nQSIPrep"]
   S1 --> S15{"Lesion\nmask?"}
-  S15 -->|yes| INP["Step 1.5\nInpaint"]
+  S15 -->|yes| INP["Step 1.1\nInpaint"]
   S15 -->|no| S2["Step 2\nRecon"]
   INP --> S2
   S2 --> S3["Step 3\nQSIRecon ACT-HSVS"]
-  S3 --> S35{"Step 3.5\nlesion-aware?"}
-  S35 -->|hsvs default| S35H["5ttedit on ACPC HSVS"]
-  S35 -->|deep-atropos-native| S35S["3.5a-seg → 3.5a native 5TT"]
-  S35S --> S35E["3.5 lesion ACT\ntckgen + SIFT2"]
-  S35H --> S35E
-  S35 -->|standard| S4
-  S35E --> S4["Step 4\nDKT connectome"]
+  S3 --> S31{"Step 3.1\nlesion-aware?"}
+  S31 -->|hsvs default| S31H["5ttedit on ACPC HSVS"]
+  S31 -->|deep-atropos-native| S31S["3.2-seg → 3.2 native 5TT"]
+  S31S --> S31E["3.1 lesion ACT\ntckgen + SIFT2"]
+  S31H --> S31E
+  S31 -->|standard| S4
+  S31E --> S4["Step 4\nDKT connectome"]
   S3 --> S4
-  S4 --> S45["Step 4.5\nDisconnectome\n(opt-in)"]
+  S4 --> S41["Step 4.1\nDisconnectome\n(opt-in)"]
   S4 --> S5["Step 5\nNode strength"]
 ```
 
-Dashed boxes in the SVG = optional steps. Deep Atropos sub-stages (3.5a-seg, 3.5a) apply when
+Dashed boxes in the SVG = optional steps. Deep Atropos sub-stages (3.2-seg, 3.2) apply when
 `--act-5tt-source deep-atropos-native`. See [science overview](docs/science_overview.md),
 [pipeline steps](docs/pipeline_steps.md), and [Deep Atropos branch](docs/deep_atropos_5tt.md).
 
@@ -37,7 +37,7 @@ Full **anatomically constrained tractography** pipeline with a post-hoc anatomic
 plus a node-strength / ENIGMA-style clinical report generated from that connectome.
 
 Subjects with a manually traced lesion mask (`*_T1w_label-lesion_roi.nii.gz`)
-can receive Step 1.5 anatomical lesion mitigation before reconstruction:
+can receive Step 1.1 anatomical lesion mitigation before reconstruction:
 neuroLIT inpainting (default), LeAPP-compatible virtual brain transplant
 (VBT), or none. Every subject without a mask is unaffected.
 
@@ -73,15 +73,15 @@ local BIDS archives) separate from day-to-day pipeline I/O.
 | Step | Script mode | Tool | Output |
 |------|-------------|------|--------|
 | 1 | `qsiprep` | QSIPrep | Preprocessed DWI, `dwiref`, transforms |
-| 1.5 | `inpaint` | `lit_0.6.0.sif` (neuroLIT) or `dkt_vbt.sif` (VBT) — **auto if lesion mask** | Lesion-mitigated T1w, QC report |
+| 1.1 | `inpaint` | `lit_0.6.0.sif` (neuroLIT) or `dkt_vbt.sif` (VBT) — **auto if lesion mask** | Lesion-mitigated T1w, QC report |
 | 2 | `recon` | FreeSurfer / FastSurfer | `aparc+aseg.mgz`, surfaces |
 | 3 | `qsirecon` | QSIRecon (SS3T + ACT-HSVS) | Tractogram, SIFT2 weights, optional 4S156 atlas connectome |
-| 3.5 | `act` | `dkt_lesion_act.sif` — **`--act-mode lesion-aware`** | Lesion-edited 5TT + rebuilt tractography |
+| 3.1 | `act` | `dkt_lesion_act.sif` — **`--act-mode lesion-aware`** | Lesion-edited 5TT + rebuilt tractography |
 | 4 | `connectome` | `dkt_connectome.sif` | DKT count/length/FA/MD matrices (78×78) |
-| 4.5 | `disconnectome` | host scripts — **`--disconnection`** | Excision / exclusion / D matrices |
+| 4.1 | `disconnectome` | host scripts — **`--disconnection`** | Excision / exclusion / D matrices |
 | 5 | `nodestrength` | `nodestrength_0.1.0.sif` — **auto when connectome exists** | Node strength/AI CSVs, ENIGMA report |
 
-`bash workflow/run_subject.sh all SUBJECT` runs steps 1–5 sequentially (1.5 runs inside Step 2 whenever
+`bash workflow/run_subject.sh all SUBJECT` runs steps 1–5 sequentially (1.1 runs inside Step 2 whenever
 a lesion mask is found for that subject/session; 5 runs inside Step 4 whenever a connectome
 was produced).
 
@@ -117,7 +117,7 @@ More examples: [docs/tutorial.md](docs/tutorial.md).
 
 ---
 
-## Anatomical lesion mitigation (Step 1.5)
+## Anatomical lesion mitigation (Step 1.1)
 
 The default `neurolit` backend runs the DDPM lesion-inpainting model. The
 optional `vbt` backend ports LeAPP's implementation of the Solodkin et al.
@@ -130,7 +130,7 @@ All backends are conditional on a sibling `*_T1w_label-lesion_roi.nii.gz`.
 # Runs automatically as part of Step 2 when sub-01/ses-2WK has a lesion mask:
 bash dwi_pipeline/workflow/run_subject.sh all 01
 
-# Run/test Step 1.5 in isolation:
+# Run/test Step 1.1 in isolation:
 bash dwi_pipeline/workflow/run_subject.sh inpaint 01
 
 # LeAPP-compatible virtual brain transplant:
@@ -157,7 +157,7 @@ layers, QC methodology).
 
 ---
 
-## Lesion-aware ACT and experiment arms (Step 3.5)
+## Lesion-aware ACT and experiment arms (Step 3.1)
 
 `--act-mode lesion-aware` inserts the **original BIDS lesion mask** into the MRtrix
 5TT pathology channel with `5ttedit -path`, validates with `5ttcheck`, clip/renormalizes
@@ -280,7 +280,7 @@ for the full CLI, output layout, and the underlying Piper et al. 2026 methodolog
 | `--no-connectome` | Skip Step 4 (`--no-dk` still accepted; skips Step 5 too) |
 | `--connectome-weighting count\|sift2` | Select downstream disconnectome weighting |
 | `--primary-connectome-measure count\|sift2` | Explicitly choose the `dkt_connectome.csv` compatibility alias |
-| `--inpaint` / `--no-inpaint` | Force Step 1.5 on/off (default: auto — on only if a lesion mask exists) |
+| `--inpaint` / `--no-inpaint` | Force Step 1.1 on/off (default: auto — on only if a lesion mask exists) |
 | `--node-strength` / `--no-node-strength` | Force Step 5 on/off (default: auto — on whenever Step 4 ran) |
 | `--strength-only` | Step 5: skip `volume/` and `compare/` |
 | `--no-report` | Step 5: skip `reports/` (PDF + figures) |
@@ -301,7 +301,7 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 | **Step 4 parcellation** | DKT from `recon-all` reads `aparc.DKTatlas+aseg.mgz`; requesting DKT on a tree that lacks it **fails** rather than silently applying the DKT table to a DK image |
 | **dwi-select** | No `same_session` fmap fallback; `on_no_match: error` |
 | **QSIRecon + `--no-recon`** | Fails if HSVS spec and no FreeSurfer subjects dir |
-| **Inpaint (Step 1.5)** | More than one lesion mask for a subject/session **fails**; QC failure **warns** by default, `INPAINT_FAIL_ON_QC=1` to fail instead; missing/no mask is **not** a failure (silent skip) unless `INPAINT_REQUIRE_MASK=1` |
+| **Inpaint (Step 1.1)** | More than one lesion mask for a subject/session **fails**; QC failure **warns** by default, `INPAINT_FAIL_ON_QC=1` to fail instead; missing/no mask is **not** a failure (silent skip) unless `INPAINT_REQUIRE_MASK=1` |
 | **Node strength (Step 5)** | Missing connectome CSV or missing `CONTAINER_NODESTRENGTH` **fails**; container exiting without writing `manifest.json` **fails** |
 
 ---
@@ -317,7 +317,7 @@ The pipeline avoids silent fallbacks. Failures print `ERROR [label]: ...` and ex
 | `CONTAINER_FASTSURFER` | `.../others/containers/fastsurfer_latest.sif` |
 | `CONTAINER_LIT` | `.../others/containers/lit_0.6.0.sif` (neuroLIT inpaint) |
 | `CONTAINER_VBT` | `.../others/containers/dkt_vbt.sif` (VBT inpaint) |
-| `CONTAINER_LESION_ACT` | `.../others/containers/dkt_lesion_act.sif` (Step 3.5) |
+| `CONTAINER_LESION_ACT` | `.../others/containers/dkt_lesion_act.sif` (Step 3.1) |
 | `CONTAINER_NODESTRENGTH` | `.../node_strength/containers/nodestrength_0.1.0.sif` |
 | `FS_LICENSE` | `.../others/data_mining/freesurfer/license.txt` |
 | `TEMPLATEFLOW_HOME` | `templateflow/` in the repo root |
@@ -333,7 +333,7 @@ bash dwi_pipeline/containers/connectome/build_connectome.sh
 
 Legacy dual-container Step 4: see [workflow/LEGACY.md](workflow/LEGACY.md).
 
-Build the Step 1.5 SIF (straight Docker Hub pull, no custom layers):
+Build the Step 1.1 SIF (straight Docker Hub pull, no custom layers):
 
 ```bash
 bash dwi_pipeline/containers/lit/build_lit.sh
@@ -430,10 +430,10 @@ T1w/DWI grid.
 | `scripts/repair_bids_sidecars.py` | BIDS sidecar repair |
 | `scripts/run_bids_repair.sh` | Repair wrapper |
 | `scripts/make_dkt_lut.py` | Generate the 78-node `fs_dkt.txt` from `fs_default.txt` |
-| `scripts/prepare_lesion_mask.py` | Step 1.5: resample/select-labels/binarize a lesion mask + provenance |
-| `scripts/check_inpainting.py` | Step 1.5 QC: correlation outside the lesion vs. a resampling-only control |
+| `scripts/prepare_lesion_mask.py` | Step 1.1: resample/select-labels/binarize a lesion mask + provenance |
+| `scripts/check_inpainting.py` | Step 1.1 QC: correlation outside the lesion vs. a resampling-only control |
 | `containers/connectome/` | Step 4 container (Dockerfile, build script, entrypoint) |
-| `containers/lit/` | Step 1.5 container (`build_lit.sh` pulls `deepmi/lit` from Docker Hub) |
+| `containers/lit/` | Step 1.1 container (`build_lit.sh` pulls `deepmi/lit` from Docker Hub) |
 | `config/dwi_select_b1000.json` | Default b1000 + IntendedFor fmaps |
 | `reports/scripts/` | Per-subject visualization scripts (connectome, morphometry, imaging, ENIGMA 3D) |
 | [`node_strength/`](/path/to/node_strength) | Step 5 — separate repo/container (`nodestrength`, aka `dwi-AI`); node strength, AI, ENIGMA figures, `report.pdf` |

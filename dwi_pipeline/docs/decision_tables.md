@@ -44,11 +44,11 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 
 ---
 
-## Lesion inpainting (Step 1.5)
+## Lesion inpainting (Step 1.1)
 
 | Situation | Behavior |
 |-----------|----------|
-| BIDS `*_T1w_label-lesion_roi.nii.gz` present | Auto Step 1.5 before recon (default backend: neuroLIT) |
+| BIDS `*_T1w_label-lesion_roi.nii.gz` present | Auto Step 1.1 before recon (default backend: neuroLIT) |
 | No mask | Silent skip (raw T1w → Step 2) |
 | Mask present but skip desired | `--no-inpaint` or `--anat-mitigation none` |
 | LeAPP-compatible VBT instead of neuroLIT | `--anat-mitigation vbt` |
@@ -56,19 +56,19 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 
 ---
 
-## Anatomical mitigation backend (Step 1.5)
+## Anatomical mitigation backend (Step 1.1)
 
 | Goal | Flag | Output directory | Cite when publishing |
 |------|------|------------------|----------------------|
 | Production default (learned inpainting) | `--anat-mitigation neurolit` or *(default)* | `inpainted/` | Pollak et al. 2025 |
 | Deterministic contralesional fill (LeAPP port) | `--anat-mitigation vbt` | `vbt/` | Bey et al. 2024 (LeAPP VBT) |
-| Sensitivity: no anatomical fill | `--anat-mitigation none` | *(Step 1.5 skipped)* | — |
+| Sensitivity: no anatomical fill | `--anat-mitigation none` | *(Step 1.1 skipped)* | — |
 
-Both backends write the same filename for Step 2: `inpainting_volumes/inpainting_result.nii.gz`. Theory: [Step 1.5 methods](methods/step1_5_inpaint.md).
+Both backends write the same filename for Step 2: `inpainting_volumes/inpainting_result.nii.gz`. Theory: [Step 1.1 methods](methods/step1_1_inpaint.md).
 
 ---
 
-## Lesion-aware ACT (Step 3.5)
+## Lesion-aware ACT (Step 3.1)
 
 | Goal | Flag | Tractogram source for Step 4 | Cite when publishing |
 |------|------|------------------------------|----------------------|
@@ -78,10 +78,10 @@ Both backends write the same filename for Step 2: `inpainting_volumes/inpainting
 | Native Deep Atropos base 5TT | `--act-5tt-source deep-atropos-native` | ANTsPyNet seg → native `5ttedit` → dwiref | Sensitivity vs HSVS; [Deep Atropos branch](deep_atropos_5tt.md) |
 | Import external Deep Atropos segs | `--deep-atropos-seg-mode import` | Skip ANTsPyNet; require external seg | — |
 | Generate segs in-pipeline | `--deep-atropos-seg-mode generate` | Run `dkt_deep_atropos_seg.sif` | Pilot / no external segs |
-| Re-run Step 3.5 only | `--mode act` | — | — |
+| Re-run Step 3.1 only | `--mode act` | — | — |
 | Deterministic robustness matrices | `--tractography-model both` | Parallel SD_STREAM connectomes | Tournier et al. 2019 |
 
-Requires lesion mask. Uses **original BIDS mask** for 5TT editing (not the inpainted region). Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md).
+Requires lesion mask. Uses **original BIDS mask** for 5TT editing (not the inpainted region). Theory: [Step 3.1 methods](methods/step3_1_lesion_act.md).
 
 ---
 
@@ -109,9 +109,9 @@ Full flag reference: [Usage — experiment arms](usage.md) · [References § Exp
 
 ---
 
-## Connectome weighting (Steps 4 & 4.5)
+## Connectome weighting (Steps 4 & 4.1)
 
-| Weighting | When to use | Step 4.5 requirement | Cite |
+| Weighting | When to use | Step 4.1 requirement | Cite |
 |-----------|-------------|----------------------|------|
 | **`count`** (default) | Group comparisons, standard graphs | Use same for disconnectome | Tournier et al. 2019 |
 | **`sift2`** | Quantitative density interpretation | **Must** match Step 4; mismatch invalidates D matrix | Smith et al. 2015 |
@@ -120,7 +120,7 @@ Step 4 also writes **MeanLength, MeanFA, MeanMD** from the same tractogram. Inte
 
 ---
 
-## Disconnectome (Step 4.5)
+## Disconnectome (Step 4.1)
 
 | Situation | Flag |
 |-----------|------|
@@ -130,7 +130,7 @@ Step 4 also writes **MeanLength, MeanFA, MeanMD** from the same tractogram. Inte
 | Sensitivity: eroded lesion | `--disconnectome-erode-voxels 1` |
 | Standalone re-run | `--mode disconnectome` |
 
-Requires: lesion mask from Step 1.5 + DKT connectome from Step 4.
+Requires: lesion mask from Step 1.1 + DKT connectome from Step 4.
 
 ---
 

@@ -40,15 +40,15 @@ Contents
 
    methods/index
    methods/step1_qsiprep
-   methods/step1_5_inpaint
+   methods/step1_1_inpaint
    methods/step2_recon
    methods/step3_qsirecon
-   methods/step3_5_lesion_act
+   methods/step3_1_lesion_act
    deep_atropos_5tt
    lesion_aware
    publication_strategy
    methods/step4_connectome
-   methods/step4_5_disconnectome
+   methods/step4_1_disconnectome
    methods/step5_node_strength
 
 .. toctree::

@@ -7,7 +7,7 @@ primary comparator; this work extends that framework to **traumatic brain injury
 at cohort scale.
 
 **Related docs:** [Lesion-aware tractography](lesion_aware.md) · [Validation](validation.md) ·
-[Usage — experiment arms](usage.md) · [Step 3.5 methods](methods/step3_5_lesion_act.md) ·
+[Usage — experiment arms](usage.md) · [Step 3.1 methods](methods/step3_1_lesion_act.md) ·
 [Citation](citation.md)
 
 ---
@@ -31,7 +31,7 @@ TBI contusion, edema, hemorrhage, and bilateral injury are the new territory.
 | **URMC / CIDUR controls** (non-lesion) | Normative connectome or **synthetic lesion injection** on healthy anatomy — not pooled with lesion factorial arms without a separate claim |
 | **Pilot subject** (`sub-TBI011011`, six-arm experiment tree) | Engineering gate before full cohort; ACPC lesion warp + pathology QA |
 
-Report **completion rates by arm** (Step 3.5 pathology QA, registration, empty nodes,
+Report **completion rates by arm** (Step 3.1 pathology QA, registration, empty nodes,
 tractography hangs). At N≈100, pass/fail tables are primary results, not footnotes.
 
 ---
@@ -130,13 +130,13 @@ is not purely exploratory.
 
 - TBI lesion morphology vs ischemic stroke
 - neuroLIT + VBT factorial vs LeAPP’s inpainting stack
-- ACPC / HSVS registration workflow for Step 3.5
+- ACPC / HSVS registration workflow for Step 3.1
 - TrackTBI multi-site cohort and explicit provenance per arm
 
 ### Engineering prerequisites (before cohort scale-up)
 
-1. Rebuild `dkt_lesion_act.sif` after Step 3.5 script changes (or bind-mount the
-   repo script in Snakemake) — see [Containers § Step 3.5](containers.md) and
+1. Rebuild `dkt_lesion_act.sif` after Step 3.1 script changes (or bind-mount the
+   repo script in Snakemake) — see [Containers § Step 3.1](containers.md) and
    [lesion_act README on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md)
 2. Clear QSIRecon internal `tckgen` hangs on `*-lesion` arms where applicable
 3. Pilot on one subject until `lesion_warp_method.txt` and pathology QA pass
@@ -246,7 +246,7 @@ Cite upstream tools per [References by step](references.md). State pipeline vers
 
 - [ ] Pipeline version and container digests
 - [ ] Six-arm provenance or explicit subset with justification
-- [ ] Per-subject Step 3.5 QA (`lesion_warp_method.txt`, pathology overlap)
+- [ ] Per-subject Step 3.1 QA (`lesion_warp_method.txt`, pathology overlap)
 - [ ] Primary / secondary contrasts pre-registered or pre-specified internally
 - [ ] Connectome integrity (78×78 DKT, empty nodes) — [Validation](validation.md)
 - [ ] Disconnectome integrity if `--disconnection` — [Disconnectome § Integrity QC](disconnectome.md#integrity-qc)

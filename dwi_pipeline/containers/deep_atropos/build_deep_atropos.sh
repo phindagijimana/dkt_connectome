@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build dkt_deep_atropos.sif — Deep Atropos seg → base_5tt_native.mif (Step 3.5a).
+# Build dkt_deep_atropos.sif — Deep Atropos seg → base_5tt_native.mif (Step 3.2).
 #
 # Stages MRtrix from qsirecon.sif for mrconvert / 5ttcheck.
 #

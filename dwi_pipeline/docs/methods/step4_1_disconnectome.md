@@ -1,6 +1,6 @@
-# Step 4.5 — Structural disconnectome
+# Step 4.1 — Structural disconnectome
 
-**Theory and methods** for lesion-aware connectome excision and disconnection quantification. Operational details: [Disconnectome](../disconnectome.md) · [Pipeline steps § Step 4.5](../pipeline_steps.md#step-45-disconnectome-optional).
+**Theory and methods** for lesion-aware connectome excision and disconnection quantification. Operational details: [Disconnectome](../disconnectome.md) · [Pipeline steps § Step 4.1](../pipeline_steps.md#step-41-disconnectome-optional).
 
 ---
 
@@ -16,16 +16,16 @@ This step is inspired by **structural disconnectome mapping** (Griffis et al. 20
 
 ## Prerequisites
 
-Step 4.5 consumes artifacts from Steps 1.5, 3, and 4:
+Step 4.1 consumes artifacts from Steps 1.1, 3, and 4:
 
 | Input | Source step | Purpose |
 |-------|-------------|---------|
-| `lesion_mask_prepared.nii.gz` | 1.5 | Binary lesion definition on T1w |
+| `lesion_mask_prepared.nii.gz` | 1.1 | Binary lesion definition on T1w |
 | `*_streamlines.tck.gz` (+ optional SIFT2 weights) | 3 | Tractogram |
 | `nodes.mif`, `dkt_connectome.csv` | 4 | Parcellation + primary connectome |
 | `native_to_preproc_T1w_0GenericAffine.mat`, `dwiref` | 4 | Warp lesion to tractography grid |
 
-Requires a prepared lesion mask from inpainting (Step 1.5). Subjects without a BIDS lesion mask skip this step entirely.
+Requires a prepared lesion mask from inpainting (Step 1.1). Subjects without a BIDS lesion mask skip this step entirely.
 
 ---
 
@@ -113,9 +113,9 @@ Weighting default matches Step 4 (**streamline counts**); optional `--connectome
 
 | Step | What it changes |
 |------|-----------------|
-| **1.5 Inpaint** | T1w appearance for recon — improves parcellation around lesions |
+| **1.1 Inpaint** | T1w appearance for recon — improves parcellation around lesions |
 | **4 Primary connectome** | Counts streamlines on **unmodified** tractogram with warped labels |
-| **4.5 Disconnectome** | Post-hoc excision/exclusion — quantifies lesion-specific disconnection |
+| **4.1 Disconnectome** | Post-hoc excision/exclusion — quantifies lesion-specific disconnection |
 
 Inpainting and disconnectome address **different questions**: inpainting improves anatomical label quality; disconnectome measures connectivity loss attributable to the lesion.
 
@@ -137,13 +137,13 @@ Full specification: [Inpainting/disconnection.md](https://github.com/phindagijim
 
 | Substep | Action | Output |
 |---------|--------|--------|
-| **4.5a** | Binary union of lesion labels on T1w | `lesion_binary.nii.gz` |
-| **4.5b** | Warp lesion → `dwiref` / `nodes.mif` grid | `lesion_in_dwi.mif` |
-| **4.5c** | ROI overlap metrics | `lesion_roi_metrics.csv` |
-| **4.5d** | Option A: parc excision + tck2connectome | `connectome_A.csv` |
-| **4.5e** | Option B: tckedit exclude + tck2connectome | `connectome_B.csv` |
-| **4.5f** | Option C: B tractogram + A parcellation | `connectome_C.csv` |
-| **4.5g** | D = 1 − spared/primary | `disconnection_matrix.csv` |
+| **4.1a** | Binary union of lesion labels on T1w | `lesion_binary.nii.gz` |
+| **4.1b** | Warp lesion → `dwiref` / `nodes.mif` grid | `lesion_in_dwi.mif` |
+| **4.1c** | ROI overlap metrics | `lesion_roi_metrics.csv` |
+| **4.1d** | Option A: parc excision + tck2connectome | `connectome_A.csv` |
+| **4.1e** | Option B: tckedit exclude + tck2connectome | `connectome_B.csv` |
+| **4.1f** | Option C: B tractogram + A parcellation | `connectome_C.csv` |
+| **4.1g** | D = 1 − spared/primary | `disconnection_matrix.csv` |
 
 The primary `dkt_connectome.csv` from Step 4 is **never modified**.
 
@@ -157,7 +157,7 @@ The primary `dkt_connectome.csv` from Step 4 is **never modified**.
 | Network modification / virtual lesion | Kuceyeski R, et al. *NeuroImage: Clinical* 2013 | [10.1016/j.nicl.2012.10.003](https://doi.org/10.1016/j.nicl.2012.10.003) |
 | TBI connectivity review | Hayes JP, et al. *JINS* 2016 | [10.1017/S1355617715000740](https://doi.org/10.1017/S1355617715000740) |
 
-Full table: [References § Step 4.5](../references.md#step-45-disconnectome-optional) · Implementation spec: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md).
+Full table: [References § Step 4.1](../references.md#step-41-disconnectome-optional) · Implementation spec: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md).
 
 ---
 
@@ -165,5 +165,5 @@ Full table: [References § Step 4.5](../references.md#step-45-disconnectome-opti
 
 - [Disconnectome](../disconnectome.md) — CLI flags and defaults
 - [Lesion segmentation](../lesion_segmentation.md)
-- [Step 1.5 — Inpainting](step1_5_inpaint.md)
+- [Step 1.1 — Inpainting](step1_1_inpaint.md)
 - [Step 4 — DKT connectome](step4_connectome.md)

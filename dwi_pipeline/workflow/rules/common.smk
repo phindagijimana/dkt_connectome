@@ -246,7 +246,7 @@ def resolve_session(subject: str) -> str:
 def find_lesion_mask(subject: str, session: str) -> str | None:
     """0 or 1 sibling *_T1w_label-lesion_roi.nii.gz next to the session's T1w.
     Mirrors subject.sh's find_lesion_mask(). None (not an error) means most
-    subjects: no lesion mask, Step 1.5 is a no-op for them."""
+    subjects: no lesion mask, Step 1.1 is a no-op for them."""
     anat_dir = Path(BIDS_DIR) / f"sub-{subject}" / f"ses-{session}" / "anat"
     if not anat_dir.is_dir():
         return None
@@ -320,7 +320,7 @@ def deep_atropos_seg_resolved(subject: str) -> str:
 
 @functools.lru_cache(maxsize=None)
 def find_deep_atropos_segmentation(subject: str, session: str) -> str:
-    """Resolve Deep Atropos integer segmentation for Step 3.5."""
+    """Resolve Deep Atropos integer segmentation for Step 3.1."""
     if ACT_FIVE_TT_SOURCE != "deep-atropos-native":
         raise WorkflowError(
             "find_deep_atropos_segmentation called with act.five_tt_source="

@@ -1,6 +1,6 @@
 # Lesion segmentation
 
-How lesion masks enter the pipeline — from BIDS annotation through inpainting (Step 1.5) to optional disconnectome (Step 4.5).
+How lesion masks enter the pipeline — from BIDS annotation through inpainting (Step 1.1) to optional disconnectome (Step 4.1).
 
 ---
 
@@ -14,7 +14,7 @@ sub-<ID>/ses-<Y>/anat/
   sub-<ID>_ses-<Y>_T1w_label-lesion_roi.nii.gz
 ```
 
-Default labels (Step 1.5 / 4.5):
+Default labels (Step 1.1 / 4.1):
 
 | Value | Meaning |
 |-------|---------|
@@ -31,14 +31,14 @@ Format details: [Inpainting/bids_mask_format.md](https://github.com/phindagijima
 | Step | When | What happens |
 |------|------|--------------|
 | **1 — QSIPrep** | Always if mask present | Cost-function masking during registration |
-| **1.5 — Inpaint** | Auto when mask found | neuroLIT fills lesion on T1w before recon |
-| **4.5 — Disconnectome** | Manual post-hoc | Binary union excision + disconnection matrix |
+| **1.1 — Inpaint** | Auto when mask found | neuroLIT fills lesion on T1w before recon |
+| **4.1 — Disconnectome** | Manual post-hoc | Binary union excision + disconnection matrix |
 
-Subjects **without** a mask skip Steps 1.5 and 4.5. Step 4.5 additionally requires **`--disconnection`**. See [Inpainting/no_mask_behavior.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/no_mask_behavior.md).
+Subjects **without** a mask skip Steps 1.1 and 4.1. Step 4.1 additionally requires **`--disconnection`**. See [Inpainting/no_mask_behavior.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/no_mask_behavior.md).
 
 ---
 
-## Step 1.5 (inpainting)
+## Step 1.1 (inpainting)
 
 - **Trigger:** sibling `*_label-lesion_roi.nii.gz` in BIDS
 - **Tool:** [neuroLIT](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md) (`lit_0.6.0.sif`)
@@ -53,7 +53,7 @@ QC: `scripts/check_inpainting.py` — see [Inpainting/pipeline_usage.md](https:/
 
 ---
 
-## Step 4.5 (disconnectome)
+## Step 4.1 (disconnectome)
 
 **Opt-in:** pass `--disconnection` on a full pipeline run, or use `--mode disconnectome` / `run_subject.sh disconnectome`.
 
@@ -86,4 +86,4 @@ All lesion / excision docs live under [`Inpainting/`](https://github.com/phindag
 
 ## Automated segmentation (future / external)
 
-This pipeline expects **manual** BIDS ROI masks today. For automated alternatives (LINDA, AutoDDPM, etc.), generate a compatible `*_label-lesion_roi.nii.gz` on the T1w grid before running Step 1.5. Literature: [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md).
+This pipeline expects **manual** BIDS ROI masks today. For automated alternatives (LINDA, AutoDDPM, etc.), generate a compatible `*_label-lesion_roi.nii.gz` on the T1w grid before running Step 1.1. Literature: [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md).

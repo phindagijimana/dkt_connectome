@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""QC checks for Step 4.5 disconnectome outputs — data-integrity sanity tests.
+"""QC checks for Step 4.1 disconnectome outputs — data-integrity sanity tests.
 
 Verifies that primary (P) and spared connectomes use consistent weighting and
 that disconnection indices are internally coherent.

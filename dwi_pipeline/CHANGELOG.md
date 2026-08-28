@@ -10,7 +10,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 - **Snakemake workflow docs** — see `docs/snakemake_workflow.md`
 - **CI full-workflow dry-run** — `scripts/snakemake_dryrun_ci.sh`
-- **Step 4.5 disconnectome** wired into Snakemake (`disconnectome.smk`), `subject.sh`, and `./run`
+- **Step 4.1 disconnectome** wired into Snakemake (`disconnectome.smk`), `subject.sh`, and `./run`
 - Expanded **BIDS App `./run` CLI** (SDC, dwi-select, nodestrength, disconnectome flags)
 - **QSIPrep-style docs** under `dwi_pipeline/docs/` with GitHub-navigable links
 - **CI** workflow `.github/workflows/dwi_pipeline_ci.yml` (pytest + Snakemake dry-run)
@@ -37,7 +37,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 - GitHub Actions Snakemake dry-run (`--quiet` vs target name collision on Snakemake 8+)
 - Docker publish workflow: `dkt-connectome` image name + graceful skip when Hub secrets missing
-- Disconnectome integrity: count weighting aligned between Step 4 and 4.5
+- Disconnectome integrity: count weighting aligned between Step 4 and 4.1
 - Documentation test stats and SIFT2 example snippets corrected
 
 ## [0.1.0] - 2026-05

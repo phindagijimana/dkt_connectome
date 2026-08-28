@@ -164,7 +164,7 @@ def connectome_parcellation_json(subject: str, parc: str | None = None) -> str:
 
 
 def connectome_registration_t1w_input(subject: str):
-    """If Step 1.5 ran for this subject, connectome must wait for it and use
+    """If Step 1.1 ran for this subject, connectome must wait for it and use
     its result as the affine-registration source (see subject.sh's
     _resolve_registration_t1w); otherwise no such dependency exists."""
     return mitigated_t1w_for(subject) or []
@@ -283,7 +283,7 @@ rule connectome:
 
         if [[ -n "{input.registration_t1w}" ]]; then
           bids_t1w="{input.registration_t1w}"
-          echo "Connectome: using Step 1.5 inpainted T1w for registration: ${{bids_t1w}}"
+          echo "Connectome: using Step 1.1 inpainted T1w for registration: ${{bids_t1w}}"
         else
           bids_t1w="$(find_bids_t1w "${{SUBJECT}}" "${{ses}}")"
         fi

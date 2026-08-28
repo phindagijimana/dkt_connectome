@@ -1,4 +1,4 @@
-# Pinned deps for Step 3.5 ACT containers (Dockerfile + Apptainer.def).
+# Pinned deps for Step 3.1 ACT containers (Dockerfile + Apptainer.def).
 numpy==1.26.4
 nibabel==5.2.1
 scipy==1.11.4

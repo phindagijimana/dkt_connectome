@@ -108,6 +108,6 @@ Full table: [References § Step 1](../references.md#step-1-qsiprep-preprocessing
 
 ## See also
 
-- [Step 1.5 — Lesion inpainting](step1_5_inpaint.md)
+- [Step 1.1 — Lesion inpainting](step1_1_inpaint.md)
 - [Preparing your data](../preparing_data.md)
 - [QSIPrep documentation](https://qsiprep.readthedocs.io/)

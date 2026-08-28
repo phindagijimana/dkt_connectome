@@ -32,15 +32,15 @@ Step-by-step: [Installation → FreeSurfer license](installation.md#freesurfer-l
 
 ### Do I need a lesion mask?
 
-**No** for the standard connectome pipeline. Step 1.5 (inpaint) runs **only when** `*_T1w_label-lesion_roi.nii.gz` exists. Step 4.5 (disconnectome) is **opt-in** via `--disconnection` (off by default while under validation).
+**No** for the standard connectome pipeline. Step 1.1 (inpaint) runs **only when** `*_T1w_label-lesion_roi.nii.gz` exists. Step 4.1 (disconnectome) is **opt-in** via `--disconnection` (off by default while under validation).
 
 ### Which connectome should I use — DKT or DK?
 
-**DKT (78 nodes)** is the default and works with both FreeSurfer and FastSurfer. **DK (84 nodes)** requires `recon-all` or `--fast-fs`. Step 4.5 disconnectome requires **DKT**.
+**DKT (78 nodes)** is the default and works with both FreeSurfer and FastSurfer. **DK (84 nodes)** requires `recon-all` or `--fast-fs`. Step 4.1 disconnectome requires **DKT**.
 
 ### What edge weighting should I use?
 
-**`count`** (streamline counts) for Step 4 and 4.5. Using `sift2` in disconnectome without matching Step 4 produces invalid disconnection indices.
+**`count`** (streamline counts) for Step 4 and 4.1. Using `sift2` in disconnectome without matching Step 4 produces invalid disconnection indices.
 
 ---
 

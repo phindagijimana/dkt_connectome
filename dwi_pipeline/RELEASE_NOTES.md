@@ -23,7 +23,7 @@ Lesion-aware structural connectomics BIDS App — first release with full Snakem
 
 ## Added
 
-- Step 4.5 disconnectome in Snakemake, `./run`, and cohort QC
+- Step 4.1 disconnectome in Snakemake, `./run`, and cohort QC
 - Opt-in BIDS validation (`--bids-validation`)
 - Container pin reference, config catalog, IDEAS `dwi_select_ideas_b2500.json`
 - Dockstore / WorkflowHub metadata repointed to `dkt_connectome`

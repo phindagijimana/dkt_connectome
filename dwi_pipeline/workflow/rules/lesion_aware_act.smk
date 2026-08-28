@@ -1,4 +1,4 @@
-"""Step 3.5: rebuild matched iFOD2/SIFT2 tractography with lesion-aware ACT."""
+"""Step 3.1: rebuild matched iFOD2/SIFT2 tractography with lesion-aware ACT."""
 
 if ACT_MODE == "lesion-aware" and ACT_FIVE_TT_SOURCE == "deep-atropos-native":
     # Validated at rule runtime via find_deep_atropos_segmentation when deep_atropos_5tt runs.
@@ -53,7 +53,7 @@ def lesion_act_mask(subject: str) -> str:
 
 
 def _lesion_act_base_5tt_dep(wildcards) -> str:
-    """Ensure QSIRecon (HSVS) or Deep Atropos 5TT completes before Step 3.5."""
+    """Ensure QSIRecon (HSVS) or Deep Atropos 5TT completes before Step 3.1."""
     if ACT_FIVE_TT_SOURCE == "deep-atropos-native":
         return deep_atropos_base_5tt(wildcards.subject)
     return qsirecon_marker(wildcards.subject)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Step 1.5 VBT and Step 3.5 lesion-aware ACT artifacts."""
+"""Validate Step 1.1 VBT and Step 3.1 lesion-aware ACT artifacts."""
 
 from __future__ import annotations
 
@@ -131,11 +131,11 @@ def validate_lesion_aware_act(act_json: Path) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--vbt-json", type=Path, help="inpainting.json from Step 1.5 VBT run")
+    parser.add_argument("--vbt-json", type=Path, help="inpainting.json from Step 1.1 VBT run")
     parser.add_argument(
         "--lesion-act-json",
         type=Path,
-        help="lesion_aware_act.json from Step 3.5",
+        help="lesion_aware_act.json from Step 3.1",
     )
     args = parser.parse_args()
     if not args.vbt_json and not args.lesion_act_json:

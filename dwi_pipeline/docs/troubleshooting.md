@@ -26,7 +26,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 
 ---
 
-## Step 1.5 — Inpaint
+## Step 1.1 — Inpaint
 
 | Error / symptom | Fix |
 |-----------------|-----|
@@ -56,7 +56,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 
 ---
 
-## Step 3.5 — Lesion-aware ACT
+## Step 3.1 — Lesion-aware ACT
 
 | Error / symptom | Fix |
 |-----------------|-----|
@@ -70,7 +70,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | Script changes not in published SIF | Set `ACT_BIND_MOUNT_DEV=1` for dev only, or rebuild/publish containers |
 | Slow `tckgen` | Default 10M streamlines; reduce with `--act-streamlines` for pilots |
 
-Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md) · Deep Atropos: [maintainer plan](maintainer/deep_atropos_5tt_plan.md).
+Theory: [Step 3.1 methods](methods/step3_1_lesion_act.md) · Deep Atropos: [maintainer plan](maintainer/deep_atropos_5tt_plan.md).
 
 ---
 
@@ -84,14 +84,14 @@ Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md) · Deep Atropos: [main
 
 ---
 
-## Step 4.5 — Disconnectome
+## Step 4.1 — Disconnectome
 
 | Error / symptom | Fix |
 |-----------------|-----|
 | Step skipped | No lesion mask or non-DKT parcellation |
 | Option A **WARN** in QC | Expected with count weighting (parcellation excision artifact); B/C are primary |
-| `spared > primary` on edges | Re-run Step 4 and 4.5 with **`--connectome-weighting count`** |
-| Invalid mean D | Step 4 used counts but 4.5 used sift2 — align weighting |
+| `spared > primary` on edges | Re-run Step 4 and 4.1 with **`--connectome-weighting count`** |
+| Invalid mean D | Step 4 used counts but 4.1 used sift2 — align weighting |
 | Integrity **FAIL** | Run `evaluate_disconnectome_integrity.py`; see [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) |
 
 ---

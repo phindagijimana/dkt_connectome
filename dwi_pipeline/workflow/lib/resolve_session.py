@@ -3,7 +3,7 @@
 counterpart of subject.sh's ``_resolve_target_session``.
 
 Used at Snakemake DAG-build time (called from rules/common.smk) so that
-output paths that embed ``ses-<session>`` (e.g. Step 1.5 inpainting results)
+output paths that embed ``ses-<session>`` (e.g. Step 1.1 inpainting results)
 can be declared before any rule actually runs.
 
 Resolution order (mirrors subject.sh exactly):

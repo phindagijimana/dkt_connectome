@@ -1,4 +1,4 @@
-# `dkt_deep_atropos.sif` — Deep Atropos seg → native-T1 5TT (Step 3.5a)
+# `dkt_deep_atropos.sif` — Deep Atropos seg → native-T1 5TT (Step 3.2)
 
 Converts integer Deep Atropos segmentation to MRtrix ACT `base_5tt_native.mif` on the
 **native BIDS T1w grid**. Optional when `act.five_tt_source=deep-atropos-native`.

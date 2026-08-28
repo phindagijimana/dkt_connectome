@@ -1,4 +1,4 @@
-# `dkt_deep_atropos_seg.sif` — generate Deep Atropos segmentation (Step 3.5a-seg)
+# `dkt_deep_atropos_seg.sif` — generate Deep Atropos segmentation (Step 3.2 (segmentation))
 
 Runs **ANTsPyNet `deep_atropos`** on native BIDS T1w when no external segmentation
 is supplied. Output integer labels (0–6) feed `dkt_deep_atropos.sif` → 5TT →

@@ -89,22 +89,22 @@ See [Preparing your data](preparing_data.md) for fieldmaps, Siemens sidecars, an
 
 | Flag | Steps run |
 |------|-----------|
-| `--mode all` | 1 → 1.5 (if mask) → 2 → 3 → 4 → 4.5 (if mask) → 5 |
+| `--mode all` | 1 → 1.1 (if mask) → 2 → 3 → 4 → 4.1 (if mask) → 5 |
 | `--mode qsiprep` | Step 1 only |
-| `--mode inpaint` | Step 1.5 only |
+| `--mode inpaint` | Step 1.1 only |
 | `--mode recon` | Step 2 only |
 | `--mode qsirecon` | Step 3 only |
-| `--mode act` | Step 3.5 only (lesion-aware ACT; needs lesion mask) |
+| `--mode act` | Step 3.1 only (lesion-aware ACT; needs lesion mask) |
 | `--mode connectome` | Step 4 (+ 5 if enabled) |
-| `--mode disconnectome` | Step 4.5 only |
+| `--mode disconnectome` | Step 4.1 only |
 | `--mode nodestrength` | Step 5 only |
 | `--dry-run` / `-n` | Snakemake plan only; no execution |
 | `--no-recon` | Skip Step 2 in `all` mode |
 | `--no-connectome` / `--no-dk` | Skip Steps 4 and 5 |
 | `--no-node-strength` | Skip Step 5 only |
-| `--no-inpaint` / `--inpaint` | Force skip / enable Step 1.5 |
-| `--disconnection` | Opt in to Step 4.5 disconnectome (default: off) |
-| `--no-disconnectome` | Explicitly skip Step 4.5 |
+| `--no-inpaint` / `--inpaint` | Force skip / enable Step 1.1 |
+| `--disconnection` | Opt in to Step 4.1 disconnectome (default: off) |
+| `--no-disconnectome` | Explicitly skip Step 4.1 |
 | `--disconnectome` | Alias for `--disconnection` |
 
 What each step does: [Pipeline steps](pipeline_steps.md).
@@ -133,11 +133,11 @@ Without a fieldmap in the filter, the pipeline **requires** one of `--syn`, `--f
 
 ---
 
-## Options for anatomical lesion mitigation (Step 1.5)
+## Options for anatomical lesion mitigation (Step 1.1)
 
-Runs only when a BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) exists for the session. Theory: [Step 1.5 methods](methods/step1_5_inpaint.md) · [Lesion-aware tractography](lesion_aware.md).
+Runs only when a BIDS lesion mask (`*_T1w_label-lesion_roi.nii.gz`) exists for the session. Theory: [Step 1.1 methods](methods/step1_1_inpaint.md) · [Lesion-aware tractography](lesion_aware.md).
 
-**Biological question:** Large lesions break cortical surface reconstruction and parcellation because FreeSurfer/FastSurfer expects contiguous GM. Step 1.5 modifies T1w *before* Step 2 so surfaces and DKT labels can be estimated on a plausible whole-brain anatomy. This is **not** a claim that tissue inside the lesion is healthy.
+**Biological question:** Large lesions break cortical surface reconstruction and parcellation because FreeSurfer/FastSurfer expects contiguous GM. Step 1.1 modifies T1w *before* Step 2 so surfaces and DKT labels can be estimated on a plausible whole-brain anatomy. This is **not** a claim that tissue inside the lesion is healthy.
 
 | Backend | Theory (short) | Primary citation |
 |---------|----------------|------------------|
@@ -158,18 +158,18 @@ bash workflow/run_subject.sh all 011 --anat-mitigation vbt
 bash submit.sh --anat-mitigation none   # original-T1w sensitivity arm
 ```
 
-**When publishing:** cite Pollak et al. 2025 for neuroLIT; Bey et al. 2024 for VBT and state that VBT is a port of LeAPP's released code, not a full LeAPP container run. See [References § Step 1.5](references.md#step-15-anatomical-lesion-mitigation-optional).
+**When publishing:** cite Pollak et al. 2025 for neuroLIT; Bey et al. 2024 for VBT and state that VBT is a port of LeAPP's released code, not a full LeAPP container run. See [References § Step 1.1](references.md#step-11-anatomical-lesion-mitigation-optional).
 
 ---
 
-## Options for lesion-aware ACT and experiment arms (Steps 3.5–4)
+## Options for lesion-aware ACT and experiment arms (Steps 3.1–4)
 
-**Anatomy mitigation** (Step 1.5) and **lesion-aware ACT** (Step 3.5) are **orthogonal axes** inspired by the LeAPP factorial design (Bey et al. 2024):
+**Anatomy mitigation** (Step 1.1) and **lesion-aware ACT** (Step 3.1) are **orthogonal axes** inspired by the LeAPP factorial design (Bey et al. 2024):
 
-- **Step 1.5** fixes *anatomical* priors for reconstruction and parcellation.
-- **Step 3.5** fixes *tractography* priors by placing the **original BIDS lesion mask** in the 5TT pathology channel (Smith et al. 2012 ACT framework).
+- **Step 1.1** fixes *anatomical* priors for reconstruction and parcellation.
+- **Step 3.1** fixes *tractography* priors by placing the **original BIDS lesion mask** in the 5TT pathology channel (Smith et al. 2012 ACT framework).
 
-You can combine them (e.g. VBT-filled T1w + lesion in the pathology channel). Theory: [Step 3.5 methods](methods/step3_5_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md).
+You can combine them (e.g. VBT-filled T1w + lesion in the pathology channel). Theory: [Step 3.1 methods](methods/step3_1_lesion_act.md) · [Lesion-aware tractography](lesion_aware.md).
 
 | Flag | Env | Description |
 |------|-----|-------------|
@@ -183,7 +183,7 @@ You can combine them (e.g. VBT-filled T1w + lesion in the pathology channel). Th
 
 ### Theory: lesion-aware ACT (`--act-mode lesion-aware`)
 
-Standard ACT builds a five-tissue-type (5TT) image from the T1w that Step 2 received. If Step 1.5 inpainted the lesion, the HSVS 5TT may label that region as healthy GM/WM. Lesion-aware ACT re-inserts the **original lesion mask** into the pathology compartment so streamlines seed and terminate under pathology priors rather than false healthy tissue (Smith et al. 2012; Bey et al. 2024). The pathology channel is **not** a hard mask — it signals unreliable tissue priors, not proof of axonal absence.
+Standard ACT builds a five-tissue-type (5TT) image from the T1w that Step 2 received. If Step 1.1 inpainted the lesion, the HSVS 5TT may label that region as healthy GM/WM. Lesion-aware ACT re-inserts the **original lesion mask** into the pathology compartment so streamlines seed and terminate under pathology priors rather than false healthy tissue (Smith et al. 2012; Bey et al. 2024). The pathology channel is **not** a hard mask — it signals unreliable tissue priors, not proof of axonal absence.
 
 Two base-5TT sources are supported when `--act-mode lesion-aware`:
 
@@ -218,9 +218,9 @@ Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a pe
 
 ### Experiment arms (`--experiment-arm`) {#experiment-arms-experiment-arm}
 
-Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.5. Factorial design follows Bey et al. 2024 (LeAPP). For cohort-scale manuscript planning (~100 TrackTBI lesion subjects), pre-specified contrasts, and journal targets, see [Publication strategy](publication_strategy.md).
+Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For cohort-scale manuscript planning (~100 TrackTBI lesion subjects), pre-specified contrasts, and journal targets, see [Publication strategy](publication_strategy.md).
 
-| Arm | Step 1.5 anatomy | Step 3.5 ACT | Typical contrast | Cite when contrasting |
+| Arm | Step 1.1 anatomy | Step 3.1 ACT | Typical contrast | Cite when contrasting |
 |-----|------------------|--------------|------------------|------------------------|
 | `orig-std` | Original T1w (`none`) | Standard | Baseline | — |
 | `orig-lesion` | Original T1w | Lesion-aware | ACT effect without anatomical fill | Smith et al. 2012 ACT; Bey et al. 2024 |
@@ -249,13 +249,13 @@ Set `EXPERIMENT_ISOLATE_OUTPUTS=0` only when you intentionally want multiple arm
 
 ---
 
-## Options for connectome and disconnectome (Steps 4–4.5)
+## Options for connectome and disconnectome (Steps 4–4.1)
 
 | Flag | Env | Description |
 |------|-----|-------------|
-| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Edge weights for Steps 4 and 4.5 (default `count`) |
+| `--connectome-weighting count\|sift2` | `CONNECTOME_WEIGHTING` | Edge weights for Steps 4 and 4.1 (default `count`) |
 | `--primary-connectome-measure count\|sift2` | `PRIMARY_CONNECTOME_MEASURE` | Which matrix is copied to `dkt_connectome.csv` (default `count`) |
-| `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Override 4.5 weighting only |
+| `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Override 4.1 weighting only |
 | `--disconnectome-core-only` | `DISCONNECTOME_CORE_ONLY=1` | Sensitivity: core label only |
 | `--disconnectome-erode-voxels N` | `DISCONNECTOME_ERODE_VOXELS` | Sensitivity: erode lesion N voxels |
 

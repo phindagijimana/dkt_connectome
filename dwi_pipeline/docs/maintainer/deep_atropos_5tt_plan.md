@@ -1,12 +1,12 @@
 # Deep Atropos native-T1 5TT (maintainer reference)
 
-Reference for optional **native-T1 Deep Atropos** as the Step 3.5 ACT five-tissue-type
+Reference for optional **native-T1 Deep Atropos** as the Step 3.1 ACT five-tissue-type
 (5TT) source, alongside the default **QSIRecon ACPC HSVS** path.
 
 **Public doc:** [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) (Read the Docs).
 
 **Status:** **Implemented** (Aug 2026). Pilot on `sub-TBI011011` with `--deep-atropos-seg-mode generate`.  
-**Related:** [Step 3.5 methods](../methods/step3_5_lesion_act.md) · [Publication strategy § Paper 3](../publication_strategy.md).
+**Related:** [Step 3.1 methods](../methods/step3_1_lesion_act.md) · [Publication strategy § Paper 3](../publication_strategy.md).
 
 ---
 
@@ -27,11 +27,11 @@ for `tckgen`. Cohort segs can be imported when available.
 ## Three-container architecture
 
 ```text
-dkt_deep_atropos_seg.sif   Step 3.5a-seg — ANTsPyNet deep_atropos → integer seg (0–6)
+dkt_deep_atropos_seg.sif   Step 3.2 (segmentation) — ANTsPyNet deep_atropos → integer seg (0–6)
         ↓
-dkt_deep_atropos.sif       Step 3.5a     — seg → base_5tt_native.mif (Python mapper)
+dkt_deep_atropos.sif       Step 3.2     — seg → base_5tt_native.mif (Python mapper)
         ↓
-dkt_lesion_act.sif         Step 3.5      — 5ttedit -path, QA, dwiref resample, tckgen + SIFT2
+dkt_lesion_act.sif         Step 3.1      — 5ttedit -path, QA, dwiref resample, tckgen + SIFT2
 ```
 
 Default path unchanged: `act.five_tt_source: hsvs` uses only `dkt_lesion_act.sif` with QSIRecon HSVS.
@@ -59,7 +59,7 @@ bash workflow/run_subject.sh act TBI011011 \
 
 - `--act-5tt-source deep-atropos-native` requires `--act-mode lesion-aware` and a lesion mask.
 - Ignored when `act.mode=standard`.
-- Does **not** replace Step 2 recon or QSIRecon FOD — only the **base 5TT** for Step 3.5.
+- Does **not** replace Step 2 recon or QSIRecon FOD — only the **base 5TT** for Step 3.1.
 
 Slurm: same flags via `submit.sh` (`--act-5tt-source`, `--deep-atropos-seg`, `--deep-atropos-seg-mode`).
 

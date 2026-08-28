@@ -65,7 +65,7 @@ docker run --rm \
 
 HPC: `sbatch containers/pull_freesurfer_sif.sbatch` for FreeSurfer only on a compute node; full install on a login node with network.
 
-**VBT, lesion-aware ACT, and Deep Atropos images** are built locally when GHCR pull fails (`install.sh` falls back to `containers/vbt/build_vbt.sh`, `containers/lesion_act/build_lesion_act.sh`, `containers/deep_atropos/build_deep_atropos.sh`, and `containers/deep_atropos_seg/build_deep_atropos_seg.sh`, staging tools from your existing `qsiprep.sif` / `qsirecon.sif`). Use `bash install.sh --mode act` for all Step 3.5 containers. See [Containers](containers.md).
+**VBT, lesion-aware ACT, and Deep Atropos images** are built locally when GHCR pull fails (`install.sh` falls back to `containers/vbt/build_vbt.sh`, `containers/lesion_act/build_lesion_act.sh`, `containers/deep_atropos/build_deep_atropos.sh`, and `containers/deep_atropos_seg/build_deep_atropos_seg.sh`, staging tools from your existing `qsiprep.sif` / `qsirecon.sif`). Use `bash install.sh --mode act` for all Step 3.1 containers. See [Containers](containers.md).
 
 **Docker Compose** (orchestrator + persistent cache volume):
 
@@ -176,7 +176,7 @@ The pipeline orchestrates **multiple Apptainer images** (not one monolithic imag
 | 2 alt | `fastsurfer_latest.sif` | Upstream FastSurfer |
 | 3 | `qsirecon.sif` | [QSIRecon releases](https://github.com/pennlinc/qsirecon) |
 | 4 | `dkt_connectome.sif` | `bash containers/connectome/build_connectome.sh` |
-| 1.5 | `lit_0.6.0.sif` | `bash containers/lit/build_lit.sh` |
+| 1.1 | `lit_0.6.0.sif` | `bash containers/lit/build_lit.sh` |
 | 5 | `nodestrength_0.1.0.sif` | [dwi-AI / nodestrength](https://github.com/phindagijimana/dwi-AI) |
 
 ### Default paths
@@ -230,7 +230,7 @@ Details: [containers/connectome/README.md](https://github.com/phindagijimana/dkt
 
 ## Python dependencies (host)
 
-For orchestration and Step 4.5 disconnectome:
+For orchestration and Step 4.1 disconnectome:
 
 ```bash
 pip install numpy nibabel scipy

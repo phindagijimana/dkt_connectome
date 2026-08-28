@@ -5,11 +5,11 @@
 This guide explains what happens in each stage of the DKT Connectome Pipeline:
 
 1. Step 1 — QSIPrep diffusion preprocessing
-2. Step 1.5 — neuroLIT lesion inpainting
+2. Step 1.1 — neuroLIT lesion inpainting
 3. Step 2 — FreeSurfer or FastSurfer anatomical reconstruction
 4. Step 3 — QSIRecon diffusion reconstruction and tractography
 5. Step 4 — DKT connectome construction
-6. Step 4.5 — optional disconnectome analysis
+6. Step 4.1 — optional disconnectome analysis
 7. Step 5 — node strength, asymmetry, and reporting
 
 For every stage, the guide provides:
@@ -55,7 +55,7 @@ Step 1: QSIPrep -> corrected DWI, T1w reference, transforms, QC
           +------------+-------------+
           |                          |
           v                          v
-Step 1.5: neuroLIT             Original lesion retained
+Step 1.1: neuroLIT             Original lesion retained
           |                          |
           v                          |
 Step 2: FreeSurfer/FastSurfer        |
@@ -70,7 +70,7 @@ Step 4: DKT labels + tractogram -> DKT connectivity matrix
           +------------+-------------+
           |                          |
           v                          v
-Step 4.5: Disconnectome       Step 5: Node metrics/report
+Step 4.1: Disconnectome       Step 5: Node metrics/report
 ```
 
 # Step 1 — QSIPrep diffusion preprocessing
@@ -293,7 +293,7 @@ apptainer run --cleanenv --containall \
   transforming the complete image.
 - This is the lesion-aware registration concept used automatically by QSIPrep.
 
-# Step 1.5 — neuroLIT lesion inpainting
+# Step 1.1 — neuroLIT lesion inpainting
 
 ## Beginner concept
 
@@ -320,7 +320,7 @@ Outputs:
 - Inpainted T1w with preserved geometry.
 - QC JSON and provenance.
 
-Subjects without a lesion mask skip Step 1.5 and retain their original T1w.
+Subjects without a lesion mask skip Step 1.1 and retain their original T1w.
 
 ## Theory 1: DDPM forward process
 
@@ -479,7 +479,7 @@ Both routes must produce:
 - `aparc.DKTatlas+aseg.mgz`.
 - Native-grid `rawavg.mgz`.
 
-Production note: Step 2 uses the neuroLIT-inpainted T1w when Step 1.5 produced
+Production note: Step 2 uses the neuroLIT-inpainted T1w when Step 1.1 produced
 one; otherwise it uses the raw BIDS T1w for the selected session. It does not
 use QSIPrep's `desc-preproc_T1w` as the FreeSurfer/FastSurfer input.
 
@@ -923,12 +923,12 @@ tck2connectome "${TRACKS}" "${OUTDIR}/nodes.mif" \
 - Their algorithms are integrated here; the pipeline does not claim to invent
   either method.
 
-# Step 4.5 — optional disconnectome
+# Step 4.1 — optional disconnectome
 
 ## Beginner concept
 
 The primary connectome describes the tractogram generated for the subject.
-Step 4.5 asks what connectivity is associated with the lesion by creating
+Step 4.1 asks what connectivity is associated with the lesion by creating
 alternative “spared” matrices:
 
 - Option A removes lesion voxels from the parcellation.

@@ -1,6 +1,6 @@
-# Step 1.5 — Lesion inpainting (neuroLIT)
+# Step 1.1 — Lesion inpainting (neuroLIT)
 
-**Theory and methods** for optional T1w lesion inpainting before cortical reconstruction. Operational details: [Pipeline steps § Step 1.5](../pipeline_steps.md#step-15-inpaint-optional) · [Lesion segmentation](../lesion_segmentation.md).
+**Theory and methods** for optional T1w lesion inpainting before cortical reconstruction. Operational details: [Pipeline steps § Step 1.1](../pipeline_steps.md#step-11-inpaint-optional) · [Lesion segmentation](../lesion_segmentation.md).
 
 ---
 
@@ -12,7 +12,7 @@ FreeSurfer and FastSurfer are trained on **healthy anatomy**. Large lesions (hem
 - Global registration drift (Talairach / template steps optimize over the whole brain)
 - Downstream connectome errors when parcellation labels are wrong
 
-Rather than excluding lesioned subjects or masking out tissue, the pipeline **synthesizes plausible anatomy inside the lesion** so reconstruction sees an image closer to its training distribution. The original lesion mask is preserved as metadata for disconnectome analysis (Step 4.5).
+Rather than excluding lesioned subjects or masking out tissue, the pipeline **synthesizes plausible anatomy inside the lesion** so reconstruction sees an image closer to its training distribution. The original lesion mask is preserved as metadata for disconnectome analysis (Step 4.1).
 
 ---
 
@@ -57,7 +57,7 @@ Classical CNN segmenters require inputs conformed to a fixed 256³ grid. neuroLI
 
 ### Inpainted T1w routing
 
-When Step 1.5 runs, **`INPAINTED_T1W`** replaces the raw BIDS T1w for:
+When Step 1.1 runs, **`INPAINTED_T1W`** replaces the raw BIDS T1w for:
 
 - Step 2 (FreeSurfer / FastSurfer input)
 - Step 4 (BIDS-side of the registration affine)
@@ -124,7 +124,7 @@ Unlike neuroLIT's learned synthesis, VBT is **deterministic**, requires **no GPU
 | Inpainting strategy | Lugmayr A, et al. RePaint. *CVPR* 2022 | [10.1109/CVPR52688.2022.01175](https://doi.org/10.1109/CVPR52688.2022.01175) |
 | **VBT / LeAPP (when `--anat-mitigation vbt`)** | Bey P, et al. LeAPP. *Human Brain Mapping* 2024;45(9):e26701. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
 
-Full table: [References § Step 1.5](../references.md#step-15-anatomical-lesion-mitigation-optional).
+Full table: [References § Step 1.1](../references.md#step-11-anatomical-lesion-mitigation-optional).
 
 ---
 
@@ -132,6 +132,6 @@ Full table: [References § Step 1.5](../references.md#step-15-anatomical-lesion-
 
 - [Lesion segmentation](../lesion_segmentation.md)
 - [Step 2 — Cortical reconstruction](step2_recon.md)
-- [Step 4.5 — Disconnectome](step4_5_disconnectome.md)
+- [Step 4.1 — Disconnectome](step4_1_disconnectome.md)
 - [neuroLIT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lit/README.md)
 - [VBT container README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/vbt/README.md)

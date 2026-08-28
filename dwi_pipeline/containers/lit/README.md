@@ -5,7 +5,7 @@ lesion inpainting tool from Pollak et al., *FastSurfer-LIT: Lesion Inpainting
 Tool for Whole Brain MRI Segmentation with Tumors, Cavities and Abnormalities*,
 Imaging Neuroscience 2025 ([doi.org/10.1162/imag_a_00446](https://doi.org/10.1162/imag_a_00446)).
 
-Used by `subject.sh`'s Step 1.5 (see the pipeline header and
+Used by `subject.sh`'s Step 1.1 (see the pipeline header and
 `pipeline_science.md`) to fill in manually-traced lesion regions on the T1w
 *before* FreeSurfer/FastSurfer sees it, so recon-all's atlas-based skull-strip,
 Talairach registration, and cortical parcellation are not thrown off by

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Step 3.5: lesion-aware ACT — 5ttedit -path, matched iFOD2 tckgen, tcksift2.
+# Step 3.1: lesion-aware ACT — 5ttedit -path, matched iFOD2 tckgen, tcksift2.
 #
 # Spatial workflows:
 #   hsvs (default, LeAPP ACPC-first):

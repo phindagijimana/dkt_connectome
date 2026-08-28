@@ -17,7 +17,7 @@ report:
                            bilateral node pair
 
 "Lesion-adjacent" nodes are found by intersecting the prepared lesion mask
-(Step 1.5 output) with the same DKT parcellation image used to build the
+(Step 1.1 output) with the same DKT parcellation image used to build the
 connectome, in native T1w (rawavg) space -- both are on the acquisition grid,
 so no extra registration is needed here.
 

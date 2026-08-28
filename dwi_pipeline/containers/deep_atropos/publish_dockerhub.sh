@@ -6,7 +6,7 @@
 #   export DOCKERHUB_TOKEN=...
 #   SIF=/path/to/dkt_deep_atropos.sif bash publish_dockerhub.sh
 #
-# Publish all Step 3.5 images (Docker Hub + GHCR): ../../scripts/publish_act_containers.sh
+# Publish all Step 3.1 images (Docker Hub + GHCR): ../../scripts/publish_act_containers.sh
 set -euo pipefail
 
 DOCKERHUB_USER="${DOCKERHUB_USER:-phindagijimana321}"

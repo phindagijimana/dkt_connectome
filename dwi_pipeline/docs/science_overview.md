@@ -23,9 +23,9 @@ It is **study-agnostic**: any BIDS DWI + T1w dataset can run; lesion-specific st
 
 | Issue | What goes wrong | This pipeline’s response |
 |-------|-----------------|-------------------------|
-| Lesion in T1w | FreeSurfer/FastSurfer expect healthy GM/WM/CSF; large cavities break segmentation and **global registration** | **Step 1.5:** neuroLIT DDPM inpainting fills the lesion on T1w before recon |
+| Lesion in T1w | FreeSurfer/FastSurfer expect healthy GM/WM/CSF; large cavities break segmentation and **global registration** | **Step 1.1:** neuroLIT DDPM inpainting fills the lesion on T1w before recon |
 | Lesion in registration | T1w–DWI alignment can be dominated by the cavity | **Step 1:** QSIPrep cost-function masking when a BIDS lesion mask exists |
-| Lesion ignored after Step 1 | Mask used only once, then discarded | Mask carried through to **Step 4.5** disconnectome |
+| Lesion ignored after Step 1 | Mask used only once, then discarded | Mask carried through to **Step 4.1** disconnectome |
 | Implicit SDC | Mixed vendors / missing fieldmaps → inconsistent distortion correction | **Explicit SDC mode** per subject (fmap TOPUP, SyN, or documented `--no-sdc`) |
 
 Inpainting changes **only the T1w that feeds reconstruction and label warping** — it does **not** alter preprocessed DWI. Diffusion signal and tractography (Steps 1 and 3) remain physically consistent with the acquired data.
@@ -60,9 +60,9 @@ Water diffusion is anisotropic in white matter. DWI measures signal along gradie
 
 Streamlines are assigned to **DKT parcels** (78 nodes: cortical + subcortical). **MRtrix3 `tck2connectome`** counts streamlines connecting each pair (default) or applies **SIFT2** weights. Output: symmetric `dkt_connectome.csv` ([Klein & Tourville 2012](methods/step4_connectome.md)).
 
-### Disconnectome (Step 4.5, optional)
+### Disconnectome (Step 4.1, optional)
 
-Three complementary models ([Griffis et al. 2019](methods/step4_5_disconnectome.md)):
+Three complementary models ([Griffis et al. 2019](methods/step4_1_disconnectome.md)):
 
 - **Option A** — remove lesion voxels from the parcellation  
 - **Option B** — discard streamlines intersecting the lesion  
@@ -90,11 +90,11 @@ A **disconnection matrix** compares spared connectivity to the intact Step 4 gra
 | Step | Read next | Primary citation |
 |------|-----------|------------------|
 | 1 — QSIPrep | [step1_qsiprep.md](methods/step1_qsiprep.md) | Cieslak et al. 2021 |
-| 1.5 — Inpainting | [step1_5_inpaint.md](methods/step1_5_inpaint.md) | Pollak et al. 2025 |
+| 1.1 — Inpainting | [step1_1_inpaint.md](methods/step1_1_inpaint.md) | Pollak et al. 2025 |
 | 2 — Recon | [step2_recon.md](methods/step2_recon.md) | Fischl 2012; Klein & Tourville 2012 |
 | 3 — Tractography | [step3_qsirecon.md](methods/step3_qsirecon.md) | Cieslak et al. 2024; Tournier et al. 2019 |
 | 4 — Connectome | [step4_connectome.md](methods/step4_connectome.md) | MRtrix3 connectome tools |
-| 4.5 — Disconnectome | [step4_5_disconnectome.md](methods/step4_5_disconnectome.md) | Griffis et al. 2019 |
+| 4.1 — Disconnectome | [step4_1_disconnectome.md](methods/step4_1_disconnectome.md) | Griffis et al. 2019 |
 | 5 — Node strength | [step5_node_strength.md](methods/step5_node_strength.md) | Rubinov & Sporns 2010 |
 
 BibTeX and acknowledgment text: [Citation](citation.md) · [References by step](references.md).

@@ -251,7 +251,7 @@ fi
 # GPU recommendation for inpaint / FastSurfer cuda.
 if ((need_inpaint)) && [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
   if [[ -z "${SBATCH_GRES:-}" && -z "${SLURM_JOB_ID:-}" ]]; then
-    warn "Step 1.5 (inpaint) needs a GPU slice (gpu:l40s.12g or gpu:l40s.24g). Set SBATCH_GRES before submit."
+    warn "Step 1.1 (inpaint) needs a GPU slice (gpu:l40s.12g or gpu:l40s.24g). Set SBATCH_GRES before submit."
   fi
 fi
 

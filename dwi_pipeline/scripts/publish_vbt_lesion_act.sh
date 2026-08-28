@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build (if needed) and publish Step 1.5 VBT + Step 3.5 lesion-aware ACT to Docker Hub.
+# Build (if needed) and publish Step 1.1 VBT + Step 3.1 lesion-aware ACT to Docker Hub.
 #
 # Usage:
 #   export DOCKERHUB_USER=phindagijimana321

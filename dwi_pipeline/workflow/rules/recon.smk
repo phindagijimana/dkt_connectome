@@ -18,7 +18,7 @@ def recon_aparc(subject: str) -> str:
 
 
 def recon_t1w_input(subject: str) -> str:
-    """T1w that Step 2 should reconstruct from: the Step 1.5 inpainted T1w
+    """T1w that Step 2 should reconstruct from: the Step 1.1 inpainted T1w
     when a lesion mask exists for this subject, else the raw BIDS T1w
     (mirrors subject.sh's run_recon() picking up $INPAINTED_T1W)."""
     mitigated = mitigated_t1w_for(subject)

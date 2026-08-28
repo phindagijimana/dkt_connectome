@@ -10,20 +10,20 @@ What happens inside each step of the DKT Connectome. **Theory and rationale:** [
 
 ```text
 Step 1    QSIPrep           DWI + T1w preprocessing, SDC (fmap or SyN)
-Step 1.5  Inpaint           Lesion anatomical mitigation (neuroLIT default; optional VBT)
+Step 1.1  Inpaint           Lesion anatomical mitigation (neuroLIT default; optional VBT)
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
-Step 3.5  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
+Step 3.1  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
           ├─ default        QSIRecon HSVS base 5TT → ACPC 5ttedit → dwiref → tckgen
-          └─ optional       3.5a-seg → 3.5a native 5TT → 3.5 (--act-5tt-source deep-atropos-native)
+          └─ optional       3.2-seg → 3.2 native 5TT → 3.1 (--act-5tt-source deep-atropos-native)
 Step 4    Connectome        DKT 78-node matrices (Count, MeanLength, MeanFA, MeanMD; optional SIFT2)
-Step 4.5  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
+Step 4.1  Disconnectome     Options A/B/C + disconnection matrix (--disconnection; needs lesion mask)
 Step 5    Node strength     ENIGMA-style report (auto after Step 4)
 ```
 
 Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
-**Experiment arms:** `--experiment-arm` sets Step 1.5 backend and Step 3.5 ACT together — see [Usage — experiment arms](usage.md).
+**Experiment arms:** `--experiment-arm` sets Step 1.1 backend and Step 3.1 ACT together — see [Usage — experiment arms](usage.md).
 
 ---
 
@@ -49,7 +49,7 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 ---
 
-## Step 1.5 — Inpaint (optional)
+## Step 1.1 — Inpaint (optional)
 
 **Tools:** [neuroLIT](https://github.com/Deep-MI/lit) (`lit_0.6.0.sif`, default) or LeAPP-compatible **virtual brain transplant** (`--anat-mitigation vbt`)
 
@@ -63,7 +63,7 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 **Skip:** `--no-inpaint` / `--anat-mitigation none`, or no mask present (silent no-op)
 
-**References:** [Step 1.5 — Inpainting (methods)](methods/step1_5_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [References table](references.md#step-15-anatomical-lesion-mitigation-optional) (Pollak et al. 2025; Bey et al. 2024).
+**References:** [Step 1.1 — Inpainting (methods)](methods/step1_1_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [References table](references.md#step-11-anatomical-lesion-mitigation-optional) (Pollak et al. 2025; Bey et al. 2024).
 
 ---
 
@@ -71,7 +71,7 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 **Tool:** FreeSurfer `recon-all` or [FastSurfer](https://github.com/Deep-MI/FastSurfer)
 
-**Input T1w:** inpainted T1w when Step 1.5 ran; otherwise QSIPrep preprocessed T1w
+**Input T1w:** inpainted T1w when Step 1.1 ran; otherwise QSIPrep preprocessed T1w
 
 **Processing:**
 
@@ -103,7 +103,7 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 ---
 
-## Step 3.5 — Lesion-aware ACT (optional)
+## Step 3.1 — Lesion-aware ACT (optional)
 
 **Tools:** `dkt_lesion_act.sif` (always); optionally `dkt_deep_atropos_seg.sif` + `dkt_deep_atropos.sif` when `--act-5tt-source deep-atropos-native`
 
@@ -136,7 +136,7 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 Step 4 uses these tractograms when lesion-aware mode is active.
 
-**References:** [Step 3.5 methods](methods/step3_5_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md) · (Bey et al. 2024; Smith et al. 2012).
+**References:** [Step 3.1 methods](methods/step3_1_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md) · (Bey et al. 2024; Smith et al. 2012).
 
 ---
 
@@ -160,9 +160,9 @@ Optional: `--tractography-model both` adds parallel SD_STREAM matrices (`*_model
 
 ---
 
-## Step 4.5 — Disconnectome (optional)
+## Step 4.1 — Disconnectome (optional)
 
-**Trigger:** `--disconnection` flag + prepared lesion mask + DKT connectome from Steps 1.5 and 4
+**Trigger:** `--disconnection` flag + prepared lesion mask + DKT connectome from Steps 1.1 and 4
 
 **Processing:**
 
@@ -174,9 +174,9 @@ Optional: `--tractography-model both` adds parallel SD_STREAM matrices (`*_model
 
 **Skip:** omit `--disconnection` (default), `--no-disconnectome`, or no lesion mask
 
-Full method: [Disconnectome](disconnectome.md) · Theory: [Step 4.5 — Disconnectome (methods)](methods/step4_5_disconnectome.md).
+Full method: [Disconnectome](disconnectome.md) · Theory: [Step 4.1 — Disconnectome (methods)](methods/step4_1_disconnectome.md).
 
-**References:** [References table](references.md#step-45-disconnectome-optional) (Griffis et al. 2019; Kuceyeski et al. 2013).
+**References:** [References table](references.md#step-41-disconnectome-optional) (Griffis et al. 2019; Kuceyeski et al. 2013).
 
 ---
 
@@ -203,7 +203,7 @@ Full method: [Disconnectome](disconnectome.md) · Theory: [Step 4.5 — Disconne
 After each participant run, `./run` writes:
 
 - `qc/sub-<ID>/subject_qc.html` — unified dashboard (Steps 1–5)
-- `disconnectome/.../disconnectome_qc.html` — when Step 4.5 ran
+- `disconnectome/.../disconnectome_qc.html` — when Step 4.1 ran
 
 Group level: `./run … group` → `cohort_qc.html` + BIDS Derivatives export.
 

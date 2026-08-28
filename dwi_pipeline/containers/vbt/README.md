@@ -1,4 +1,4 @@
-# `dkt_vbt.sif` — Virtual Brain Transplant (Step 1.5)
+# `dkt_vbt.sif` — Virtual Brain Transplant (Step 1.1)
 
 LeAPP-compatible VBT for TBI lesion mitigation (`--anat-mitigation vbt`). Implements
 `dwi_pipeline/scripts/run_vbt.py` (mirror, midline alignment, smoothed contralesional

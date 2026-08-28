@@ -110,7 +110,7 @@ def collect_qsiprep(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
 def collect_inpaint(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
     qc_files = sorted((results_root / "inpainted" / subject_id).glob("ses-*/inpainting_qc.json"))
     if not qc_files:
-        return _step("inpaint", "Step 1.5 — Inpaint", "SKIP", notes="No lesion inpainting QC (mask absent or skipped)")
+        return _step("inpaint", "Step 1.1 — Inpaint", "SKIP", notes="No lesion inpainting QC (mask absent or skipped)")
 
     qc_path = qc_files[0]
     data = _load_json(qc_path) or {}
@@ -142,7 +142,7 @@ def collect_inpaint(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
     if prov.is_file():
         links.append({"label": "inpainting.json", "href": _rel_link(qc_dir, prov) or ""})
 
-    return _step("inpaint", "Step 1.5 — Inpaint", status, summary=summary, links=links, figures=figures)
+    return _step("inpaint", "Step 1.1 — Inpaint", status, summary=summary, links=links, figures=figures)
 
 
 def collect_recon(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
@@ -216,7 +216,7 @@ def collect_connectome(results_root: Path, subject_id: str, qc_dir: Path) -> dic
 def collect_disconnectome(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
     ddir = results_root / "connectomes" / subject_id / "disconnectome"
     if not (ddir / "disconnectome.json").is_file():
-        return _step("disconnectome", "Step 4.5 — Disconnectome", "SKIP", notes="No disconnectome (non-lesion or skipped)")
+        return _step("disconnectome", "Step 4.1 — Disconnectome", "SKIP", notes="No disconnectome (non-lesion or skipped)")
 
     qc_json = ddir / "disconnectome_qc.json"
     if qc_json.is_file():
@@ -237,14 +237,14 @@ def collect_disconnectome(results_root: Path, subject_id: str, qc_dir: Path) -> 
                 **(report.get("disconnection_summary") or {}),
             }
         except FileNotFoundError:
-            return _step("disconnectome", "Step 4.5 — Disconnectome", "WARN", notes="disconnectome.json incomplete")
+            return _step("disconnectome", "Step 4.1 — Disconnectome", "WARN", notes="disconnectome.json incomplete")
 
     links = [
         {"label": "disconnectome detail report", "href": _rel_link(qc_dir, ddir / "disconnectome_qc.html") or ""},
         {"label": "disconnectome.json", "href": _rel_link(qc_dir, ddir / "disconnectome.json") or ""},
     ]
     links = [l for l in links if l["href"]]
-    return _step("disconnectome", "Step 4.5 — Disconnectome", status, summary=summary, links=links)
+    return _step("disconnectome", "Step 4.1 — Disconnectome", status, summary=summary, links=links)
 
 
 def collect_nodestrength(results_root: Path, subject_id: str, qc_dir: Path) -> dict:

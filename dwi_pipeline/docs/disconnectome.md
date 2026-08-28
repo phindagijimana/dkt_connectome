@@ -1,6 +1,6 @@
 # Disconnectome
 
-Theory and biological rationale: [Step 4.5 — Disconnectome (methods)](methods/step4_5_disconnectome.md).
+Theory and biological rationale: [Step 4.1 — Disconnectome (methods)](methods/step4_1_disconnectome.md).
 
 Full method specification: [`Inpainting/disconnection.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md).
 
@@ -12,7 +12,7 @@ Full method specification: [`Inpainting/disconnection.md`](https://github.com/ph
 - **D default spared = C** (`--disconnection-spared C`)
 - **Weighting default = count** (matches Step 4); optional `--connectome-weighting sift2`
 - **Opt-in** via `--disconnection` on `./run` or `run_subject.sh all` (off by default; method under validation)
-- Standalone: `--mode disconnectome` or `run_subject.sh disconnectome` (requires `lesion_mask_prepared.nii.gz` from Step 1.5)
+- Standalone: `--mode disconnectome` or `run_subject.sh disconnectome` (requires `lesion_mask_prepared.nii.gz` from Step 1.1)
 - **SIFT1 is not used** in this pipeline
 
 ---
@@ -27,7 +27,7 @@ Full method specification: [`Inpainting/disconnection.md`](https://github.com/ph
 
 ## QC reports
 
-**Per-subject HTML report** (auto-written by Snakemake / Step 4.5):
+**Per-subject HTML report** (auto-written by Snakemake / Step 4.1):
 
 ```text
 connectomes/sub-<ID>/disconnectome/disconnectome_qc.html
@@ -86,4 +86,4 @@ Run `evaluate_disconnectome_integrity.py` on your own completed disconnectome ou
 2. **Matrix shape** — 78×78 for DKT; no unexpected all-zero rows/columns.
 3. **Provenance** — `parcellation.json` present when inpainting ran.
 
-Re-run Step 4 **and** 4.5 after changing weighting.
+Re-run Step 4 **and** 4.1 after changing weighting.

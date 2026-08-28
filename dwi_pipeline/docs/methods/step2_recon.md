@@ -53,10 +53,10 @@ The **Desikan–Killiany–Tourville (DKT)** protocol refines DK boundaries for 
 
 | Condition | T1w fed to Step 2 |
 |-----------|-------------------|
-| BIDS lesion mask present, Step 1.5 ran | Inpainted T1w (`inpainting_result.nii.gz`) |
+| BIDS lesion mask present, Step 1.1 ran | Inpainted T1w (`inpainting_result.nii.gz`) |
 | No mask or `--no-inpaint` | QSIPrep `desc-preproc_T1w` or BIDS T1w per config |
 
-Inpainting improves segmentation **around lesions** without altering DWI (see [Step 1.5](step1_5_inpaint.md)).
+Inpainting improves segmentation **around lesions** without altering DWI (see [Step 1.1](step1_1_inpaint.md)).
 
 ---
 
