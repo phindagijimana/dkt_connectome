@@ -23,7 +23,7 @@ Step 4.1 consumes artifacts from Steps 1.1, 3, and 4:
 | `lesion_mask_prepared.nii.gz` | 1.1 | Binary lesion definition on T1w |
 | `*_streamlines.tck.gz` (+ optional SIFT2 weights) | 3 | Tractogram |
 | `nodes.mif`, `dkt_connectome.csv` | 4 | Parcellation + primary connectome |
-| `native_to_preproc_T1w_0GenericAffine.mat`, `dwiref` | 4 | Warp lesion to tractography grid |
+| `fs_to_preproc_T1w_0GenericAffine.mat` (or legacy `native_to_preproc_T1w_0GenericAffine.mat`), `dwiref` | 4 | Warp lesion to tractography grid |
 
 Requires a prepared lesion mask from inpainting (Step 1.1). Subjects without a BIDS lesion mask skip this step entirely.
 

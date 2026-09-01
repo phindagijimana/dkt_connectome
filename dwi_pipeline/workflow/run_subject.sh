@@ -216,6 +216,7 @@ if [[ -n "${EXPERIMENT_ARM_EFFECTIVE}" ]]; then
     neurolit-lesion)  _arm_backend=neurolit; _arm_act=lesion-aware ;;
     vbt-std)          _arm_backend=vbt;      _arm_act=standard ;;
     vbt-lesion)       _arm_backend=vbt;      _arm_act=lesion-aware ;;
+    deep-atropos-pilot) _arm_backend=none;   _arm_act=lesion-aware ;;
     *) echo "Invalid --experiment-arm=${EXPERIMENT_ARM_EFFECTIVE}" >&2; exit 2 ;;
   esac
   OVERRIDES[experiment.arm]="${EXPERIMENT_ARM_EFFECTIVE}"
@@ -290,12 +291,14 @@ case "${PIPELINE_MODE}" in
   qsirecon)     TARGET="target_qsirecon" ;;
   act)          TARGET="target_act" ;;
   sdstream)     TARGET="target_sdstream" ;;
+  sdstream-tractography) TARGET="target_sdstream_tractography" ;;
   connectome)   TARGET="target_connectome" ;;
   disconnectome) TARGET="target_disconnectome" ;;
   nodestrength) TARGET="target_nodestrength" ;;
+  subject_qc)   TARGET="target_subject_qc" ;;
   inpaint)      TARGET="target_inpaint" ;;
   *)
-    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, act, sdstream, connectome, disconnectome, or nodestrength)"
+    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, act, sdstream, sdstream-tractography, connectome, disconnectome, nodestrength, or subject_qc)"
     exit 1
     ;;
 esac
@@ -359,10 +362,10 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
       _resolve_session_args+=(--dwi-select-json "${_dwi_select_json}")
     fi
     _session="$("${PIPELINE_PYTHON}" "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
-    _mask_prepared="${_results_root}/inpainted/sub-${SUBJECT}/ses-${_session}/lesion_mask_prepared.nii.gz"
+    _mask_prepared="$(find_prepared_lesion_mask "${_results_root}" "${SUBJECT}" "${_session}" || true)"
     _dkt_matrix="${_results_root}/connectomes/sub-${SUBJECT}/dkt_connectome.csv"
-    if [[ ! -f "${_mask_prepared}" ]]; then
-      echo "Disconnectome: no prepared lesion mask at ${_mask_prepared} — skipping Step 4.1 (no-op)"
+    if [[ -z "${_mask_prepared}" ]]; then
+      echo "Disconnectome: no prepared lesion mask under ${_results_root}/{lesion_masks,inpainted,vbt}/sub-${SUBJECT}/ses-${_session}/ — skipping Step 4.1 (no-op)"
       exit 0
     fi
     if [[ ! -f "${_dkt_matrix}" ]]; then
@@ -390,8 +393,8 @@ declare -a CMD=(
   # --configfile, so runtime overrides must include the full effective config.
   --configfile "${OVERRIDE_YAML}"
   --cores "${NTHREADS}"
-  --rerun-incomplete
 )
+[[ "${SKIP_RERUN_INCOMPLETE:-0}" != "1" ]] && CMD+=(--rerun-incomplete)
 ((DRY_RUN)) && CMD+=(--dry-run)
 CMD+=("${SNAKEMAKE_PASSTHROUGH[@]}")
 CMD+=(-- "${TARGET}")

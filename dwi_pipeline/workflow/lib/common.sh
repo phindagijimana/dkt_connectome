@@ -30,6 +30,44 @@ _strict_find_one() {
   echo "${matches[0]}"
 }
 
+# _find_ifod2_tractogram — lesion-aware ACT, staged tractography/, then QSIRecon.
+_find_ifod2_tractogram() {
+  local qsirecon_out="$1" tractography_out="$2" lesion_act_out="$3" subject="$4"
+  local -a candidates=()
+  if [[ -n "${lesion_act_out}" ]]; then
+    candidates+=(
+      "${lesion_act_out}/sub-${subject}/model-ifod2_streamlines.tck"
+      "${lesion_act_out}/sub-${subject}/model-ifod2_streamlines.tck.gz"
+    )
+  fi
+  if [[ -n "${tractography_out}" ]]; then
+    candidates+=(
+      "${tractography_out}/sub-${subject}/model-ifod2_streamlines.tck"
+      "${tractography_out}/sub-${subject}/model-ifod2_streamlines.tck.gz"
+    )
+  fi
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    [[ -f "${candidate}" ]] && { echo "${candidate}"; return 0; }
+  done
+  _strict_find_one "connectome/tractogram" \
+    find -L "${qsirecon_out}" -type f -path "*sub-${subject}*" \
+      \( -name '*model-ifod2_streamlines.tck' -o -name '*model-ifod2_streamlines.tck.gz' \)
+}
+
+# _find_sift2_weights — prefer lesion-aware ACT weights, else QSIRecon.
+_find_sift2_weights() {
+  local qsirecon_out="$1" lesion_act_out="$2" subject="$3"
+  local act_weights=""
+  if [[ -n "${lesion_act_out}" ]]; then
+    act_weights="${lesion_act_out}/sub-${subject}/model-sift2_streamlineweights.csv"
+    [[ -f "${act_weights}" ]] && { echo "${act_weights}"; return 0; }
+  fi
+  _strict_find_one "connectome/sift2_weights" \
+    find -L "${qsirecon_out}" -type f -path "*sub-${subject}*" \
+      -name '*model-sift2_streamlineweights.csv'
+}
+
 # find_lesion_mask — 0 or 1 sibling *_T1w_label-lesion_roi.nii.gz next to the
 # session's T1w. Echoes nothing (not an error) when none exists.
 find_lesion_mask() {
@@ -43,6 +81,17 @@ find_lesion_mask() {
   ((${#matches[@]} == 1)) || _pipeline_fail "inpaint/lesion mask" \
     "expected 0 or 1 lesion mask for sub-${subject} ses-${session}, found ${#matches[@]}" "${matches[@]}"
   echo "${matches[0]}"
+}
+
+# find_prepared_lesion_mask — Step 1.1 prepared mask on the results tree.
+find_prepared_lesion_mask() {
+  local results_root="$1" subject="$2" session="$3"
+  local root candidate
+  for root in "${results_root}/lesion_masks" "${results_root}/inpainted" "${results_root}/vbt"; do
+    candidate="${root}/sub-${subject}/ses-${session}/lesion_mask_prepared.nii.gz"
+    [[ -f "${candidate}" ]] && { echo "${candidate}"; return 0; }
+  done
+  return 1
 }
 
 # BIDS session label from a path (e.g. "2WK" from ".../ses-2WK/dwi/...").

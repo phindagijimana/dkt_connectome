@@ -213,6 +213,7 @@ rule connectome:
         exec > {log} 2>&1
         set -euo pipefail
         source {COMMON_SH}
+        export CONTAINER_CONNECTOME="{CONTAINER_CONNECTOME}"
         SUBJECT="{wildcards.subject}"
 
         [[ "{CONNECTOME_RESAMPLE_TO_DWI}" == "True" ]] || \
@@ -253,17 +254,35 @@ rule connectome:
         fi
 
         ses="{params.session}"
+        tractography_binds=()
         if [[ "{ACT_MODE}" == "lesion-aware" ]]; then
           tracks="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
           [[ -f "${{tracks}}" ]] || _pipeline_fail "connectome/tractogram" \
             "missing lesion-aware tractogram: ${{tracks}}"
           tracks_in_container="/lesion_act/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
         else
-          tracks="$(_strict_find_one "connectome/tractogram" \
-            find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
-              \( -name '*.tck' -o -name '*.tck.gz' \))"
-          tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
-          tracks_in_container="/qsirecon/${{tracks_rel}}"
+          tracks="$(_find_ifod2_tractogram "{QSIRECON_OUT}" "{TRACTOGRAPHY_OUT}" "" "${{SUBJECT}}")"
+          if [[ "{ANATOMY_MITIGATION_BACKEND}" != "none" \
+             && "${{tracks}}" != "{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck" ]]; then
+            staged="{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+            mkdir -p "{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}"
+            if [[ "${{tracks}}" == *.tck.gz ]]; then
+              gunzip -c "${{tracks}}" > "${{staged}}"
+            else
+              cp -f "${{tracks}}" "${{staged}}"
+            fi
+            sift2_src="$(_find_sift2_weights "{QSIRECON_OUT}" "" "${{SUBJECT}}")"
+            cp -f "${{sift2_src}}" "{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}/model-ifod2_sift2weights.csv"
+            tracks="${{staged}}"
+            echo "Staged iFOD2 tractogram for {ANATOMY_MITIGATION_BACKEND} path: ${{tracks}}"
+          fi
+          if [[ "${{tracks}}" == "{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck" ]]; then
+            tracks_in_container="/tractography/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+            tractography_binds=(-B "{TRACTOGRAPHY_OUT}":/tractography:ro)
+          else
+            tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
+            tracks_in_container="/qsirecon/${{tracks_rel}}"
+          fi
         fi
 
         dwiref="$(_strict_find_one "connectome/dwiref" \
@@ -349,6 +368,7 @@ rule connectome:
           "${{lausanne_binds[@]}}" \
           "${{t1w_override_binds[@]}}" \
           "${{act_binds[@]}}" \
+          "${{tractography_binds[@]}}" \
           -B "{DWI_PIPELINE_DIR}/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro \
           -B "{FS_SUBJECTS_DIR}":/subjects:ro \
           -B "{QSIRECON_OUT}":/qsirecon:ro \
@@ -475,22 +495,25 @@ if CONNECTOME_SIFT2_ENABLED:
               [[ -f "${{tracks}}" ]] || _pipeline_fail "connectome_sift2/tractogram" \
                 "missing lesion-aware tractogram: ${{tracks}}"
               tracks_in_container="/lesion_act/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
-              sift2_weights="{LESION_AWARE_ACT_OUT}/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv"
-              [[ -f "${{sift2_weights}}" ]] || _pipeline_fail "connectome_sift2/sift2_weights" \
-                "missing lesion-aware SIFT2 weights: ${{sift2_weights}}"
+              sift2_weights="$(_find_sift2_weights "{QSIRECON_OUT}" "{LESION_AWARE_ACT_OUT}" "${{SUBJECT}}")"
               weights_in_container="/lesion_act/sub-${{SUBJECT}}/model-sift2_streamlineweights.csv"
               act_binds=(-B "{LESION_AWARE_ACT_OUT}":/lesion_act:ro)
+              tractography_binds=()
             else
-              tracks="$(_strict_find_one "connectome_sift2/tractogram" \
-                find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
-                  \( -name '*.tck' -o -name '*.tck.gz' \))"
-              tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
-              tracks_in_container="/qsirecon/${{tracks_rel}}"
-              sift2_weights="$(_strict_find_one "connectome_sift2/sift2_weights" \
-                find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
-                  -name '*model-sift2_streamlineweights.csv')"
-              w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
-              weights_in_container="/qsirecon/${{w_rel}}"
+              tracks="$(_find_ifod2_tractogram "{QSIRECON_OUT}" "{TRACTOGRAPHY_OUT}" "" "${{SUBJECT}}")"
+              tractography_binds=()
+              if [[ "${{tracks}}" == "{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}/model-ifod2_streamlines.tck" ]]; then
+                tracks_in_container="/tractography/sub-${{SUBJECT}}/model-ifod2_streamlines.tck"
+                tractography_binds=(-B "{TRACTOGRAPHY_OUT}":/tractography:ro)
+                sift2_weights="{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}/model-ifod2_sift2weights.csv"
+                weights_in_container="/tractography/sub-${{SUBJECT}}/model-ifod2_sift2weights.csv"
+              else
+                tracks_rel="${{tracks#{QSIRECON_OUT}/}}"
+                tracks_in_container="/qsirecon/${{tracks_rel}}"
+                sift2_weights="$(_find_sift2_weights "{QSIRECON_OUT}" "" "${{SUBJECT}}")"
+                w_rel="${{sift2_weights#{QSIRECON_OUT}/}}"
+                weights_in_container="/qsirecon/${{w_rel}}"
+              fi
               act_binds=()
             fi
 
@@ -508,6 +531,7 @@ if CONNECTOME_SIFT2_ENABLED:
             apptainer exec --cleanenv --containall \
               --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
               "${{act_binds[@]}}" \
+              "${{tractography_binds[@]}}" \
               -B "{QSIRECON_OUT}":/qsirecon:ro \
               -B "{CONNECTOME_OUT}":/connectomes \
               "{CONTAINER_CONNECTOME}" \

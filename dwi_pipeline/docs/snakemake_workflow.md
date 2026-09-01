@@ -40,6 +40,7 @@ These wildcard-free targets map 1:1 to `./run --mode` and `run_subject.sh` modes
 | `target_qsirecon` | Step 3 — QSIRecon | `qsirecon` |
 | `target_act` | Step 3.1 — lesion-aware ACT | `act` |
 | `target_sdstream` | SD_STREAM tractography + connectomes | `sdstream` |
+| `target_sdstream_tractography` | SD_STREAM tractography only (no connectome matrices) | `sdstream-tractography` |
 | `target_connectome` | Step 4 — DKT connectome (+ SD if `both`) | `connectome` |
 | `target_disconnectome` | Step 4.1 — disconnectome | `disconnectome` |
 | `target_nodestrength` | Step 5 — node strength | `nodestrength` |

@@ -6,8 +6,8 @@
 # passes in — Desikan-Killiany or Desikan-Killiany-Tourville — so nothing here
 # is specific to either atlas.
 #
-# Warp chain: FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w
-#             (affine BIDS T1w -> desc-preproc_T1w) -> dwiref grid.
+# Warp chain: FS conformed T1 + aparc -> rigid register to QSIPrep desc-preproc_T1w
+#             -> warp labels to dwiref grid (GenericLabel).
 #
 set -euo pipefail
 
@@ -20,7 +20,7 @@ Required:
   --tractogram PATH          QSIRecon streamlines (.tck or .tck.gz)
   --dwiref PATH              QSIPrep *_space-T1w_dwiref.nii.gz
   --preproc-t1w PATH         QSIPrep *_desc-preproc_T1w.nii.gz
-  --bids-t1w PATH            BIDS session T1w (affine registration source)
+  --bids-t1w PATH            Legacy (unused): kept for CLI compatibility with Step 4 callers
   --preproc-dwi PATH         QSIPrep *_space-T1w_desc-preproc_dwi.nii.gz
   --bval PATH                FSL b-values corresponding to --preproc-dwi
   --bvec PATH                FSL b-vectors corresponding to --preproc-dwi
@@ -100,7 +100,6 @@ done
 [[ -n "${TRACKS}" ]] || fail "--tractogram is required"
 [[ -n "${DWIREF}" ]] || fail "--dwiref is required"
 [[ -n "${PREPROC_T1W}" ]] || fail "--preproc-t1w is required"
-[[ -n "${BIDS_T1W}" ]] || fail "--bids-t1w is required"
 [[ -n "${PREPROC_DWI}" ]] || fail "--preproc-dwi is required"
 [[ -n "${BVAL}" ]] || fail "--bval is required"
 [[ -n "${BVEC}" ]] || fail "--bvec is required"
@@ -123,13 +122,14 @@ case "${SEGMENTATION}" in
   /*)  APARC="${SEGMENTATION}" ;;
   *)   APARC="${FS_SUBJECT}/mri/${SEGMENTATION}" ;;
 esac
-RAWAVG="${FS_SUBJECT}/mri/rawavg.mgz"
+FS_T1="${FS_SUBJECT}/mri/T1.mgz"
 [[ -f "${APARC}" ]] || fail "missing segmentation: ${APARC}"
-[[ -f "${RAWAVG}" ]] || fail "missing ${RAWAVG}"
+[[ -f "${FS_T1}" ]] || fail "missing FS T1: ${FS_T1}"
 [[ -f "${TRACKS}" ]] || fail "missing tractogram: ${TRACKS}"
 [[ -f "${DWIREF}" ]] || fail "missing dwiref: ${DWIREF}"
 [[ -f "${PREPROC_T1W}" ]] || fail "missing preproc T1w: ${PREPROC_T1W}"
-[[ -f "${BIDS_T1W}" ]] || fail "missing BIDS T1w: ${BIDS_T1W}"
+[[ -n "${BIDS_T1W}" && -f "${BIDS_T1W}" ]] && \
+  echo "NOTE: --bids-t1w is ignored (rigid FS T1 -> QSIPrep ACPC registration)"
 [[ -f "${PREPROC_DWI}" ]] || fail "missing preprocessed DWI: ${PREPROC_DWI}"
 [[ -f "${BVAL}" ]] || fail "missing b-values: ${BVAL}"
 [[ -f "${BVEC}" ]] || fail "missing b-vectors: ${BVEC}"
@@ -164,7 +164,7 @@ fi
 [[ -f "${FS_LUT_PATH}" ]] || fail "FreeSurfer LUT not found: ${FS_LUT_PATH}"
 [[ -n "${MRTRIX_LUT_PATH}" && -f "${MRTRIX_LUT_PATH}" ]] || fail "MRtrix fs_default.txt not found (set --mrtrix-lut or MRTRIX_LUT)"
 
-for c in mri_label2vol mri_convert antsRegistration antsApplyTransforms labelconvert \
+for c in mri_convert antsRegistrationSyN.sh antsApplyTransforms labelconvert \
   mrconvert dwi2tensor tensor2metric tcksample tck2connectome tckinfo mrinfo; do
   require_cmd "${c}"
 done
@@ -176,44 +176,32 @@ echo "Using segmentation: ${APARC}"
 echo "Using labelconvert LUT: ${MRTRIX_LUT_PATH}"
 echo "Using DWI reference: ${DWIREF}"
 echo "Using QSIPrep T1w reference: ${PREPROC_T1W}"
-echo "Using BIDS T1w (affine reg source): ${BIDS_T1W}"
+echo "Using FS T1 (rigid reg moving): ${FS_T1}"
 echo "Using preprocessed DWI: ${PREPROC_DWI}"
 echo "Using DWI brain mask: ${BRAIN_MASK}"
-echo "Space handling: FS conformed -> native (mri_label2vol/rawavg) -> QSIPrep T1w (affine BIDS T1w->desc-preproc_T1w) -> dwiref"
+echo "Space handling: FS conformed T1 + aparc -> rigid FS T1 to QSIPrep desc-preproc_T1w -> dwiref"
 
-echo "[connectome] Step 4a: FS conformed -> native (mri_label2vol / rawavg.mgz)"
-mri_label2vol --seg "${APARC}" \
-  --temp "${RAWAVG}" \
-  --o "${OUTDIR}/aparc+aseg_in_rawavg.mgz" \
-  --regheader "${APARC}"
-
+echo "[connectome] Step 4a: convert FS segmentation and T1 to NIfTI"
 mri_convert "${APARC}" "${OUTDIR}/aparc+aseg.nii.gz"
-mri_convert "${OUTDIR}/aparc+aseg_in_rawavg.mgz" "${OUTDIR}/aparc+aseg_in_rawavg.nii.gz"
+mri_convert "${FS_T1}" "${OUTDIR}/T1.nii.gz"
 
-echo "[connectome] Step 4b-1: affine register BIDS T1w -> QSIPrep desc-preproc_T1w"
-antsRegistration --dimensionality 3 --float 0 \
-  --output "[${OUTDIR}/native_to_preproc_T1w_,${OUTDIR}/native_to_preproc_T1w_Warped.nii.gz]" \
-  --interpolation Linear \
-  --winsorize-image-intensities '[0.005,0.995]' \
-  --use-histogram-matching 1 \
-  --transform 'Affine[0.1]' \
-  --metric "MI[${PREPROC_T1W},${BIDS_T1W},1,32]" \
-  --convergence '[500x250x100,1e-6,10]' \
-  --shrink-factors 4x2x1 \
-  --smoothing-sigmas 2x1x0vox
+echo "[connectome] Step 4b-1: rigid register FS T1 -> QSIPrep desc-preproc_T1w"
+ANTS_REG_SYN="${ANTS_REG_SYN:-antsRegistrationSyN.sh}"
+if [[ ! -x "${ANTS_REG_SYN}" && -x /opt/ants/bin/antsRegistrationSyN.sh ]]; then
+  ANTS_REG_SYN=/opt/ants/bin/antsRegistrationSyN.sh
+fi
+"${ANTS_REG_SYN}" \
+  -d 3 \
+  -f "${PREPROC_T1W}" \
+  -m "${OUTDIR}/T1.nii.gz" \
+  -o "${OUTDIR}/fs_to_preproc_T1w_" \
+  -t r
 
-echo "[connectome] Step 4b-2: warp native labels -> QSIPrep T1w (GenericLabel)"
+echo "[connectome] Step 4b-2: warp FS labels -> dwiref (GenericLabel)"
 antsApplyTransforms -d 3 \
-  -i "${OUTDIR}/aparc+aseg_in_rawavg.nii.gz" \
-  -r "${PREPROC_T1W}" \
-  -t "${OUTDIR}/native_to_preproc_T1w_0GenericAffine.mat" \
-  -n GenericLabel \
-  -o "${OUTDIR}/aparc+aseg_in_t1w.nii.gz"
-
-echo "[connectome] Step 4b-3: QSIPrep T1w -> dwiref grid (GenericLabel resample)"
-antsApplyTransforms -d 3 \
-  -i "${OUTDIR}/aparc+aseg_in_t1w.nii.gz" \
+  -i "${OUTDIR}/aparc+aseg.nii.gz" \
   -r "${DWIREF}" \
+  -t "${OUTDIR}/fs_to_preproc_T1w_0GenericAffine.mat" \
   -n GenericLabel \
   -o "${OUTDIR}/aparc+aseg_in_dwi.nii.gz"
 

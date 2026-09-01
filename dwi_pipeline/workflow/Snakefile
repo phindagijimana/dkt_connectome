@@ -118,6 +118,11 @@ rule target_sdstream:
         ),
 
 
+rule target_sdstream_tractography:
+    input:
+        lambda wc: sdstream_products(_config_subject()),
+
+
 rule target_connectome:
     input:
         lambda wc: (

@@ -19,13 +19,12 @@ Step 4 builds a **subject-native anatomical connectome**: FreeSurfer DKT labels 
 FreeSurfer parcellations live in **conformed 256³ space**. Streamlines from QSIRecon live on the **`dwiref` grid** (~2 mm, QSIPrep T1w-derived). Step 4 aligns labels through three stages:
 
 ```text
-aparc.DKTatlas+aseg.mgz  (FreeSurfer conformed)
-        │  mri_label2vol --temp rawavg.mgz
+aparc.DKTatlas+aseg.mgz + T1.mgz  (FreeSurfer conformed)
+        │  mri_convert → NIfTI
         ▼
-Parcellation on native T1w grid (rawavg)
-        │  ANTs affine: BIDS/inpainted T1w → desc-preproc_T1w
+        │  ANTs rigid: FS T1 → QSIPrep desc-preproc_T1w  (SyNQuick -t r)
         ▼
-Parcellation in QSIPrep T1w space
+Parcellation warped to QSIPrep ACPC T1w space
         │  ANTs GenericLabel resample → dwiref
         ▼
 nodes.mif on tractography grid
@@ -34,7 +33,9 @@ nodes.mif on tractography grid
 tck2connectome → dkt_connectome.csv
 ```
 
-**Why not QSIPrep's packaged FS transform alone?** QSIPrep's FreeSurfer-native transform may target a reoriented frame that does not match `rawavg.mgz`. Step 4 uses an **empirical affine** between the T1w used for registration (inpainted or BIDS) and `desc-preproc_T1w` after `mri_label2vol`, which aligns labels with tractography on real data (Avants et al. 2011).
+**Why rigid FS T1 → ACPC T1w?** QSIPrep’s `desc-preproc_T1w` is already in **ACPC space**. Registering FreeSurfer’s conformed `T1.mgz` directly to that frame with a **rigid** transform (`antsRegistrationSyN.sh -t r`) avoids the prior native-T1w / BIDS-T1w affine chain and keeps label warping consistent with tractography on ACPC-aligned data (Avants et al. 2011). The CLI flag `--bids-t1w` is retained for backward compatibility but is **ignored** by the connectome container.
+
+**Backfill:** cohorts processed before this change used `native_to_preproc_T1w_0GenericAffine.mat`. Step 4.1 accepts either that legacy matrix or the new `fs_to_preproc_T1w_0GenericAffine.mat` when warping lesions.
 
 ---
 
@@ -67,7 +68,7 @@ connectomes/sub-<ID>/
   dkt_connectome.csv       # 78×78 symmetric matrix (default)
   nodes.mif                # parcellation on dwiref grid
   parcellation.json        # provenance: atlas, LUT, empty nodes
-  native_to_preproc_T1w_0GenericAffine.mat   # reused by Step 4.1
+  fs_to_preproc_T1w_0GenericAffine.mat     # rigid FS T1 → ACPC T1w; reused by Step 4.1
 ```
 
 ---
@@ -114,7 +115,7 @@ Voxelwise **`dkt_desc-FA_dwi.nii.gz`** and **`dkt_desc-MD_dwi.nii.gz`** are deri
 | Container | `dkt_connectome.sif` (FreeSurfer + ANTs + MRtrix3) |
 | Tractogram | QSIRecon `*_streamlines.tck.gz` |
 | Parcellation | DKT from Step 2 (78 nodes default) |
-| Registration T1w | Inpainted T1w when Step 1.1 ran; else BIDS T1w |
+| Registration | Rigid FS `T1.mgz` → QSIPrep `desc-preproc_T1w` (ACPC) |
 
 ---
 

@@ -119,6 +119,29 @@ def find_one(label: str, paths: list[Path]) -> Path:
     return paths[0]
 
 
+def first_existing(paths: list[Path]) -> Path | None:
+    for path in paths:
+        if path.is_file():
+            return path
+    return None
+
+
+def qsirecon_ifod2_paths(qsirecon: Path, sub: str) -> list[Path]:
+    return sorted(
+        p
+        for p in qsirecon.rglob("*model-ifod2_streamlines*")
+        if f"sub-{sub}" in p.as_posix()
+    )
+
+
+def qsirecon_sift2_paths(qsirecon: Path, sub: str) -> list[Path]:
+    return sorted(
+        p
+        for p in qsirecon.rglob("*model-sift2_streamlineweights.csv")
+        if f"sub-{sub}" in p.as_posix()
+    )
+
+
 def session_from_path(path: Path) -> str | None:
     for part in path.parts:
         if part.startswith("ses-"):
@@ -142,6 +165,7 @@ class DisconnectomePaths:
     dwiref: Path
     preproc_t1w: Path
     affine_mat: Path | None
+    lesion_in_dwi_precomputed: Path | None
     outdir: Path
     lut: Path
 
@@ -158,15 +182,25 @@ def discover_paths(
     qsirecon = results_root / "qsirecon_single_run_output"
     qsiprep = results_root / "qsiprep_single_run_output"
     connectome_dir = results_root / "connectomes" / f"sub-{sub}"
+    act_dir = results_root / "lesion_aware_act" / f"sub-{sub}"
 
-    tract_candidates = sorted(
-        p
-        for p in qsirecon.rglob("*model-ifod2_streamlines.tck.gz")
-        if f"sub-{sub}" in p.as_posix()
+    tractography_dir = results_root / "tractography" / f"sub-{sub}"
+    tractogram = first_existing(
+        [
+            act_dir / "model-ifod2_streamlines.tck",
+            act_dir / "model-ifod2_streamlines.tck.gz",
+            tractography_dir / "model-ifod2_streamlines.tck",
+            tractography_dir / "model-ifod2_streamlines.tck.gz",
+        ]
     )
-    tractogram = find_one("tractogram", tract_candidates)
+    if tractogram is None:
+        tractogram = find_one("tractogram", qsirecon_ifod2_paths(qsirecon, sub))
 
     ses = session or session_from_path(tractogram)
+    if not ses:
+        act_json = act_dir / "lesion_aware_act.json"
+        if act_json.is_file():
+            ses = str(json.loads(act_json.read_text()).get("session", "")).removeprefix("ses-") or None
     if not ses:
         raise SystemExit(f"Could not infer session from tractogram: {tractogram}")
 
@@ -196,12 +230,11 @@ def discover_paths(
         if not req.is_file():
             raise SystemExit(f"Missing Step 4 output {label}: {req}")
 
-    weight_candidates = sorted(
-        p
-        for p in qsirecon.rglob("*model-sift2_streamlineweights.csv")
-        if f"sub-{sub}" in p.as_posix()
-    )
-    sift2_weights = find_one("SIFT2 weights", weight_candidates)
+    act_weights = act_dir / "model-sift2_streamlineweights.csv"
+    staged_weights = tractography_dir / "model-ifod2_sift2weights.csv"
+    sift2_weights = first_existing([act_weights, staged_weights])
+    if sift2_weights is None:
+        sift2_weights = find_one("SIFT2 weights", qsirecon_sift2_paths(qsirecon, sub))
 
     dwiref_candidates = sorted(qsiprep.rglob(f"sub-{sub}/ses-{ses}/dwi/*space-T1w_dwiref.nii.gz"))
     dwiref = find_one("dwiref", dwiref_candidates)
@@ -213,8 +246,17 @@ def discover_paths(
         preproc_candidates = sorted(qsiprep.rglob(f"sub-{sub}/anat/*desc-preproc_T1w.nii.gz"))
     preproc_t1w = find_one("desc-preproc T1w", preproc_candidates)
 
-    mat = connectome_dir / "native_to_preproc_T1w_0GenericAffine.mat"
-    affine_mat = mat if mat.is_file() else None
+    affine_mat = None
+    for mat_name in (
+        "fs_to_preproc_T1w_0GenericAffine.mat",
+        "native_to_preproc_T1w_0GenericAffine.mat",
+    ):
+        candidate = connectome_dir / mat_name
+        if candidate.is_file():
+            affine_mat = candidate
+            break
+    act_lesion_dwi = act_dir / "lesion_mask_in_dwi.nii.gz"
+    lesion_in_dwi_precomputed = act_lesion_dwi if act_lesion_dwi.is_file() else None
 
     return DisconnectomePaths(
         results_root=results_root,
@@ -231,6 +273,7 @@ def discover_paths(
         dwiref=dwiref,
         preproc_t1w=preproc_t1w,
         affine_mat=affine_mat,
+        lesion_in_dwi_precomputed=lesion_in_dwi_precomputed,
         outdir=connectome_dir / "disconnectome",
         lut=lut,
     )
@@ -356,6 +399,31 @@ def warp_lesion(
     return out_mif
 
 
+def stage_lesion_from_act(
+    paths: DisconnectomePaths,
+    source_nii: Path,
+    container: Path,
+    dry_run: bool,
+) -> Path:
+    """Reuse lesion-aware ACT lesion mask already resampled to dwiref."""
+    out_nii = paths.outdir / "lesion_in_dwi.nii.gz"
+    out_mif = paths.outdir / "lesion_in_dwi.mif"
+    paths.outdir.mkdir(parents=True, exist_ok=True)
+    root = paths.results_root
+    cmd = " && ".join(
+        [
+            "set -euo pipefail",
+            f"mrtransform -force {cpath(source_nii, root)} "
+            f"-template {cpath(paths.nodes_mif, root)} -interp nearest "
+            f"{cpath(out_mif, root)}",
+            f"mrconvert -force {cpath(out_mif, root)} {cpath(out_nii, root)}",
+        ]
+    )
+    log(f"Using lesion-aware ACT lesion mask: {source_nii}")
+    run_container(container, root, cmd, dry_run=dry_run)
+    return out_mif
+
+
 def export_nodes_nii(paths: DisconnectomePaths, container: Path, dry_run: bool) -> Path:
     nodes_nii = paths.outdir / "nodes.nii.gz"
     cmd = (
@@ -464,7 +532,11 @@ def run_excision_mrtrix(
     c_w_in = cpath(paths.sift2_weights, root)
     w_full = tck2connectome_weight_args(cfg.weighting, paths.sift2_weights, root)
 
-    steps = ["set -euo pipefail", f"gunzip -c {c_tck_in} > {c_tck}"]
+    if paths.tractogram.name.endswith(".gz"):
+        stage_tck = f"gunzip -c {c_tck_in} > {c_tck}"
+    else:
+        stage_tck = f"cp -f {c_tck_in} {c_tck}"
+    steps = ["set -euo pipefail", stage_tck]
 
     if cfg.run_a:
         steps.append(
@@ -619,7 +691,14 @@ def main() -> None:
     if cfg.lesion_erode_voxels > 0:
         lesion_meta["lesion_erode_voxels"] = cfg.lesion_erode_voxels
 
-    lesion_mif = warp_lesion(paths, binary_lesion, args.container, args.dry_run)
+    if paths.lesion_in_dwi_precomputed is not None:
+        lesion_mif = stage_lesion_from_act(
+            paths, paths.lesion_in_dwi_precomputed, args.container, args.dry_run
+        )
+        warp_method = "lesion_aware_act_precomputed"
+    else:
+        lesion_mif = warp_lesion(paths, binary_lesion, args.container, args.dry_run)
+        warp_method = "ants_affine+dwiref" if paths.affine_mat else "mrtransform_template_nodes"
     lesion_nii = paths.outdir / "lesion_in_dwi.nii.gz"
 
     nodes_nii = export_nodes_nii(paths, args.container, args.dry_run)
@@ -669,7 +748,10 @@ def main() -> None:
         "disconnection_spared": cfg.disconnection_spared,
         "lesion_mask_prepared": str(paths.lesion_mask),
         "lesion_selection": lesion_meta,
-        "warp": "ants_affine+dwiref" if paths.affine_mat else "mrtransform_template_nodes",
+        "warp": warp_method,
+        "lesion_in_dwi_precomputed": (
+            str(paths.lesion_in_dwi_precomputed) if paths.lesion_in_dwi_precomputed else None
+        ),
         "affine_mat": str(paths.affine_mat) if paths.affine_mat else None,
         "primary_connectome": str(paths.primary_connectome),
         "flag_threshold": args.flag_threshold,
