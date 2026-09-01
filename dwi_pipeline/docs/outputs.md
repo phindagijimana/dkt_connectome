@@ -115,7 +115,7 @@ Under `connectomes/sub-<ID>/`:
 | `dkt_desc-FA_dwi.nii.gz`, `dkt_desc-MD_dwi.nii.gz` | Voxelwise tensor maps |
 | `dkt_nodes.mif` | DKT parcellation on DWI grid |
 | `parcellation.json` | Atlas metadata |
-| `native_to_preproc_T1w_0GenericAffine.mat` | Registration used for lesion warp (4.1) |
+| `fs_to_preproc_T1w_0GenericAffine.mat` | Rigid FS T1 → ACPC T1w registration (Step 4.1 lesion warp; legacy: `native_to_preproc_T1w_0GenericAffine.mat`) |
 | `assignments.csv` | Streamline–node assignments (debug) |
 
 With `--tractography-model both`: additional `dkt_model-SDSTREAM_connectome_*.csv` files.

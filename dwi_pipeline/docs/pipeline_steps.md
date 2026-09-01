@@ -176,7 +176,7 @@ Step 4 uses these tractograms when lesion-aware mode is active.
 
 **Processing:**
 
-1. Build DKT parcellation on DWI grid (`nodes.mif`)
+1. Rigid-register FreeSurfer `T1.mgz` to QSIPrep `desc-preproc_T1w` (ACPC); warp DKT labels to `dwiref`
 2. Assign streamlines to 78 DKT nodes (standard QSIRecon or lesion-aware ACT tractogram)
 3. Write connectome matrices: **Count, MeanLength, MeanFA, MeanMD** (same tractogram)
 4. Optional: **SIFT2** matrix with `--connectome-sift2` (separate Snakemake rule)

@@ -85,6 +85,24 @@ rule qsirecon:
 
         rm -rf "{params.work}"
         mkdir -p "$(dirname "{output.marker}")"
+
+        if [[ "{ACT_MODE}" == "standard" && "{ANATOMY_MITIGATION_BACKEND}" != "none" ]]; then
+          staged_dir="{TRACTOGRAPHY_OUT}/sub-${{SUBJECT}}"
+          mkdir -p "${{staged_dir}}"
+          tck="$(_strict_find_one "qsirecon/stage-ifod2" \
+            find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}*" \
+              \( -name '*model-ifod2_streamlines.tck' -o -name '*model-ifod2_streamlines.tck.gz' \))"
+          staged_tck="${{staged_dir}}/model-ifod2_streamlines.tck"
+          if [[ "${{tck}}" == *.tck.gz ]]; then
+            gunzip -c "${{tck}}" > "${{staged_tck}}"
+          else
+            cp -f "${{tck}}" "${{staged_tck}}"
+          fi
+          sift2="$(_find_sift2_weights "{QSIRECON_OUT}" "" "${{SUBJECT}}")"
+          cp -f "${{sift2}}" "${{staged_dir}}/model-ifod2_sift2weights.csv"
+          echo "QSIRecon: staged iFOD2 tractogram for {ANATOMY_MITIGATION_BACKEND} -> ${{staged_tck}}"
+        fi
+
         touch "{output.marker}"
         echo "QSIRecon: OK"
         """
