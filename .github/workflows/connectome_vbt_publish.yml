@@ -83,6 +83,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Install Apptainer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apptainer
+
       - name: Stage build context
         run: bash "dwi_pipeline/scripts/${{ matrix.stage_script }}"
 

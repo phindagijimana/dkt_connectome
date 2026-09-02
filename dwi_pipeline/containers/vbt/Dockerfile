@@ -8,7 +8,12 @@ ENV FSLDIR=/opt/fsl \
     LD_LIBRARY_PATH=/opt/fsl/lib \
     PATH=/opt/fsl/bin:/usr/local/bin:/usr/bin:/bin
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Ubuntu 18.04 is EOL; point apt at old-releases for CI builds.
+RUN sed -i \
+      -e 's|http://archive.ubuntu.com|http://old-releases.ubuntu.com|g' \
+      -e 's|http://security.ubuntu.com|http://old-releases.ubuntu.com|g' \
+      /etc/apt/sources.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 \
       python3-pip \

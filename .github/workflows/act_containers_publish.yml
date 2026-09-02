@@ -10,6 +10,7 @@ on:
       - 'dwi_pipeline/scripts/run_deep_atropos_seg.py'
       - 'dwi_pipeline/scripts/convert_deep_atropos_to_5tt.py'
       - 'dwi_pipeline/scripts/ci_stage_act_build_context.sh'
+      - 'dwi_pipeline/containers/vbt/Dockerfile'
       - 'dwi_pipeline/release_manifest.json'
       - '.github/workflows/act_containers_publish.yml'
   workflow_dispatch:

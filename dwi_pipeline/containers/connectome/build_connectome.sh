@@ -99,10 +99,15 @@ cp "${HERE}/mrtrix_lut/fs_dkt.txt" "${CTX}/dkt/lut/"
 cp "${HERE}/../../scripts/run_disconnectome.py" "${CTX}/dkt/"
 echo "  Build context: $(du -sh "${CTX}" | awk '{print $1}')"
 
-if [[ -f "${OUT_SIF}" && "${BACKUP_EXISTING:-1}" == "1" ]]; then
+if [[ -f "${OUT_SIF}" && "${BACKUP_EXISTING:-1}" == "1" && "${STAGE_ONLY:-0}" != "1" ]]; then
   bak="${OUT_SIF}.bak.$(date +%Y%m%d%H%M%S)"
   echo "  Backing up existing SIF -> ${bak}"
   cp -a "${OUT_SIF}" "${bak}"
+fi
+
+if [[ "${STAGE_ONLY:-0}" == "1" ]]; then
+  echo "=== Stage-only complete: ${CTX} ($(du -sh "${CTX}" | awk '{print $1}')) ==="
+  exit 0
 fi
 
 if command -v docker >/dev/null 2>&1; then
