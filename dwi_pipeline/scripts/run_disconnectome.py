@@ -140,6 +140,31 @@ def first_existing(paths: list[Path]) -> Path | None:
     return None
 
 
+def qsiprep_dwi_space_paths(qsiprep: Path, sub: str, ses: str, suffix: str) -> list[Path]:
+    """Prefer space-T1w QSIPrep DWI derivatives; fall back to space-ACPC."""
+
+    def _glob(space: str) -> list[Path]:
+        found: list[Path] = []
+        for pattern in (
+            f"sub-{sub}/ses-{ses}/dwi/*space-{space}_{suffix}",
+            f"sub-{sub}/dwi/*space-{space}_{suffix}",
+        ):
+            found.extend(sorted(qsiprep.glob(pattern)))
+        return sorted({p.resolve() for p in found})
+
+    t1w = _glob("T1w")
+    if len(t1w) == 1:
+        return t1w
+    acpc = _glob("ACPC")
+    if not t1w and len(acpc) == 1:
+        return acpc
+    return sorted(set(t1w + acpc))
+
+
+def qsiprep_dwiref_paths(qsiprep: Path, sub: str, ses: str) -> list[Path]:
+    return qsiprep_dwi_space_paths(qsiprep, sub, ses, "dwiref.nii.gz")
+
+
 def qsirecon_ifod2_paths(qsirecon: Path, sub: str) -> list[Path]:
     return sorted(
         p
@@ -250,8 +275,7 @@ def discover_paths(
     if sift2_weights is None:
         sift2_weights = find_one("SIFT2 weights", qsirecon_sift2_paths(qsirecon, sub))
 
-    dwiref_candidates = sorted(qsiprep.rglob(f"sub-{sub}/ses-{ses}/dwi/*space-T1w_dwiref.nii.gz"))
-    dwiref = find_one("dwiref", dwiref_candidates)
+    dwiref = find_one("dwiref", qsiprep_dwiref_paths(qsiprep, sub, ses))
 
     preproc_candidates = sorted(
         qsiprep.rglob(f"sub-{sub}/ses-{ses}/anat/*desc-preproc_T1w.nii.gz")

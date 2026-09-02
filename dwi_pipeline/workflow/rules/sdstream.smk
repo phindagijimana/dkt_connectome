@@ -67,9 +67,7 @@ rule sdstream_tractography:
         wm_fod="$(_strict_find_one "sdstream/wm-fod" \
           find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
             -name '*model-ss3t_param-fod_label-WM_dwimap.mif.gz')"
-        dwiref="$(_strict_find_one "sdstream/dwiref" \
-          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
-            -name '*space-T1w_dwiref.nii.gz')"
+        dwiref="$(find_qsiprep_dwiref "sdstream/dwiref" "{QSIPREP_OUT}" "${{SUBJECT}}" "${{SESSION}}")"
         five_tt="$(_strict_find_one "sdstream/5tt" \
           find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/anat/*" \
             -name '*space-ACPC_seg-hsvs_probseg.nii.gz')"

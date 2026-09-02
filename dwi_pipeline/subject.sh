@@ -1172,6 +1172,52 @@ _bids_ses_from_path() {
   fi
 }
 
+# QSIPrep DWI-space derivative under ses-*/dwi/ (or subject dwi/).
+# Prefers space-T1w; falls back to space-ACPC (QSIPrep 1.0 ACPC-first layouts).
+find_qsiprep_dwi_space_artifact() {
+  local label="$1" qsiprep_out="$2" subject="$3" session="$4" suffix="$5"
+  local -a t1w=() acpc=()
+  mapfile -t t1w < <(
+    find -L "${qsiprep_out}" -type f -path "*sub-${subject}*" \( \
+      -path "*/ses-${session}/dwi/*space-T1w_${suffix}" -o \
+      -path "*/dwi/*space-T1w_${suffix}" \
+    \) 2>/dev/null | LC_ALL=C sort -u
+  )
+  mapfile -t acpc < <(
+    find -L "${qsiprep_out}" -type f -path "*sub-${subject}*" \( \
+      -path "*/ses-${session}/dwi/*space-ACPC_${suffix}" -o \
+      -path "*/dwi/*space-ACPC_${suffix}" \
+    \) 2>/dev/null | LC_ALL=C sort -u
+  )
+  if ((${#t1w[@]} == 1)); then
+    echo "${t1w[0]}"
+    return 0
+  fi
+  if ((${#acpc[@]} == 1)); then
+    echo "${acpc[0]}"
+    return 0
+  fi
+  if ((${#t1w[@]} == 0 && ${#acpc[@]} == 0)); then
+    _pipeline_fail "${label}" \
+      "no file found for sub-${subject} (tried space-T1w and space-ACPC *_${suffix})"
+  fi
+  _pipeline_fail "${label}" \
+    "expected exactly 1 match (space-T1w: ${#t1w[@]}, space-ACPC: ${#acpc[@]})" \
+    "${t1w[@]}" "${acpc[@]}"
+}
+
+find_qsiprep_dwiref() {
+  find_qsiprep_dwi_space_artifact "$1" "$2" "$3" "$4" "dwiref.nii.gz"
+}
+
+find_qsiprep_preproc_dwi() {
+  find_qsiprep_dwi_space_artifact "$1" "$2" "$3" "$4" "desc-preproc_dwi.nii.gz"
+}
+
+find_qsiprep_brain_mask() {
+  find_qsiprep_dwi_space_artifact "$1" "$2" "$3" "$4" "desc-brain_mask.nii.gz"
+}
+
 # QSIPrep desc-preproc T1w: exactly one file under session anat/ or subject anat/.
 find_qsiprep_preproc_t1w() {
   local qsiprep_out="$1" subject="$2" session="$3"
@@ -1523,20 +1569,14 @@ run_connectome() {
   ses="$(_bids_ses_from_path "${tracks}")"
   [[ -n "${ses}" ]] || _pipeline_fail "connectome/session" "tractogram path has no ses-* entity: ${tracks}"
 
-  dwiref="$(_strict_find_one "connectome/dwiref" \
-    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
-      -name '*space-T1w_dwiref.nii.gz')"
+  dwiref="$(find_qsiprep_dwiref "connectome/dwiref" "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
   local preproc_dwi bval bvec brain_mask
-  preproc_dwi="$(_strict_find_one "connectome/preproc_dwi" \
-    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
-      -name '*space-T1w_desc-preproc_dwi.nii.gz')"
+  preproc_dwi="$(find_qsiprep_preproc_dwi "connectome/preproc_dwi" "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
   bval="${preproc_dwi%.nii.gz}.bval"
   bvec="${preproc_dwi%.nii.gz}.bvec"
   [[ -f "${bval}" ]] || _pipeline_fail "connectome/tensor" "missing b-values: ${bval}"
   [[ -f "${bvec}" ]] || _pipeline_fail "connectome/tensor" "missing b-vectors: ${bvec}"
-  brain_mask="$(_strict_find_one "connectome/brain_mask" \
-    find "${QSIPREP_OUT}" -type f -path "*sub-${SUBJECT}*/ses-${ses}/*" \
-      -name '*space-T1w_desc-brain_mask.nii.gz')"
+  brain_mask="$(find_qsiprep_brain_mask "connectome/brain_mask" "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
   preproc_t1w="$(find_qsiprep_preproc_t1w "${QSIPREP_OUT}" "${SUBJECT}" "${ses}")"
   bids_t1w="$(_resolve_registration_t1w "${SUBJECT}" "${ses}")"
 
