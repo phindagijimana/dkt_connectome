@@ -8,11 +8,13 @@ ENV FSLDIR=/opt/fsl \
     LD_LIBRARY_PATH=/opt/fsl/lib \
     PATH=/opt/fsl/bin:/usr/local/bin:/usr/bin:/bin
 
-# Ubuntu 18.04 is EOL; point apt at old-releases for CI builds.
-RUN sed -i \
-      -e 's|http://archive.ubuntu.com|http://old-releases.ubuntu.com|g' \
-      -e 's|http://security.ubuntu.com|http://old-releases.ubuntu.com|g' \
-      /etc/apt/sources.list \
+# Ubuntu 18.04 (bionic) is EOL; use old-releases archive for CI/apt installs.
+RUN rm -f /etc/apt/sources.list.d/* \
+    && printf '%s\n' \
+      'deb http://old-releases.ubuntu.com/ubuntu/ bionic main restricted universe multiverse' \
+      'deb http://old-releases.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse' \
+      'deb http://old-releases.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse' \
+      > /etc/apt/sources.list \
     && apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 \
