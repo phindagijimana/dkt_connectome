@@ -1,15 +1,14 @@
 # dkt_deep_atropos_seg — ANTsPyNet Deep Atropos segmentation on native T1w
 
-FROM ubuntu:22.04
+FROM python:3.10-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     ANTSXNET_CACHE=/opt/antsxnet_cache \
-    PATH=/usr/bin:/bin
+    PATH=/usr/local/bin:/usr/bin:/bin
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates python3 python3-pip python3-venv libgomp1 \
-    && python3 -m pip install --no-cache-dir --upgrade pip \
-    && python3 -m pip install --no-cache-dir \
+      ca-certificates libgomp1 \
+    && pip install --no-cache-dir \
       numpy==1.26.4 nibabel==5.2.1 scipy==1.11.4 \
       antspynet==0.2.7 \
     && rm -rf /var/lib/apt/lists/* \
