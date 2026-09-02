@@ -1,0 +1,70 @@
+name: Publish step SIFs to GHCR
+
+# Manual fallback: push pre-built .sif files from the repo maintainer machine to GHCR.
+# Upload SIFs as workflow artifacts first, or attach to a release, then run this workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag (e.g. 0.3.0)
+        type: string
+        default: "0.3.0"
+      artifact_run_id:
+        description: Optional Actions run ID that uploaded the dkt-step-sifs artifact
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+jobs:
+  push-sifs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+
+      - name: Download SIF artifacts
+        if: inputs.artifact_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: dkt-step-sifs
+          run-id: ${{ inputs.artifact_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | apptainer remote login --username "${{ github.actor }}" --password-stdin oras://ghcr.io
+
+      - name: Push SIFs to GHCR
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.image_tag }}"
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          shopt -s nullglob
+          mapfile -t SIFS < <(find . -maxdepth 3 -name 'dkt_*.sif' -o -name 'dk_*.sif' | sort)
+          if [[ ${#SIFS[@]} -eq 0 ]]; then
+            echo "No .sif files found. Upload artifacts named dkt-step-sifs first."
+            exit 1
+          fi
+          declare -A REPO=(
+            [dkt_connectome.sif]=dk-connectome
+            [dkt_vbt.sif]=dkt-vbt
+            [dkt_lesion_act.sif]=dkt-lesion-act
+            [dkt_deep_atropos.sif]=dkt-deep-atropos
+            [dkt_deep_atropos_seg.sif]=dkt-deep-atropos-seg
+          )
+          for sif in "${SIFS[@]}"; do
+            base="$(basename "${sif}")"
+            repo="${REPO[${base}]:-}"
+            [[ -n "${repo}" ]] || { echo "SKIP unknown ${base}"; continue; }
+            uri="oras://ghcr.io/${OWNER}/${repo}:${TAG}"
+            echo "Pushing ${sif} -> ${uri}"
+            apptainer push --allow-unsigned "${sif}" "${uri}"
+          done

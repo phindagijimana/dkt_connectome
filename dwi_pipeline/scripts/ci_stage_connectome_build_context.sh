@@ -1,33 +1,43 @@
 #!/usr/bin/env bash
 # Stage Docker build context for lean dkt_connectome (Step 4 + 4.1) in CI.
+# Uses selective docker cp (no multi-GB apptainer pull).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CTX="${ROOT}/containers/connectome/build_ctx_lean"
 FS_IMAGE="${FS_IMAGE:-freesurfer/freesurfer:7.4.1}"
-WORK="${WORK:-/tmp/dkt_connectome_ci}"
-mkdir -p "${WORK}" "${CTX}/freesurfer/bin" "${CTX}/dkt/lut"
 
-rm -rf "${CTX}/ants" "${CTX}/mrtrix3-latest"
-mkdir -p "${CTX}/ants" "${CTX}/mrtrix3-latest"
+rm -rf "${CTX}"
+mkdir -p "${CTX}/freesurfer/bin" "${CTX}/dkt/lut" "${CTX}/ants" "${CTX}/mrtrix3-latest"
 
 echo "=== Stage connectome build context ==="
 bash "${ROOT}/scripts/stage_qsirecon_tools.sh" "${CTX}/mrtrix3-latest" "${CTX}/ants"
 
-FS_SIF="${WORK}/freesurfer.sif"
-echo "  Apptainer pull ${FS_IMAGE}..."
-apptainer pull --force "${FS_SIF}" "docker://${FS_IMAGE}"
+echo "  Docker pull ${FS_IMAGE} (minimal FS tools only)..."
+docker pull "${FS_IMAGE}"
+fs_cid="$(docker create "${FS_IMAGE}")"
+trap 'docker rm -f "${fs_cid}" >/dev/null 2>&1 || true' RETURN
 
-apptainer exec "${FS_SIF}" bash -lc '
-  for d in /usr/local/freesurfer /opt/freesurfer /freesurfer; do
-    [[ -f "${d}/FreeSurferColorLUT.txt" ]] && { echo "${d}"; exit 0; }
-  done
+staged=0
+for fs_root in /usr/local/freesurfer /opt/freesurfer /freesurfer; do
+  rm -f "${CTX}/freesurfer/FreeSurferColorLUT.txt"
+  rm -f "${CTX}/freesurfer/bin/mri_label2vol" "${CTX}/freesurfer/bin/mri_convert"
+  if docker cp "${fs_cid}:${fs_root}/FreeSurferColorLUT.txt" "${CTX}/freesurfer/" 2>/dev/null \
+    && docker cp "${fs_cid}:${fs_root}/bin/mri_label2vol" "${CTX}/freesurfer/bin/" 2>/dev/null \
+    && docker cp "${fs_cid}:${fs_root}/bin/mri_convert" "${CTX}/freesurfer/bin/" 2>/dev/null \
+    && [[ -x "${CTX}/freesurfer/bin/mri_label2vol" ]]; then
+    staged=1
+    echo "  FreeSurfer staged from ${fs_root}"
+    break
+  fi
+done
+docker rm -f "${fs_cid}"
+trap - RETURN
+
+if [[ "${staged}" -eq 0 ]]; then
+  echo "ERROR: FreeSurfer staging failed — set FS_IMAGE or push connectome SIF manually" >&2
   exit 1
-' > "${WORK}/fs_root.txt"
-fs_root="$(tr -d "\r\n" < "${WORK}/fs_root.txt")"
-apptainer exec "${FS_SIF}" cat "${fs_root}/FreeSurferColorLUT.txt" > "${CTX}/freesurfer/FreeSurferColorLUT.txt"
-apptainer exec "${FS_SIF}" tar -C "${fs_root}/bin" -cf - mri_label2vol mri_convert \
-  | tar -C "${CTX}/freesurfer/bin" -xf -
+fi
 
 cp "${ROOT}/containers/connectome/run_connectome.sh" "${CTX}/"
 cp "${ROOT}/containers/connectome/run_disconnectome.sh" "${CTX}/"
