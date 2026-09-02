@@ -12,7 +12,7 @@ SCRIPTS="${ROOT}/scripts"
 
 version() {
   python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" \
-    "${ROOT}/app.json" 2>/dev/null || echo "0.2.2"
+    "${ROOT}/app.json" 2>/dev/null || echo "0.3.0"
 }
 
 usage() {
@@ -169,6 +169,7 @@ cmd_check() {
   local preflight=0
   local outputs=0
   local cache=""
+  local strict=0
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -177,6 +178,7 @@ cmd_check() {
       --results-root) results_root="$2"; shift 2 ;;
       --cache) cache="$2"; shift 2 ;;
       --with-dry-run) with_dry_run=1; shift ;;
+      --strict) strict=1; shift ;;
       --preflight) preflight=1; shift ;;
       --outputs) outputs=1; shift ;;
       -h|--help)
@@ -193,9 +195,11 @@ Options:
   --subject ID          With --outputs or --preflight: subject to validate
   --results-root PATH   Results root for --outputs (default: \$RESULTS_ROOT)
   --outputs             Check expected artifacts for --subject
+  --strict              Verify release_manifest.json and cached .sif digests
 
 Examples:
   ./dkt check
+  ./dkt check --strict
   ./dkt check --with-dry-run
   ./dkt check --preflight --mode all --subject 001
   ./dkt check --outputs --subject 001 --results-root /data/out
@@ -215,6 +219,16 @@ EOF
   echo "[dkt check] doctor ..."
   if ! bash "${SCRIPTS}/doctor.sh" "${doctor_args[@]}"; then
     exit_code=1
+  fi
+
+  if ((strict)); then
+    echo "[dkt check] release manifest ..."
+    local manifest_args=(verify-manifest --mode "${mode}")
+    [[ -n "${cache}" ]] && manifest_args+=(--cache "${cache}")
+    manifest_args+=(--strict)
+    if ! python3 "${SCRIPTS}/container_install.py" "${manifest_args[@]}"; then
+      exit_code=1
+    fi
   fi
 
   if ((preflight)); then

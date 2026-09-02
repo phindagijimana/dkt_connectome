@@ -30,11 +30,11 @@ container_pins:
   qsirecon: pennlinc/qsirecon:1.2.1
   freesurfer: freesurfer/freesurfer:7.4.1
   fastsurfer: deepmi/fastsurfer:latest
-  connectome: ghcr.io/phindagijimana/dk-connectome:0.1.0
-  vbt: ghcr.io/phindagijimana/dkt-vbt:0.1.0
-  lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.1.0
-  deep_atropos: ghcr.io/phindagijimana/dkt-deep-atropos:0.1.0
-  deep_atropos_seg: ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.1.0
+  connectome: ghcr.io/phindagijimana/dk-connectome:0.3.0
+  vbt: ghcr.io/phindagijimana/dkt-vbt:0.3.0
+  lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.3.0
+  deep_atropos: ghcr.io/phindagijimana/dkt-deep-atropos:0.3.0
+  deep_atropos_seg: ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0
   lit: deepmi/lit:0.6.0
   nodestrength: phindagijimana321/nodestrength:0.1.0
 

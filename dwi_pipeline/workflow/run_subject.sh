@@ -399,5 +399,5 @@ declare -a CMD=(
 CMD+=("${SNAKEMAKE_PASSTHROUGH[@]}")
 CMD+=(-- "${TARGET}")
 
-echo "+ ${CMD[*]}"
+echo "+ ${CMD[*]}" >&2
 exec "${CMD[@]}"

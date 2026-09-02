@@ -522,7 +522,10 @@ CONNECTOME_DETERMINISTIC="${CONNECTOME_DETERMINISTIC:-1}"
 CONNECTOME_WEIGHTING="${CONNECTOME_WEIGHTING:-count}"
 PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-count}"
 CONNECTOME_SIFT2="${CONNECTOME_SIFT2:-0}"
-CONNECTOME_BIND_ENTRYPOINT="${CONNECTOME_BIND_ENTRYPOINT:-1}"
+CONNECTOME_BIND_ENTRYPOINT="${CONNECTOME_BIND_ENTRYPOINT:-0}"
+CONNECTOME_BIND_DEV="${CONNECTOME_BIND_DEV:-${CONNECTOME_BIND_ENTRYPOINT:-0}}"
+VBT_BIND_DEV="${VBT_BIND_DEV:-0}"
+DISCONNECTOME_BIND_DEV="${DISCONNECTOME_BIND_DEV:-0}"
 ACT_MODE="${ACT_MODE:-standard}"
 TRACTOGRAPHY_MODEL="${TRACTOGRAPHY_MODEL:-both}"
 RECON_SKIP_IF_EXISTS="${RECON_SKIP_IF_EXISTS:-0}"
@@ -800,10 +803,15 @@ run_inpaint() {
     [[ -f "${CONTAINER_LIT}" ]] || _pipeline_fail "inpaint" "missing CONTAINER_LIT: ${CONTAINER_LIT}" \
       "Build it: bash dwi_pipeline/containers/lit/build_lit.sh"
   else
-    mitigation_container="${CONTAINER_QSIPREP}"
-    [[ -f "${RUN_VBT}" ]] || _pipeline_fail "inpaint" "missing ${RUN_VBT}"
-    [[ -f "${CONTAINER_QSIPREP}" ]] || _pipeline_fail "inpaint" \
-      "VBT requires the QSIPrep container for FSL tools: ${CONTAINER_QSIPREP}"
+    mitigation_container="${CONTAINER_VBT:-${CONTAINER_QSIPREP}}"
+    if [[ "${VBT_BIND_DEV}" == "1" ]]; then
+      [[ -f "${RUN_VBT}" ]] || _pipeline_fail "inpaint" "missing ${RUN_VBT}"
+      [[ -f "${CONTAINER_QSIPREP}" ]] || _pipeline_fail "inpaint" \
+        "VBT_BIND_DEV=1 requires QSIPrep container: ${CONTAINER_QSIPREP}"
+    else
+      [[ -f "${CONTAINER_VBT}" ]] || _pipeline_fail "inpaint" "missing CONTAINER_VBT: ${CONTAINER_VBT}" \
+        "Run: bash dwi_pipeline/containers/vbt/build_vbt.sh or ./dkt install"
+    fi
   fi
   [[ -f "${PREPARE_LESION_MASK}" ]] || _pipeline_fail "inpaint" "missing ${PREPARE_LESION_MASK}"
   [[ -f "${CHECK_INPAINTING}" ]] || _pipeline_fail "inpaint" "missing ${CHECK_INPAINTING}"
@@ -850,18 +858,31 @@ run_inpaint() {
         --batch_size "${INPAINT_BATCH_SIZE}"
   else
     mkdir -p "$(dirname "${result}")"
-    apptainer exec --cleanenv --containall \
-      -B "$(dirname "${t1w}")":/t1w_input:ro \
-      -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
-      -B "${outdir}":/out \
-      -B "${RUN_VBT}":/run_vbt.py:ro \
-      "${CONTAINER_QSIPREP}" \
-      python3 /run_vbt.py \
+    if [[ "${VBT_BIND_DEV}" == "1" ]]; then
+      apptainer exec --cleanenv --containall \
+        -B "$(dirname "${t1w}")":/t1w_input:ro \
+        -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+        -B "${outdir}":/out \
+        -B "${RUN_VBT}":/run_vbt.py:ro \
+        "${CONTAINER_QSIPREP}" \
+        python3 /run_vbt.py \
+          --t1w "/t1w_input/$(basename "${t1w}")" \
+          --mask /mask/lesion_mask_prepared.nii.gz \
+          --output /out/inpainting_volumes/inpainting_result.nii.gz \
+          --smoothing-factor "${VBT_SMOOTHING_FACTOR}" \
+          --work-dir /out/.vbt_work
+    else
+      apptainer exec --cleanenv --containall \
+        -B "$(dirname "${t1w}")":/t1w_input:ro \
+        -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+        -B "${outdir}":/out \
+        "${CONTAINER_VBT}" \
         --t1w "/t1w_input/$(basename "${t1w}")" \
         --mask /mask/lesion_mask_prepared.nii.gz \
         --output /out/inpainting_volumes/inpainting_result.nii.gz \
         --smoothing-factor "${VBT_SMOOTHING_FACTOR}" \
         --work-dir /out/.vbt_work
+    fi
     rm -rf "${outdir}/.vbt_work"
   fi
 
@@ -1594,18 +1615,23 @@ run_connectome() {
         "Build: bash dwi_pipeline/containers/connectome/build_connectome.sh"
 
     local -a binds=()
-    if [[ "${CONNECTOME_BIND_ENTRYPOINT:-0}" == "1" ]]; then
+    if [[ "${CONNECTOME_BIND_DEV:-0}" == "1" ]]; then
       binds+=(-B "${REPO_ROOT}/dwi_pipeline/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro)
     fi
 
     # The image only ships fs_default.txt, so a DKT run binds its LUT in.
     local -a lut_args=()
     if [[ "${parc}" == "dkt" ]]; then
-      [[ -f "${CONNECTOME_LUT_DKT}" ]] || _pipeline_fail "connectome" "missing DKT LUT: ${CONNECTOME_LUT_DKT}" \
-        "Generate it: python3 dwi_pipeline/scripts/make_dkt_lut.py"
-      binds+=(-B "${CONNECTOME_LUT_DKT}":/lut/fs_dkt.txt:ro)
-      lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
-      echo "Using DKT LUT: ${CONNECTOME_LUT_DKT}"
+      if [[ "${CONNECTOME_BIND_DEV:-0}" == "1" ]]; then
+        [[ -f "${CONNECTOME_LUT_DKT}" ]] || _pipeline_fail "connectome" "missing DKT LUT: ${CONNECTOME_LUT_DKT}" \
+          "Generate it: python3 dwi_pipeline/scripts/make_dkt_lut.py"
+        binds+=(-B "${CONNECTOME_LUT_DKT}":/lut/fs_dkt.txt:ro)
+        lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+        echo "Using DKT LUT: ${CONNECTOME_LUT_DKT}"
+      else
+        lut_args+=(--mrtrix-lut /opt/dkt/lut/fs_dkt.txt)
+        echo "Using baked DKT LUT: /opt/dkt/lut/fs_dkt.txt"
+      fi
     fi
 
     local -a env_args=()

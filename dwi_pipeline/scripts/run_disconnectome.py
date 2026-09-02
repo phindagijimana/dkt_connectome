@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -52,9 +53,22 @@ import nibabel as nib
 import numpy as np
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_LUT = SCRIPT_DIR.parent / "containers" / "connectome" / "mrtrix_lut" / "fs_dkt.txt"
+
+
+def _default_lut() -> Path:
+    for candidate in (
+        Path("/opt/dkt/lut/fs_dkt.txt"),
+        SCRIPT_DIR / "lut" / "fs_dkt.txt",
+        SCRIPT_DIR.parent / "containers" / "connectome" / "mrtrix_lut" / "fs_dkt.txt",
+    ):
+        if candidate.is_file():
+            return candidate
+    return Path("/opt/dkt/lut/fs_dkt.txt")
+
+
+DEFAULT_LUT = _default_lut()
 DEFAULT_CONTAINER = Path(
-    __import__("os").environ.get("CONTAINER_CONNECTOME", "/path/to/dkt_connectome.sif")
+    os.environ.get("CONTAINER_CONNECTOME", "/path/to/dkt_connectome.sif")
 )
 
 
@@ -333,10 +347,20 @@ def build_binary_lesion(
 
 
 def cpath(host: Path, root: Path) -> str:
-    return f"/data/{host.resolve().relative_to(root.resolve()).as_posix()}"
+    resolved = host.resolve()
+    if os.environ.get("DKT_DISCONNECTOME_NATIVE") == "1":
+        return shlex.quote(str(resolved))
+    return f"/data/{resolved.relative_to(root.resolve()).as_posix()}"
 
 
 def run_container(container: Path, data_root: Path, shell_cmd: str, dry_run: bool = False) -> None:
+    inner = f"export PATH=/opt/mrtrix3-latest/bin:/opt/ants/bin:$PATH; {shell_cmd}"
+    log(f"run: {shell_cmd[:120]}{'...' if len(shell_cmd) > 120 else ''}")
+    if dry_run:
+        return
+    if os.environ.get("DKT_DISCONNECTOME_NATIVE") == "1":
+        subprocess.run(["bash", "-lc", inner], check=True)
+        return
     cmd = [
         "apptainer",
         "exec",
@@ -347,11 +371,8 @@ def run_container(container: Path, data_root: Path, shell_cmd: str, dry_run: boo
         str(container),
         "bash",
         "-lc",
-        f"export PATH=/opt/mrtrix3-latest/bin:/opt/ants/bin:$PATH; {shell_cmd}",
+        inner,
     ]
-    log(f"run: {shell_cmd[:120]}{'...' if len(shell_cmd) > 120 else ''}")
-    if dry_run:
-        return
     subprocess.run(cmd, check=True)
 
 
@@ -621,6 +642,11 @@ def main() -> None:
     ap.add_argument("--subject", required=True, help="Subject ID, with or without sub- prefix")
     ap.add_argument("--session", default=None, help="BIDS session (default: infer from tractogram path)")
     ap.add_argument("--container", type=Path, default=Path(DEFAULT_CONTAINER), help="dkt_connectome.sif")
+    ap.add_argument(
+        "--native-tools",
+        action="store_true",
+        help="Run MRtrix/ANTs in-process (inside baked connectome image; no nested apptainer)",
+    )
     ap.add_argument("--lut", type=Path, default=DEFAULT_LUT, help="DKT MRtrix LUT (node names)")
     ap.add_argument("--flag-threshold", type=float, default=0.5, help="lesion_load_frac for flagged=1")
     ap.add_argument("--core-only", action="store_true", help="Sensitivity: core label (1) only")
@@ -659,7 +685,9 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true", help="Print steps without running MRtrix/ANTs")
     args = ap.parse_args()
 
-    if not args.container.is_file():
+    if args.native_tools:
+        os.environ["DKT_DISCONNECTOME_NATIVE"] = "1"
+    elif not args.container.is_file():
         raise SystemExit(f"Container not found: {args.container}")
     if not args.lut.is_file():
         raise SystemExit(f"LUT not found: {args.lut}")

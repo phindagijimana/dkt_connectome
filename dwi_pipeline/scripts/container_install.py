@@ -21,6 +21,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 DWI_PIPELINE_DIR = SCRIPT_DIR.parent
 CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.yaml"
 LOCAL_CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.local.yaml"
+RELEASE_MANIFEST = DWI_PIPELINE_DIR / "release_manifest.json"
+APP_JSON = DWI_PIPELINE_DIR / "app.json"
 CONNECTOME_BUILD = DWI_PIPELINE_DIR / "containers" / "connectome" / "build_connectome.sh"
 VBT_BUILD = DWI_PIPELINE_DIR / "containers" / "vbt" / "build_vbt.sh"
 LESION_ACT_BUILD = DWI_PIPELINE_DIR / "containers" / "lesion_act" / "build_lesion_act.sh"
@@ -57,25 +59,30 @@ MODE_KEYS = {
 # Extra pull URIs when the primary container_pins entry is unavailable.
 PULL_URI_FALLBACKS: dict[str, tuple[str, ...]] = {
     "connectome": (
+        "ghcr.io/phindagijimana/dk-connectome:0.3.0",
         "ghcr.io/phindagijimana/dk-connectome:0.1.0",
         "phindagijimana321/dkt_connectome:latest",
         "phindagijimana321/dkt_connectome:2.1.0",
     ),
     "vbt": (
+        "ghcr.io/phindagijimana/dkt-vbt:0.3.0",
         "phindagijimana321/dkt-vbt:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-vbt:0.1.0",
     ),
     "lesion_act": (
+        "ghcr.io/phindagijimana/dkt-lesion-act:0.3.0",
         "ghcr.io/phindagijimana/dkt-lesion-act:0.1.0",
         "phindagijimana321/dkt-lesion-act:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-lesion-act:0.1.0",
     ),
     "deep_atropos": (
+        "ghcr.io/phindagijimana/dkt-deep-atropos:0.3.0",
         "ghcr.io/phindagijimana/dkt-deep-atropos:0.1.0",
         "phindagijimana321/dkt-deep-atropos:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-deep-atropos:0.1.0",
     ),
     "deep_atropos_seg": (
+        "ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0",
         "ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.1.0",
         "phindagijimana321/dkt-deep-atropos-seg:0.1.0",
         "oras://index.docker.io/phindagijimana321/dkt-deep-atropos-seg:0.1.0",
@@ -88,6 +95,116 @@ PULL_URI_FALLBACKS: dict[str, tuple[str, ...]] = {
 }
 
 
+def _load_json(path: Path) -> dict:
+    import json
+
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_release_manifest() -> dict | None:
+    if not RELEASE_MANIFEST.is_file():
+        return None
+    data = _load_json(RELEASE_MANIFEST)
+    return data if isinstance(data, dict) else None
+
+
+def pipeline_version_from_app() -> str:
+    if APP_JSON.is_file():
+        try:
+            return str(_load_json(APP_JSON).get("PipelineVersion", "unknown"))
+        except (OSError, ValueError, TypeError):
+            pass
+    return "unknown"
+
+
+def apply_manifest_pins(cfg: dict) -> dict:
+    """Overlay container_pins from release_manifest.json when present."""
+    manifest = load_release_manifest()
+    if not manifest:
+        return cfg
+    manifest_version = str(manifest.get("pipeline_version", ""))
+    app_version = pipeline_version_from_app()
+    if manifest_version and app_version != "unknown" and manifest_version != app_version:
+        print(
+            f"WARNING [manifest]: release_manifest pipeline_version={manifest_version} "
+            f"!= app.json PipelineVersion={app_version}",
+            file=sys.stderr,
+        )
+    steps = manifest.get("steps") or {}
+    pins = dict(cfg.get("container_pins") or {})
+    for key, spec in steps.items():
+        if isinstance(spec, dict) and spec.get("uri"):
+            pins[key] = str(spec["uri"])
+    cfg = dict(cfg)
+    cfg["container_pins"] = pins
+    return cfg
+
+
+def verify_release_manifest(
+    cache: Path,
+    *,
+    strict: bool = False,
+    keys: tuple[str, ...] | None = None,
+) -> int:
+    """Compare cached .sif SHA256 values to release_manifest.json when recorded."""
+    manifest = load_release_manifest()
+    if manifest is None:
+        if strict:
+            print(f"ERROR [manifest]: missing {RELEASE_MANIFEST}", file=sys.stderr)
+            return 1
+        print("manifest: skipped (no release_manifest.json)")
+        return 0
+
+    cfg = apply_manifest_pins(_load_merged_config())
+    pins = cfg.get("container_pins") or {}
+    steps = manifest.get("steps") or {}
+    check_keys = keys or DEFAULT_KEYS
+    errors: list[str] = []
+    checked = 0
+    skipped = 0
+
+    print(f"manifest: pipeline_version={manifest.get('pipeline_version', '?')}")
+    for key in check_keys:
+        spec = steps.get(key) if isinstance(steps.get(key), dict) else {}
+        expected = str((spec or {}).get("sha256") or "").strip().lower()
+        pin = pins.get(key, "")
+        path = Path(str((cfg.get("containers") or {}).get(key) or cache / sif_name(key, pin)))
+        if not expected or expected in ("null", "none"):
+            skipped += 1
+            if path.is_file():
+                print(f"  {key}: {path.name} OK (digest not pinned in manifest)")
+            else:
+                errors.append(f"{key}: missing cached image at {path}")
+            continue
+        if not path.is_file():
+            errors.append(f"{key}: missing cached image at {path}")
+            continue
+        actual = sha256_file(path).lower()
+        checked += 1
+        if actual != expected:
+            errors.append(
+                f"{key}: digest mismatch\n"
+                f"  expected: {expected}\n"
+                f"  actual:   {actual}\n"
+                f"  path:     {path}\n"
+                f"  fix: bash scripts/install.sh --force --only {key}"
+            )
+        else:
+            print(f"  {key}: digest OK ({path.name})")
+
+    if skipped and strict:
+        print(
+            f"manifest: {skipped} key(s) have no sha256 in manifest "
+            "(strict checks presence only until release build fills digests)"
+        )
+    if errors:
+        for err in errors:
+            print(f"ERROR [manifest]: {err}", file=sys.stderr)
+        return 1
+    print(f"manifest: OK ({checked} digests verified, {skipped} unpinned)")
+    return 0
+
+
 def _load_merged_config() -> dict:
     if yaml is None:
         sys.exit("ERROR: PyYAML required (pip install pyyaml)")
@@ -95,7 +212,7 @@ def _load_merged_config() -> dict:
     if LOCAL_CONFIG.is_file():
         local = yaml.safe_load(LOCAL_CONFIG.read_text()) or {}
         _deep_merge(cfg, local)
-    return cfg
+    return apply_manifest_pins(cfg)
 
 
 def _deep_merge(base: dict, override: dict) -> None:
@@ -761,6 +878,14 @@ def cmd_doctor(args: argparse.Namespace) -> None:
     raise SystemExit(doctor(cache, mode=args.mode, with_dry_run=args.with_dry_run))
 
 
+def cmd_verify_manifest(args: argparse.Namespace) -> None:
+    cache = Path(args.cache).expanduser()
+    keys = resolve_keys(args.mode, args.only)
+    raise SystemExit(
+        verify_release_manifest(cache, strict=args.strict, keys=keys)
+    )
+
+
 def cmd_verify(args: argparse.Namespace) -> None:
     raise SystemExit(
         verify_pins(require_network=not args.offline, mode=args.mode)
@@ -817,12 +942,30 @@ def main() -> None:
     )
     p_verify.set_defaults(func=cmd_verify)
 
+    p_manifest = sub.add_parser(
+        "verify-manifest",
+        help="Verify cached .sif digests against release_manifest.json",
+    )
+    p_manifest.add_argument("--cache", default=str(default_cache()))
+    p_manifest.add_argument("--mode", default="all")
+    p_manifest.add_argument("--only", default=None)
+    p_manifest.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail if manifest file missing (still skips null sha256 pins)",
+    )
+    p_manifest.set_defaults(func=cmd_verify_manifest)
+
     p_dig = sub.add_parser("digests", help="SHA256 digests of cached .sif files")
     p_dig.add_argument("--cache", default=str(default_cache()))
     p_dig.add_argument("--mode", default="all")
     p_dig.add_argument("--only", default=None)
     p_dig.add_argument("--format", choices=("tsv", "markdown"), default="tsv")
-    p_dig.add_argument("--version", default="0.2.0", help="Pipeline version for markdown header")
+    p_dig.add_argument(
+        "--version",
+        default=pipeline_version_from_app(),
+        help="Pipeline version for markdown header",
+    )
     p_dig.set_defaults(func=cmd_digests)
 
     args = parser.parse_args()

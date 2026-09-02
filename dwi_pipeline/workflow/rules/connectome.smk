@@ -344,9 +344,13 @@ rule connectome:
         fi
         lut_args=()
         if [[ "{params.parc}" == "dkt" ]]; then
-          [[ -f "{params.lut_dkt}" ]] || _pipeline_fail "connectome" "missing DKT LUT: {params.lut_dkt}"
-          binds+=(-B "{params.lut_dkt}":/lut/fs_dkt.txt:ro)
-          lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+          if [[ "{CONNECTOME_BIND_DEV}" == "True" ]]; then
+            [[ -f "{params.lut_dkt}" ]] || _pipeline_fail "connectome" "missing DKT LUT: {params.lut_dkt}"
+            binds+=(-B "{params.lut_dkt}":/lut/fs_dkt.txt:ro)
+            lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+          else
+            lut_args+=(--mrtrix-lut {CONNECTOME_LUT_BAKED})
+          fi
         elif [[ "{params.parc}" == "lausanne60" ]]; then
           [[ -f "{params.lut_lausanne_fs}" ]] || _pipeline_fail "connectome" "missing Lausanne FS LUT"
           [[ -f "{params.lut_lausanne_mrtrix}" ]] || _pipeline_fail "connectome" "missing Lausanne MRtrix LUT"
@@ -360,6 +364,11 @@ rule connectome:
           env_args+=(--env "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1" --env "ANTS_RANDOM_SEED=1")
         fi
 
+        connectome_entrypoint_binds=()
+        if [[ "{CONNECTOME_BIND_DEV}" == "True" ]]; then
+          connectome_entrypoint_binds=( -B "{DWI_PIPELINE_DIR}/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro )
+        fi
+
         apptainer run --cleanenv --containall \
           --home /tmp \
           --env "LD_LIBRARY_PATH=/opt/ants/lib:/opt/mrtrix3-latest/lib" \
@@ -369,7 +378,7 @@ rule connectome:
           "${{t1w_override_binds[@]}}" \
           "${{act_binds[@]}}" \
           "${{tractography_binds[@]}}" \
-          -B "{DWI_PIPELINE_DIR}/containers/connectome/run_connectome.sh":/usr/local/bin/run_connectome:ro \
+          "${{connectome_entrypoint_binds[@]}}" \
           -B "{FS_SUBJECTS_DIR}":/subjects:ro \
           -B "{QSIRECON_OUT}":/qsirecon:ro \
           -B "{QSIPREP_OUT}":/qsiprep:ro \

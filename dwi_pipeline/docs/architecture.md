@@ -93,9 +93,9 @@ flowchart TB
 | **3 — QSIRecon** | `qsirecon_1.2.1.sif` | — |
 | **3.1 — Lesion ACT** | `dkt_lesion_act.sif` | `prepare_lesion_mask.py` |
 | **3.2 — Deep Atropos** | `dkt_deep_atropos*.sif` | optional dev bind-mounts (`ACT_BIND_MOUNT_DEV=1`) |
-| **4 — Connectome** | `dkt_connectome.sif` | **always** bind `run_connectome.sh`; Lausanne via host `build_lausanne_parcellation.py` |
+| **4 — Connectome** | `dkt_connectome.sif` | baked `run_connectome.sh` + DKT LUT; dev bind with `CONNECTOME_BIND_DEV=1` |
 | **4 — SD-stream** | `qsirecon` + `connectome.sif` | provenance JSON (inline host Python) |
-| **4.1 — Disconnectome** | calls into `connectome.sif` | `run_disconnectome.py` orchestrates on host |
+| **4.1 — Disconnectome** | baked in `dkt_connectome.sif` | host only when `DISCONNECTOME_BIND_DEV=1` |
 | **5 — Node strength** | `nodestrength_0.1.0.sif` | — |
 | **QC / export** | — | `render_*_qc.py`, `export_bids_derivatives.py` |
 | **Group level** | — | `render_cohort_qc.py`, BIDS export via `./run … group` |
@@ -104,16 +104,16 @@ flowchart TB
 
 ## Hybrid scripts (reproducibility notes)
 
-These live in git and can be updated without rebuilding step `.sif` files when bind-mounted:
+**v0.3.0 default:** step scripts run from **baked** `.sif` images. Dev bind-mounts are opt-in (`CONNECTOME_BIND_DEV`, `VBT_BIND_DEV`, `DISCONNECTOME_BIND_DEV`, `ACT_BIND_MOUNT_DEV` — all default **off**).
 
-| Script | Runs in | Purpose |
-|--------|---------|---------|
-| `containers/connectome/run_connectome.sh` | `dkt_connectome.sif` | Step 4 parcellation, rigid FS→ACPC registration |
-| `scripts/run_vbt.py` | `qsiprep.sif` | LeAPP-compatible virtual brain transplant |
-| `scripts/run_deep_atropos_seg.py` | `dkt_deep_atropos_seg.sif` | optional when `ACT_BIND_MOUNT_DEV=1` |
-| `scripts/convert_deep_atropos_to_5tt.py` | `dkt_deep_atropos.sif` | optional when `ACT_BIND_MOUNT_DEV=1` |
+| Script | Baked in | Dev override |
+|--------|----------|--------------|
+| `run_connectome.sh` | `dkt_connectome.sif` | `CONNECTOME_BIND_DEV=1` |
+| `run_disconnectome.py` | `dkt_connectome.sif` | `DISCONNECTOME_BIND_DEV=1` |
+| `run_vbt.py` | `dkt_vbt.sif` | `VBT_BIND_DEV=1` |
+| Deep Atropos scripts | `dkt_deep_atropos*.sif` | `ACT_BIND_MOUNT_DEV=1` |
 
-For **frozen reproducibility**, pin both the step `.sif` digest ([container digests on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/container_digests.md)) **and** the git commit of the orchestrator repo.
+**Release pinning:** use `release_manifest.json` + `./dkt check --strict` after install. See [container digests](maintainer/container_digests.md).
 
 ---
 

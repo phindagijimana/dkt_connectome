@@ -15,6 +15,8 @@ From: ubuntu:22.04
 
 %files
     run_connectome.sh /usr/local/bin/run_connectome
+    run_disconnectome.sh /usr/local/bin/run_disconnectome
+    dkt /opt/dkt
     freesurfer /opt/freesurfer
     ants /opt/ants
     mrtrix3-latest /opt/mrtrix3-latest
@@ -22,15 +24,12 @@ From: ubuntu:22.04
 %post
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    # The ANTs/MRtrix trees are staged from qsirecon.sif, so this base image must
-    # supply their runtime libraries: libtiff.so.5 and libpng16.so.16 are needed
-    # by 110 binaries (including labelconvert and tck2connectome), and
-    # libfftw3.so.3 by mrdegibbs and mrfilter.
     apt-get install -y --no-install-recommends \
-        ca-certificates bc libgomp1 libgfortran5 zlib1g \
+        ca-certificates bc python3 python3-pip libgomp1 libgfortran5 zlib1g \
         libtiff5 libpng16-16 libfftw3-double3
+    pip3 install --no-cache-dir nibabel numpy scipy
     rm -rf /var/lib/apt/lists/*
-    chmod +x /usr/local/bin/run_connectome
+    chmod +x /usr/local/bin/run_connectome /usr/local/bin/run_disconnectome
 
     # Missing runtime libraries do not break the build, only every later run
     # (exit 127), so assert here instead of shipping a broken image.

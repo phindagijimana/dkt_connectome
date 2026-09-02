@@ -93,6 +93,10 @@ else
 fi
 
 cp "${HERE}/run_connectome.sh" "${CTX}/"
+cp "${HERE}/run_disconnectome.sh" "${CTX}/"
+mkdir -p "${CTX}/dkt/lut"
+cp "${HERE}/mrtrix_lut/fs_dkt.txt" "${CTX}/dkt/lut/"
+cp "${HERE}/../../scripts/run_disconnectome.py" "${CTX}/dkt/"
 echo "  Build context: $(du -sh "${CTX}" | awk '{print $1}')"
 
 if [[ -f "${OUT_SIF}" && "${BACKUP_EXISTING:-1}" == "1" ]]; then

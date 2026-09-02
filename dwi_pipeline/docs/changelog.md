@@ -10,6 +10,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 - **GitHub README** and **docs home** — unified quick start for new users (`./dkt install` → `check` → `run`); cross-links between GitHub and Read the Docs
 
+## [0.3.0] — Tier 1 reproducibility (baked step scripts)
+
+### Added
+- **`release_manifest.json`** — single release bundle mapping pipeline version → step image URIs (+ optional SHA256)
+- **`./dkt check --strict`** and `container_install.py verify-manifest` for digest verification
+- **Baked disconnectome** in `dkt_connectome.sif` (`run_disconnectome` entrypoint + DKT LUT)
+
+### Changed
+- **Default production behavior:** use baked scripts in step images (no git bind-mount overrides)
+- Dev-only overrides: `CONNECTOME_BIND_DEV`, `VBT_BIND_DEV`, `DISCONNECTOME_BIND_DEV` (default off)
+- DKT-owned `container_pins` bumped to **0.3.0**
+
 ## [0.2.2] - 2026-09-02
 
 ### Added

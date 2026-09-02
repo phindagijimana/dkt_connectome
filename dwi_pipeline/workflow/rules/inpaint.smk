@@ -157,20 +157,31 @@ rule inpaint:
               --batch_size {INPAINT_BATCH_SIZE}
         elif [[ "{ANATOMY_MITIGATION_BACKEND}" == "vbt" ]]; then
           mkdir -p "$(dirname "{output.result}")"
-          # dkt_vbt.sif FSL midtrans segfaults on Ubuntu 22.04; use qsiprep FSL
-          # (same as subject.sh) with repo run_vbt.py bind-mounted.
-          apptainer exec --cleanenv --containall \
-            -B "$(dirname "{input.t1w}")":/t1w_input:ro \
-            -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
-            -B "{params.outdir}":/out \
-            -B "{RUN_VBT}":/run_vbt.py:ro \
-            "{CONTAINER_QSIPREP}" \
-            python3 /run_vbt.py \
+          if [[ "{VBT_BIND_DEV}" == "True" ]]; then
+            apptainer exec --cleanenv --containall \
+              -B "$(dirname "{input.t1w}")":/t1w_input:ro \
+              -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+              -B "{params.outdir}":/out \
+              -B "{RUN_VBT}":/run_vbt.py:ro \
+              "{CONTAINER_QSIPREP}" \
+              python3 /run_vbt.py \
+                --t1w "/t1w_input/$(basename "{input.t1w}")" \
+                --mask /mask/lesion_mask_prepared.nii.gz \
+                --output /out/inpainting_volumes/inpainting_result.nii.gz \
+                --smoothing-factor {VBT_SMOOTHING_FACTOR} \
+                --work-dir /out/.vbt_work
+          else
+            apptainer exec --cleanenv --containall \
+              -B "$(dirname "{input.t1w}")":/t1w_input:ro \
+              -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
+              -B "{params.outdir}":/out \
+              "{CONTAINER_VBT}" \
               --t1w "/t1w_input/$(basename "{input.t1w}")" \
               --mask /mask/lesion_mask_prepared.nii.gz \
               --output /out/inpainting_volumes/inpainting_result.nii.gz \
               --smoothing-factor {VBT_SMOOTHING_FACTOR} \
               --work-dir /out/.vbt_work
+          fi
           rm -rf "{params.outdir}/.vbt_work"
         else
           _pipeline_fail "inpaint" \
