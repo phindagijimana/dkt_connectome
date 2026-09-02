@@ -20,7 +20,7 @@ Optional: Slurm for `submit.sh` array jobs.
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
-chmod +x run install
+chmod +x run install dkt
 ```
 
 Documentation: [Home](home.md) · [Upgrading](upgrading.md) · Tutorial: [tutorial.md](tutorial.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
@@ -33,8 +33,8 @@ Pull all pinned step `.sif` images and write `workflow/config/config.local.yaml`
 
 ```bash
 cd dwi_pipeline
-bash install.sh
-# or: bash scripts/install.sh --missing-only
+./dkt install
+# or: bash install.sh / bash scripts/install.sh --missing-only
 ```
 
 | Variable / flag | Default | Purpose |
@@ -47,7 +47,8 @@ Verify before your first run:
 
 ```bash
 export FS_LICENSE=/path/to/license.txt
-./run doctor
+./dkt check
+# or: ./run doctor
 ```
 
 **Docker orchestrator** with first-run pull:

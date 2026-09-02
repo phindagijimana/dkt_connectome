@@ -1,8 +1,35 @@
 # Usage
 
-Command-line reference for the DKT Connectome BIDS App (`./run`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
+Command-line reference for the DKT Connectome BIDS App (`./run`, `./dkt`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
 
 For a minimal example, see the [Tutorial](tutorial.md). For **when to use which flag**, see [Decision tables](decision_tables.md). For config keys and env vars, see [Configuration](configuration.md).
+
+---
+
+## Unified CLI (`./dkt`)
+
+`./dkt` wraps install, pull, run, log, and check without changing the BIDS App `./run` contract.
+
+| Command | Purpose |
+|---------|---------|
+| `./dkt install` | Pull step `.sif` images + write `config.local.yaml` |
+| `./dkt pull` | Pull containers only (adds `--write-config` by default) |
+| `./dkt run …` | Same as `./run …` |
+| `./dkt log …` | List or tail logs under `RESULTS_ROOT/logs` |
+| `./dkt check` | Verify tools, license, containers (`doctor`) |
+| `./dkt version` | Print `PipelineVersion` from `app.json` |
+
+Examples:
+
+```bash
+./dkt install --missing-only
+./dkt check --with-dry-run
+./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+./dkt log --results-root OUT --subject 001 --stage connectome -f
+./dkt check --outputs --subject 001 --results-root OUT
+```
+
+Legacy entrypoints (`./run`, `install`, `bash scripts/install.sh`, `./run doctor`) remain supported.
 
 ---
 
