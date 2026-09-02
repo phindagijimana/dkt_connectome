@@ -83,6 +83,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Install Apptainer (connectome staging)
+        if: matrix.name == 'dk-connectome'
+        uses: eWaterCycle/setup-apptainer@v2
+
       - name: Stage build context
         run: bash "dwi_pipeline/scripts/${{ matrix.stage_script }}"
 
