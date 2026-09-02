@@ -1,17 +1,17 @@
-name: ACT containers publish
+name: Connectome and VBT publish
 
 on:
   push:
     branches: [main]
     paths:
-      - 'dwi_pipeline/containers/lesion_act/**'
-      - 'dwi_pipeline/containers/deep_atropos/**'
-      - 'dwi_pipeline/containers/deep_atropos_seg/**'
-      - 'dwi_pipeline/scripts/run_deep_atropos_seg.py'
-      - 'dwi_pipeline/scripts/convert_deep_atropos_to_5tt.py'
-      - 'dwi_pipeline/scripts/ci_stage_act_build_context.sh'
+      - 'dwi_pipeline/containers/connectome/**'
+      - 'dwi_pipeline/containers/vbt/**'
+      - 'dwi_pipeline/scripts/run_disconnectome.py'
+      - 'dwi_pipeline/scripts/run_vbt.py'
+      - 'dwi_pipeline/scripts/ci_stage_connectome_build_context.sh'
+      - 'dwi_pipeline/scripts/ci_stage_vbt_build_context.sh'
       - 'dwi_pipeline/release_manifest.json'
-      - '.github/workflows/act_containers_publish.yml'
+      - '.github/workflows/connectome_vbt_publish.yml'
   workflow_dispatch:
     inputs:
       image_tag:
@@ -33,23 +33,23 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: dkt-lesion-act
-            context: dwi_pipeline/containers/lesion_act/build_ctx
-            dockerfile: dwi_pipeline/containers/lesion_act/Dockerfile
-            stage: lesion_act
-          - name: dkt-deep-atropos
-            context: dwi_pipeline/containers/deep_atropos/build_ctx
-            dockerfile: dwi_pipeline/containers/deep_atropos/Dockerfile
-            stage: deep_atropos
-          - name: dkt-deep-atropos-seg
-            context: dwi_pipeline/containers/deep_atropos_seg/build_ctx
-            dockerfile: dwi_pipeline/containers/deep_atropos_seg/Dockerfile
-            stage: deep_atropos_seg
+          - name: dk-connectome
+            stage_script: ci_stage_connectome_build_context.sh
+            context: dwi_pipeline/containers/connectome/build_ctx_lean
+            dockerfile: dwi_pipeline/containers/connectome/Dockerfile
+            dockerhub_repo: dkt_connectome
+            smoke: run --help
+          - name: dkt-vbt
+            stage_script: ci_stage_vbt_build_context.sh
+            context: dwi_pipeline/containers/vbt/build_ctx
+            dockerfile: dwi_pipeline/containers/vbt/Dockerfile
+            dockerhub_repo: dkt-vbt
+            smoke: --help
     steps:
       - uses: actions/checkout@v4
 
@@ -84,26 +84,26 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Stage build context
-        run: bash dwi_pipeline/scripts/ci_stage_act_build_context.sh "${{ matrix.stage }}"
+        run: bash "dwi_pipeline/scripts/${{ matrix.stage_script }}"
 
       - name: Compose tags
         id: tags
         run: |
           ghcr="ghcr.io/${{ steps.ghcr.outputs.owner }}/${{ matrix.name }}:${{ env.IMAGE_TAG }}"
-          echo "ghcr=${ghcr}" >> "$GITHUB_OUTPUT"
           tags="${ghcr}"
+          want_dh=false
           if [[ "${{ steps.dh_creds.outputs.present }}" == "true" ]]; then
-            want_dh=false
             if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.push_dockerhub }}" == "true" ]]; then
               want_dh=true
             elif [[ "${{ github.event_name }}" == "push" ]]; then
               want_dh=true
             fi
-            if [[ "${want_dh}" == "true" ]]; then
-              tags="${tags},phindagijimana321/${{ matrix.name }}:${{ env.IMAGE_TAG }}"
-            fi
+          fi
+          if [[ "${want_dh}" == "true" ]]; then
+            tags="${tags},phindagijimana321/${{ matrix.dockerhub_repo }}:${{ env.IMAGE_TAG }}"
           fi
           echo "list=${tags}" >> "$GITHUB_OUTPUT"
+          echo "ghcr=${ghcr}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -113,10 +113,9 @@ jobs:
           push: true
           tags: ${{ steps.tags.outputs.list }}
 
-      - name: Smoke test (--help)
+      - name: Smoke test
         run: |
-          docker run --rm "ghcr.io/${{ steps.ghcr.outputs.owner }}/${{ matrix.name }}:${{ env.IMAGE_TAG }}" --help | head -5
+          docker run --rm "${{ steps.tags.outputs.ghcr }}" ${{ matrix.smoke }} | head -5
 
       - name: Summary
-        run: |
-          echo "- \`ghcr.io/${{ steps.ghcr.outputs.owner }}/${{ matrix.name }}:${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
+        run: echo "- \`${{ steps.tags.outputs.ghcr }}\`" >> "$GITHUB_STEP_SUMMARY"
