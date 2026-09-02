@@ -1,0 +1,282 @@
+#!/usr/bin/env bash
+# dkt — unified CLI for the DKT Connectome pipeline
+#
+#   ./dkt install | pull | run | log | check | version
+#
+# Wraps existing entrypoints (install.sh, ./run, doctor, preflight) without
+# replacing the BIDS App ./run contract.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS="${ROOT}/scripts"
+
+version() {
+  python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" \
+    "${ROOT}/app.json" 2>/dev/null || echo "0.2.1"
+}
+
+usage() {
+  cat <<EOF
+Usage: dkt <command> [options]
+
+Commands:
+  install   Pull step .sif images and write config.local.yaml (scripts/install.sh)
+  pull      Pull containers only (scripts/pull_containers.sh)
+  run       Run the BIDS App pipeline (same as ./run)
+  log       List or tail per-subject pipeline logs under RESULTS_ROOT/logs
+  check     Verify install, environment, and optional subject outputs
+  version   Print pipeline version
+
+Quick start:
+  export FS_LICENSE=/path/to/license.txt
+  ./dkt install
+  ./dkt check
+  ./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+
+Run './dkt <command> --help' for command-specific help.
+Docs: https://dkt-connectome.readthedocs.io/en/latest/
+EOF
+}
+
+cmd_install() {
+  exec bash "${SCRIPTS}/install.sh" "$@"
+}
+
+cmd_pull() {
+  if [[ $# -eq 0 ]]; then
+    set -- --write-config
+  fi
+  exec bash "${SCRIPTS}/pull_containers.sh" "$@"
+}
+
+cmd_run() {
+  exec bash "${ROOT}/run" "$@"
+}
+
+cmd_version() {
+  version
+}
+
+cmd_log() {
+  local results_root="${RESULTS_ROOT:-}"
+  local subject=""
+  local stage=""
+  local list=0
+  local follow=0
+  local tail_n=50
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --results-root) results_root="$2"; shift 2 ;;
+      --subject) subject="${2#sub-}"; shift 2 ;;
+      --stage) stage="$2"; shift 2 ;;
+      --list) list=1; shift ;;
+      --tail) tail_n="$2"; shift 2 ;;
+      -f|--follow) follow=1; shift ;;
+      -h|--help)
+        cat <<'EOF'
+Usage: dkt log [options]
+
+Options:
+  --results-root PATH   Results root (default: \$RESULTS_ROOT)
+  --subject ID          Subject without sub- prefix
+  --stage NAME          qsiprep|recon|qsirecon|connectome|sdstream|nodestrength|
+                        disconnectome|inpaint|act|subject_qc
+  --list                List matching logs (default without --subject)
+  --tail N              Show last N lines (default: 50)
+  -f, --follow          Follow log with tail -f
+
+Examples:
+  ./dkt log --results-root /data/out --list
+  ./dkt log --results-root /data/out --subject 001
+  ./dkt log --results-root /data/out --subject 001 --stage connectome -f
+EOF
+        exit 0
+        ;;
+      *) echo "Unknown option: $1" >&2; exit 2 ;;
+    esac
+  done
+
+  if [[ -z "${results_root}" ]]; then
+    echo "ERROR: set --results-root or export RESULTS_ROOT" >&2
+    exit 2
+  fi
+  if [[ ! -d "${results_root}/logs" ]]; then
+    echo "ERROR: no logs directory: ${results_root}/logs" >&2
+    exit 2
+  fi
+
+  shopt -s nullglob
+  local patterns=()
+  if [[ -n "${subject}" ]]; then
+    case "${stage}" in
+      "") patterns=("sub-${subject}"*.log) ;;
+      qsiprep) patterns=("sub-${subject}_qsiprep.log") ;;
+      recon) patterns=("sub-${subject}_recon.log") ;;
+      qsirecon) patterns=("sub-${subject}_qsirecon.log") ;;
+      connectome) patterns=("sub-${subject}_connectome"*.log) ;;
+      sdstream) patterns=("sub-${subject}_sdstream"*.log) ;;
+      nodestrength) patterns=("sub-${subject}_nodestrength.log") ;;
+      disconnectome) patterns=("sub-${subject}_disconnectome"*.log) ;;
+      inpaint) patterns=("sub-${subject}_ses-"*_anat-*.log) ;;
+      act|lesion) patterns=("sub-${subject}_lesion_aware_act.log") ;;
+      subject_qc|qc) patterns=("sub-${subject}_subject_qc.log") ;;
+      *)
+        echo "ERROR: unknown stage: ${stage}" >&2
+        exit 2
+        ;;
+    esac
+  else
+    patterns=("*.log")
+    list=1
+  fi
+
+  local files=()
+  local name
+  for name in "${patterns[@]}"; do
+    for f in "${results_root}/logs/${name}"; do
+      files+=("$f")
+    done
+  done
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "No logs found under ${results_root}/logs for subject=${subject:-*} stage=${stage:-*}" >&2
+    exit 1
+  fi
+
+  if ((list)); then
+    ls -lt "${files[@]}"
+    exit 0
+  fi
+
+  local target="${files[0]}"
+  if [[ ${#files[@]} -gt 1 && -z "${stage}" ]]; then
+    target="$(ls -t "${files[@]}" | head -1)"
+    echo "[dkt log] multiple logs — showing latest: $(basename "${target}")" >&2
+  fi
+
+  if ((follow)); then
+    exec tail -n "${tail_n}" -f "${target}"
+  fi
+  tail -n "${tail_n}" "${target}"
+}
+
+cmd_check() {
+  local mode="all"
+  local subject=""
+  local results_root="${RESULTS_ROOT:-}"
+  local with_dry_run=0
+  local preflight=0
+  local outputs=0
+  local cache=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --mode) mode="$2"; shift 2 ;;
+      --subject) subject="${2#sub-}"; shift 2 ;;
+      --results-root) results_root="$2"; shift 2 ;;
+      --cache) cache="$2"; shift 2 ;;
+      --with-dry-run) with_dry_run=1; shift ;;
+      --preflight) preflight=1; shift ;;
+      --outputs) outputs=1; shift ;;
+      -h|--help)
+        cat <<'EOF'
+Usage: dkt check [options]
+
+Verify install and runtime readiness (wraps ./run doctor + optional checks).
+
+Options:
+  --mode MODE           Pipeline mode for container checks (default: all)
+  --cache DIR           Container cache for doctor
+  --with-dry-run        Include Snakemake dry-run on bids_minimal fixture
+  --preflight           Also run workflow/preflight.sh (--quick)
+  --subject ID          With --outputs or --preflight: subject to validate
+  --results-root PATH   Results root for --outputs (default: \$RESULTS_ROOT)
+  --outputs             Check expected artifacts for --subject
+
+Examples:
+  ./dkt check
+  ./dkt check --with-dry-run
+  ./dkt check --preflight --mode all --subject 001
+  ./dkt check --outputs --subject 001 --results-root /data/out
+EOF
+        exit 0
+        ;;
+      *) echo "Unknown option: $1" >&2; exit 2 ;;
+    esac
+  done
+
+  local exit_code=0
+  local doctor_args=(doctor)
+  [[ -n "${cache}" ]] && doctor_args+=(--cache "${cache}")
+  doctor_args+=(--mode "${mode}")
+  ((with_dry_run)) && doctor_args+=(--with-dry-run)
+
+  echo "[dkt check] doctor ..."
+  if ! bash "${SCRIPTS}/doctor.sh" "${doctor_args[@]}"; then
+    exit_code=1
+  fi
+
+  if ((preflight)); then
+    echo "[dkt check] preflight ..."
+    local pf=(bash "${ROOT}/workflow/preflight.sh" --mode "${mode}" --quick)
+    [[ -n "${subject}" ]] && pf+=(--subject "${subject}")
+    if ! "${pf[@]}"; then
+      exit_code=1
+    fi
+  fi
+
+  if ((outputs)); then
+    if [[ -z "${subject}" ]]; then
+      echo "ERROR: --outputs requires --subject" >&2
+      exit 2
+    fi
+    if [[ -z "${results_root}" ]]; then
+      echo "ERROR: --outputs requires --results-root or RESULTS_ROOT" >&2
+      exit 2
+    fi
+    echo "[dkt check] outputs sub-${subject} ..."
+    if ! python3 "${SCRIPTS}/check_outputs.py" \
+      --results-root "${results_root}" \
+      --subject "${subject}" \
+      --mode "${mode}"; then
+      exit_code=1
+    fi
+  fi
+
+  if [[ "${exit_code}" -eq 0 ]]; then
+    echo "[dkt check] OK"
+  else
+    echo "[dkt check] FAIL" >&2
+  fi
+  return "${exit_code}"
+}
+
+main() {
+  if [[ $# -eq 0 ]]; then
+    usage
+    exit 2
+  fi
+
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --version|-v) cmd_version; exit 0 ;;
+    install) shift; cmd_install "$@" ;;
+    pull) shift; cmd_pull "$@" ;;
+    run) shift; cmd_run "$@" ;;
+    log) shift; cmd_log "$@" ;;
+    check) shift; cmd_check "$@" ;;
+    version) shift; cmd_version ;;
+    doctor)
+      shift
+      exec bash "${SCRIPTS}/doctor.sh" "$@"
+      ;;
+    *)
+      echo "Unknown command: $1" >&2
+      usage
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"

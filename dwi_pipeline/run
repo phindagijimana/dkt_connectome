@@ -67,6 +67,7 @@ Node strength (Step 5):
   --no-report           Skip PDF report
 
 Other:
+  ./dkt <command>           Unified CLI (install, pull, run, log, check)
   ./run doctor [options]      Verify install (tools, license, containers)
   --dry-run             Snakemake plan only (-n)
   --export-bids-derivatives   Write RESULTS_ROOT/derivatives/ mirror after run
