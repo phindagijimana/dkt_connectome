@@ -60,7 +60,7 @@ docker run --rm \
   -v ~/license.txt:/license.txt:ro \
   -e FS_LICENSE=/license.txt \
   -e DKT_AUTO_INSTALL=1 \
-  phindagijimana321/dkt-connectome:0.2.1 \
+  phindagijimana321/dkt-connectome:0.2.2 \
   /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
 ```
 
@@ -147,7 +147,7 @@ docker run --rm \
   -v /path/to/your/license.txt:/opt/freesurfer/license.txt:ro \
   -e FS_LICENSE=/opt/freesurfer/license.txt \
   ... \
-  phindagijimana321/dkt-connectome:0.2.1 \
+  phindagijimana321/dkt-connectome:0.2.2 \
   /data/bids /out participant --participant-label 01
 ```
 
@@ -225,7 +225,7 @@ bash dwi_pipeline/containers/connectome/build_connectome.sh
 
 Details: [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
 
-> **HPC (recommended):** use [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) with Apptainer `.sif` images. For Docker/cloud, pull the published orchestrator **`phindagijimana321/dkt-connectome:0.2.1`** — see [Containers](containers.md) and [Installation § Docker Compose](installation.md).
+> **HPC (recommended):** use [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) with Apptainer `.sif` images. For Docker/cloud, pull the published orchestrator **`phindagijimana321/dkt-connectome:0.2.2`** — see [Containers](containers.md) and [Installation § Docker Compose](installation.md).
 
 ---
 
