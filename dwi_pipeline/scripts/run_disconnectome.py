@@ -161,6 +161,35 @@ def qsiprep_dwi_space_paths(qsiprep: Path, sub: str, ses: str, suffix: str) -> l
     return sorted(set(t1w + acpc))
 
 
+def qsiprep_anat_space_paths(qsiprep: Path, sub: str, ses: str, suffix: str) -> list[Path]:
+    """Prefer plain QSIPrep anat names, then space-T1w, then space-ACPC."""
+
+    def _glob(space: str | None) -> list[Path]:
+        found: list[Path] = []
+        if space is None:
+            patterns = (
+                f"sub-{sub}/ses-{ses}/anat/*sub-{sub}_{suffix}",
+                f"sub-{sub}/anat/*sub-{sub}_{suffix}",
+            )
+        else:
+            patterns = (
+                f"sub-{sub}/ses-{ses}/anat/*sub-{sub}_space-{space}_{suffix}",
+                f"sub-{sub}/anat/*sub-{sub}_space-{space}_{suffix}",
+            )
+        for pattern in patterns:
+            found.extend(sorted(qsiprep.glob(pattern)))
+        return sorted({p.resolve() for p in found})
+
+    for matches in (_glob(None), _glob("T1w"), _glob("ACPC")):
+        if len(matches) == 1:
+            return matches
+    return sorted(set(_glob(None) + _glob("T1w") + _glob("ACPC")))
+
+
+def qsiprep_preproc_t1w_paths(qsiprep: Path, sub: str, ses: str) -> list[Path]:
+    return qsiprep_anat_space_paths(qsiprep, sub, ses, "desc-preproc_T1w.nii.gz")
+
+
 def qsiprep_dwiref_paths(qsiprep: Path, sub: str, ses: str) -> list[Path]:
     return qsiprep_dwi_space_paths(qsiprep, sub, ses, "dwiref.nii.gz")
 
@@ -277,12 +306,7 @@ def discover_paths(
 
     dwiref = find_one("dwiref", qsiprep_dwiref_paths(qsiprep, sub, ses))
 
-    preproc_candidates = sorted(
-        qsiprep.rglob(f"sub-{sub}/ses-{ses}/anat/*desc-preproc_T1w.nii.gz")
-    )
-    if not preproc_candidates:
-        preproc_candidates = sorted(qsiprep.rglob(f"sub-{sub}/anat/*desc-preproc_T1w.nii.gz"))
-    preproc_t1w = find_one("desc-preproc T1w", preproc_candidates)
+    preproc_t1w = find_one("desc-preproc T1w", qsiprep_preproc_t1w_paths(qsiprep, sub, ses))
 
     affine_mat = None
     for mat_name in (

@@ -147,14 +147,54 @@ find_qsiprep_brain_mask() {
   find_qsiprep_dwi_space_artifact "$1" "$2" "$3" "$4" "desc-brain_mask.nii.gz"
 }
 
+# QSIPrep anatomical derivative under ses-*/anat/ (or subject anat/).
+# Tries plain BIDS name, then space-T1w, then space-ACPC (QSIPrep 1.0 layouts).
+find_qsiprep_anat_space_artifact() {
+  local label="$1" qsiprep_out="$2" subject="$3" session="$4" suffix="$5"
+  local -a plain=() t1w=() acpc=()
+  mapfile -t plain < <(
+    find "${qsiprep_out}/sub-${subject}" \( \
+      -path "*/ses-${session}/anat/*sub-${subject}_${suffix}" -o \
+      -path "*/anat/*sub-${subject}_${suffix}" \
+    \) -type f 2>/dev/null | LC_ALL=C sort -u
+  )
+  mapfile -t t1w < <(
+    find "${qsiprep_out}/sub-${subject}" \( \
+      -path "*/ses-${session}/anat/*sub-${subject}_space-T1w_${suffix}" -o \
+      -path "*/anat/*sub-${subject}_space-T1w_${suffix}" \
+    \) -type f 2>/dev/null | LC_ALL=C sort -u
+  )
+  mapfile -t acpc < <(
+    find "${qsiprep_out}/sub-${subject}" \( \
+      -path "*/ses-${session}/anat/*sub-${subject}_space-ACPC_${suffix}" -o \
+      -path "*/anat/*sub-${subject}_space-ACPC_${suffix}" \
+    \) -type f 2>/dev/null | LC_ALL=C sort -u
+  )
+  if ((${#plain[@]} == 1)); then
+    echo "${plain[0]}"
+    return 0
+  fi
+  if ((${#t1w[@]} == 1)); then
+    echo "${t1w[0]}"
+    return 0
+  fi
+  if ((${#acpc[@]} == 1)); then
+    echo "${acpc[0]}"
+    return 0
+  fi
+  if ((${#plain[@]} == 0 && ${#t1w[@]} == 0 && ${#acpc[@]} == 0)); then
+    _pipeline_fail "${label}" \
+      "no file found for sub-${subject} (tried plain, space-T1w, and space-ACPC *_${suffix})"
+  fi
+  _pipeline_fail "${label}" \
+    "expected exactly 1 match (plain: ${#plain[@]}, space-T1w: ${#t1w[@]}, space-ACPC: ${#acpc[@]})" \
+    "${plain[@]}" "${t1w[@]}" "${acpc[@]}"
+}
+
 # QSIPrep desc-preproc T1w: exactly one file under session anat/ or subject anat/.
 find_qsiprep_preproc_t1w() {
-  local qsiprep_out="$1" subject="$2" session="$3"
-  _strict_find_one "connectome/QSIPrep desc-preproc T1w" \
-    find "${qsiprep_out}/sub-${subject}" \( \
-      -path "*/ses-${session}/anat/*sub-${subject}_desc-preproc_T1w.nii.gz" -o \
-      -path "*/anat/*sub-${subject}_desc-preproc_T1w.nii.gz" \
-    \) -type f
+  find_qsiprep_anat_space_artifact "connectome/QSIPrep desc-preproc T1w" "$1" "$2" "$3" \
+    "desc-preproc_T1w.nii.gz"
 }
 
 # QSIPrep packaged T1wNative -> T1wACPC transform (0 or 1). Echoes nothing if absent.
