@@ -218,7 +218,7 @@ Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a pe
 
 ### Experiment arms (`--experiment-arm`) {#experiment-arms-experiment-arm}
 
-Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For cohort-scale manuscript planning (~100 TrackTBI lesion subjects), pre-specified contrasts, and journal targets, see [Publication strategy](publication_strategy.md).
+Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For a concise arm-by-arm guide and LeAPP relationship, see **[TBI experimental arms](TBI_Experimental_Arms.md)**. For cohort-scale manuscript planning (~100 TrackTBI lesion subjects), pre-specified contrasts, and journal targets, see [Publication strategy](publication_strategy.md).
 
 | Arm | Step 1.1 anatomy | Step 3.1 ACT | Typical contrast | Cite when contrasting |
 |-----|------------------|--------------|------------------|------------------------|
