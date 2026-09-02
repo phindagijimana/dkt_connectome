@@ -1,7 +1,7 @@
 {
   "Name": "DKT Connectome",
   "BIDSVersion": ">=1.4.0",
-  "PipelineVersion": "0.2.0",
+  "PipelineVersion": "0.2.1",
   "Description": "QSIPrep → optional lesion inpainting (neuroLIT) → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS tractography → DKT structural connectome → optional disconnectome (Step 4.1) → node-strength report.",
   "AnalysisLevels": ["participant", "group"],
   "Inputs": ["dwi", "T1w", "fmap"],

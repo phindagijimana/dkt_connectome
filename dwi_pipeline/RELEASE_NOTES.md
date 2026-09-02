@@ -1,60 +1,44 @@
-# DKT Connectome 0.2.0
+# DKT Connectome 0.2.1
 
-Lesion-aware structural connectomics BIDS App — first release with full Snakemake engine, documentation site, and Docker orchestrator.
+Lesion-aware structural connectomics BIDS App — rigid Step 4 registration, factorial
+experiment arms, dedicated ACT/VBT containers, and external-user upgrade guide.
 
 **Documentation:** https://dkt-connectome.readthedocs.io/en/latest/  
-**Docker (orchestrator):** `phindagijimana321/dkt-connectome:0.2.0`  
+**Docker (orchestrator):** `phindagijimana321/dkt-connectome:0.2.1`  
+**GHCR:** `ghcr.io/phindagijimana/dkt-connectome:0.2.1`  
 **Entrypoint:** `dwi_pipeline/run`
 
 ---
 
 ## Highlights
 
-- **BIDS App** `./run` with `participant` and `group` analysis levels, QSIPrep-style CLI aliases, and `./run doctor` install check
-- **Six-step pipeline:** QSIPrep → optional neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS → DKT connectome → optional disconnectome → node-strength report
-- **Snakemake workflow** as the canonical engine (`workflow/Snakefile`, `run_subject.sh`, `submit.sh`)
-- **Documentation site** (Material MkDocs, ~50 pages): installation, usage, methods per step, FAQ, troubleshooting
-- **CI:** pytest, MkDocs strict build, full DAG dry-run, BIDS derivatives export smoke test
-- **Docker orchestrator** + Compose + auto-install (`DKT_AUTO_INSTALL=1`) for cloud deployments
-- **QC:** unified subject HTML dashboard, disconnectome QC, cohort indexes via `./run … group`
-- **BIDS Derivatives export** optional mirror under `RESULTS_ROOT/derivatives/`
+- **Rigid FS T1 → ACPC registration** for Step 4 connectome parcellation (`fs_to_preproc_T1w_0GenericAffine.mat`)
+- **Factorial experiment arms** (`--experiment-arm orig-std`, `vbt-lesion`, …) with isolated `arms/<arm>/` trees
+- **Dedicated Step 3.1 / 1.1 containers** — `dkt_lesion_act.sif`, `dkt_vbt.sif`, optional Deep Atropos branch
+- **SD_STREAM + iFOD2** connectomes (`--tractography-model both`, default)
+- **TBI experimental arms doc** + **upgrading guide** for external users
+- **Docker / GHCR orchestrator** rebuilt from current `main`
 
 ---
 
-## Added
+## Upgrade from 0.2.0
 
-- Step 4.1 disconnectome in Snakemake, `./run`, and cohort QC
-- Opt-in BIDS validation (`--bids-validation`)
-- Container pin reference, config catalog, IDEAS `dwi_select_ideas_b2500.json`
-- Dockstore / WorkflowHub metadata repointed to `dkt_connectome`
-- Read the Docs (`.readthedocs.yaml`, `mkdocs.yml`)
+```bash
+git pull origin main
+cd dwi_pipeline && bash install.sh --missing-only && ./run doctor
+docker pull phindagijimana321/dkt-connectome:0.2.1
+```
 
----
-
-## Changed
-
-- Disconnectome default: binary union (core + oedema), count weighting, erode 0
-- `app.json` documents full `./run` surface and documentation URL
-
----
-
-## Fixed
-
-- Snakemake 8+ dry-run (`--quiet` vs target name collision)
-- Docker publish workflow image naming and optional Hub push
-- Disconnectome integrity count-weighting alignment with Step 4
-
----
-
-## Upgrade notes
-
-- **Canonical path:** use `dwi_pipeline/run` (not repository-root `./connectome bids`).
-- **HPC:** `submit.sh` → Snakemake by default; legacy bash engine documented in `workflow/LEGACY.md` only.
-- **Containers:** orchestrator image does not bundle QSIPrep/FreeSurfer/QSIRecon — mount Apptainer `.sif` paths or set `DKT_AUTO_INSTALL=1`.
-- **FreeSurfer license** required at runtime for recon (`FS_LICENSE`).
+See [Upgrading](https://dkt-connectome.readthedocs.io/en/latest/upgrading.html). **Step 4+ rerun** recommended if you need the new rigid registration; Steps 1–3 tractography can be reused.
 
 ---
 
 ## Full changelog
 
-See [`CHANGELOG.md`](CHANGELOG.md).
+See [`docs/changelog.md`](docs/changelog.md).
+
+---
+
+## Previous release
+
+[0.2.0 release notes](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0)

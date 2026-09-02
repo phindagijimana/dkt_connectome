@@ -26,7 +26,7 @@ docker run --rm \
   -v /path/to/out:/out \
   -v /path/to/license.txt:/opt/freesurfer/license.txt:ro \
   -e FS_LICENSE=/opt/freesurfer/license.txt \
-  phindagijimana321/dkt-connectome:0.2.0 \
+  phindagijimana321/dkt-connectome:0.2.1 \
   /data/bids /out participant \
   --participant-label 001 --session-id ses-1
 ```

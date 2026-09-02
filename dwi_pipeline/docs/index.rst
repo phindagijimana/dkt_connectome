@@ -14,6 +14,7 @@ Contents
    science_overview
    installation
    tutorial
+   upgrading
    datasets/ideas
    cloud_deployment
 
