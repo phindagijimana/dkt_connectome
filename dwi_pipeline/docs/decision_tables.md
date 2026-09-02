@@ -87,7 +87,7 @@ Requires lesion mask. Uses **original BIDS mask** for 5TT editing (not the inpai
 
 ## Experiment arms (anatomy × ACT) {#experiment-arms}
 
-Use when running factorial sensitivity analyses on lesion subjects, following the LeAPP design (Bey et al. 2024). **One arm per `RESULTS_ROOT` tree** (default: `RESULTS_ROOT/arms/<arm>/`).
+Use when running factorial sensitivity analyses on lesion subjects, following the LeAPP design (Bey et al. 2024). **One arm per `RESULTS_ROOT` tree** (default: `RESULTS_ROOT/arms/<arm>/`). Concise overview: [TBI experimental arms](TBI_Experimental_Arms.md).
 
 | Arm | Anatomy | ACT | When to use | Primary citations for contrasts |
 |-----|---------|-----|-------------|-------------------------------|

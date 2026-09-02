@@ -136,6 +136,8 @@ that DWI abnormality persists at that location.
 
 Theory pages: [Step 1.1 — Inpainting](methods/step1_1_inpaint.md) · [Step 3.1 — Lesion-aware ACT](methods/step3_1_lesion_act.md) · [Deep Atropos branch](deep_atropos_5tt.md).
 
+**Concise arm reference:** [TBI experimental arms](TBI_Experimental_Arms.md) — factorial design, LeAPP relationship, TBI011011 pilot.
+
 CLI examples and Slurm usage: [Usage — experiment arms](usage.md).
 Decision guide: [Decision tables — experiment arms](decision_tables.md).
 Citations: [References § Experiment arms](references.md#experiment-arms-factorial-lesion-processing).
