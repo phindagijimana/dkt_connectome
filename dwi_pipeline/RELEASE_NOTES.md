@@ -1,35 +1,41 @@
-# DKT Connectome 0.2.1
+# DKT Connectome 0.2.2
 
-Lesion-aware structural connectomics BIDS App — rigid Step 4 registration, factorial
-experiment arms, dedicated ACT/VBT containers, and external-user upgrade guide.
+Lesion-aware structural connectomics BIDS App — unified `./dkt` CLI, architecture
+documentation, and republished orchestrator image.
 
 **Documentation:** https://dkt-connectome.readthedocs.io/en/latest/  
-**Docker (orchestrator):** `phindagijimana321/dkt-connectome:0.2.1`  
-**GHCR:** `ghcr.io/phindagijimana/dkt-connectome:0.2.1`  
-**Entrypoint:** `dwi_pipeline/run`
+**Docker (orchestrator):** `phindagijimana321/dkt-connectome:0.2.2`  
+**GHCR:** `ghcr.io/phindagijimana/dkt-connectome:0.2.2`  
+**Entrypoints:** `dwi_pipeline/run` (BIDS App) · `dwi_pipeline/dkt` (install / pull / run / log / check)
 
 ---
 
 ## Highlights
 
-- **Rigid FS T1 → ACPC registration** for Step 4 connectome parcellation (`fs_to_preproc_T1w_0GenericAffine.mat`)
-- **Factorial experiment arms** (`--experiment-arm orig-std`, `vbt-lesion`, …) with isolated `arms/<arm>/` trees
-- **Dedicated Step 3.1 / 1.1 containers** — `dkt_lesion_act.sif`, `dkt_vbt.sif`, optional Deep Atropos branch
-- **SD_STREAM + iFOD2** connectomes (`--tractography-model both`, default)
-- **TBI experimental arms doc** + **upgrading guide** for external users
-- **Docker / GHCR orchestrator** rebuilt from current `main`
+- **Unified CLI `./dkt`** — `install`, `pull`, `run`, `log`, `check`, `version`
+- **Architecture guide** — [which steps run in containers vs host](docs/architecture.md)
+- **Subject output checker** — `./dkt check --outputs --subject ID --results-root OUT`
+- **Docker orchestrator republished** with `./dkt` included; entrypoint supports `dkt install|check|…`
+- **CI** validates `./dkt` and version string
+
+Includes all [0.2.1](#previous-releases) features: rigid Step 4 registration, factorial experiment arms, dedicated ACT/VBT containers, upgrading guide.
 
 ---
 
-## Upgrade from 0.2.0
+## Upgrade from 0.2.1
 
 ```bash
 git pull origin main
-cd dwi_pipeline && bash install.sh --missing-only && ./run doctor
-docker pull phindagijimana321/dkt-connectome:0.2.1
+cd dwi_pipeline
+chmod +x dkt
+./dkt install --missing-only
+./dkt check
+docker pull phindagijimana321/dkt-connectome:0.2.2
 ```
 
-See [Upgrading](https://dkt-connectome.readthedocs.io/en/latest/upgrading.html). **Step 4+ rerun** recommended if you need the new rigid registration; Steps 1–3 tractography can be reused.
+No mandatory rerun unless you want updated bind-mounted scripts without rebuilding `.sif` files — pin git tag + container digests for frozen studies.
+
+See [Upgrading](https://dkt-connectome.readthedocs.io/en/latest/upgrading.html).
 
 ---
 
@@ -39,6 +45,7 @@ See [`docs/changelog.md`](docs/changelog.md).
 
 ---
 
-## Previous release
+## Previous releases
 
-[0.2.0 release notes](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0)
+- [0.2.1 release notes](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.1)
+- [0.2.0 release notes](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0)

@@ -6,10 +6,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-02
+
 ### Added
 
 - **Unified CLI `./dkt`** — `install`, `pull`, `run`, `log`, `check`, `version` (wraps `./run`, `install.sh`, `doctor`; see [Usage § Unified CLI](usage.md#unified-cli-dkt))
 - **`scripts/check_outputs.py`** — subject artifact verification for `./dkt check --outputs`
+- **[Architecture guide](architecture.md)** — container vs host vs hybrid bind-mount layout for reproducibility
+
+### Changed
+
+- **Docker orchestrator** republished as `phindagijimana321/dkt-connectome:0.2.2` (includes `./dkt`; entrypoint routes `dkt install|check|…`)
+- Documentation, CI, and README updated for `./dkt` and v0.2.2
 
 ## [0.2.1] - 2026-09-01
 
@@ -111,6 +119,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - Standalone disconnectome script (`run_disconnectome.py`) and integrity QC
 - BIDS App skeleton (`run`, `app.json`)
 
+[0.2.2]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/phindagijimana/dkt_connectome/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.1.0

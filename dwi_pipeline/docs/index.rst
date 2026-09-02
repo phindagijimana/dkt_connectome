@@ -25,6 +25,7 @@ Contents
    usage
    decision_tables
    bids_app
+   architecture
    containers
 
 .. toctree::

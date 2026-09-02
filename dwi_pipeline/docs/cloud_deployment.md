@@ -9,7 +9,7 @@ Patterns for running DKT Connectome outside URMC HPC: Docker orchestrator, cache
 Pull the published image:
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.2.1
+docker pull phindagijimana321/dkt-connectome:0.2.2
 ```
 
 Minimal run (bind-mount BIDS, output, FreeSurfer license):
@@ -21,12 +21,19 @@ docker run --rm \
   -v /path/to/license.txt:/opt/freesurfer/license.txt:ro \
   -e FS_LICENSE=/opt/freesurfer/license.txt \
   -e DKT_AUTO_INSTALL=1 \
-  phindagijimana321/dkt-connectome:0.2.1 \
+  phindagijimana321/dkt-connectome:0.2.2 \
   /data/bids /out participant \
   --participant-label 001 --session-filter ses-1 --syn
 ```
 
-`DKT_AUTO_INSTALL=1` pulls pinned Apptainer `.sif` step images into `DKT_CONTAINER_CACHE` on first container start. The orchestrator **Docker image includes Apptainer** for cloud use; on HPC, use `bash scripts/install.sh` directly instead.
+`DKT_AUTO_INSTALL=1` pulls pinned Apptainer `.sif` step images into `DKT_CONTAINER_CACHE` on first container start. Verify with:
+
+```bash
+docker run --rm -e BIDS_APP_CI=1 -e FS_LICENSE=/tmp/license.txt \
+  phindagijimana321/dkt-connectome:0.2.2 dkt check
+```
+
+The orchestrator **Docker image includes Apptainer** for cloud use; on HPC, use `./dkt install` directly instead.
 
 **Requirements:** network egress to container registries; FreeSurfer license at `FS_LICENSE`; sufficient disk (~20 GB for full stack, ~4 GB for QSIPrep-only).
 

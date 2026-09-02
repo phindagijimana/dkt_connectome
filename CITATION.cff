@@ -8,7 +8,7 @@ authors:
   - family-names: Ndagijimana
     given-names: Philbert
 type: software
-version: 0.2.1
+version: 0.2.2
 repository-code: "https://github.com/phindagijimana/dkt_connectome"
 license: Apache-2.0
 # After Zenodo GitHub integration + Release, set:
