@@ -41,6 +41,8 @@ RUN pip install --no-cache-dir \
     nibabel
 
 RUN chmod +x /opt/dkt-connectome/dwi_pipeline/run \
+    /opt/dkt-connectome/dwi_pipeline/dkt \
+    /opt/dkt-connectome/dwi_pipeline/install \
     /opt/dkt-connectome/dwi_pipeline/docker-entrypoint.sh
 
 WORKDIR /opt/dkt-connectome/dwi_pipeline

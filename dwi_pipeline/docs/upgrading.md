@@ -15,9 +15,9 @@ git checkout main
 git pull origin main
 
 cd dwi_pipeline
-bash install.sh --missing-only
+./dkt install --missing-only
 export FS_LICENSE=/path/to/license.txt
-./run doctor
+./dkt check
 ```
 
 **Docker / cloud:**

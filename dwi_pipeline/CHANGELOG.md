@@ -4,6 +4,12 @@ All notable changes to the **DKT Connectome** (`dwi_pipeline/`) are documented h
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning aligns with [`app.json`](app.json) `PipelineVersion`.
 
+**Canonical changelog:** [docs/changelog.md](docs/changelog.md) (includes [Unreleased] and v0.2.1+).
+
+## [Unreleased]
+
+See [docs/changelog.md](docs/changelog.md#unreleased).
+
 ## [0.2.0] - 2026-08-14
 
 ### Added
