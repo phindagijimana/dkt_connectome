@@ -43,9 +43,22 @@ def test_apply_manifest_pins_overrides_connectome(container_install):
     assert merged["container_pins"]["qsiprep"] == "pennlinc/qsiprep:1.0.0"
 
 
-def test_verify_release_manifest_skips_null_digests(container_install, tmp_path):
+def test_verify_release_manifest_skips_null_digests(container_install, tmp_path, monkeypatch):
     fake = tmp_path / "dkt_connectome.sif"
     fake.write_bytes(b"test")
+    monkeypatch.setattr(
+        container_install,
+        "load_release_manifest",
+        lambda: {
+            "pipeline_version": "0.3.0",
+            "steps": {
+                "connectome": {
+                    "uri": "ghcr.io/phindagijimana/dk-connectome:0.3.0",
+                    "sha256": None,
+                }
+            },
+        },
+    )
     cfg_path = REPO / "workflow" / "config" / "config.local.yaml"
     had_local = cfg_path.is_file()
     old = cfg_path.read_text(encoding="utf-8") if had_local else None

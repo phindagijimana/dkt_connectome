@@ -1,6 +1,6 @@
 {
   "pipeline_version": "0.3.0",
-  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. Null sha256 means digest not yet recorded at release build time — strict check skips those keys.",
+  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. Null sha256 means digest not yet recorded at release build time \u2014 strict check skips those keys.",
   "orchestrator": {
     "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.0",
     "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.0",
@@ -9,24 +9,24 @@
   "steps": {
     "qsiprep": {
       "uri": "pennlinc/qsiprep:1.0.0",
-      "sha256": null
+      "sha256": "a7fe5d6d12e01984649bf5083d539199b89ecad419efda8c2b13afadbfc6a871"
     },
     "qsirecon": {
       "uri": "pennlinc/qsirecon:1.2.1",
-      "sha256": null
+      "sha256": "e39172d54fd8ebc8ea6aec4ab7a91946f2595435d7964daa67264551bccacb65"
     },
     "freesurfer": {
       "uri": "freesurfer/freesurfer:7.4.1",
-      "sha256": null
+      "sha256": "1c65de5707ae33cd4948a173d18e5ec65bd4dbd80efbf821356f2f8686869984"
     },
     "fastsurfer": {
       "uri": "deepmi/fastsurfer:latest",
-      "sha256": null
+      "sha256": "1baa5d51866df1980f779922f01526ac4e4167d66054af9ba59c3c34e55f6136"
     },
     "connectome": {
       "uri": "ghcr.io/phindagijimana/dk-connectome:0.3.0",
       "dockerhub_uri": "phindagijimana321/dkt_connectome:0.3.0",
-      "sha256": null,
+      "sha256": "7b6d7eed222f7e98ee4d633f19464a055401ff29b97cc0e8b32bedae27d85c91",
       "baked": [
         "run_connectome.sh",
         "run_disconnectome.py",
@@ -36,30 +36,34 @@
     "vbt": {
       "uri": "ghcr.io/phindagijimana/dkt-vbt:0.3.0",
       "dockerhub_uri": "phindagijimana321/dkt-vbt:0.3.0",
-      "sha256": null,
-      "baked": ["run_vbt.py"]
+      "sha256": "12af58ceefd7d5ac004bb24d6d09ea79ef40c1d0e99c497d384081548a88f4ea",
+      "baked": [
+        "run_vbt.py"
+      ]
     },
     "lesion_act": {
       "uri": "ghcr.io/phindagijimana/dkt-lesion-act:0.3.0",
       "dockerhub_uri": "phindagijimana321/dkt-lesion-act:0.3.0",
-      "sha256": null,
-      "baked": ["run_lesion_aware_act.sh"]
+      "sha256": "f0fbb98aa1f5ae5f581fb4eb02dcf4306e41bb43516f1b3bec58df1099d5416c",
+      "baked": [
+        "run_lesion_aware_act.sh"
+      ]
     },
     "deep_atropos": {
       "uri": "ghcr.io/phindagijimana/dkt-deep-atropos:0.3.0",
-      "sha256": null
+      "sha256": "73b8efc84f36ba287bc8437ad3e9eac80e69bdc11e125a8407f07054ddeff083"
     },
     "deep_atropos_seg": {
       "uri": "ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0",
-      "sha256": null
+      "sha256": "742bc7456ab6fc82d8bdb9e57f438b404971a12fa4ccbfa8aac282285f9ede43"
     },
     "lit": {
       "uri": "deepmi/lit:0.6.0",
-      "sha256": null
+      "sha256": "66bcf6370e36d081c3d656f0e208e448b940afab73bcf68e5db4bf8ae848a1df"
     },
     "nodestrength": {
       "uri": "phindagijimana321/nodestrength:0.1.0",
-      "sha256": null
+      "sha256": "a0237fbd2022b701ad530c8aba6ea10dba2dec1e9d881f4e563dd8070e94da16"
     }
   },
   "dev_bind_mounts": {

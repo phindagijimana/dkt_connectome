@@ -2,32 +2,23 @@
 
 # Container digest table
 
-**Pipeline version:** 0.2.0  
+**Pipeline version:** 0.3.0  
 **Regenerate:** `python3 dwi_pipeline/scripts/generate_container_digests_md.py` after `bash dwi_pipeline/scripts/install.sh --mode all`.
 
 | Step | Pin | SIF file | Size (MB) | SHA256 |
 |------|-----|----------|-----------|--------|
-| qsiprep | *(run install.sh to populate)* | | | `(not cached)` |
-| qsirecon | *(run install.sh to populate)* | | | `(not cached)` |
-| lesion_act | `ghcr.io/phindagijimana/dkt-lesion-act:0.1.0` | `dkt_lesion_act.sif` | | `(not cached)` |
-| deep_atropos | `ghcr.io/phindagijimana/dkt-deep-atropos:0.1.0` | `dkt_deep_atropos.sif` | | `(not cached)` |
-| deep_atropos_seg | `ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.1.0` | `dkt_deep_atropos_seg.sif` | | `(not cached)` |
+| qsiprep | `pennlinc/qsiprep:1.0.0` | `qsiprep_1.0.0.sif` | - | `(not cached)` |
+| qsirecon | `pennlinc/qsirecon:1.2.1` | `qsirecon_1.2.1.sif` | - | `(not cached)` |
+| freesurfer | `freesurfer/freesurfer:7.4.1` | `freesurfer_7.4.1.sif` | 8909.9 | `1c65de5707ae33cd…` |
+| fastsurfer | `deepmi/fastsurfer:latest` | `fastsurfer_latest.sif` | 3860.1 | `1baa5d51866df198…` |
+| connectome | `ghcr.io/phindagijimana/dk-connectome:0.3.0` | `dkt_connectome.sif` | 223.8 | `7b6d7eed222f7e98…` |
+| vbt | `ghcr.io/phindagijimana/dkt-vbt:0.3.0` | `dkt_vbt.sif` | 739.8 | `12af58ceefd7d5ac…` |
+| lesion_act | `ghcr.io/phindagijimana/dkt-lesion-act:0.3.0` | `dkt_lesion_act.sif` | 144.2 | `f0fbb98aa1f5ae5f…` |
+| deep_atropos | `ghcr.io/phindagijimana/dkt-deep-atropos:0.3.0` | `dkt_deep_atropos.sif` | 110.9 | `73b8efc84f36ba28…` |
+| deep_atropos_seg | `ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0` | `dkt_deep_atropos_seg.sif` | 829.3 | `742bc7456ab6fc82…` |
+| lit | `deepmi/lit:0.6.0` | `lit_0.6.0.sif` | 5567.1 | `66bcf6370e36d081…` |
+| nodestrength | `phindagijimana321/nodestrength:0.1.0` | `nodestrength_0.1.0.sif` | - | `(not cached)` |
 
 Primary pins live in [`workflow/config/config.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/config/config.yaml).
-
 Paper supplement: copy this table to Supplementary Table S4 when cutting v1.0.
 
-**Maintainer:** On a machine with all `.sif` files pulled:
-
-```bash
-export DKT_CONTAINER_CACHE="$HOME/.cache/dkt-connectome/containers"
-bash dwi_pipeline/scripts/install.sh --mode all --cache "${DKT_CONTAINER_CACHE}"
-python3 dwi_pipeline/scripts/generate_container_digests_md.py
-git add dwi_pipeline/docs/maintainer/container_digests.md
-```
-
-Or one-off TSV:
-
-```bash
-python3 dwi_pipeline/scripts/container_install.py digests --mode all
-```
