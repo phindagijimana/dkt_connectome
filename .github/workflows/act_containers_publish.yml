@@ -54,6 +54,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Apptainer
+        if: matrix.stage != 'deep_atropos_seg'
+        uses: eWaterCycle/setup-apptainer@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

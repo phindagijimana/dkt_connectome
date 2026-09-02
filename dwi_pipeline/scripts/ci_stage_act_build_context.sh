@@ -1,17 +1,10 @@
 #!/usr/bin/env bash
 # Stage Docker build contexts for Step 3.1 ACT containers in CI.
-#
-# Usage:
-#   bash scripts/ci_stage_act_build_context.sh all
-#   bash scripts/ci_stage_act_build_context.sh deep_atropos_seg
-#   bash scripts/ci_stage_act_build_context.sh lesion_act
-#   bash scripts/ci_stage_act_build_context.sh deep_atropos
-#
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-QSI_IMAGE="${QSI_IMAGE:-pennlinc/qsirecon:1.2.1}"
 TARGET="${1:-all}"
+STAGE_QSI="${ROOT}/scripts/stage_qsirecon_tools.sh"
 
 stage_deep_atropos_seg() {
   local ctx="${ROOT}/containers/deep_atropos_seg/build_ctx"
@@ -22,37 +15,11 @@ stage_deep_atropos_seg() {
   echo "  deep_atropos_seg context: ${ctx}"
 }
 
-stage_from_qsirecon() {
-  local dest_mrtrix="$1"
-  local dest_ants="$2"
-  rm -rf "${dest_mrtrix}" "${dest_ants}"
-  mkdir -p "${dest_mrtrix}" "${dest_ants}"
-  echo "  Pulling ${QSI_IMAGE} for MRtrix/ANTs staging..."
-  docker pull "${QSI_IMAGE}"
-  cid="$(docker create "${QSI_IMAGE}")"
-  trap 'docker rm -f "${cid}" >/dev/null 2>&1 || true' RETURN
-  docker cp "${cid}:/opt/ants/." "${dest_ants}/" 2>/dev/null || true
-  staged=0
-  for mrtrix_src in /opt/mrtrix3-latest /opt/mrtrix3; do
-    rm -rf "${dest_mrtrix:?}"/*
-    if docker cp "${cid}:${mrtrix_src}/." "${dest_mrtrix}/" 2>/dev/null \
-      && [[ -x "${dest_mrtrix}/bin/tckgen" || -x "${dest_mrtrix}/bin/labelconvert" ]]; then
-      staged=1
-      echo "  MRtrix staged from ${mrtrix_src}"
-      break
-    fi
-  done
-  docker rm -f "${cid}"
-  trap - RETURN
-  [[ "${staged}" -eq 1 ]] || { echo "ERROR: MRtrix staging failed (tried /opt/mrtrix3-latest and /opt/mrtrix3)"; exit 1; }
-  [[ -x "${dest_ants}/bin/antsApplyTransforms" ]] || { echo "ERROR: ANTs staging failed"; exit 1; }
-}
-
 stage_lesion_act() {
   local ctx="${ROOT}/containers/lesion_act/build_ctx"
   rm -rf "${ctx}"
   mkdir -p "${ctx}"
-  stage_from_qsirecon "${ctx}/mrtrix3-latest" "${ctx}/ants"
+  bash "${STAGE_QSI}" "${ctx}/mrtrix3-latest" "${ctx}/ants"
   cp "${ROOT}/containers/lesion_act/run_lesion_aware_act.sh" "${ctx}/"
   echo "  lesion_act context: ${ctx}"
 }
@@ -61,7 +28,7 @@ stage_deep_atropos() {
   local ctx="${ROOT}/containers/deep_atropos/build_ctx"
   rm -rf "${ctx}"
   mkdir -p "${ctx}"
-  stage_from_qsirecon "${ctx}/mrtrix3-latest" "${ctx}/_unused_ants"
+  bash "${STAGE_QSI}" "${ctx}/mrtrix3-latest" "${ctx}/_unused_ants"
   rm -rf "${ctx}/_unused_ants"
   cp "${ROOT}/scripts/convert_deep_atropos_to_5tt.py" "${ctx}/"
   cp "${ROOT}/containers/deep_atropos/run_deep_atropos_5tt.sh" "${ctx}/"
