@@ -5,7 +5,7 @@
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.0-brightgreen.svg)](https://snakemake.readthedocs.io)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
-[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
+[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.1-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
 ## Workflow
 

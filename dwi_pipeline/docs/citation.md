@@ -14,7 +14,7 @@ The DKT Connectome is a **BIDS App orchestrator** — it does not replace QSIPre
 
 Suggested prose (Methods or Acknowledgements):
 
-> Structural connectomes were derived with the DKT Connectome (BIDS App v0.2.0; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
+> Structural connectomes were derived with the DKT Connectome (BIDS App v0.2.1; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
 
 Replace superscripts with numbered references from [References by step](references.md).
 
@@ -157,7 +157,7 @@ After the first Zenodo release, add the software DOI here and in `CITATION.cff`:
   author    = {Ndagijimana, Philbert},
   title     = {{DKT Connectome} — lesion-aware structural connectomics {BIDS App}}},
   year      = {2026},
-  version   = {0.2.0},
+  version   = {0.2.1},
   url       = {https://github.com/phindagijimana/dkt_connectome},
   doi       = {10.5281/zenodo.xxxxx}
 }

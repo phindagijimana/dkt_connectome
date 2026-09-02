@@ -6,6 +6,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-01
+
 ### Added
 
 - **`dkt_deep_atropos.sif`** — Deep Atropos integer seg → `base_5tt_native.mif` on BIDS T1w grid (`containers/deep_atropos/`)
@@ -26,6 +28,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **`--prefetch-only`** on `run_deep_atropos_seg.py` — login-node ANTsXNet weight warmup
 - **ACT Snakemake CI dry-run** — `target_act` + Deep Atropos branch via `snakemake_act_ci_setup.sh`
 - **Theory docs** — methods pages for Steps 1.1, 3.1, 4 multi-measure outputs; experiment-arm citations
+- **Rigid Step 4 registration** — FS T1 → QSIPrep ACPC rigid affine (`fs_to_preproc_T1w_0GenericAffine.mat`); `scripts/lib/rigid_reg_rerun_helpers.sh` for connectome backfill
+- **[TBI experimental arms](TBI_Experimental_Arms.md)** — factorial design, LeAPP relationship, pilot usage
+- **[Upgrading guide](upgrading.md)** — version migration for external users
 
 ### Changed
 
@@ -47,6 +52,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - `submit.sh` exports `CONTAINER_VBT` and `CONTAINER_LESION_ACT` to Slurm jobs
 - `connectome.sift2` default **false**; count remains primary `dkt_connectome.csv`
 - Documentation: containers catalog, Snakemake targets, config examples updated for new images
+- **Docker / GHCR orchestrator** republished as `phindagijimana321/dkt-connectome:0.2.1` (reads version from `app.json` in CI)
 
 ## [0.2.0] - 2026-08-14
 
@@ -100,5 +106,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - Standalone disconnectome script (`run_disconnectome.py`) and integrity QC
 - BIDS App skeleton (`run`, `app.json`)
 
+[0.2.1]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/phindagijimana/dkt_connectome/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.1.0

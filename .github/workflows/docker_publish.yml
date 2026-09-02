@@ -9,6 +9,8 @@ on:
       - 'dwi_pipeline/Dockerfile'
       - 'dwi_pipeline/docker-entrypoint.sh'
       - 'dwi_pipeline/run'
+      - 'dwi_pipeline/app.json'
+      - 'dwi_pipeline/workflow/**'
       - 'dwi_pipeline/scripts/**'
       - '.github/workflows/docker_publish.yml'
   workflow_dispatch:
@@ -63,12 +65,11 @@ jobs:
       - name: Extract version tag
         id: meta
         run: |
+          APP_VERSION="$(python3 -c "import json; print(json.load(open('dwi_pipeline/app.json'))['PipelineVersion'])")"
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "version=0.2.0" >> "$GITHUB_OUTPUT"
           else
-            echo "version=0.2.0-dev" >> "$GITHUB_OUTPUT"
+            echo "version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Should push to Docker Hub
