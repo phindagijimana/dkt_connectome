@@ -55,7 +55,7 @@ Three complementary strategies estimate **spared connectivity** after injury:
 Voxels overlapping the lesion are **removed from the parcellation** (`nodes × ¬lesion`):
 
 ```text
-nodes_A_parcexcised.mif  →  tck2connectome (full tractogram)  →  connectome_A.csv
+nodes_A_parcexcised.mif  →  tck2connectome (full tractogram)  →  dkt_connectome_A_parcexcised.csv
 ```
 
 Streamlines still pass through the physical lesion region, but no node is assigned there — edges involving excised tissue are redistributed to remaining nodes.
@@ -65,7 +65,7 @@ Streamlines still pass through the physical lesion region, but no node is assign
 Streamlines that **intersect the lesion mask** are removed (`tckedit -exclude lesion`):
 
 ```text
-streamlines_B_nolesion.tck  →  tck2connectome (original nodes.mif)  →  connectome_B.csv
+streamlines_B_nolesion.tck  →  tck2connectome (original nodes.mif)  →  dkt_connectome_B_streamexcluded.csv
 ```
 
 This models **physical pathway interruption** without changing the parcellation.
@@ -75,7 +75,7 @@ This models **physical pathway interruption** without changing the parcellation.
 Excised parcellation **and** lesion-excluded tractogram:
 
 ```text
-streamlines_B_nolesion.tck + nodes_A_parcexcised.mif  →  connectome_C.csv
+streamlines_B_nolesion.tck + nodes_A_parcexcised.mif  →  dkt_connectome_C_both.csv
 ```
 
 **Default spared connectome for disconnection matrix:** Option C (`--disconnection-spared C`).
@@ -84,28 +84,63 @@ streamlines_B_nolesion.tck + nodes_A_parcexcised.mif  →  connectome_C.csv
 
 ## Disconnection matrix
 
-The **disconnection matrix D** quantifies fractional connectivity loss:
+The **disconnection matrix** `D` compares the Step 4 **primary** connectome to a **spared**
+connectome built under Option A, B, or C. For each off-diagonal edge between DKT nodes
+*i* and *j*:
 
-\[
+```{math}
 D_{ij} = 1 - \frac{W^{\mathrm{spared}}_{ij}}{W^{\mathrm{primary}}_{ij}}
-\]
-
-where \(W^{\mathrm{primary}}\) is the Step 4 connectome and \(W^{\mathrm{spared}}\) is the chosen Option A, B, or C matrix.
-
-- \(D_{ij} = 0\): no disconnection between nodes *i* and *j*
-- \(D_{ij} = 1\): complete loss of connectivity
-- Diagonal excluded (no self-connections)
-
-Outputs under `connectomes/sub-<ID>/disconnectome/`:
-
-```text
-disconnection_matrix.csv
-connectome_{A,B,C}.csv
-disconnectome.json          # provenance and parameters
-disconnectome_qc.html       # per-subject QC report
 ```
 
-Weighting default matches Step 4 (**streamline counts**); optional `--connectome-weighting sift2`.
+| Symbol | Source file | Meaning |
+|--------|-------------|---------|
+| {math}`W^{\mathrm{primary}}_{ij}` | `connectomes/sub-<ID>/dkt_connectome.csv` | Step 4 edge weight (default: streamline **count**) |
+| {math}`W^{\mathrm{spared}}_{ij}` | Option **A**, **B**, or **C** CSV under `disconnectome/` | Spared connectivity after parc excision, streamline exclusion, or both |
+| {math}`D_{ij}` | `disconnection_matrix.csv` (and `_A`, `_B`, `_C` variants) | Fractional connectivity **loss** on that edge |
+
+**Which spared matrix is used?** By default, `disconnection_matrix.csv` uses **Option C**
+(`--disconnection-spared C`). Options A and B are always written when enabled; each has
+its own `disconnection_matrix_{A,B,C}.csv`.
+
+### How edges are evaluated
+
+The implementation (`run_disconnectome.py`) applies the formula only where the primary
+edge exists:
+
+- If {math}`W^{\mathrm{primary}}_{ij} = 0`, then {math}`D_{ij} = 0` (undefined ratio → treated as no
+  primary connection to compare).
+- If {math}`W^{\mathrm{primary}}_{ij} > 0`, compute the ratio and **clip** {math}`D_{ij}` to {math}`[0, 1]`.
+  Values above 1 can occur when {math}`W^{\mathrm{spared}}_{ij} > W^{\mathrm{primary}}_{ij}`
+  (most often under Option A parc excision); clipping keeps the exported matrix in range.
+- The diagonal is zero (no self-connections).
+
+### Interpretation
+
+| Value | Meaning |
+|-------|---------|
+| {math}`D_{ij} = 0` | No loss on edge *i*–*j* relative to primary (spared equals primary, or primary was zero) |
+| {math}`0 < D_{ij} < 1` | Partial loss — some but not all primary connectivity remains in the spared graph |
+| {math}`D_{ij} = 1` | Complete loss on that edge (spared weight is zero, or ratio clipped to 1) |
+
+Step 4 **`dkt_connectome.csv` is never modified**; disconnectome is a post-hoc comparison.
+
+### Output files
+
+Under `connectomes/sub-<ID>/disconnectome/`:
+
+```text
+dkt_connectome_A_parcexcised.csv      # Option A spared matrix
+dkt_connectome_B_streamexcluded.csv     # Option B spared matrix
+dkt_connectome_C_both.csv               # Option C spared matrix (default for D)
+disconnection_matrix.csv                # D using --disconnection-spared (default C)
+disconnection_matrix_{A,B,C}.csv        # D for each option
+disconnectome.json                      # provenance, weighting, spared choice
+disconnectome_qc.html                   # per-subject QC report
+```
+
+**Weighting:** Step 4 and Step 4.1 must use the same edge definition. Default is
+**streamline counts** (`count`); optional `--connectome-weighting sift2` applies to both
+steps. Mismatched weighting invalidates $D$ — see [Integrity QC](../disconnectome.md#integrity-qc).
 
 ---
 
