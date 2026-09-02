@@ -3,7 +3,48 @@
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.2-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
-**📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md)
+**📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md) · [Architecture](docs/architecture.md)
+
+**GitHub entry point:** [../README.md](../README.md) (same quick start, links back here for advanced topics)
+
+---
+
+## Getting started (new users)
+
+1. **Requirements:** Linux, Apptainer, Python 3.9+, Snakemake ≥ 8, [FreeSurfer license](https://surfer.nmr.mgh.harvard.edu/registration.html).
+2. **Install & verify:**
+
+```bash
+cd dwi_pipeline          # from repo clone
+chmod +x dkt run install
+export FS_LICENSE=/path/to/license.txt
+./dkt install
+./dkt check
+```
+
+3. **Dry-run then run** (replace paths and subject ID):
+
+```bash
+./dkt run /path/to/BIDS /path/to/out participant \
+  --participant-label SUBJ01 --session-filter ses-1 --dry-run
+
+./dkt run /path/to/BIDS /path/to/out participant \
+  --participant-label SUBJ01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn
+```
+
+4. **Sample data:** from repo root, `bash dwi_pipeline/scripts/download_ideas_sample.sh` — then [Tutorial](docs/tutorial.md).
+5. **Full guide on Read the Docs:** [installation](https://dkt-connectome.readthedocs.io/en/latest/installation.html) → [tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html) → [usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
+
+| `./dkt` command | Purpose |
+|-----------------|---------|
+| `install` | Pull step `.sif` images + `config.local.yaml` |
+| `pull` | Pull containers only |
+| `run …` | Same as `./run` (BIDS App) |
+| `log …` | Tail logs under `RESULTS_ROOT/logs` |
+| `check` | Verify install; `--outputs` checks subject artifacts |
+| `version` | Print `0.2.2` from `app.json` |
+
+---
 
 ## Workflow sketch
 
@@ -61,12 +102,21 @@ export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
 
 See [`sample_data/ideas/README.md`](sample_data/ideas/README.md) and [docs/datasets/ideas.md](docs/datasets/ideas.md). **Cite Taylor et al. 2026** (*Epilepsia*) when using these data.
 
-**Local TBI test data** lives under [`dwi_pipeline/dwi_test_TBI/`](dwi_test_TBI/):
+---
+
+## Advanced topics
+
+The sections below cover lesion inpainting, lesion-aware ACT, experiment arms, HPC defaults, and site-specific operator notes. **New users can stop after [Getting started](#getting-started-new-users)** and use the [hosted tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html) instead.
+
+<details>
+<summary><strong>Local / development test data (optional)</strong></summary>
+
+**Local TBI test data** lives under [`dwi_test_TBI/`](dwi_test_TBI/):
 BIDS inputs in `dwi_test_TBI/bids/`, and one `RESULTS_ROOT` subdirectory per
 subject/settings using `sub-<SUBJECT>_<recon>[_flags]` (e.g.
-`sub-EXAMPLE_fastsurfer_inpaint`). Keep large cohort archives (e.g.
-local BIDS archives) separate from day-to-day pipeline I/O.
+`sub-EXAMPLE_fastsurfer_inpaint`). Keep large cohort archives separate from day-to-day pipeline I/O.
 
+</details>
 ---
 
 ## Stages
@@ -88,43 +138,27 @@ was produced).
 
 ---
 
-## Quick start
+## Quick start (reference)
 
-**Install & verify:**
+Same as [Getting started](#getting-started-new-users) above.
 
-```bash
-cd dwi_pipeline
-chmod +x dkt run install
-export FS_LICENSE=/path/to/license.txt
-./dkt install
-./dkt check
-```
-
-**BIDS App** (recommended):
-
-```bash
-./dkt run /path/to/BIDS /path/to/derivatives participant \
-  --participant-label SUBJ01 --session-filter ses-1 --n-cpus 8
-# equivalent: ./run …
-```
-
-**HPC / Slurm** (URMC production — Apptainer, no Docker orchestrator):
+**HPC / Slurm** (from repo root):
 
 ```bash
 export RESULTS_ROOT=/path/to/results
 export BIDS_DIR=/path/to/bids
-./dwi_pipeline/submit.sh
+bash dwi_pipeline/submit.sh
 ```
 
-**Single subject:**
+**Single subject** (from repo root):
 
 ```bash
 export BIDS_DIR=/path/to/bids
 export RESULTS_ROOT=/path/to/out
-bash dwi_pipeline/workflow/run_subject.sh all SUBJ01
+bash dwi_pipeline/workflow/run_subject.sh all SUBJ01 --fastsurfer --syn
 ```
 
-More examples: [docs/tutorial.md](docs/tutorial.md).
+More examples: [docs/tutorial.md](docs/tutorial.md) · [Usage on RTD](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
 
 ---
 
@@ -248,9 +282,7 @@ subjects, not a per-subject one, since the container itself groups output by
 with figures; `--strength-only` / `--no-report` (or `NODESTRENGTH_STRENGTH_ONLY=1` /
 `NODESTRENGTH_NO_REPORT=1`) thin that out.
 
-See [`node_strength/README.md`](/path/to/node_strength/README.md)
-and [`node_strength/containers/README.md`](/path/to/node_strength/containers/README.md)
-for the full CLI, output layout, and the underlying Piper et al. 2026 methodology.
+See [`node_strength` container on Docker Hub](https://hub.docker.com/r/phindagijimana321/nodestrength) and the upstream [dwi-AI / nodestrength](https://github.com/phindagijimana/dwi-AI) repo for Step 5 CLI and ENIGMA report details.
 
 ---
 
@@ -433,6 +465,8 @@ T1w/DWI grid.
 
 | Path | Purpose |
 |------|---------|
+| `dkt` | Unified CLI: `install`, `pull`, `run`, `log`, `check` |
+| `run` | BIDS App entrypoint (same as `./dkt run …`) |
 | `workflow/run_subject.sh` | One subject via Snakemake (modes match `./run`) |
 | `submit.sh` | Build subject list + Slurm array |
 | `array.sh` | Slurm array worker (do not run directly) |
@@ -447,7 +481,7 @@ T1w/DWI grid.
 | `containers/lit/` | Step 1.1 container (`build_lit.sh` pulls `deepmi/lit` from Docker Hub) |
 | `config/dwi_select_b1000.json` | Default b1000 + IntendedFor fmaps |
 | `reports/scripts/` | Per-subject visualization scripts (connectome, morphometry, imaging, ENIGMA 3D) |
-| [`node_strength/`](/path/to/node_strength) | Step 5 — separate repo/container (`nodestrength`, aka `dwi-AI`); node strength, AI, ENIGMA figures, `report.pdf` |
+| [`node_strength` on Docker Hub](https://hub.docker.com/r/phindagijimana321/nodestrength) | Step 5 — separate repo/container; node strength, AI, ENIGMA figures |
 
 ---
 

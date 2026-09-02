@@ -8,7 +8,7 @@ orphan: true
 
 The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed and validated in **TBI** settings where manual lesion masks and explicit distortion correction matter.
 
-**Hosted site:** [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/)
+**Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.2.2](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.2)
 
 ![DKT Connectome pipeline workflow](img/pipeline_overview.svg)
 
@@ -18,13 +18,14 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 
 | If you want… | Read… |
 |--------------|--------|
-| **Why** the workflow exists (science, lesions, SDC) | [How it works — science & theory](science_overview.md) |
-| **Pipeline stages** (Steps 1–5, 3.1–3.2 branches) | [Pipeline steps](pipeline_steps.md) · [Deep Atropos branch](deep_atropos_5tt.md) |
-| **First run** (install, tutorial, sample data) | [Installation](installation.md) → [Tutorial](tutorial.md) |
-| **Upgrade from an older install** | [Upgrading](upgrading.md) |
-| **Prepare BIDS** (fieldmaps, masks, sidecars) | [Preparing your data](preparing_data.md) |
-| **Run** (`./dkt` / `./run`, HPC, flags) | [Usage](usage.md) · [Architecture](architecture.md) · [BIDS App spec](bids_app.md) |
-| **Methods & citations** | [Methods overview](methods/index.md) · [References](references.md) |
+| **Install & first run** | [Installation](installation.md) → [Tutorial](tutorial.md) |
+| **All CLI flags** | [Usage](usage.md) (`./dkt` / `./run`) |
+| **Why** the workflow exists | [Science overview](science_overview.md) |
+| **Pipeline stages** | [Pipeline steps](pipeline_steps.md) · [Architecture](architecture.md) |
+| **Prepare BIDS** | [Preparing your data](preparing_data.md) |
+| **Upgrade** | [Upgrading](upgrading.md) |
+| **Methods & citations** | [Methods](methods/index.md) · [References](references.md) |
+| **Problems** | [FAQ](faq.md) · [Troubleshooting](troubleshooting.md) |
 
 ```{note} Upstream tools
 This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. Cite the primary method papers — [References by step](references.md).
@@ -32,35 +33,42 @@ This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIR
 
 ---
 
-## Before your first run
-
-Each user needs a **FreeSurfer license** (not shipped with the app):
-
-```bash
-export FS_LICENSE=/path/to/your/license.txt
-```
-
-Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html) — full steps: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
-
----
-
 ## Quick start
 
-**New users:** [Tutorial](tutorial.md) with [IDEAS sample data](datasets/ideas.md) or bundled TBI test outputs.
+**Requirements:** Linux · Apptainer · Python 3.9+ · Snakemake ≥ 8 · [FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this)
 
 ```bash
-cd dwi_pipeline
-chmod +x dkt
-./dkt install
+git clone https://github.com/phindagijimana/dkt_connectome.git
+cd dkt_connectome/dwi_pipeline
+chmod +x dkt run install
+
 export FS_LICENSE=/path/to/your/license.txt
+./dkt install
 ./dkt check
+
 ./dkt run /path/to/BIDS /path/to/derivatives participant \
   --participant-label 009 \
   --session-filter ses-1 \
-  --n-cpus 8
+  --dry-run
+
+./dkt run /path/to/BIDS /path/to/derivatives participant \
+  --participant-label 009 \
+  --session-filter ses-1 \
+  --n-cpus 8 --fastsurfer --syn
 ```
 
-HPC / Slurm:
+| Command | Purpose |
+|---------|---------|
+| `./dkt install` | Pull step `.sif` images + write `config.local.yaml` |
+| `./dkt check` | Verify tools, license, containers |
+| `./dkt run …` | Run pipeline (same as `./run`) |
+| `./dkt log …` | View logs under `RESULTS_ROOT/logs` |
+
+**Sample data:** [IDEAS II (OpenNeuro ds007401)](datasets/ideas.md) — `bash scripts/download_ideas_sample.sh` from repo root.
+
+**Docker:** `docker pull phindagijimana321/dkt-connectome:0.2.2` — see [Installation § Docker](installation.md).
+
+**HPC cohort:**
 
 ```bash
 export BIDS_DIR=/path/to/BIDS

@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Changed
+
+- **GitHub README** and **docs home** — unified quick start for new users (`./dkt install` → `check` → `run`); cross-links between GitHub and Read the Docs
+
 ## [0.2.2] - 2026-09-02
 
 ### Added

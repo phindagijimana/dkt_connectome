@@ -1,5 +1,7 @@
 # Installation
 
+**New users:** follow [Home → Quick start](home.md#quick-start) or the [GitHub README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md#quick-start-5-commands), then return here for containers, Docker, and HPC details.
+
 ## Requirements
 
 | Component | Version / notes |
