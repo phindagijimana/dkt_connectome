@@ -25,6 +25,7 @@ needs_sphinx = "4.2.0"
 
 extensions = [
     "myst_parser",
+    "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx_reredirects",
@@ -54,8 +55,10 @@ todo_include_todos = False
 
 # MyST — keep existing Markdown admonitions and GitHub-style tables.
 myst_enable_extensions = [
+    "amsmath",
     "colon_fence",
     "deflist",
+    "dollar_math",
     "fieldlist",
     "substitution",
     "tasklist",

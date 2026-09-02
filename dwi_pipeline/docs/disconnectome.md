@@ -6,6 +6,29 @@ Full method specification: [`Inpainting/disconnection.md`](https://github.com/ph
 
 ---
 
+## Disconnection index
+
+Step 4.1 builds **spared** connectomes (Options A, B, C) and compares each edge to the
+unchanged Step 4 primary matrix `dkt_connectome.csv`:
+
+```{math}
+D_{ij} = 1 - \frac{W^{\mathrm{spared}}_{ij}}{W^{\mathrm{primary}}_{ij}}
+```
+
+| Term | What it is |
+|------|------------|
+| {math}`W^{\mathrm{primary}}` | Step 4 DKT connectome (`dkt_connectome.csv`; default weight = streamline count) |
+| {math}`W^{\mathrm{spared}}` | Spared graph from Option **A** (parc excision), **B** (streamline exclusion), or **C** (both) |
+| {math}`D_{ij}` | Fractional connectivity loss on edge *i*–*j* (0 = none, 1 = complete loss on that edge) |
+
+The file `disconnection_matrix.csv` uses **Option C** by default (`--disconnection-spared C`).
+Separate matrices `disconnection_matrix_{A,B,C}.csv` are written for each option.
+
+Edges with zero primary weight are left at {math}`D_{ij}=0`; non-zero edges are clipped to
+{math}`[0,1]` after the ratio is computed. See [Step 4.1 — Disconnection matrix](methods/step4_1_disconnectome.md#disconnection-matrix) for interpretation and file names.
+
+---
+
 ## Defaults
 
 - **A/B/C** all built by default; skip with `--skip-option-a` etc.
