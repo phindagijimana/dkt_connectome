@@ -2,7 +2,8 @@
 disconnectome.smk — Step 4.1 plugin: lesion-aware disconnectome (Options A/B/C).
 
 Runs only when a lesion mask was prepared in Step 1.1 and Step 4 produced a
-DKT connectome (78 nodes). Invokes scripts/run_disconnectome.py on the host.
+DKT connectome (78 nodes). By default runs baked ``run_disconnectome`` inside
+``dkt_connectome.sif``; set ``DISCONNECTOME_BIND_DEV=1`` for host Python.
 """
 
 DISCONNECTOME_JSON_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/disconnectome/disconnectome.json"
@@ -84,13 +85,26 @@ rule disconnectome:
         source {COMMON_SH}
 
         echo "=== Disconnectome (Step 4.1): sub-{wildcards.subject} ses-{params.session} ==="
-        {PIPELINE_PYTHON} "{RUN_DISCONNECTOME}" \
-          --results-root "{RESULTS_ROOT}" \
-          --subject "{wildcards.subject}" \
-          --session "{params.session}" \
-          --container "{CONTAINER_CONNECTOME}" \
-          --lut "{CONNECTOME_LUT_DKT}" \
-          {params.extra}
+        if [[ "{DISCONNECTOME_BIND_DEV}" == "True" ]]; then
+          {PIPELINE_PYTHON} "{RUN_DISCONNECTOME}" \
+            --results-root "{RESULTS_ROOT}" \
+            --subject "{wildcards.subject}" \
+            --session "{params.session}" \
+            --container "{CONTAINER_CONNECTOME}" \
+            --lut "{CONNECTOME_LUT_DKT}" \
+            {params.extra}
+        else
+          apptainer exec --cleanenv --containall \
+            -B "{RESULTS_ROOT}":/data \
+            "{CONTAINER_CONNECTOME}" \
+            /usr/local/bin/run_disconnectome \
+            --native-tools \
+            --results-root /data \
+            --subject "{wildcards.subject}" \
+            --session "{params.session}" \
+            --lut {CONNECTOME_LUT_BAKED} \
+            {params.extra}
+        fi
 
         [[ -f "{output.json}" ]] || _pipeline_fail "disconnectome" "missing {output.json}"
         [[ -f "{output.matrix}" ]] || _pipeline_fail "disconnectome" "missing {output.matrix}"

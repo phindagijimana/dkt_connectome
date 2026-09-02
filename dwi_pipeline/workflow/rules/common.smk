@@ -129,6 +129,13 @@ if ACT_MODE not in ("standard", "lesion-aware"):
 
 # Dev-only: bind-mount repo scripts over in-container copies (pilot iteration).
 ACT_BIND_MOUNT_DEV = os.environ.get("ACT_BIND_MOUNT_DEV", "0") == "1"
+CONNECTOME_BIND_DEV = os.environ.get(
+    "CONNECTOME_BIND_DEV", os.environ.get("CONNECTOME_BIND_ENTRYPOINT", "0")
+) == "1"
+VBT_BIND_DEV = os.environ.get("VBT_BIND_DEV", "0") == "1"
+DISCONNECTOME_BIND_DEV = os.environ.get("DISCONNECTOME_BIND_DEV", "0") == "1"
+
+CONNECTOME_LUT_BAKED = "/opt/dkt/lut/fs_dkt.txt"
 
 
 def _require_act_container(key: str, label: str) -> str:

@@ -2,7 +2,7 @@
 
 The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use **`./dkt install`** (or `bash install.sh`) to pull pinned images and write `workflow/config/config.local.yaml`, or set `CONTAINER_*` environment variables (see [Installation](installation.md)).
 
-**Docker orchestrator (BIDS App):** `phindagijimana321/dkt-connectome:0.2.2` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:0.2.2`. Step images still mount from cache at runtime. See [Architecture](architecture.md) for what runs in containers vs on the host.
+**Docker orchestrator (BIDS App):** `phindagijimana321/dkt-connectome:0.3.0` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:0.3.0`. Step scripts are **baked** into DKT-owned images by default; use `release_manifest.json` + `./dkt check --strict` after install. See [Architecture](architecture.md).
 
 ---
 
@@ -19,7 +19,7 @@ The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use
 | 3.1 — Lesion-aware ACT | `dkt_lesion_act.sif` | `install.sh --mode act` or [`containers/lesion_act/build_lesion_act.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/build_lesion_act.sh) · Docker Hub `phindagijimana321/dkt-lesion-act:0.1.0` |
 | 3.2 (5TT) — Deep Atropos native 5TT | `dkt_deep_atropos.sif` | [`containers/deep_atropos/build_deep_atropos.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos/build_deep_atropos.sh) · optional; `--act-5tt-source deep-atropos-native` |
 | 3.2 (seg) — Deep Atropos segmentation | `dkt_deep_atropos_seg.sif` | [`containers/deep_atropos_seg/build_deep_atropos_seg.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos_seg/build_deep_atropos_seg.sh) · ANTsPyNet; `segmentation_mode=generate` or `auto` |
-| 4 — Connectome | `dkt_connectome.sif` | `install.sh` (pull/build fallbacks) or [`containers/connectome/build_connectome.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/build_connectome.sh) |
+| 4 — Connectome | `dkt_connectome.sif` | `install.sh` or [`containers/connectome/build_connectome.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/build_connectome.sh) · baked `run_connectome.sh` + `run_disconnectome.py` |
 | 5 — Node strength | `nodestrength_0.1.0.sif` | `install.sh` or Docker Hub `phindagijimana321/nodestrength:0.1.0` |
 
 **Step 4 OCI on Docker Hub (legacy name):** `phindagijimana321/dkt_connectome:latest` — the connectome *step* container, not the orchestrator.
@@ -42,6 +42,8 @@ The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use
 | `CONTAINER_DEEP_ATROPOS_SEG` | `containers.deep_atropos_seg` |
 | `CONTAINER_NODESTRENGTH` | `containers.nodestrength` |
 | `DKT_CONTAINER_CACHE` | Default install cache (`~/.cache/dkt-connectome/containers`) |
+
+**Dev-only bind-mount overrides** (default off): `CONNECTOME_BIND_DEV`, `VBT_BIND_DEV`, `DISCONNECTOME_BIND_DEV`, `ACT_BIND_MOUNT_DEV`. See [Architecture § Hybrid scripts](architecture.md).
 
 Reference upstream tags with `container_pins:` in config — see [Configuration](configuration.md). Full auto-generated catalog: [on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/config_catalog.md).
 

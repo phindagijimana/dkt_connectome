@@ -4,6 +4,7 @@
 #   freesurfer/      — mri_label2vol, mri_convert, FreeSurferColorLUT.txt
 #   ants/            — from qsirecon.sif (/opt/ants)
 #   mrtrix3-latest/  — from qsirecon.sif (/opt/mrtrix3-latest)
+#   dkt/             — run_disconnectome.py + fs_dkt.txt LUT
 
 FROM ubuntu:22.04
 
@@ -16,19 +17,24 @@ ENV FREESURFER_HOME=/opt/freesurfer \
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       bc \
+      python3 \
+      python3-pip \
       libgomp1 \
       libgfortran5 \
       zlib1g \
       libtiff5 \
       libpng16-16 \
       libfftw3-double3 \
+    && pip3 install --no-cache-dir nibabel numpy scipy \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ants /opt/ants
 COPY mrtrix3-latest /opt/mrtrix3-latest
 COPY freesurfer /opt/freesurfer
+COPY dkt /opt/dkt
 COPY run_connectome.sh /usr/local/bin/run_connectome
-RUN chmod +x /usr/local/bin/run_connectome
+COPY run_disconnectome.sh /usr/local/bin/run_disconnectome
+RUN chmod +x /usr/local/bin/run_connectome /usr/local/bin/run_disconnectome
 
 # Missing runtime libraries do not break the build, only every later run
 # (exit 127), so assert here instead of shipping a broken image.

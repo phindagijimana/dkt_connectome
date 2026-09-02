@@ -1,0 +1,71 @@
+{
+  "pipeline_version": "0.3.0",
+  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. Null sha256 means digest not yet recorded at release build time — strict check skips those keys.",
+  "orchestrator": {
+    "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.0",
+    "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.0",
+    "sha256": null
+  },
+  "steps": {
+    "qsiprep": {
+      "uri": "pennlinc/qsiprep:1.0.0",
+      "sha256": null
+    },
+    "qsirecon": {
+      "uri": "pennlinc/qsirecon:1.2.1",
+      "sha256": null
+    },
+    "freesurfer": {
+      "uri": "freesurfer/freesurfer:7.4.1",
+      "sha256": null
+    },
+    "fastsurfer": {
+      "uri": "deepmi/fastsurfer:latest",
+      "sha256": null
+    },
+    "connectome": {
+      "uri": "ghcr.io/phindagijimana/dk-connectome:0.3.0",
+      "dockerhub_uri": "phindagijimana321/dkt_connectome:0.3.0",
+      "sha256": null,
+      "baked": [
+        "run_connectome.sh",
+        "run_disconnectome.py",
+        "mrtrix_lut/fs_dkt.txt"
+      ]
+    },
+    "vbt": {
+      "uri": "ghcr.io/phindagijimana/dkt-vbt:0.3.0",
+      "dockerhub_uri": "phindagijimana321/dkt-vbt:0.3.0",
+      "sha256": null,
+      "baked": ["run_vbt.py"]
+    },
+    "lesion_act": {
+      "uri": "ghcr.io/phindagijimana/dkt-lesion-act:0.3.0",
+      "dockerhub_uri": "phindagijimana321/dkt-lesion-act:0.3.0",
+      "sha256": null,
+      "baked": ["run_lesion_aware_act.sh"]
+    },
+    "deep_atropos": {
+      "uri": "ghcr.io/phindagijimana/dkt-deep-atropos:0.3.0",
+      "sha256": null
+    },
+    "deep_atropos_seg": {
+      "uri": "ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0",
+      "sha256": null
+    },
+    "lit": {
+      "uri": "deepmi/lit:0.6.0",
+      "sha256": null
+    },
+    "nodestrength": {
+      "uri": "phindagijimana321/nodestrength:0.1.0",
+      "sha256": null
+    }
+  },
+  "dev_bind_mounts": {
+    "CONNECTOME_BIND_DEV": "Overlay repo run_connectome.sh / DKT LUT (default: off)",
+    "VBT_BIND_DEV": "Overlay repo run_vbt.py via qsiprep.sif (default: off)",
+    "DISCONNECTOME_BIND_DEV": "Run host run_disconnectome.py (default: off)",
+    "ACT_BIND_MOUNT_DEV": "Overlay Deep Atropos scripts (default: off)"
+  }
+}
