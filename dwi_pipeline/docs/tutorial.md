@@ -60,7 +60,8 @@ cd dkt_connectome/dwi_pipeline
 
 ```bash
 export FS_LICENSE=/path/to/your/license.txt
-./run doctor
+./dkt check
+# or: ./run doctor
 ```
 
 The project does not provide a shared license — each user obtains their own. Details: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).

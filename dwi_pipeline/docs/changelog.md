@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Added
+
+- **Unified CLI `./dkt`** — `install`, `pull`, `run`, `log`, `check`, `version` (wraps `./run`, `install.sh`, `doctor`; see [Usage § Unified CLI](usage.md#unified-cli-dkt))
+- **`scripts/check_outputs.py`** — subject artifact verification for `./dkt check --outputs`
+
 ## [0.2.1] - 2026-09-01
 
 ### Added

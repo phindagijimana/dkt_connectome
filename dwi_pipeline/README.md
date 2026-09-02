@@ -1,7 +1,7 @@
 # dwi_pipeline — QSIPrep → Inpaint → Recon → QSIRecon → connectome → node strength
 
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
-[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
+[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.1-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
 **📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md)
 
@@ -90,12 +90,22 @@ was produced).
 
 ## Quick start
 
-**BIDS App** (recommended):
+**Install & verify:**
 
 ```bash
 cd dwi_pipeline
-./run /path/to/BIDS /path/to/derivatives participant \
+chmod +x dkt run install
+export FS_LICENSE=/path/to/license.txt
+./dkt install
+./dkt check
+```
+
+**BIDS App** (recommended):
+
+```bash
+./dkt run /path/to/BIDS /path/to/derivatives participant \
   --participant-label SUBJ01 --session-filter ses-1 --n-cpus 8
+# equivalent: ./run …
 ```
 
 **HPC / Slurm** (URMC production — Apptainer, no Docker orchestrator):
