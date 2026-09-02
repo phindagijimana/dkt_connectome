@@ -285,19 +285,13 @@ rule connectome:
           fi
         fi
 
-        dwiref="$(_strict_find_one "connectome/dwiref" \
-          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
-            -name '*space-T1w_dwiref.nii.gz')"
-        preproc_dwi="$(_strict_find_one "connectome/preproc_dwi" \
-          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
-            -name '*space-T1w_desc-preproc_dwi.nii.gz')"
+        dwiref="$(find_qsiprep_dwiref "connectome/dwiref" "{QSIPREP_OUT}" "${{SUBJECT}}" "${{ses}}")"
+        preproc_dwi="$(find_qsiprep_preproc_dwi "connectome/preproc_dwi" "{QSIPREP_OUT}" "${{SUBJECT}}" "${{ses}}")"
         bval="${{preproc_dwi%.nii.gz}}.bval"
         bvec="${{preproc_dwi%.nii.gz}}.bvec"
         [[ -f "${{bval}}" ]] || _pipeline_fail "connectome/tensor" "missing b-values: ${{bval}}"
         [[ -f "${{bvec}}" ]] || _pipeline_fail "connectome/tensor" "missing b-vectors: ${{bvec}}"
-        brain_mask="$(_strict_find_one "connectome/brain_mask" \
-          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}*/ses-${{ses}}/*" \
-            -name '*space-T1w_desc-brain_mask.nii.gz')"
+        brain_mask="$(find_qsiprep_brain_mask "connectome/brain_mask" "{QSIPREP_OUT}" "${{SUBJECT}}" "${{ses}}")"
         preproc_t1w="$(find_qsiprep_preproc_t1w "{QSIPREP_OUT}" "${{SUBJECT}}" "${{ses}}")"
 
         if [[ -n "{input.registration_t1w}" ]]; then

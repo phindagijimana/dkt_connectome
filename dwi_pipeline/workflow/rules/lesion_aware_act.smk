@@ -100,9 +100,7 @@ rule lesion_aware_act:
         wm_fod="$(_strict_find_one "lesion-aware-act/wm-fod" \
           find -L "{QSIRECON_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
             -name '*model-ss3t_param-fod_label-WM_dwimap.mif.gz')"
-        dwiref="$(_strict_find_one "lesion-aware-act/dwiref" \
-          find -L "{QSIPREP_OUT}" -type f -path "*sub-${{SUBJECT}}/ses-${{SESSION}}/dwi/*" \
-            -name '*space-T1w_dwiref.nii.gz')"
+        dwiref="$(find_qsiprep_dwiref "lesion-aware-act/dwiref" "{QSIPREP_OUT}" "${{SUBJECT}}" "${{SESSION}}")"
         preproc_t1w="$(find_qsiprep_preproc_t1w "{QSIPREP_OUT}" "${{SUBJECT}}" "${{SESSION}}")"
         native_to_acpc="$(find_qsiprep_native_to_acpc "{QSIPREP_OUT}" "${{SUBJECT}}" "${{SESSION}}" || true)"
 
