@@ -23,7 +23,7 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 | **First run** (install, tutorial, sample data) | [Installation](installation.md) → [Tutorial](tutorial.md) |
 | **Upgrade from an older install** | [Upgrading](upgrading.md) |
 | **Prepare BIDS** (fieldmaps, masks, sidecars) | [Preparing your data](preparing_data.md) |
-| **Run** (`./dkt` / `./run`, HPC, flags) | [Usage](usage.md) · [BIDS App spec](bids_app.md) |
+| **Run** (`./dkt` / `./run`, HPC, flags) | [Usage](usage.md) · [Architecture](architecture.md) · [BIDS App spec](bids_app.md) |
 | **Methods & citations** | [Methods overview](methods/index.md) · [References](references.md) |
 
 ```{note} Upstream tools
@@ -50,7 +50,11 @@ Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html) �
 
 ```bash
 cd dwi_pipeline
-./run /path/to/BIDS /path/to/derivatives participant \
+chmod +x dkt
+./dkt install
+export FS_LICENSE=/path/to/your/license.txt
+./dkt check
+./dkt run /path/to/BIDS /path/to/derivatives participant \
   --participant-label 009 \
   --session-filter ses-1 \
   --n-cpus 8

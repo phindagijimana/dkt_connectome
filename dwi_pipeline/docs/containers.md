@@ -1,8 +1,8 @@
 # Containers
 
-The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use **`bash install.sh`** to pull pinned images and write `workflow/config/config.local.yaml`, or set `CONTAINER_*` environment variables (see [Installation](installation.md)).
+The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use **`./dkt install`** (or `bash install.sh`) to pull pinned images and write `workflow/config/config.local.yaml`, or set `CONTAINER_*` environment variables (see [Installation](installation.md)).
 
-**Docker orchestrator (BIDS App):** `phindagijimana321/dkt-connectome:0.2.1` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:0.2.1`. Step images still mount from cache at runtime.
+**Docker orchestrator (BIDS App):** `phindagijimana321/dkt-connectome:0.2.2` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:0.2.2`. Step images still mount from cache at runtime. See [Architecture](architecture.md) for what runs in containers vs on the host.
 
 ---
 

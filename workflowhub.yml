@@ -12,7 +12,7 @@ description: |
   connectome → optional disconnectome → node-strength / ENIGMA report.
   Validated on TRACK-TBI (~14 centers) and URMC clinical MRI cohorts.
 
-version: "0.2.1"
+version: "0.2.2"
 license: Apache-2.0
 homepage: https://github.com/phindagijimana/dkt_connectome
 repository: https://github.com/phindagijimana/dkt_connectome.git
@@ -59,7 +59,7 @@ containers:
   - name: freesurfer
     source: docker://freesurfer/freesurfer:7.4.1
   - name: dkt_connectome_orchestrator
-    source: docker://phindagijimana321/dkt-connectome:0.2.1
+    source: docker://phindagijimana321/dkt-connectome:0.2.2
     description: BIDS App orchestrator (Snakemake); step images mount at runtime.
   - name: connectome
     source: docker://ghcr.io/phindagijimana/dk-connectome:0.2.0

@@ -1,7 +1,7 @@
 # dwi_pipeline — QSIPrep → Inpaint → Recon → QSIRecon → connectome → node strength
 
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
-[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.1-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
+[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.2-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
 **📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md)
 

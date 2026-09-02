@@ -9,6 +9,7 @@ on:
       - 'dwi_pipeline/Dockerfile'
       - 'dwi_pipeline/docker-entrypoint.sh'
       - 'dwi_pipeline/run'
+      - 'dwi_pipeline/dkt'
       - 'dwi_pipeline/app.json'
       - 'dwi_pipeline/workflow/**'
       - 'dwi_pipeline/scripts/**'
@@ -115,6 +116,7 @@ jobs:
           IMG="${{ steps.ghcr.outputs.image }}:${{ steps.meta.outputs.version }}"
           docker pull "${IMG}"
           docker run --rm "${IMG}" --version
+          docker run --rm "${IMG}" dkt version
           mkdir -p /tmp/docker_out
           touch /tmp/license.txt
           docker run --rm \

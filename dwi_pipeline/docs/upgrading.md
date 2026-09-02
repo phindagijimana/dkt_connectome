@@ -2,7 +2,7 @@
 
 How to move from an older DKT Connectome install to the current release.
 
-**Current release:** check `./run --version` or [GitHub Releases](https://github.com/phindagijimana/dkt_connectome/releases).
+**Current release:** check `./dkt version` or `./run --version` or [GitHub Releases](https://github.com/phindagijimana/dkt_connectome/releases).
 
 ---
 
@@ -23,8 +23,8 @@ export FS_LICENSE=/path/to/license.txt
 **Docker / cloud:**
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.2.1
-# or pin: phindagijimana321/dkt-connectome:0.2.1
+docker pull phindagijimana321/dkt-connectome:0.2.2
+# or pin: phindagijimana321/dkt-connectome:0.2.2
 ```
 
 Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside the orchestrator image — `install.sh` refreshes Apptainer `.sif` paths in `workflow/config/config.local.yaml`.
@@ -40,6 +40,17 @@ Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside 
 | MkDocs site (old) | [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) |
 
 Legacy paths remain for Dockstore compatibility only — see [Comparisons § Legacy](comparisons.md).
+
+---
+
+## v0.2.2 — what changed
+
+| Area | Change | Rerun needed? |
+|------|--------|---------------|
+| **CLI** | Unified `./dkt` (`install`, `pull`, `run`, `log`, `check`) | No |
+| **Docs** | [Architecture guide](architecture.md) — container vs host layout | No |
+| **Docker** | Orchestrator republished with `./dkt`; `docker run … dkt check` supported | No (pull new image only) |
+| **Verify outputs** | `./dkt check --outputs --subject ID --results-root OUT` | No |
 
 ---
 
@@ -75,8 +86,9 @@ First public BIDS App release with Snakemake engine, `./run` participant/group l
 ## Verify after upgrade
 
 ```bash
-./run --version
-./run "$BIDS_DIR" "$RESULTS_ROOT" participant \
+./dkt version
+./dkt check --with-dry-run
+./dkt run "$BIDS_DIR" "$RESULTS_ROOT" participant \
   --participant-label ID --dry-run
 ```
 
