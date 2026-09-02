@@ -31,11 +31,20 @@ stage_from_qsirecon() {
   docker pull "${QSI_IMAGE}"
   cid="$(docker create "${QSI_IMAGE}")"
   trap 'docker rm -f "${cid}" >/dev/null 2>&1 || true' RETURN
-  docker cp "${cid}:/opt/mrtrix3-latest/." "${dest_mrtrix}/"
-  docker cp "${cid}:/opt/ants/." "${dest_ants}/"
+  docker cp "${cid}:/opt/ants/." "${dest_ants}/" 2>/dev/null || true
+  staged=0
+  for mrtrix_src in /opt/mrtrix3-latest /opt/mrtrix3; do
+    rm -rf "${dest_mrtrix:?}"/*
+    if docker cp "${cid}:${mrtrix_src}/." "${dest_mrtrix}/" 2>/dev/null \
+      && [[ -x "${dest_mrtrix}/bin/tckgen" || -x "${dest_mrtrix}/bin/labelconvert" ]]; then
+      staged=1
+      echo "  MRtrix staged from ${mrtrix_src}"
+      break
+    fi
+  done
   docker rm -f "${cid}"
   trap - RETURN
-  [[ -x "${dest_mrtrix}/bin/tckgen" ]] || { echo "ERROR: MRtrix staging failed"; exit 1; }
+  [[ "${staged}" -eq 1 ]] || { echo "ERROR: MRtrix staging failed (tried /opt/mrtrix3-latest and /opt/mrtrix3)"; exit 1; }
   [[ -x "${dest_ants}/bin/antsApplyTransforms" ]] || { echo "ERROR: ANTs staging failed"; exit 1; }
 }
 

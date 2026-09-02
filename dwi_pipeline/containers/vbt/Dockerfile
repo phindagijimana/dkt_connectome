@@ -1,21 +1,14 @@
-# Staged FSL from qsiprep.sif is built for Ubuntu 18.04 (qsiprep base).
-# Ubuntu 22.04 + those binaries -> midtrans SIGSEGV; use 18.04 for dkt_vbt.sif.
+# Staged FSL from qsiprep.sif ships its own libs under /opt/fsl/lib.
+# Use Ubuntu 22.04 for CI apt; FSL binaries remain qsiprep-compatible at runtime.
 
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 ENV FSLDIR=/opt/fsl \
     FSLOUTPUTTYPE=NIFTI_GZ \
     LD_LIBRARY_PATH=/opt/fsl/lib \
     PATH=/opt/fsl/bin:/usr/local/bin:/usr/bin:/bin
 
-# Ubuntu 18.04 (bionic) is EOL; use old-releases archive for CI/apt installs.
-RUN rm -f /etc/apt/sources.list.d/* \
-    && printf '%s\n' \
-      'deb http://old-releases.ubuntu.com/ubuntu/ bionic main restricted universe multiverse' \
-      'deb http://old-releases.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse' \
-      'deb http://old-releases.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse' \
-      > /etc/apt/sources.list \
-    && apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 \
       python3-pip \

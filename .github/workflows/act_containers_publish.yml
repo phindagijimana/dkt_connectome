@@ -22,7 +22,7 @@ on:
       push_dockerhub:
         description: Also push to Docker Hub (requires DOCKERHUB_* secrets)
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: read
