@@ -26,7 +26,7 @@
     "connectome": {
       "uri": "ghcr.io/phindagijimana/dk-connectome:0.3.0",
       "dockerhub_uri": "phindagijimana321/dkt_connectome:0.3.0",
-      "sha256": "7b6d7eed222f7e98ee4d633f19464a055401ff29b97cc0e8b32bedae27d85c91",
+      "sha256": "a634511a0ce11a9504f0f5a764f098cd0578454d073bb3fca02fd390ba9dd374",
       "baked": [
         "run_connectome.sh",
         "run_disconnectome.py",

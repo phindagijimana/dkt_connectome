@@ -1,0 +1,78 @@
+name: Push release SIFs to GHCR
+
+# After uploading step .sif files to a GitHub Release, run this workflow to
+# publish them to GHCR (uses GITHUB_TOKEN packages:write — no local PAT needed).
+#
+# Example (from maintainer machine):
+#   gh release create v0.3.0-step-sifs \
+#     --title "DKT step SIFs 0.3.0" \
+#     /path/to/others/containers/dkt_connectome.sif \
+#     /path/to/others/containers/dkt_vbt.sif \
+#     /path/to/others/containers/dkt_lesion_act.sif \
+#     /path/to/others/containers/dkt_deep_atropos.sif \
+#     /path/to/others/containers/dkt_deep_atropos_seg.sif
+#
+# Then: Actions → "Push release SIFs to GHCR" → Run workflow → tag v0.3.0-step-sifs
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: GitHub Release tag containing .sif assets
+        type: string
+        default: "v0.3.0-step-sifs"
+      image_tag:
+        description: GHCR image tag to apply
+        type: string
+        default: "0.3.0"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.release_tag }}"
+          mkdir -p sifs
+          gh release download "${TAG}" -D sifs --pattern '*.sif' --clobber
+          ls -lh sifs/
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            apptainer remote login --username "${{ github.actor }}" --password-stdin oras://ghcr.io
+
+      - name: Push to GHCR
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.image_tag }}"
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          declare -A MAP=(
+            [dkt_connectome.sif]=dk-connectome
+            [dkt_vbt.sif]=dkt-vbt
+            [dkt_lesion_act.sif]=dkt-lesion-act
+            [dkt_deep_atropos.sif]=dkt-deep-atropos
+            [dkt_deep_atropos_seg.sif]=dkt-deep-atropos-seg
+          )
+          shopt -s nullglob
+          for sif in sifs/*.sif; do
+            base="$(basename "${sif}")"
+            repo="${MAP[${base}]:-}"
+            [[ -n "${repo}" ]] || { echo "SKIP ${base}"; continue; }
+            uri="oras://ghcr.io/${OWNER}/${repo}:${TAG}"
+            echo "Pushing ${sif} -> ${uri}"
+            apptainer push --allow-unsigned "${sif}" "${uri}"
+          done
