@@ -9,7 +9,7 @@ Patterns for running DKT Connectome outside URMC HPC: Docker orchestrator, cache
 Pull the published image:
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.2.2
+docker pull phindagijimana321/dkt-connectome:0.3.0
 ```
 
 Minimal run (bind-mount BIDS, output, FreeSurfer license):
@@ -21,7 +21,7 @@ docker run --rm \
   -v /path/to/license.txt:/opt/freesurfer/license.txt:ro \
   -e FS_LICENSE=/opt/freesurfer/license.txt \
   -e DKT_AUTO_INSTALL=1 \
-  phindagijimana321/dkt-connectome:0.2.2 \
+  phindagijimana321/dkt-connectome:0.3.0 \
   /data/bids /out participant \
   --participant-label 001 --session-filter ses-1 --syn
 ```
@@ -30,7 +30,7 @@ docker run --rm \
 
 ```bash
 docker run --rm -e BIDS_APP_CI=1 -e FS_LICENSE=/tmp/license.txt \
-  phindagijimana321/dkt-connectome:0.2.2 dkt check
+  phindagijimana321/dkt-connectome:0.3.0 dkt check
 ```
 
 The orchestrator **Docker image includes Apptainer** for cloud use; on HPC, use `./dkt install` directly instead.

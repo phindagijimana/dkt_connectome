@@ -6,21 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
-### Changed
-
-- **GitHub README** and **docs home** — unified quick start for new users (`./dkt install` → `check` → `run`); cross-links between GitHub and Read the Docs
-
 ## [0.3.0] — Tier 1 reproducibility (baked step scripts)
 
 ### Added
 - **`release_manifest.json`** — single release bundle mapping pipeline version → step image URIs (+ optional SHA256)
 - **`./dkt check --strict`** and `container_install.py verify-manifest` for digest verification
 - **Baked disconnectome** in `dkt_connectome.sif` (`run_disconnectome` entrypoint + DKT LUT)
+- **GHCR step SIF publish** — `push_release_sifs_to_ghcr.yml` + `publish_all_step_sifs_to_ghcr.sh`; release `v0.3.0-step-sifs`
 
 ### Changed
 - **Default production behavior:** use baked scripts in step images (no git bind-mount overrides)
 - Dev-only overrides: `CONNECTOME_BIND_DEV`, `VBT_BIND_DEV`, `DISCONNECTOME_BIND_DEV` (default off)
 - DKT-owned `container_pins` bumped to **0.3.0**
+- **Documentation** synced to v0.3.0 (installation, upgrading, citation, RTD Sphinx build fix)
 
 ## [0.2.2] - 2026-09-02
 
@@ -135,6 +133,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - Standalone disconnectome script (`run_disconnectome.py`) and integrity QC
 - BIDS App skeleton (`run`, `app.json`)
 
+[0.3.0]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/phindagijimana/dkt_connectome/compare/v0.1.0...v0.2.0

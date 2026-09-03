@@ -8,7 +8,7 @@ orphan: true
 
 The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed and validated in **TBI** settings where manual lesion masks and explicit distortion correction matter.
 
-**Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.2.2](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.2)
+**Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.3.0](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.0-step-sifs)
 
 ![DKT Connectome pipeline workflow](img/pipeline_overview.svg)
 
@@ -66,7 +66,7 @@ export FS_LICENSE=/path/to/your/license.txt
 
 **Sample data:** [IDEAS II (OpenNeuro ds007401)](datasets/ideas.md) — `bash scripts/download_ideas_sample.sh` from repo root.
 
-**Docker:** `docker pull phindagijimana321/dkt-connectome:0.2.2` — see [Installation § Docker](installation.md).
+**Docker:** `docker pull phindagijimana321/dkt-connectome:0.3.0` — see [Installation § Docker](installation.md). Step `.sif` images are pinned in [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json); run `./dkt check --strict` after install.
 
 **HPC cohort:**
 
