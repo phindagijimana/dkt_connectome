@@ -34,6 +34,9 @@ cd dkt_connectome/dwi_pipeline
 chmod +x dkt run install
 
 export FS_LICENSE=/path/to/your/license.txt
+export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
+mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install          # pull step .sif images + write config.local.yaml
 ./dkt check --strict   # verify tools, license, and pinned container digests
 
