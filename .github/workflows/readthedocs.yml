@@ -57,6 +57,7 @@ jobs:
           sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
           grep -q 'DKT Connectome' dwi_pipeline/docs/_build/html/index.html
           ! grep -qi 'TrackTBI Connectome' dwi_pipeline/docs/_build/html/index.html
+          grep -q '0.3.0' dwi_pipeline/docs/_build/html/index.html
           test -f dwi_pipeline/docs/_build/html/_images/pipeline_overview.svg
 
       - name: Verify live Read the Docs (science pages)

@@ -10,6 +10,10 @@ The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed
 
 **Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.3.0](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.0-step-sifs)
 
+```{note} Recommended setup
+Use **Linux + Apptainer** on a workstation or HPC (FreeSurfer license required). After `./dkt install`, run **`./dkt check --strict`** to verify pinned container digests from [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json). Docker is optional for the orchestrator only — see [Installation § Docker](installation.md).
+```
+
 ![DKT Connectome pipeline workflow](img/pipeline_overview.svg)
 
 ---
@@ -44,7 +48,7 @@ chmod +x dkt run install
 
 export FS_LICENSE=/path/to/your/license.txt
 ./dkt install
-./dkt check
+./dkt check --strict
 
 ./dkt run /path/to/BIDS /path/to/derivatives participant \
   --participant-label 009 \

@@ -49,9 +49,11 @@ Verify before your first run:
 
 ```bash
 export FS_LICENSE=/path/to/license.txt
-./dkt check
+./dkt check --strict
 # or: ./run doctor
 ```
+
+`--strict` compares cached `.sif` SHA-256 digests to [`release_manifest.json`](../release_manifest.json).
 
 **Docker orchestrator** with first-run pull:
 

@@ -9,6 +9,8 @@
 
 **New here?** Use the **[documentation site](https://dkt-connectome.readthedocs.io/en/latest/)** (tutorial, flags, troubleshooting) or follow the steps below on GitHub.
 
+**Recommended path:** Linux workstation or HPC with **Apptainer** (not Docker-only). Clone → `./dkt install` → `./dkt check --strict` → dry-run on [IDEAS sample](dwi_pipeline/docs/datasets/ideas.md) → run your BIDS data.
+
 ---
 
 ## Requirements
@@ -33,7 +35,7 @@ chmod +x dkt run install
 
 export FS_LICENSE=/path/to/your/license.txt
 ./dkt install          # pull step .sif images + write config.local.yaml
-./dkt check            # verify tools, license, containers
+./dkt check --strict   # verify tools, license, and pinned container digests
 
 # Plan first (no compute):
 ./dkt run /path/to/BIDS /path/to/out participant \
@@ -46,13 +48,15 @@ export FS_LICENSE=/path/to/your/license.txt
 
 **Sample data:** `bash scripts/download_ideas_sample.sh` then follow [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html).
 
-**Docker:**
+**Docker** (optional; orchestrator only — step `.sif` images still required):
 
 ```bash
 docker pull phindagijimana321/dkt-connectome:0.3.0
 docker run --rm -e BIDS_APP_CI=1 -e FS_LICENSE=/tmp/license.txt \
   phindagijimana321/dkt-connectome:0.3.0 dkt check
 ```
+
+If the Docker tag is unavailable, use the **Apptainer** path above (`./dkt install` pulls step images from GHCR per [`release_manifest.json`](dwi_pipeline/release_manifest.json)).
 
 **CLI:** `./dkt install | pull | run | log | check | version` — `./dkt run …` equals `./run …` (BIDS App). See [Usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
 
