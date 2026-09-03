@@ -39,8 +39,11 @@ def ci_env(tmp_path, monkeypatch):
 
 
 def test_run_version():
+    import json
+
+    expected = json.loads((DWI / "app.json").read_text())["PipelineVersion"]
     out = subprocess.check_output([str(RUN), "--version"], text=True).strip()
-    assert out == "0.2.0"
+    assert out == expected
 
 
 def test_run_help_has_bids_app_flags():

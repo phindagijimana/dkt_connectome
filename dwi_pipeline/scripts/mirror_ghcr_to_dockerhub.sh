@@ -11,7 +11,7 @@
 #
 set -euo pipefail
 
-VERSION="0.2.2"
+VERSION="0.3.0"
 GHCR_IMAGE="ghcr.io/phindagijimana/dkt-connectome"
 DHUB_IMAGE="phindagijimana321/dkt-connectome"
 AUTHFILE="${PODMAN_AUTHFILE:-${HOME}/.config/containers/auth.json}"

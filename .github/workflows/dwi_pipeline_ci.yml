@@ -58,7 +58,11 @@ jobs:
         run: pytest -q dwi_pipeline/tests -m "not slow" -c dwi_pipeline/pytest.ini
 
       - name: Sphinx build (docs site, strict)
-        run: sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
+        run: |
+          sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
+          grep -q 'DKT Connectome' dwi_pipeline/docs/_build/html/index.html
+          grep -q '0.3.0' dwi_pipeline/docs/_build/html/index.html
+          test -f dwi_pipeline/docs/_build/html/_images/pipeline_overview.svg
 
       - name: Validate ./run and ./dkt CLI
         working-directory: dwi_pipeline
@@ -67,10 +71,10 @@ jobs:
           ./run --help | grep -q session-id
           ./run --help | grep -q nprocs
           ./run --help | grep -q doctor
-          test "$(./run --version)" = "0.2.2"
+          test "$(./run --version)" = "0.3.0"
           ./dkt --help | grep -q install
           ./dkt --help | grep -q check
-          test "$(./dkt version)" = "0.2.2"
+          test "$(./dkt version)" = "0.3.0"
           bash -n dkt
           python3 -m py_compile scripts/check_outputs.py
 

@@ -5,6 +5,8 @@ set -euo pipefail
 
 HOME_URL="${1:-https://dkt-connectome.readthedocs.io/en/latest/}"
 BASE="${HOME_URL%/}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXPECTED_VERSION="$(python3 -c "import json; print(json.load(open('${SCRIPT_DIR}/../app.json'))['PipelineVersion'])")"
 
 HOME_HTML="$(curl -fsSL --max-time 30 "${HOME_URL}")"
 
@@ -18,6 +20,10 @@ echo "${HOME_HTML}" | grep -q 'DKT Connectome' \
 
 echo "${HOME_HTML}" | grep -qi 'TrackTBI Connectome' \
   && fail "page still contains 'TrackTBI Connectome'"
+
+TITLE="$(echo "${HOME_HTML}" | grep -o '<title>[^<]*</title>' | head -1)"
+echo "${TITLE}" | grep -q "${EXPECTED_VERSION}" \
+  || fail "title missing expected version ${EXPECTED_VERSION} (got: ${TITLE}) — rebuild Read the Docs"
 
 if echo "${HOME_HTML}" | grep -q 'Start here'; then
   echo "RTD home: start-here section present"
@@ -43,5 +49,6 @@ grep -q 'Scientific goal' /tmp/rtd_science.html \
   || fail "science_overview page missing 'Scientific goal' section"
 
 echo "RTD live check OK:"
+echo "  version: ${EXPECTED_VERSION}"
 echo "  home:    ${HOME_URL}"
 echo "  science: ${SCIENCE_URL}"
