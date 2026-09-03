@@ -211,7 +211,7 @@ EOF
   done
 
   local exit_code=0
-  local doctor_args=(doctor)
+  local doctor_args=()
   [[ -n "${cache}" ]] && doctor_args+=(--cache "${cache}")
   doctor_args+=(--mode "${mode}")
   ((with_dry_run)) && doctor_args+=(--with-dry-run)
