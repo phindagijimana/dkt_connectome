@@ -10,7 +10,7 @@
 
 services:
   dkt-connectome:
-    image: phindagijimana321/dkt-connectome:0.2.2
+    image: phindagijimana321/dkt-connectome:0.3.0
     build:
       context: ..
       dockerfile: dwi_pipeline/Dockerfile

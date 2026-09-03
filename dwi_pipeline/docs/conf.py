@@ -58,7 +58,6 @@ myst_enable_extensions = [
     "amsmath",
     "colon_fence",
     "deflist",
-    "dollar_math",
     "fieldlist",
     "substitution",
     "tasklist",
@@ -72,6 +71,8 @@ html_permalinks = False
 suppress_warnings = [
     "myst.xref_missing",
     "intersphinx",
+    # architecture.md uses ```mermaid fences; RTD theme has no mermaid lexer.
+    "misc.highlighting_failure",
 ]
 
 # Match MkDocs redirect_map (sphinx-reredirects uses .html suffixes).

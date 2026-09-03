@@ -23,11 +23,11 @@ export FS_LICENSE=/path/to/license.txt
 **Docker / cloud:**
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.2.2
-# or pin: phindagijimana321/dkt-connectome:0.2.2
+docker pull phindagijimana321/dkt-connectome:0.3.0
+# or GHCR: ghcr.io/phindagijimana/dkt-connectome:0.3.0
 ```
 
-Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside the orchestrator image — `install.sh` refreshes Apptainer `.sif` paths in `workflow/config/config.local.yaml`.
+Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside the orchestrator image — `install.sh` refreshes Apptainer `.sif` paths in `workflow/config/config.local.yaml`. After install, run **`./dkt check --strict`** to verify SHA-256 digests against [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json).
 
 ---
 
@@ -40,6 +40,39 @@ Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside 
 | MkDocs site (old) | [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) |
 
 Legacy paths remain for Dockstore compatibility only — see [Comparisons § Legacy](comparisons.md).
+
+---
+
+## v0.3.0 — what changed
+
+| Area | Change | Rerun needed? |
+|------|--------|---------------|
+| **Reproducibility** | [`release_manifest.json`](../release_manifest.json) pins step image URIs + SHA-256 | No (verify with `./dkt check --strict`) |
+| **Step scripts** | Baked into DKT-owned `.sif` images by default (`run_connectome.sh`, `run_disconnectome.py`, VBT, lesion ACT, …) | No unless you relied on dev bind-mounts |
+| **Dev overrides** | `CONNECTOME_BIND_DEV`, `VBT_BIND_DEV`, `DISCONNECTOME_BIND_DEV`, `ACT_BIND_MOUNT_DEV` default **off** | No |
+| **GHCR step SIFs** | `dk-connectome`, `dkt-vbt`, `dkt-lesion-act`, `dkt-deep-atropos*` at tag **0.3.0** | Pull/reinstall only |
+| **Connectome SIF** | ACPC-aware disconnectome + updated connectome digest | Optional Step 4.1 rerun if disconnectome mattered |
+
+**Upgrade commands:**
+
+```bash
+cd dwi_pipeline
+./dkt install --missing-only
+./dkt check --strict
+docker pull phindagijimana321/dkt-connectome:0.3.0
+```
+
+Pull step SIFs from GHCR (after `./dkt install` or manually):
+
+```text
+ghcr.io/phindagijimana/dk-connectome:0.3.0
+ghcr.io/phindagijimana/dkt-vbt:0.3.0
+ghcr.io/phindagijimana/dkt-lesion-act:0.3.0
+ghcr.io/phindagijimana/dkt-deep-atropos:0.3.0
+ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0
+```
+
+See [Architecture § Hybrid scripts](architecture.md) and [Containers](containers.md).
 
 ---
 

@@ -1,7 +1,7 @@
 # dwi_pipeline — QSIPrep → Inpaint → Recon → QSIRecon → connectome → node strength
 
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
-[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.2.2-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
+[![BIDS App](https://img.shields.io/badge/BIDS--App-v0.3.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
 **📖 Documentation (hosted):** [**dkt-connectome.readthedocs.io**](https://dkt-connectome.readthedocs.io/en/latest/) · [Tutorial](docs/tutorial.md) · [Usage](docs/usage.md) · [Installation](docs/installation.md) · [Architecture](docs/architecture.md)
 
@@ -42,7 +42,7 @@ export FS_LICENSE=/path/to/license.txt
 | `run …` | Same as `./run` (BIDS App) |
 | `log …` | Tail logs under `RESULTS_ROOT/logs` |
 | `check` | Verify install; `--outputs` checks subject artifacts |
-| `version` | Print `0.2.2` from `app.json` |
+| `version` | Print `0.3.0` from `app.json` |
 
 ---
 
