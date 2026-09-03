@@ -42,8 +42,22 @@ cd dwi_pipeline
 | Variable / flag | Default | Purpose |
 |-----------------|---------|---------|
 | `DKT_CONTAINER_CACHE` | `~/.cache/dkt-connectome/containers` | Where `.sif` files are stored |
+| `APPTAINER_TMPDIR` | `<cache>/../apptainer_tmp` | Temp dir for `apptainer pull` (see HPC note below) |
 | `--mode qsiprep` | all steps | Pull only what a mode needs |
 | `--missing-only` | off | Skip images already in cache |
+
+### HPC / OOD login nodes
+
+Many clusters mount **`/tmp` with `noexec`**, which breaks `apptainer pull`. Before `./dkt install`, point cache and temp under your home or project space (not `/tmp`):
+
+```bash
+export DKT_CONTAINER_CACHE=$HOME/.cache/dkt-connectome/containers
+export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp
+mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
+./dkt install
+```
+
+`install.sh` sets `APPTAINER_TMPDIR` from the cache parent when unset.
 
 Verify before your first run:
 

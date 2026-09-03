@@ -250,15 +250,38 @@ def sif_name(key: str, pin: str) -> str:
     return f"{key}_{_sanitize_tag(tag)}.sif"
 
 
+def apptainer_uri(pin: str) -> str:
+    if pin.startswith("docker://") or pin.startswith("oras://"):
+        return pin
+    if pin.startswith("ghcr.io/"):
+        return f"docker://{pin}"
+    return f"docker://{pin}"
+
+
 def pull_uris_for_key(key: str, pin: str) -> list[str]:
     """Ordered URIs to try for apptainer pull (primary pin first, then fallbacks)."""
     seen: set[str] = set()
     out: list[str] = []
-    for raw in (pin, *PULL_URI_FALLBACKS.get(key, ())):
+
+    def add(raw: str) -> None:
+        if raw.startswith("ghcr.io/"):
+            oras_uri = f"oras://{raw}"
+            if oras_uri not in seen:
+                seen.add(oras_uri)
+                out.append(oras_uri)
+        elif not raw.startswith(("docker://", "oras://")):
+            oras_dh = f"oras://index.docker.io/{raw}"
+            if oras_dh not in seen:
+                seen.add(oras_dh)
+                out.append(oras_dh)
         uri = apptainer_uri(raw)
         if uri not in seen:
             seen.add(uri)
             out.append(uri)
+
+    add(pin)
+    for raw in PULL_URI_FALLBACKS.get(key, ()):
+        add(raw)
     return out
 
 

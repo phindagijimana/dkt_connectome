@@ -32,7 +32,8 @@ def test_pull_uris_for_key_dedupes_primary():
         "connectome",
         "ghcr.io/phindagijimana/dk-connectome:0.1.0",
     )
-    assert uris[0] == "docker://ghcr.io/phindagijimana/dk-connectome:0.1.0"
+    assert uris[0] == "oras://ghcr.io/phindagijimana/dk-connectome:0.1.0"
+    assert "docker://ghcr.io/phindagijimana/dk-connectome:0.1.0" in uris
     assert "docker://phindagijimana321/dkt_connectome:latest" in uris
     assert len(uris) == len(set(uris))
 
