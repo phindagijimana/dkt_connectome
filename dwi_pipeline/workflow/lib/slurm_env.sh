@@ -34,7 +34,11 @@ _slurm_fix_user_env() {
   if [[ -d "${real_home}" ]]; then
     export HOME="${real_home}"
   fi
+  local _inherited_path="${PATH:-}"
   export PATH="${HOME}/.local/bin:${HOME}/bin:/usr/local/bin:/usr/bin:/bin"
+  if ! command -v snakemake >/dev/null 2>&1 && [[ -n "${_inherited_path}" ]]; then
+    export PATH="${PATH}:${_inherited_path}"
+  fi
   local py_site="${HOME}/.local/lib/python3.12/site-packages"
   if [[ -d "${py_site}/snakemake" ]]; then
     case ":${PYTHONPATH:-}:" in

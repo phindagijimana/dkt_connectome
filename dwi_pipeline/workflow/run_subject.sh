@@ -39,8 +39,17 @@ SLURM_ENV_SH="${WORKFLOW_DIR}/lib/slurm_env.sh"
 RESOLVE_SESSION_PY="${WORKFLOW_DIR}/lib/resolve_session.py"
 source "${COMMON_SH}"
 # shellcheck source=workflow/lib/slurm_env.sh
-if [[ -z "${DKT_ORCHESTRATOR_RUNTIME:-}" ]]; then
+if [[ -z "${DKT_ORCHESTRATOR_RUNTIME:-}" && "${BIDS_APP_CI:-}" != "1" ]]; then
   source "${SLURM_ENV_SH}"
+fi
+if [[ -z "${PIPELINE_PYTHON:-}" ]]; then
+  if command -v python3.12 >/dev/null 2>&1; then
+    export PIPELINE_PYTHON=python3.12
+  elif command -v python3 >/dev/null 2>&1; then
+    export PIPELINE_PYTHON=python3
+  else
+    export PIPELINE_PYTHON=python3
+  fi
 fi
 
 PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength}"
@@ -386,8 +395,17 @@ if [[ -n "${_experiment_arm}" ]]; then
   mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
 fi
 
-declare -a CMD=(
-  snakemake -s "${WORKFLOW_DIR}/Snakefile"
+declare -a CMD=()
+if command -v snakemake >/dev/null 2>&1; then
+  CMD=(snakemake)
+elif python3 -m snakemake --version >/dev/null 2>&1; then
+  CMD=(python3 -m snakemake)
+else
+  echo "ERROR: snakemake not found (pip install snakemake or module load)" >&2
+  exit 127
+fi
+CMD+=(
+  -s "${WORKFLOW_DIR}/Snakefile"
   --directory "${SNAKEMAKE_WORKDIR}"
   # Single merged configfile: Snakemake replaces (not deep-merges) on each
   # --configfile, so runtime overrides must include the full effective config.
