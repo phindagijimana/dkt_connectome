@@ -56,6 +56,20 @@ def test_doctor_ci_mode():
     assert "doctor: OK" in proc.stdout
 
 
+def test_dkt_check_invokes_doctor():
+    proc = subprocess.run(
+        [str(DWI / "dkt"), "check"],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "BIDS_APP_CI": "1"},
+        timeout=60,
+    )
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    assert "doctor: OK" in proc.stdout
+    assert "[dkt check] OK" in proc.stdout
+
+
 @pytest.mark.skipif(
     os.environ.get("DKT_VERIFY_NETWORK") != "1",
     reason="Set DKT_VERIFY_NETWORK=1 to HTTP-check registries in CI",
