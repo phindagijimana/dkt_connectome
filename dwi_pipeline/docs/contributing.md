@@ -19,7 +19,7 @@ Read [Installation](installation.md) for Apptainer images and HPC setup.
 
 Never commit study-specific exports or identifiers to the shared repository:
 
-- `networks_URMC/` and other cohort connectome archives
+- `networks_URMC/`, `networks_URMC2/`, and other cohort connectome archives
 - `workflow/config/config.local.yaml` (machine-specific paths and credentials)
 - Subject lists, participant IDs, or NFS/home paths (`/mnt/nfs/home/...`)
 - Legacy cohort drivers at the repo root (`subject_list*.txt`, `run_qsiprep*.sh`, `submit_qsiprep*.sh`)

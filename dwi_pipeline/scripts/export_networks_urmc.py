@@ -136,6 +136,16 @@ def read_tsv_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(stream, delimiter="\t"))
 
 
+def _row_key(row: dict[str, object], key_fields: tuple[str, ...]) -> tuple[str, ...]:
+    parts: list[str] = []
+    for field in key_fields:
+        value = str(row.get(field, ""))
+        if field == "subject":
+            value = value.replace("sub-", "")
+        parts.append(value)
+    return tuple(parts)
+
+
 def merge_tsv_rows(
     existing: list[dict[str, str]],
     new_rows: list[dict[str, object]],
@@ -143,12 +153,10 @@ def merge_tsv_rows(
     key_fields: tuple[str, ...],
     replace_subjects: set[str],
 ) -> list[dict[str, str]]:
-    """Keep prior rows unless the subject is being refreshed in this export."""
-    kept = [
-        row
-        for row in existing
-        if row.get(key_fields[0], "").replace("sub-", "") not in replace_subjects
-    ]
+    """Keep prior rows unless the same key is being refreshed in this export."""
+    del replace_subjects  # callers pass subject IDs; replacement keys come from new_rows
+    refresh_keys = {_row_key(row, key_fields) for row in new_rows}
+    kept = [row for row in existing if _row_key(row, key_fields) not in refresh_keys]
     merged = kept + [{key: str(value) for key, value in row.items()} for row in new_rows]
     return merged
 
@@ -556,13 +564,13 @@ def main() -> None:
         exported = merge_tsv_rows(
             read_tsv_rows(output / "manifest.tsv"),
             exported,
-            key_fields=("subject",),
+            key_fields=("subject", "session"),
             replace_subjects=replace_subjects,
         )
         artifacts = merge_tsv_rows(
             read_tsv_rows(output / "artifacts_manifest.tsv"),
             artifacts,
-            key_fields=("subject",),
+            key_fields=("subject", "session", "artifact"),
             replace_subjects=replace_subjects,
         )
         skipped = merge_tsv_rows(
@@ -639,7 +647,7 @@ This directory contains DKT connectomes and related analysis tables for
 URMC **{args.group}**. It contains {len({row["subject"] for row in exported})} completed subjects.
 
 ```text
-networks_URMC/
+{output.name}/
 ├── dataset_description.json
 ├── atlas-DKT78_nodes.tsv
 ├── manifest.tsv

@@ -49,6 +49,21 @@ _find_sdstream_tck_path() {
   [[ -f "${candidate}" ]] && echo "${candidate}"
 }
 
+# Drop qsirecon.done + partial outputs when IFOD2 is missing but the marker
+# still claims QSIRecon finished (Snakemake would otherwise skip the rule).
+clear_stale_qsirecon_for_ifod2_retry() {
+  local results_root="$1" subject="$2"
+  local qsirecon_out="${results_root}/qsirecon_single_run_output"
+  local markers="${results_root}/.snakemake_markers/sub-${subject}"
+  local work="${results_root}/intermediate_results_qsirecon_single/_work_qsirecon_${subject}"
+
+  rm -f "${markers}/qsirecon.done"
+  rm -rf "${work}"
+  find "${qsirecon_out}" -mindepth 1 -type d -name "sub-${subject}" \
+    -prune -exec rm -rf {} + 2>/dev/null || true
+  echo "sub-${subject}: cleared stale qsirecon marker/outputs for IFOD2 retry" >&2
+}
+
 # Echo effective tractography model: ifod2 | sd_stream | both
 resolve_tractography_model_for_rigid_rerun() {
   local results_root="$1" subject="$2" requested="${3:-both}"
@@ -108,7 +123,15 @@ prepare_rigid_reg_tractography() {
   fi
 
   if [[ -z "${ifod2}" && "${requested_model}" =~ ^(both|ifod2)$ ]]; then
-    echo "WARN: sub-${subject}: no IFOD2 .tck under tractography/lesion_act/qsirecon (will skip IFOD2 connectome)" >&2
+    echo "sub-${subject}: missing IFOD2 tractography — running qsirecon" >&2
+    clear_stale_qsirecon_for_ifod2_retry "${results_root}" "${subject}"
+    SKIP_RERUN_INCOMPLETE=0 bash "${pipeline}" qsirecon "${subject}" \
+      "${subject_args[@]}"
+    ifod2="$(_find_ifod2_tck_path "${results_root}" "${subject}")"
+    [[ -n "${ifod2}" ]] || {
+      echo "ERROR: sub-${subject}: IFOD2 tractography still missing after qsirecon" >&2
+      return 1
+    }
   fi
 
   effective="$(resolve_tractography_model_for_rigid_rerun "${results_root}" "${subject}" "${requested_model}")" || {
@@ -121,5 +144,6 @@ prepare_rigid_reg_tractography() {
     echo "sub-${subject}: reusing existing tractography (SKIP_RERUN_INCOMPLETE=1); effective model=${effective}" >&2
   fi
 
-  echo "${effective}"
+  # Only the model name may go to stdout (captured by array scripts).
+  printf '%s\n' "${effective}"
 }

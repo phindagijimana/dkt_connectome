@@ -360,6 +360,14 @@ else
   find "${BIDS_DIR}" -maxdepth 1 -mindepth 1 -type d -name "sub-*" -printf "%f\n" 2>/dev/null | sed 's/^sub-//' | sort -u > "${SUBJECT_LIST_FILE}"
 fi
 
+# Drop blank lines and comments so Slurm array index N maps to line N (array.sh uses sed -n "${ID}p").
+if grep -qE '^[[:space:]]*(#|$)' "${SUBJECT_LIST_FILE}"; then
+  _san="${SUBJECT_LIST_FILE}.run.$$"
+  grep -ve '^[[:space:]]*$' -e '^[[:space:]]*#' "${SUBJECT_LIST_FILE}" > "${_san}"
+  SUBJECT_LIST_FILE="${_san}"
+  echo "  Sanitized subject list (${SUBJECT_LIST_FILE})"
+fi
+
 N=$(wc -l < "${SUBJECT_LIST_FILE}")
 [[ "${N}" -ge 1 ]] || { echo "Subject list is empty: ${SUBJECT_LIST_FILE}"; exit 1; }
 
