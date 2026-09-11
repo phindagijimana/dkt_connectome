@@ -43,6 +43,28 @@ def test_apply_manifest_pins_overrides_connectome(container_install):
     assert merged["container_pins"]["qsiprep"] == "pennlinc/qsiprep:1.0.0"
 
 
+def test_list_plan_uses_configured_container_paths(container_install, tmp_path, monkeypatch):
+    fake = tmp_path / "custom_dkt_connectome.sif"
+    fake.write_bytes(b"test")
+    cfg_path = REPO / "workflow" / "config" / "config.local.yaml"
+    had_local = cfg_path.is_file()
+    old = cfg_path.read_text(encoding="utf-8") if had_local else None
+    try:
+        cfg_path.write_text(
+            f"containers:\n  connectome: {fake}\n",
+            encoding="utf-8",
+        )
+        rows = container_install.list_plan(tmp_path, ("connectome",))
+        assert len(rows) == 1
+        assert rows[0]["path"] == str(fake)
+        assert rows[0]["exists"] is True
+    finally:
+        if had_local and old is not None:
+            cfg_path.write_text(old, encoding="utf-8")
+        elif cfg_path.is_file():
+            cfg_path.unlink()
+
+
 def test_verify_release_manifest_skips_null_digests(container_install, tmp_path, monkeypatch):
     fake = tmp_path / "dkt_connectome.sif"
     fake.write_bytes(b"test")

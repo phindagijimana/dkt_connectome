@@ -200,3 +200,8 @@ dwi_pipeline/IDEAS_II_derivatives_dwi/
 dwi_pipeline/config/dwi_select_tracktbi_*.json
 dwi_pipeline/new_method_lesion_exclusion_algorithm/
 dwi_pipeline/research_paper/
+
+# Local learning notes (may contain site paths and operational details)
+/learning_TrackTBI.md
+/learning_TrackTBI.docx
+/dwi_pipeline/learning.docx
