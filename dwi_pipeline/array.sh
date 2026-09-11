@@ -89,8 +89,8 @@ PIPELINE_MODE="${PIPELINE_MODE:-all}"
 # Step 4 was called "dk" before it served both DK and DKT; subject.sh still
 # accepts the old name, so pass it through rather than rejecting it here.
 case "${PIPELINE_MODE}" in
-  all|qsiprep|inpaint|recon|qsirecon|connectome|nodestrength|dk) ;;
-  *) echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all|qsiprep|inpaint|recon|qsirecon|connectome|nodestrength)"; exit 1 ;;
+  all|qsiprep|inpaint|recon|qsirecon|act|sdstream|sdstream-tractography|connectome|disconnectome|nodestrength|subject_qc|dk) ;;
+  *) echo "Invalid PIPELINE_MODE=${PIPELINE_MODE} (use all|qsiprep|inpaint|recon|qsirecon|act|sdstream|sdstream-tractography|connectome|disconnectome|nodestrength|subject_qc)"; exit 1 ;;
 esac
 
 # Optional flags forwarded to the pipeline CLI (set by submit.sh or export before sbatch)

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Re-run connectome + nodestrength for CIDUR Group 1 (Siemens + fieldmaps) using
+# Re-run connectome + nodestrength + subject_qc for CIDUR Group 1 (Siemens + fieldmaps) using
 # the rigid FS-T1 -> QSIPrep ACPC label registration (PI suggestion).
 #
 # Reuses existing .tck when present (SKIP_RERUN_INCOMPLETE); rebuilds SD_STREAM

@@ -51,6 +51,7 @@ fi
 
 # Cohort export tree is local-only (connectomes + manifests with source paths).
 check_tracked_glob "networks_URMC/" 'dwi_pipeline/networks_URMC/**'
+check_tracked_glob "networks_URMC2/" 'dwi_pipeline/networks_URMC2/**'
 
 # Local IDEAS symlink and inpainting notes stay off GitHub.
 check_tracked_glob "IDEAS_II_derivatives_dwi symlink" 'dwi_pipeline/IDEAS_II_derivatives_dwi'
