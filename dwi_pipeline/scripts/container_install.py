@@ -168,7 +168,7 @@ def verify_release_manifest(
         spec = steps.get(key) if isinstance(steps.get(key), dict) else {}
         expected = str((spec or {}).get("sha256") or "").strip().lower()
         pin = pins.get(key, "")
-        path = Path(str((cfg.get("containers") or {}).get(key) or cache / sif_name(key, pin)))
+        path = resolve_container_path(cfg, cache, key, pin or None)
         if not expected or expected in ("null", "none"):
             skipped += 1
             if path.is_file():
@@ -305,14 +305,6 @@ def _pull_to_dest(dest: Path, uris: list[str], *, quiet: bool) -> str:
     raise SystemExit("ERROR: no URIs to pull")
 
 
-def apptainer_uri(pin: str) -> str:
-    if pin.startswith("docker://") or pin.startswith("oras://"):
-        return pin
-    if pin.startswith("ghcr.io/"):
-        return f"docker://{pin}"
-    return f"docker://{pin}"
-
-
 def default_cache() -> Path:
     env = os.environ.get("DKT_CONTAINER_CACHE")
     if env:
@@ -331,6 +323,16 @@ def resolve_keys(mode: str | None, only: str | None) -> tuple[str, ...]:
     return DEFAULT_KEYS
 
 
+def resolve_container_path(cfg: dict, cache: Path, key: str, pin: str | None) -> Path:
+    """Resolved .sif path: config.local containers override default cache layout."""
+    configured = (cfg.get("containers") or {}).get(key)
+    if configured:
+        return Path(os.path.expandvars(str(configured))).expanduser()
+    if pin:
+        return cache / sif_name(key, pin)
+    return cache / f"{key}.sif"
+
+
 def list_plan(cache: Path, keys: tuple[str, ...]) -> list[dict]:
     cfg = _load_merged_config()
     pins = cfg.get("container_pins") or {}
@@ -340,7 +342,7 @@ def list_plan(cache: Path, keys: tuple[str, ...]) -> list[dict]:
         if not pin:
             rows.append({"key": key, "pin": None, "sif": None, "path": None, "exists": False})
             continue
-        path = cache / sif_name(key, pin)
+        path = resolve_container_path(cfg, cache, key, pin)
         rows.append(
             {
                 "key": key,
@@ -664,16 +666,16 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
             )
 
     cfg = _load_merged_config() if yaml else {}
-    containers = cfg.get("containers") or {}
     if cache is None:
         cache = default_cache()
 
     keys = resolve_keys(mode, None)
+    pins = cfg.get("container_pins") or {}
     for key in keys:
-        path = containers.get(key) or str(cache / sif_name(key, (cfg.get("container_pins") or {}).get(key, "unknown")))
+        path = resolve_container_path(cfg, cache, key, pins.get(key))
         if ci:
             continue
-        p = Path(path)
+        p = path
         if not p.is_file() or p.stat().st_size == 0:
             errors.append(
                 f"missing container ({key}): {path}\n"
