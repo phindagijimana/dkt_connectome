@@ -81,6 +81,20 @@ def overall_status(checks: list[dict]) -> str:
     return "PASS"
 
 
+def _host_path(prov_path_str: str, ddir: Path) -> Path:
+    """Translate a container-side /data/… path from disconnectome.json back to
+    the host-side RESULTS_ROOT. The disconnectome step runs inside a container
+    with `-B "{RESULTS_ROOT}":/data`, so provenance paths are `/data/…`, but
+    the QC script runs on the host. Absolute non-`/data` paths and relative
+    paths are returned unchanged."""
+    p = Path(prov_path_str)
+    if p.is_absolute() and len(p.parts) > 1 and p.parts[1] == "data":
+        # ddir = <RESULTS_ROOT>/connectomes/sub-<ID>/disconnectome
+        results_root = ddir.parents[2]
+        return results_root.joinpath(*p.parts[2:])
+    return p
+
+
 def collect_integrity_report(ddir: Path) -> dict:
     ddir = ddir.resolve()
     prov_path = ddir / "disconnectome.json"
@@ -88,7 +102,7 @@ def collect_integrity_report(ddir: Path) -> dict:
         raise FileNotFoundError(f"missing {prov_path}")
 
     prov = json.loads(prov_path.read_text())
-    primary_path = Path(prov["primary_connectome"])
+    primary_path = _host_path(prov["primary_connectome"], ddir)
     weighting = prov.get("connectome_weighting", "unknown")
     checks: list[dict] = []
 
