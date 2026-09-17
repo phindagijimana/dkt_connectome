@@ -49,7 +49,7 @@ Contents
    deep_atropos_5tt
    lesion_aware
    TBI_Experimental_Arms
-   publication_strategy
+   papers/publication_strategy
    methods/step4_connectome
    methods/step4_1_disconnectome
    methods/step5_node_strength

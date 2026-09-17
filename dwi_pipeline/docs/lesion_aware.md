@@ -147,7 +147,7 @@ Citations: [References § Experiment arms](references.md#experiment-arms-factori
 For cohort scale (~100 TrackTBI lesion subjects), manuscript portfolio (flagship
 vs clinical disconnectome vs optional Deep Atropos branch), pre-specified factorial
 contrasts, journal targets, and reporting checklist, see
-**[Publication strategy — TBI lesion-aware connectomics](publication_strategy.md)**.
+**[Publication strategy — TBI lesion-aware connectomics](papers/publication_strategy.md)**.
 
 ### Clinical DWI requires an appropriate preprocessing workflow
 

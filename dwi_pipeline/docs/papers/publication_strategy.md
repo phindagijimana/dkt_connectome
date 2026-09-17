@@ -6,9 +6,9 @@ reproducible Snakemake + container outputs. LeAPP (Bey et al. 2024) is the
 primary comparator; this work extends that framework to **traumatic brain injury**
 at cohort scale.
 
-**Related docs:** [Lesion-aware tractography](lesion_aware.md) · [TBI experimental arms](TBI_Experimental_Arms.md) · [Validation](validation.md) ·
-[Usage — experiment arms](usage.md) · [Step 3.1 methods](methods/step3_1_lesion_act.md) ·
-[Citation](citation.md)
+**Related docs:** [Lesion-aware tractography](../lesion_aware.md) · [TBI experimental arms](../TBI_Experimental_Arms.md) · [Validation](../validation.md) ·
+[Usage — experiment arms](../usage.md) · [Step 3.1 methods](../methods/step3_1_lesion_act.md) ·
+[Citation](../citation.md)
 
 ---
 
@@ -92,9 +92,19 @@ with **different cohorts and questions**; HSVS factorial vs Deep Atropos with
 comparison of inpainting, virtual brain transplant, and pathology-informed
 tractography*
 
+### Candidate titles
+
+| Framing | Title |
+|---------|-------|
+| Factorial-forward | *A 3×2 factorial of anatomical mitigation and lesion-aware tractography for structural connectomics in traumatic brain injury* |
+| LeAPP-extension | *From stroke to traumatic brain injury: extending lesion-aware connectome processing with neuroLIT and virtual brain transplant* |
+| Sensitivity/robustness | *How much do preprocessing choices change the connectome in focal TBI? A cohort-scale factorial of inpainting and pathology-informed ACT* |
+| Pipeline-with-science | *Reproducible lesion-aware structural connectomics in TBI: a factorial of anatomy mitigation × pathology tractography across ~100 subjects* |
+| Punchier | *Inpaint, transplant, or ignore? A factorial evaluation of lesion handling for structural connectomes in traumatic brain injury* |
+
 ### Design
 
-Six `--experiment-arm` values (see [Lesion-aware § Experiment arms](lesion_aware.md#experiment-arms-anatomy--act)):
+Six `--experiment-arm` values (see [Lesion-aware § Experiment arms](../lesion_aware.md#experiment-arms-anatomy--act)):
 
 | Arm | Anatomy | ACT |
 |-----|---------|-----|
@@ -107,7 +117,7 @@ Six `--experiment-arm` values (see [Lesion-aware § Experiment arms](lesion_awar
 
 On inpainted `*-lesion` arms, **HSVS 5TT from mitigated T1w** and **pathology
 from the original BIDS lesion ROI** are intentional (LeAPP factorial); see
-[Intentional cross-source design](lesion_aware.md#intentional-cross-source-design-on--lesion-inpainted-arms).
+[Intentional cross-source design](../lesion_aware.md#intentional-cross-source-design-on--lesion-inpainted-arms).
 
 ### Pre-specify contrasts (before inspecting group results)
 
@@ -149,7 +159,7 @@ is not purely exploratory.
 ### Engineering prerequisites (before cohort scale-up)
 
 1. Rebuild `dkt_lesion_act.sif` after Step 3.1 script changes (or bind-mount the
-   repo script in Snakemake) — see [Containers § Step 3.1](containers.md) and
+   repo script in Snakemake) — see [Containers § Step 3.1](../containers.md) and
    [lesion_act README on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md)
 2. Clear QSIRecon internal `tckgen` hangs on `*-lesion` arms where applicable
 3. Pilot on one subject until `lesion_warp_method.txt` and pathology QA pass
@@ -158,6 +168,16 @@ is not purely exploratory.
 ---
 
 ## Paper 2 — clinical disconnectome (optional, **paused**)
+
+### Candidate titles
+
+| Framing | Title |
+|---------|-------|
+| Outcome-forward | *Structural disconnection predicts functional outcome after traumatic brain injury beyond lesion volume* |
+| Network-forward | *Lesion-induced network disconnection and 6-month recovery in traumatic brain injury: a TRACK-TBI disconnectome study* |
+| Mechanism-forward | *Beyond the cavity: how focal TBI lesions disconnect brain networks and shape cognitive recovery* |
+| Methods-informed | *Lesion-aware structural disconnectomes as an outcome biomarker in traumatic brain injury* |
+| Griffis-analog | *Mapping structural disconnection from focal TBI lesions and its relationship to functional outcome* |
 
 **Primary question:** Where and how do lesions **disconnect** brain networks, and
 does that relate to **symptoms, cognition, or recovery**?
@@ -182,6 +202,16 @@ TRACK-TBI clinical export (GOSE or verified alternative) is merged; focus on Pap
 
 ## Paper 4 — longitudinal connectomics / resource (parallel)
 
+### Candidate titles
+
+| Framing | Title |
+|---------|-------|
+| Resource-forward | *A multisite structural connectome resource for traumatic brain injury: ~1200 diffusion sessions with harmonized derivatives* |
+| Trajectory-forward (HBM stretch) | *Longitudinal trajectories of structural connectivity after traumatic brain injury: a multisite TRACK-TBI cohort* |
+| Reproducibility-forward | *TrackTBI-Connectome: reproducible, containerized structural connectome derivatives for a longitudinal TBI cohort* |
+| Data-descriptor style | *Multisite longitudinal DKT-parcellated structural connectomes in traumatic brain injury (TrackTBI-Sub, N≈600 × 2 sessions)* |
+| Harmonization-forward | *Harmonized structural connectomes across sites and scanners in a longitudinal TBI cohort: pipeline, QC, and reusable derivatives* |
+
 **Primary question:** How does structural connectivity change across time after TBI
 at multisite scale (~600 subjects × 2 sessions, ~1200 total)?
 
@@ -201,6 +231,19 @@ but does not block Paper 1 submission. Plan **session-aware** `RESULTS_ROOT` lay
 ---
 
 ## Paper 3 — Deep Atropos vs HSVS (optional, **deprioritized**)
+
+### Candidate titles
+
+Not a standalone under the current plan — this is a **supplement section** in Paper 1:
+
+- *Supplementary: sensitivity of tissue-segmentation source (HSVS vs native-T1 Deep Atropos) for pathology-informed ACT*
+
+If reviewers request a full head-to-head branch (would need cohort N≥30), possible standalone titles:
+
+| Framing | Title |
+|---------|-------|
+| Paired-comparison | *Deep Atropos vs HSVS for pathology-informed tractography in focal brain lesions: a paired cohort comparison* |
+| Engineering-forward | *Native-T1 Deep Atropos five-tissue-type segmentation for lesion-aware connectome analysis: a head-to-head with HSVS in TBI* |
 
 Only if **native-T1 Deep Atropos 5TT** (`5ttgen deep_atropos`) is run as a full
 alternative branch with cohort-level head-to-head metrics. Otherwise document as
@@ -274,7 +317,7 @@ Missing (3)–(6) often moves a *NeuroImage* submission to *HBM* or *NeuroImage:
 
 ## Methods text to reuse
 
-Factorial description for inpainted lesion arms (from [Lesion-aware](lesion_aware.md#intentional-cross-source-design-on--lesion-inpainted-arms)):
+Factorial description for inpainted lesion arms (from [Lesion-aware](../lesion_aware.md#intentional-cross-source-design-on--lesion-inpainted-arms)):
 
 > Structural T1w was lesion-mitigated before cortical reconstruction (neuroLIT or
 > virtual brain transplant). HSVS five-tissue-type images were derived from that
@@ -285,7 +328,7 @@ Factorial description for inpainted lesion arms (from [Lesion-aware](lesion_awar
 > of Bey et al. (2024): corrected anatomy for segmentation, original lesion extent
 > for tractography priors.
 
-Cite upstream tools per [References by step](references.md). State pipeline version
+Cite upstream tools per [References by step](../references.md). State pipeline version
 (`./run --version` → `app.json`).
 
 ---
@@ -296,8 +339,8 @@ Cite upstream tools per [References by step](references.md). State pipeline vers
 - [ ] Six-arm provenance or explicit subset with justification
 - [ ] Per-subject Step 3.1 QA (`lesion_warp_method.txt`, pathology overlap)
 - [ ] Primary / secondary contrasts pre-registered or pre-specified internally
-- [ ] Connectome integrity (78×78 DKT, empty nodes) — [Validation](validation.md)
-- [ ] Disconnectome integrity if `--disconnection` — [Disconnectome § Integrity QC](disconnectome.md#integrity-qc)
+- [ ] Connectome integrity (78×78 DKT, empty nodes) — [Validation](../validation.md)
+- [ ] Disconnectome integrity if `--disconnection` — [Disconnectome § Integrity QC](../disconnectome.md#integrity-qc)
 - [ ] Data availability (BIDS derivatives policy, Zenodo software DOI when tagged)
 
 ---
@@ -605,6 +648,7 @@ frame as sensitivity / robustness, not “which pipeline is truth.”
 | **2** | [Warren et al. 2015](https://doi.org/10.1093/brain/awv075) | ★★★★ TBI graph metrics → cognition | Lesion-aware tractography + disconnection index |
 | **2** | [Palacios et al. 2022 TRACK-TBI](https://doi.org/10.1089/neu.2022.0070) | ★★★★ Multisite GOSE; N≈391 mTBI | Disconnectome not tract DTI |
 | **2** | [Osmanlıoğlu et al. 2022](https://doi.org/10.1002/hbm.25894) | ★★★ TBI longitudinal + cognition | Normative score vs lesion disconnectome |
+| **2** | [Che et al. 2026](https://doi.org/10.1093/braincomms/fcag123) | ★★ TRACK-TBI Pilot outcome prediction via CT + GAN-synthesized MRI + 3D ResNet-18 (AUC 0.76) | Interpretable disconnectome mechanism (which tracts/regions) vs their black-box CT→outcome CNN; potential future extension: synthetic-MRI unlocks disconnectome on CT-only subjects |
 | **3** | [Smith et al. 2020 HSVS](https://doi.org/10.1016/j.neuroimage.2020.117345) | ★★ One side of comparison | Cohort Deep Atropos vs HSVS under pathology ACT |
 | **Longitudinal** | [Kuceyeski et al. 2020 HBM](https://doi.org/10.1002/hbm.24713) | ★★★ Longitudinal connectome + cognition; mTBI N=26 | Multisite ~1200-session structural resource |
 | **Paper 4** | [Palacios et al. 2022 TRACK-TBI](https://doi.org/10.1089/neu.2022.0070) | ★★★★ Multisite longitudinal DTI + GOSE | Structural **connectome** resource / trajectories |
@@ -625,8 +669,8 @@ only with a confirmed TRACK-TBI clinical merge.
 
 ## See also
 
-- [Lesion-aware tractography](lesion_aware.md) — LeAPP context, factorial design, TBI QC
-- [Validation](validation.md) — cohort context, integrity checks
-- [Decision tables — experiment arms](decision_tables.md#experiment-arms)
+- [Lesion-aware tractography](../lesion_aware.md) — LeAPP context, factorial design, TBI QC
+- [Validation](../validation.md) — cohort context, integrity checks
+- [Decision tables — experiment arms](../decision_tables.md#experiment-arms)
 - [Maintainer — release checklist on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/publishing.md)
 - LeAPP: Bey et al. 2024, *Human Brain Mapping* — [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701)
