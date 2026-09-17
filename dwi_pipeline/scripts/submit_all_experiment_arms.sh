@@ -6,9 +6,14 @@
 #   bash scripts/submit_all_experiment_arms.sh TBI011011 --sequential   # one job at a time (Slurm afterok chain)
 #   bash scripts/submit_all_experiment_arms.sh TBI011011 --syn
 #   bash scripts/submit_all_experiment_arms.sh TBI011011 --arms vbt-lesion,neurolit-lesion
+#   bash scripts/submit_all_experiment_arms.sh TBI011011 --sequential --skip-on-fail
 #
 # When your account allows only one running job, use --sequential (or cancel extras and
 # submit remaining arms manually with SBATCH_DEPENDENCY=afterok:JOBID).
+#
+# --skip-on-fail switches the chain from afterok: to afterany:, so a single arm
+# failure (e.g. a transient midtrans SIGSEGV) does not cascade-cancel downstream
+# arms. Downstream arms still run; audit their exit codes when the chain finishes.
 #
 # Outputs:
 #   ${RESULTS_ROOT}/arms/<arm>/   (default EXPERIMENT_ISOLATE_OUTPUTS=1)
@@ -20,12 +25,17 @@ SUBJECT="${SUBJECT#sub-}"
 shift || true
 
 SEQUENTIAL=0
+SKIP_ON_FAIL=0
 ARMS_FILTER=""
 EXTRA_SUBMIT_FLAGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --sequential)
       SEQUENTIAL=1
+      shift
+      ;;
+    --skip-on-fail)
+      SKIP_ON_FAIL=1
       shift
       ;;
     --arms)
@@ -38,6 +48,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+DEP_KIND="afterok"
+if [[ ${SKIP_ON_FAIL} -eq 1 ]]; then
+  DEP_KIND="afterany"
+fi
 
 DWI_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -95,7 +110,7 @@ arm_submit_flags() {
 echo "Batch submit: sub-${SUBJECT}"
 echo "  BIDS_DIR=${BIDS_DIR}"
 echo "  BASE_RESULTS_ROOT=${BASE_RESULTS_ROOT}"
-echo "  Sequential (afterok chain): $([[ ${SEQUENTIAL} -eq 1 ]] && echo yes || echo no)"
+echo "  Sequential (${DEP_KIND} chain): $([[ ${SEQUENTIAL} -eq 1 ]] && echo yes || echo no)"
 echo "  Arms: ${ARMS[*]}"
 echo "  Extra submit flags: ${EXTRA_SUBMIT_FLAGS[*]:-(none)}"
 echo ""
@@ -103,6 +118,7 @@ echo ""
 declare -a JOB_IDS=()
 PREV_JOB="${SBATCH_DEPENDENCY:-}"
 PREV_JOB="${PREV_JOB#afterok:}"
+PREV_JOB="${PREV_JOB#afterany:}"
 
 for arm in "${ARMS[@]}"; do
   slug="${arm//-/_}"
@@ -111,7 +127,7 @@ for arm in "${ARMS[@]}"; do
   export SBATCH_JOB_NAME="tbi_${SUBJECT,,}_${slug}"
 
   if [[ ${SEQUENTIAL} -eq 1 && -n "${PREV_JOB}" ]]; then
-    export SBATCH_DEPENDENCY="afterok:${PREV_JOB}"
+    export SBATCH_DEPENDENCY="${DEP_KIND}:${PREV_JOB}"
   else
     unset SBATCH_DEPENDENCY
   fi

@@ -13,7 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from collect_subject_qc import collect_subject_qc
+from collect_subject_qc import collect_subject_qc, collect_subject_provenance
 
 
 def _status_class(status: str) -> str:
@@ -188,6 +188,11 @@ def main() -> int:
     json_out.write_text(json.dumps(report, indent=2) + "\n")
     print(f"Wrote {html_out}")
     print(f"Wrote {json_out} (overall={report['overall_status']})")
+
+    provenance = collect_subject_provenance(args.results_root, args.subject)
+    prov_out = out_dir / "subject_provenance.json"
+    prov_out.write_text(json.dumps(provenance, indent=2) + "\n")
+    print(f"Wrote {prov_out}")
     return 0
 
 

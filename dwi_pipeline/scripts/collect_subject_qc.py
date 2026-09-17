@@ -298,3 +298,126 @@ def collect_subject_qc(results_root: Path, subject: str) -> dict:
         "overall_status": overall,
         "steps": steps,
     }
+
+
+# ---------------------------------------------------------------------------
+# Provenance manifest (per-subject, per-arm) — stitches pipeline version,
+# container digests, BIDS input hashes, and existing step-level provenance
+# JSONs into one file for reproducibility audits.
+# ---------------------------------------------------------------------------
+
+def _sha256_file(path: Path, block_size: int = 65536) -> str | None:
+    import hashlib
+
+    try:
+        h = hashlib.sha256()
+        with path.open("rb") as fh:
+            while chunk := fh.read(block_size):
+                h.update(chunk)
+        return h.hexdigest()
+    except OSError:
+        return None
+
+
+def _file_record(path_str: str | None, role: str) -> dict | None:
+    if not path_str:
+        return None
+    p = Path(path_str)
+    if not p.is_file():
+        return {"role": role, "path": path_str, "exists": False, "sha256": None, "size_bytes": None}
+    return {
+        "role": role,
+        "path": path_str,
+        "exists": True,
+        "sha256": _sha256_file(p),
+        "size_bytes": p.stat().st_size,
+    }
+
+
+def _pipeline_meta() -> dict:
+    import subprocess
+
+    pipeline_root = SCRIPT_DIR.parent
+    app = _load_json(pipeline_root / "app.json") or {}
+    repo_root = pipeline_root.parent
+    git_info: dict[str, Any] = {"commit": None, "dirty": None}
+    try:
+        git_info["commit"] = subprocess.check_output(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+    try:
+        status = subprocess.check_output(
+            ["git", "-C", str(repo_root), "status", "--porcelain"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        git_info["dirty"] = bool(status.strip())
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+    return {
+        "name": app.get("Name"),
+        "pipeline_version": app.get("PipelineVersion"),
+        "source": app.get("Source"),
+        "git": git_info,
+    }
+
+
+def _container_manifest() -> dict:
+    return _load_json(SCRIPT_DIR.parent / "release_manifest.json") or {}
+
+
+def _bids_input_records(results_root: Path, subject_id: str) -> list[dict]:
+    records: list[dict] = []
+    seen: set[str] = set()
+
+    def _add(path_str: str | None, role: str) -> None:
+        if not path_str or path_str in seen:
+            return
+        seen.add(path_str)
+        rec = _file_record(path_str, role)
+        if rec:
+            records.append(rec)
+
+    for ip in sorted((results_root / "inpainted" / subject_id).glob("ses-*/inpainting.json")):
+        d = _load_json(ip) or {}
+        _add(d.get("input_t1w"), "t1w")
+        _add(d.get("lesion_mask_source"), "lesion_mask")
+
+    la = _load_json(results_root / "lesion_aware_act" / subject_id / "lesion_aware_act.json") or {}
+    _add(la.get("act_lesion_mask_reference_t1w"), "t1w")
+    _add(la.get("act_lesion_mask_source"), "lesion_mask")
+
+    return records
+
+
+def _step_provenance(results_root: Path, subject_id: str) -> list[dict]:
+    slots: list[tuple[str, list[Path]]] = [
+        ("inpaint", sorted((results_root / "inpainted" / subject_id).glob("ses-*/inpainting.json"))),
+        ("lesion_aware_act", [results_root / "lesion_aware_act" / subject_id / "lesion_aware_act.json"]),
+        ("connectome", [results_root / "connectomes" / subject_id / "parcellation.json"]),
+        ("disconnectome", [results_root / "connectomes" / subject_id / "disconnectome" / "disconnectome.json"]),
+    ]
+    out: list[dict] = []
+    for step, paths in slots:
+        for p in paths:
+            if p and p.is_file():
+                out.append({"step": step, "path": str(p), "data": _load_json(p)})
+    return out
+
+
+def collect_subject_provenance(results_root: Path, subject: str) -> dict:
+    results_root = results_root.resolve()
+    subject_id, _ = _sub_ids(subject)
+    return {
+        "pipeline": _pipeline_meta(),
+        "subject": subject_id,
+        "results_root": str(results_root),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "containers": _container_manifest(),
+        "bids_inputs": _bids_input_records(results_root, subject_id),
+        "step_provenance": _step_provenance(results_root, subject_id),
+    }

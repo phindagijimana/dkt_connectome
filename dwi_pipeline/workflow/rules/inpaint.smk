@@ -111,6 +111,8 @@ rule inpaint:
         mask_prepared=INPAINT_MASK_PREPARED_PATTERN,
         mask_json=INPAINT_MASK_JSON_PATTERN,
     threads: 4
+    # Retry on transient failures (FSL midtrans SIGSEGV, CUDA OOM on shared GPU).
+    retries: 2
     resources:
         gpu=1 if ANATOMY_MITIGATION_BACKEND == "neurolit" else 0,
     log:
@@ -171,7 +173,7 @@ rule inpaint:
                 --smoothing-factor {VBT_SMOOTHING_FACTOR} \
                 --work-dir /out/.vbt_work
           else
-            apptainer exec --cleanenv --containall \
+            apptainer run --cleanenv --containall \
               -B "$(dirname "{input.t1w}")":/t1w_input:ro \
               -B "{output.mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
               -B "{params.outdir}":/out \
