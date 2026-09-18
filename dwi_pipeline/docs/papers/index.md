@@ -9,6 +9,10 @@ complete-case tables. Pipeline methodology docs live one level up in
 the four-paper portfolio, journal targets, cohort plans, and prior-work
 analog table.
 
+**Deep dives:**
+
+- [`journal_tier.md`](journal_tier.md) / [`journal_tier.docx`](journal_tier.docx) — full ten-venue landscape for Paper 2 with per-venue framing, required analyses, and section-by-section manuscript breakdown
+
 ---
 
 ## Papers at a glance

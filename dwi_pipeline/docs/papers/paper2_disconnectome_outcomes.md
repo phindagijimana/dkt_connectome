@@ -110,6 +110,11 @@ robustness supplement.
 
 ## Journal-tier landscape
 
+**Full analysis:** [`journal_tier.md`](journal_tier.md) / [`journal_tier.docx`](journal_tier.docx) — per-venue framing, required analyses, section-by-section manuscript breakdowns, effort estimates, and failure modes.
+
+Summary condensed below.
+
+
 ### Full venue table
 
 | Venue | Realistic? | Framing that lands it | What we'd need to deliver | What we don't yet have |
