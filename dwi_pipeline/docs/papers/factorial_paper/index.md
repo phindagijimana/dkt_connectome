@@ -50,6 +50,8 @@ The factorial paper is documented across the following files in this folder:
 | [`analysis_plan.md`](analysis_plan.md) | Pre-registration doc — locked design choices with sign-off block |
 | [`manuscript_skeleton.md`](manuscript_skeleton.md) | Section-by-section outline with word budgets |
 | [`completion_tracker.md`](completion_tracker.md) | Per-arm × per-subject completion tracker with assembly diagram |
+| [`neuroimage_prerequisites.md`](neuroimage_prerequisites.md) | Three open items that gate NeuroImage-tier submission (synthetic validation, N ≥ 80, TBI-specific complications) |
+| [`differentiation_from_leapp.md`](differentiation_from_leapp.md) | Ranked menu of 20 candidate additions that enlarge our distance from LeAPP (Tier 0 table-stakes + Tier 1 high-leverage + Tier 2 medium + Tier 3 skip); marginal-value analysis and reviewer-defense mapping |
 
 ### Prior-work reference
 
