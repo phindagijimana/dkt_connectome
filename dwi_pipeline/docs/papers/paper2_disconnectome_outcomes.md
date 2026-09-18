@@ -62,6 +62,220 @@ similar) and add functional-connectivity outputs to the Paper 2 subject subset.
 - **Network-native parcellation** — add Schaefer/4S atlases alongside DKT for the Paper 2 subset
 - **fMRI preprocessing arm** — fMRIPrep + XCP-D (or similar) is not yet in the pipeline; needs adding
 
+## Our contribution relative to Griffis 2019 — expanded
+
+Griffis 2019 (*Cell Reports*) is the closest publishable template for Paper 2.
+This section spells out — point by point — what of their framework we adopt,
+where we differentiate, and what genuine advance our paper contributes on top.
+
+### 1. Adopt: the three-part chain SDC → FC → behavior
+
+**Their chain:**
+
+1. **Structural disconnection (SDC)** — per-patient parcel-to-parcel matrix of which connections lose fibers due to the lesion. Computed via HCP-842 normative tractogram overlay in Griffis 2019 (later published as LQT in Griffis 2021).
+2. **Functional connectivity (FC) disruption** — per-patient parcel-to-parcel FC matrix from resting-state fMRI at ~2 weeks post-injury, then compared against a healthy-control normative distribution to derive FC-abnormality scores.
+3. **Behavior** — factor-analyzed multi-domain neuropsych battery (motor, language, memory, attention, visual) from Corbetta et al. 2015.
+
+**Why this chain is the publishable template:** it fuses mechanism (SDC → FC) with prediction (SDC + FC → behavior). A single-arm outcome-prediction study is not competitive with published stroke work; the mechanistic chain is what elevates the paper from descriptive to explanatory.
+
+**Feasibility for us:**
+
+| Component | Status |
+|-----------|--------|
+| Patient-level SDC | ✅ Pipeline fully built (Steps 1.1 through 4.1 with disconnection Options A/B/C) |
+| rs-fMRI (raw) | ✅ Present in TBI BIDS: `task-rest_bold.nii.gz` per subject/session on both 2WK and 6MO for the pilot; full ~100-subject cohort presumed to mirror |
+| fMRI preprocessing arm | ❌ Not yet in pipeline — needs fMRIPrep + XCP-D or similar |
+| Healthy-control FC normative distribution | ⚠️ Options: CIDUR controls if rs-fMRI available (~26 subjects); or a public normative distribution (HCP, UK Biobank subset, ABCD) |
+| Multi-domain behavior | ⚠️ Depends on TRACK-TBI clinical export scope — PI has confirmed GOSE + others; specific neuropsych battery to be verified |
+
+**What we execute:**
+
+1. Preprocess rs-fMRI for the Paper 2 subset (fMRIPrep + XCP-D at minimum; probably ComBat harmonization for multisite).
+2. Construct FC matrices per subject/session using a network-native parcellation (Schaefer 200 or 4S 156-parcel).
+3. Establish a healthy-control FC normative distribution (CIDUR first; augment with public normative data if N insufficient).
+4. Compute per-subject FC-abnormality scores relative to the normative distribution.
+5. Run canonical correlation analysis (CCA) linking SDC ↔ FC-abnormality — replicating Griffis 2019's Figure 2 in TBI.
+6. Fit predictive models linking SDC + FC → behavior at 6 months.
+
+### 2. Differentiate: patient-specific lesion-aware SDC vs normative-atlas SDC
+
+**Their SDC method (normative-atlas, LQT):**
+
+- Normalize the patient's lesion mask to MNI space
+- Overlay on HCP-842 normative tractography atlas
+- Count, per parcel-pair, how many normative streamlines pass through the lesion
+- Output: parcel-to-parcel SDC matrix
+- Fast (minutes per subject), no patient DWI required
+- **Implicit assumption:** patient's tract paths conform to healthy template anatomy
+
+**Our SDC method (patient-specific lesion-aware tractography):**
+
+- Preprocess patient DWI (QSIPrep) → generate patient-specific FODs (QSIRecon MRtrix3)
+- Recon patient anatomy (FastSurfer / FreeSurfer) → DKT parcellation
+- Build patient-specific 5TT segmentation (HSVS from mitigated T1w, or Deep Atropos from native T1w)
+- Register the individual lesion mask to individual DWI space
+- Use MRtrix `5ttedit -path` to insert the lesion into the pathology channel of the 5TT
+- Run iFOD2 anatomically-constrained tractography that respects the pathology prior
+- SIFT2-weight the tractogram
+- Build patient-specific parcel-to-parcel connectome
+- Compute disconnection by comparing the primary connectome with connectomes computed under spared-connectome Options A/B/C (parcel-excised, streamline-excluded, both)
+- Output: parcel-to-parcel disconnection matrix + provenance JSON
+- Slow (hours per subject), requires patient DWI
+- **No conformity assumption** — anatomy is what the individual actually has
+
+**Why patient-specific is more principled:**
+
+- **Individual anatomy** — gyral variability, ventricular size, and normal-variation midline configuration are all handled by using the patient's own segmentation.
+- **Edema and mass effect** — TBI oedema pushes tracts off their template positions; a normative atlas cannot represent the displaced actual path of the corticospinal or arcuate fibers in an oedematous brain.
+- **Bilateral injury** — TBI has bilateral lesions in ~30–40% of cases (contusions frequently in bilateral frontotemporal poles); the normative-atlas assumption of intact contralesional anatomy for the "healthy template" comparison breaks down.
+- **Individual diffusion properties** — patient-specific FA/MD, direction sampling, and shell selection are all baked into the streamlines rather than assumed uniform.
+- **Provenance and reproducibility** — our pipeline emits a JSON manifest per subject; a normative-atlas approach has no per-subject provenance because the atlas is the same for everyone.
+
+**Why this differentiation matters especially in TBI (vs stroke, where Griffis validated):**
+
+- Ischemic stroke usually respects one vascular territory (MCA, PCA, etc.), so lesion location is constrained and tract displacement is limited.
+- Stroke lesions are usually unilateral (>90%).
+- Stroke has less oedema (typically resolved by 2-week imaging window).
+- TBI is heterogeneous: contusion (cortical), diffuse axonal injury (subcortical), hemorrhage (bloody), oedema (mass-effect), and their combinations.
+- TBI lesion topology violates every one of the normative-atlas simplifying assumptions.
+
+**The specific technical infrastructure we've built to enable this:**
+
+- Containerized pipeline (`dkt_connectome.sif`, `dkt_lesion_act.sif`, `dkt_vbt.sif`) distributed on GHCR + DockerHub
+- Snakemake DAG with per-step marker files for reproducibility
+- Provenance JSON at every step (`lesion_aware_act.json`, `disconnectome.json`)
+- Per-arm output isolation (`RESULTS_ROOT/arms/<arm>/`) for factorial experimentation
+- QC dashboards (`disconnectome_qc.html` per subject)
+- Six-arm factorial pilot on `sub-TBI011011` demonstrating the pipeline handles all combinations of anatomy mitigation × ACT mode
+
+None of this exists in LQT or BCBtoolkit. Our method is *more expensive* to
+run, so it needs to justify the expense; the head-to-head demonstration (§ 5
+below) is where that justification lives.
+
+### 3. Adopt: domain-specific behavioral factors (not just GOSE)
+
+**Their behavioral framework (Corbetta et al. 2015):**
+
+- Multi-test neuropsych battery administered to N=133 stroke patients at 2-week post-stroke
+- Factor analysis identified orthogonal deficit domains: motor, language, memory, attention, visual
+- Each patient gets a **factor score per domain** — a continuous, psychometrically-derived variable
+- Griffis 2019 uses these factor scores to demonstrate **domain-specific** SDC → deficit mapping (attention deficits map to dorsal attention network SDC; language deficits map to language-network SDC; etc.)
+
+**Why a single global score (like GOSE alone) is insufficient:**
+
+- GOSE is 8 ordinal levels reflecting overall functional recovery — it collapses attention deficit, memory deficit, motor deficit, and language deficit into one number.
+- The mechanism story requires matching a **specific network** to a **specific deficit**. Global outcome cannot support that.
+- Reviewers at HBM/Brain will ask: *"Which cognitive domain does this network's disconnection predict?"* A single-GOSE paper cannot answer.
+- The domain-specific network mapping is what gives Griffis 2019 biological rather than merely epidemiological content.
+
+**What TRACK-TBI typically includes (per PI and earlier documentation):**
+
+- **Attention / processing speed:** Trail Making A/B, WAIS Processing Speed Index, Symbol Digit Modalities Test (SDMT)
+- **Memory:** California Verbal Learning Test-II (CVLT-II), Brief Visuospatial Memory Test-Revised (BVMT-R)
+- **Language / fluency:** Controlled Oral Word Association (COWA)
+- **Executive function:** Trail Making B (dual-task), possibly D-KEFS Verbal Fluency Switching
+- **Global outcome:** GOSE, Disability Rating Scale
+- **Symptom burden:** RPQ, PCL-5
+
+**What we need to construct composites:**
+
+1. Request **individual test scores per visit** from PI/data core — not just pre-collapsed composites (we want the raw variables to construct our own factor scores if needed).
+2. Determine whether TRACK-TBI has published factor-analytic composites we can adopt directly (Corbetta 2015 factor structure may not port to TBI without recomputation).
+3. If not, run factor analysis on the TrackTBI-Sub cohort to identify orthogonal deficit domains — this is a preregisterable analytic step.
+4. Handle missing data — likely multiple imputation across time-points/tests.
+5. Map each domain to a network-native parcellation choice (attention → dorsal attention Yeo7; memory → hippocampal + default-mode; language → left fronto-temporal; motor → sensorimotor).
+
+**The ask to PI:**
+
+*"For the TrackTBI-Sub subset with lesion masks and DWI, can we get individual neuropsych test scores per visit (not just composites) covering attention, memory, language, and executive function domains? Do published factor-analytic composites exist for TRACK-TBI (analog of Corbetta 2015 for stroke), or would we need to construct our own?"*
+
+### 4. Adopt: incremental validity vs lesion volume as RQ2
+
+**What incremental validity is (statistically):**
+
+- Fit a **baseline model** predicting outcome from covariates + lesion volume only.
+- Fit an **augmented model** predicting the same outcome from covariates + lesion volume + SDC (and optionally + FC).
+- Compare model performance on **held-out data** (cross-validated ΔAUC for GOSE; ΔR² for continuous cognitive scores).
+- Test statistical significance via permutation (shuffle SDC labels 10,000 times; compute the null distribution of ΔAUC or ΔR²).
+
+**Why reviewers care about this specifically:**
+
+- The null hypothesis is trivial: bigger lesions produce worse outcomes. Any SDC score will correlate with lesion volume by construction (larger lesions cut more tracts). A paper that shows "SDC predicts GOSE" without adjusting for lesion volume is showing an artifact.
+- Incremental validity forces the claim: *"our SDC captures something above and beyond what lesion volume alone captures."* That is a substantively different claim.
+- Griffis 2019's incremental validity vs lesion size (their Figure 5C) is what earned the paper its position in the field — it was the specific move that ruled out lesion-size-as-confound.
+
+**Our specific implementation (to preregister before opening data):**
+
+- **Baseline model:** ordinal regression for GOSE, or linear regression for continuous composites, on `outcome ~ age + sex + education + GCS + lesion_volume_mm3`.
+- **+SDC model:** same + `SDC_summary` (choose one primary: e.g. total number of edges with D > 0, or first PC of the disconnection matrix).
+- **+SDC+FC model:** same + `FC_abnormality_summary` (analog: mean absolute FC-abnormality score per subject).
+- **Nested model comparison:** cross-validated ΔAUC (for GOSE, using 5-fold or leave-one-out) or ΔR² (for continuous outcomes), plus permutation p-values.
+- Pre-specify the primary comparison (baseline vs +SDC) and the secondary comparison (+SDC vs +SDC+FC) *before* opening group results.
+- Pre-specify the p-value threshold and multiple-comparison correction (Bonferroni across cognitive domains, or FDR).
+
+**Why this is a preregistration priority:**
+
+Without a locked baseline model, reviewers rightly suspect model-shopping. The
+baseline covariate set (age, sex, education, GCS, lesion volume) is the
+Griffis-2019 convention and should not be negotiated after seeing results.
+
+### 5. The methods contribution stacked on top: head-to-head SDC divergence
+
+This is the **only part of our Paper 2 that is genuinely new** — everything above (chain, differentiator, incremental validity, domain factors) is either adopted from Griffis or extended in the natural way.
+
+**The contribution:** a systematic head-to-head comparison of patient-specific lesion-aware SDC (ours) vs normative-atlas SDC (LQT / BCBtoolkit) on the same TBI cohort, with downstream clinical validation.
+
+**Explicit hypothesis:** *Patient-specific SDC and normative-atlas SDC diverge more in TBI than they would in stroke, because TBI has heterogeneous mass effect, oedema, and bilateral injury that violate the normative-atlas assumption of template-conforming anatomy. Furthermore, the divergence carries clinical signal — patient-specific SDC predicts FC disruption and behavior better than normative-atlas SDC in the same subjects.*
+
+**Why this hypothesis is testable and defensible:**
+
+- Both SDC types are computable on our cohort (LQT/BCB need only the MNI-normalized lesion mask; our pipeline needs patient DWI).
+- Divergence has a natural per-subject metric (edge-wise correlation between the two SDC matrices).
+- Downstream consequence has natural per-subject metrics (cross-validated ΔR² for FC prediction; cross-validated ΔAUC for behavior prediction).
+- Existing stroke literature (Griffis 2019 → 2021 → 2023) provides an implicit comparator: divergence there should be smaller than in TBI.
+
+**Comparison metrics we report:**
+
+| Metric | What it shows |
+|--------|---------------|
+| Edge-wise Pearson correlation per subject | Distribution of SDC concordance; cases with r < 0.5 flagged |
+| Global disconnection score (patient-specific) vs (LQT) | Absolute scaling difference |
+| Voxel-wise concordance (with BCB voxel maps) | Spatial agreement of disconnection map |
+| Cross-validated R² for predicting FC-abnormality from SDC (each method) | Which method captures FC signal better |
+| Cross-validated AUC for predicting 6-month GOSE from SDC (each method), holding lesion volume constant | Which method has more clinical signal |
+| Divergence stratified by lesion location, lesion volume, mass-effect score | Which patient subgroups are best-served by patient-specific processing |
+
+**The "stacked" story:**
+
+- **Biology layer** (Griffis-extended-to-TBI): SDC → FC disruption → behavior; incremental validity vs lesion volume; domain-specific network → deficit mapping.
+- **Methods layer** (our new contribution): patient-specific SDC captures signal that normative-atlas SDC misses in TBI; the divergence has clinical consequence.
+
+**Explicit statement for the discussion:**
+
+*"This work extends the Griffis (2019) disconnection framework from ischemic stroke to traumatic brain injury and establishes that patient-specific lesion-aware tractography is not merely a computational alternative to normative-atlas approaches but captures clinically meaningful information that normative-atlas methods lose in the presence of TBI-typical mass effect and heterogeneous injury patterns. Future TBI network studies should default to patient-specific processing in cohorts with significant lesion morphology."*
+
+**This is a genuine advance, not a repetition** — because:
+
+- The biology chain (SDC → FC → behavior) is Griffis's; extending it to TBI is *incremental* but expected of the field.
+- The head-to-head SDC comparison is *not* Griffis's; nobody has systematically compared patient-specific vs normative-atlas SDC in any patient population at cohort scale.
+- The specific claim that patient-specific matters *more* in TBI than stroke is testable, novel, and clinically actionable (informs future study design).
+
+### Summary: what to publish, at what tier
+
+| Contribution | New? | Reviewer defense | Venue tier it unlocks |
+|--------------|------|------------------|-----------------------|
+| SDC → FC coupling in TBI | Incremental (extension of Griffis stroke → TBI) | Show CCA replicates in TBI | HBM |
+| SDC → behavior (domain-specific) in TBI | Incremental (extension of Griffis stroke → TBI) | Show domain-network mapping holds | HBM / Brain |
+| Incremental validity vs lesion volume in TBI | Incremental | Show ΔAUC/ΔR² above baseline | HBM / Brain |
+| **Patient-specific vs normative-atlas SDC head-to-head in TBI** | **Genuinely new** | **Show divergence + clinical consequence** | **NeuroImage** |
+| Combined story (biology + methods) | Combined | Deliver both cleanly | Nature Communications (stretch, needs replication) |
+
+The methods contribution is the highest-leverage novelty. If it lands, we
+publish at NeuroImage. If not, we publish at Brain (biology-lead) or HBM
+(default). Either way, we do the head-to-head — because if it turns out
+patient-specific and normative-atlas SDC agree closely in TBI, that itself
+is a publishable methodological negative result (though it caps us at HBM).
+
 ## Design decisions to lock before opening data
 
 Per [publication_strategy.md § Clinical outcomes for Paper 2](publication_strategy.md#clinical-outcomes-for-paper-2):

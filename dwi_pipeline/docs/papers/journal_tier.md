@@ -82,6 +82,8 @@ primary metrics, benchmarks) before opening group results.
 - **Reviewers reject on:** biology-only stories without a methods contribution; qualitative rather than quantitative claims; missing benchmarks; single-atlas or single-method analyses; unclear why anyone should adopt the method.
 - **Our fit:** patient-specific lesion-aware SDC (from our lesion-aware ACT pipeline) vs normative-atlas SDC (LQT / BCBtoolkit) in TBI is a proper head-to-head. Our provenance JSON + Snakemake DAG + container distribution + open-code repo directly satisfy reproducibility expectations.
 
+**For the full contribution breakdown** (what of Griffis 2019 we adopt, where we differentiate, and the specific methods advance that unlocks NeuroImage), see [`paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019 — expanded`](paper2_disconnectome_outcomes.md#our-contribution-relative-to-griffis-2019--expanded).
+
 ### Framing
 
 **Working title:** *Patient-specific lesion-aware disconnectomes in traumatic brain injury: a head-to-head comparison with normative-atlas approaches and consequences for network-level outcome prediction.*
