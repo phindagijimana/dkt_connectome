@@ -12,6 +12,8 @@ analog table.
 **Deep dives:**
 
 - [`journal_tier.md`](journal_tier.md) / [`journal_tier.docx`](journal_tier.docx) — full ten-venue landscape for Paper 2 with per-venue framing, required analyses, and section-by-section manuscript breakdown
+- [`LQT.md`](LQT.md) / [`LQT.docx`](LQT.docx) — reference summary of the Lesion Quantification Toolkit and the normative-atlas disconnection family (LQT / BCBtoolkit / NeMo). Comparator for Paper 2 methods contribution.
+- [`Griffis_later.md`](Griffis_later.md) / [`Griffis_later.docx`](Griffis_later.docx) — follow-up literature on the Griffis 2019 lineage (Salvalaggio 2020, Talozzi 2023, Kuceyeski work). Establishes reviewer-expected practice and where Paper 2 sits.
 
 ---
 
