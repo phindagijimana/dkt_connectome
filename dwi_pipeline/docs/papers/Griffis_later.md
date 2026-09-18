@@ -6,7 +6,7 @@ structural disconnection into new domains, statistical formalisms, and
 patient populations. Written for Paper 2 planning — this is the literature
 our disconnectome-outcomes paper will be judged against.
 
-**Related docs:** [paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md) ·
+**Related docs:** [paper2_disconnectome_outcomes.md](disconnectome/outcomes_planning.md) ·
 [LQT.md](LQT.md) · [journal_tier.md](journal_tier.md)
 
 **Caveat:** specific numerical claims (N per cohort, exact ΔAUC values, exact
@@ -412,6 +412,6 @@ either well drops us to HBM.
 ## See also
 
 - [LQT.md](LQT.md) — tool-level reference for LQT and normative-atlas SDC.
-- [paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019](paper2_disconnectome_outcomes.md#our-contribution-relative-to-griffis-2019--expanded) — full contribution breakdown.
+- [paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019](disconnectome/outcomes_planning.md#our-contribution-relative-to-griffis-2019--expanded) — full contribution breakdown.
 - [journal_tier.md](journal_tier.md) — venue selection given this lineage.
 - [../references.md](../references.md) — full bibliography.

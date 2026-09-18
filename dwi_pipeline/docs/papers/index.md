@@ -9,13 +9,13 @@ complete-case tables. Pipeline methodology docs live one level up in
 the four-paper portfolio, journal targets, cohort plans, and prior-work
 analog table.
 
-**Disconnectome paper cluster** (Paper 2 planning artifacts, all with matching `.docx`):
+**Disconnectome paper cluster** — all artifacts live in [`disconnectome/`](disconnectome/) subfolder, each with matching `.docx`:
 
-- [`disconnectome_paper.md`](disconnectome_paper.md) — canonical cover doc and navigation for the disconnectome paper; includes cross-tier paper-citation matrix
-- [`paper2_disconnectome_outcomes.md`](paper2_disconnectome_outcomes.md) — full detailed planning (RQs, data-level ceiling, Griffis-2019 contribution breakdown, design decisions)
-- [`disconnectome_paper_analysis_plan.md`](disconnectome_paper_analysis_plan.md) — pre-registration template with locked design choices + sign-off block
-- [`disconnectome_paper_manuscript_skeleton.md`](disconnectome_paper_manuscript_skeleton.md) — section-by-section outline with word budgets and figure/table lists
-- [`disconnectome_paper_complete_case.md`](disconnectome_paper_complete_case.md) — subject-level tracking template with assembly diagram
+- [`disconnectome/index.md`](disconnectome/index.md) — canonical cover doc and navigation for the disconnectome paper; includes cross-tier paper-citation matrix
+- [`disconnectome/outcomes_planning.md`](disconnectome/outcomes_planning.md) — full detailed planning (RQs, data-level ceiling, Griffis-2019 contribution breakdown, design decisions)
+- [`disconnectome/analysis_plan.md`](disconnectome/analysis_plan.md) — pre-registration template with locked design choices + sign-off block
+- [`disconnectome/manuscript_skeleton.md`](disconnectome/manuscript_skeleton.md) — section-by-section outline with word budgets and figure/table lists
+- [`disconnectome/complete_case.md`](disconnectome/complete_case.md) — subject-level tracking template with assembly diagram
 
 **Deep dives / reference:**
 
@@ -30,7 +30,7 @@ analog table.
 | # | Paper | Status | Target | Per-paper doc |
 |---|-------|--------|--------|---------------|
 | 1 | **Factorial: anatomy × lesion-aware ACT in TBI** (flagship) | Active | *Human Brain Mapping* | [paper1_factorial.md](paper1_factorial.md) |
-| 2 | **Clinical disconnectome → outcomes** | Conditional (pending clinical merge confirmation) | *J Neurotrauma* → *Brain* stretch | [paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md) |
+| 2 | **Clinical disconnectome → outcomes** | Conditional (pending clinical merge confirmation) | *J Neurotrauma* → *Brain* stretch | [paper2_disconnectome_outcomes.md](disconnectome/outcomes_planning.md) |
 | 3 | **Deep Atropos vs HSVS 5TT** | Supplement to Paper 1 | Paper 1 supplement | [paper3_deep_atropos.md](paper3_deep_atropos.md) |
 | 4 | **Longitudinal connectome resource** (~1200 sessions) | Active parallel | *Scientific Data* / *GigaScience* | [paper4_longitudinal.md](paper4_longitudinal.md) |
 

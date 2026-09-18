@@ -7,8 +7,8 @@ available for TBI cohort. Un-pause once complete-case N ≥ 40 is verified.
 **Target:** *Journal of Neurotrauma* (default); *Brain* / *Neurology* stretch if
 neuropsych battery + rs-fMRI + multisite harmonization are all added.
 
-**Cross-refs:** [publication_strategy.md § Paper 2](publication_strategy.md#paper-2--clinical-disconnectome-optional-paused)
-· [Clinical outcomes for Paper 2](publication_strategy.md#clinical-outcomes-for-paper-2)
+**Cross-refs:** [publication_strategy.md § Paper 2](../publication_strategy.md#paper-2--clinical-disconnectome-optional-paused)
+· [Clinical outcomes for Paper 2](../publication_strategy.md#clinical-outcomes-for-paper-2)
 
 ---
 
@@ -278,7 +278,7 @@ is a publishable methodological negative result (though it caps us at HBM).
 
 ## Design decisions to lock before opening data
 
-Per [publication_strategy.md § Clinical outcomes for Paper 2](publication_strategy.md#clinical-outcomes-for-paper-2):
+Per [publication_strategy.md § Clinical outcomes for Paper 2](../publication_strategy.md#clinical-outcomes-for-paper-2):
 
 - [ ] Fixed imaging arm (default `neurolit-lesion`)
 - [ ] Primary outcome (default: GOSE at 6 months)
@@ -392,7 +392,7 @@ correction, particularly for the Kuceyeski 2020 HBM entry.
 
 ## Journal-tier landscape
 
-**Full analysis:** [`journal_tier.md`](journal_tier.md) / [`journal_tier.docx`](journal_tier.docx) — per-venue framing, required analyses, section-by-section manuscript breakdowns, effort estimates, and failure modes.
+**Full analysis:** [`journal_tier.md`](../journal_tier.md) / [`journal_tier.docx`](../journal_tier.docx) — per-venue framing, required analyses, section-by-section manuscript breakdowns, effort estimates, and failure modes.
 
 Summary condensed below.
 
@@ -470,7 +470,7 @@ Three empirical questions with unknown answers today:
 
 ## Related pipeline docs
 
-- Step 4.1 disconnectome: [../disconnectome.md](../disconnectome.md)
-- Lesion-aware methods: [../lesion_aware.md](../lesion_aware.md)
-- Validation: [../validation.md](../validation.md)
-- References: [../references.md](../references.md)
+- Step 4.1 disconnectome: [../disconnectome.md](../../disconnectome.md)
+- Lesion-aware methods: [../lesion_aware.md](../../lesion_aware.md)
+- Validation: [../validation.md](../../validation.md)
+- References: [../references.md](../../references.md)

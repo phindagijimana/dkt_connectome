@@ -5,7 +5,7 @@ the broader **normative-atlas structural disconnection** family of methods that
 LQT belongs to. Written for Paper 2 planning — the head-to-head comparator our
 patient-specific lesion-aware pipeline is measured against.
 
-**Related docs:** [paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md) ·
+**Related docs:** [paper2_disconnectome_outcomes.md](disconnectome/outcomes_planning.md) ·
 [journal_tier.md](journal_tier.md) ·
 [Griffis_later.md](Griffis_later.md) ·
 [../lesion_aware.md](../lesion_aware.md)
@@ -184,6 +184,6 @@ All share the normative-atlas approach; they differ in atlas source, output form
 ## See also
 
 - [Griffis_later.md](Griffis_later.md) — follow-up work by Salvalaggio, Thiebaut de Schotten, Kuceyeski that established normative-atlas SDC as the field standard.
-- [paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019](paper2_disconnectome_outcomes.md#our-contribution-relative-to-griffis-2019--expanded) — how LQT slots into our contribution argument.
+- [paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019](disconnectome/outcomes_planning.md#our-contribution-relative-to-griffis-2019--expanded) — how LQT slots into our contribution argument.
 - [../lesion_aware.md](../lesion_aware.md) — our patient-specific alternative approach.
 - [../disconnectome.md](../disconnectome.md) — Step 4.1 methods.

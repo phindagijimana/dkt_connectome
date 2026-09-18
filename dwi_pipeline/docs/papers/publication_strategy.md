@@ -275,7 +275,7 @@ PI has now indicated clinical outcomes are available for the TBI cohort;
 un-pause once complete-case N is confirmed. **rs-fMRI is present in the TBI
 BIDS** (pilot has it; full cohort assumed to mirror), which upgrades the
 Paper 2 ceiling by enabling the full Griffis SC→FC→behavior chain — see
-[paper2_disconnectome_outcomes.md § Journal-tier landscape](paper2_disconnectome_outcomes.md#journal-tier-landscape)
+[paper2_disconnectome_outcomes.md § Journal-tier landscape](disconnectome/outcomes_planning.md#journal-tier-landscape)
 for the full ten-venue analysis, editorial identities, and path selection.
 
 Condensed:

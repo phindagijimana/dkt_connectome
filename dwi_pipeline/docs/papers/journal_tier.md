@@ -7,7 +7,7 @@ figure and table lists.
 
 **As-of:** 2026-09-17. **Author:** Phind Ndagijimana (with Claude planning assist).
 **Related docs:** [publication_strategy.md](publication_strategy.md) ·
-[paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md) ·
+[paper2_disconnectome_outcomes.md](disconnectome/outcomes_planning.md) ·
 [../lesion_aware.md](../lesion_aware.md) · [../disconnectome.md](../disconnectome.md)
 
 ---
@@ -82,7 +82,7 @@ primary metrics, benchmarks) before opening group results.
 - **Reviewers reject on:** biology-only stories without a methods contribution; qualitative rather than quantitative claims; missing benchmarks; single-atlas or single-method analyses; unclear why anyone should adopt the method.
 - **Our fit:** patient-specific lesion-aware SDC (from our lesion-aware ACT pipeline) vs normative-atlas SDC (LQT / BCBtoolkit) in TBI is a proper head-to-head. Our provenance JSON + Snakemake DAG + container distribution + open-code repo directly satisfy reproducibility expectations.
 
-**For the full contribution breakdown** (what of Griffis 2019 we adopt, where we differentiate, and the specific methods advance that unlocks NeuroImage), see [`paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019 — expanded`](paper2_disconnectome_outcomes.md#our-contribution-relative-to-griffis-2019--expanded).
+**For the full contribution breakdown** (what of Griffis 2019 we adopt, where we differentiate, and the specific methods advance that unlocks NeuroImage), see [`paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019 — expanded`](disconnectome/outcomes_planning.md#our-contribution-relative-to-griffis-2019--expanded).
 
 ### Framing
 
@@ -709,7 +709,7 @@ Request from PI / data core:
 ## See also
 
 - [publication_strategy.md](publication_strategy.md) — cross-paper strategy
-- [paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md) — Paper 2 planning stub (analysis registry, complete-case template)
+- [paper2_disconnectome_outcomes.md](disconnectome/outcomes_planning.md) — Paper 2 planning stub (analysis registry, complete-case template)
 - [../lesion_aware.md](../lesion_aware.md) — lesion-aware ACT methodology
 - [../disconnectome.md](../disconnectome.md) — Step 4.1 methods
 - [../validation.md](../validation.md) — validation cohort context

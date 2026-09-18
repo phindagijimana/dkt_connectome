@@ -3,10 +3,10 @@
 **Purpose:** section-by-section writing template with word-count budgets. Fill
 in as writing progresses. Choose the appropriate framing (methods-lead /
 biology-lead / default) based on the venue-decision rule in
-[disconnectome_paper_analysis_plan.md § 10](disconnectome_paper_analysis_plan.md#10-venue-decision-rule).
+[disconnectome_paper_analysis_plan.md § 10](analysis_plan.md#10-venue-decision-rule).
 
-**Related:** [disconnectome_paper.md](disconnectome_paper.md) ·
-[journal_tier.md — per-venue detailed breakdowns](journal_tier.md)
+**Related:** [disconnectome_paper.md](index.md) ·
+[journal_tier.md — per-venue detailed breakdowns](../journal_tier.md)
 
 **Status:** BLANK skeleton (fill as writing progresses).
 
@@ -175,7 +175,7 @@ Funding: ______
 ## Reference list
 
 Managed in Zotero / Mendeley / manual. Anchor references (see
-[disconnectome_paper.md § Cross-tier paper-citation matrix](disconnectome_paper.md#cross-tier-paper-citation-matrix)):
+[disconnectome_paper.md § Cross-tier paper-citation matrix](index.md#cross-tier-paper-citation-matrix)):
 
 - Griffis 2019 *Cell Reports*
 - Griffis 2021 *NeuroImage: Clinical*

@@ -5,9 +5,9 @@ Fill in and sign off *before* opening group-level results. Serves as an
 internal pre-registration so post-hoc venue choice / model-shopping cannot
 be mistaken for a priori strategy.
 
-**Related docs:** [disconnectome_paper.md](disconnectome_paper.md) ·
-[paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md) ·
-[journal_tier.md](journal_tier.md)
+**Related docs:** [disconnectome_paper.md](index.md) ·
+[paper2_disconnectome_outcomes.md](outcomes_planning.md) ·
+[journal_tier.md](../journal_tier.md)
 
 **Status:** DRAFT — not yet signed off.
 

@@ -5,7 +5,7 @@ the portfolio). Consolidates planning artifacts, cross-links supporting docs,
 and provides the cross-tier paper-citation matrix.
 
 **Note on nomenclature:** "the disconnectome paper" and "Paper 2" refer to
-the same manuscript. This doc is the cover; [paper2_disconnectome_outcomes.md](paper2_disconnectome_outcomes.md)
+the same manuscript. This doc is the cover; [paper2_disconnectome_outcomes.md](outcomes_planning.md)
 is the detailed planning artifact.
 
 **As-of:** 2026-09-17. **Author:** Phind Ndagijimana (with Claude planning assist).
@@ -39,7 +39,7 @@ assumed to mirror). Awaiting:
 
 1. TRACK-TBI clinical data-dictionary export
 2. Complete-case count (proceed at N ≥ 45; limitations at 30–44; fold into Paper 1 at < 30)
-3. Analysis plan lock (see [disconnectome_paper_analysis_plan.md](disconnectome_paper_analysis_plan.md))
+3. Analysis plan lock (see [disconnectome_paper_analysis_plan.md](analysis_plan.md))
 
 ## Documentation cluster
 
@@ -51,28 +51,28 @@ folder, listed by role:
 | Doc | Purpose |
 |-----|---------|
 | **`disconnectome_paper.md`** (this file) | Cover + navigation + cross-tier paper matrix |
-| [`paper2_disconnectome_outcomes.md`](paper2_disconnectome_outcomes.md) | Full detailed planning: RQs, data-level ceiling, Griffis-2019 contribution breakdown, design decisions, complete-case spreadsheet template |
-| [`disconnectome_paper_analysis_plan.md`](disconnectome_paper_analysis_plan.md) | Pre-registration doc — locked design choices with sign-off dates |
-| [`disconnectome_paper_manuscript_skeleton.md`](disconnectome_paper_manuscript_skeleton.md) | Section-by-section outline with word budgets |
-| [`disconnectome_paper_complete_case.md`](disconnectome_paper_complete_case.md) | Subject-level data-tracking template (build as clinical export arrives) |
-| [`journal_tier.md`](journal_tier.md) / [`.docx`](journal_tier.docx) | Full ten-venue landscape + per-venue framing + manuscript breakdowns |
+| [`paper2_disconnectome_outcomes.md`](outcomes_planning.md) | Full detailed planning: RQs, data-level ceiling, Griffis-2019 contribution breakdown, design decisions, complete-case spreadsheet template |
+| [`disconnectome_paper_analysis_plan.md`](analysis_plan.md) | Pre-registration doc — locked design choices with sign-off dates |
+| [`disconnectome_paper_manuscript_skeleton.md`](manuscript_skeleton.md) | Section-by-section outline with word budgets |
+| [`disconnectome_paper_complete_case.md`](complete_case.md) | Subject-level data-tracking template (build as clinical export arrives) |
+| [`journal_tier.md`](../journal_tier.md) / [`.docx`](../journal_tier.docx) | Full ten-venue landscape + per-venue framing + manuscript breakdowns |
 
 ### Prior-work reference
 
 | Doc | Purpose |
 |-----|---------|
-| [`LQT.md`](LQT.md) / [`.docx`](LQT.docx) | Reference for LQT + normative-atlas SDC family (LQT / BCBtoolkit / NeMo) — our comparators |
-| [`Griffis_later.md`](Griffis_later.md) / [`.docx`](Griffis_later.docx) | Follow-up literature (Salvalaggio, Talozzi, Kuceyeski, Boes, Fox) — our lineage + parallel lineage |
-| [`publication_strategy.md`](publication_strategy.md) | Cross-paper strategy (all four papers), prior-work analog table |
+| [`LQT.md`](../LQT.md) / [`.docx`](../LQT.docx) | Reference for LQT + normative-atlas SDC family (LQT / BCBtoolkit / NeMo) — our comparators |
+| [`Griffis_later.md`](../Griffis_later.md) / [`.docx`](../Griffis_later.docx) | Follow-up literature (Salvalaggio, Talozzi, Kuceyeski, Boes, Fox) — our lineage + parallel lineage |
+| [`publication_strategy.md`](../publication_strategy.md) | Cross-paper strategy (all four papers), prior-work analog table |
 
 ### Pipeline methods (docs level up)
 
 | Doc | Purpose |
 |-----|---------|
-| [`../lesion_aware.md`](../lesion_aware.md) | Lesion-aware ACT methodology + factorial design + LeAPP framework |
-| [`../disconnectome.md`](../disconnectome.md) | Step 4.1 methods (Options A/B/C spared connectomes + integrity QC) |
-| [`../methods/step3_1_lesion_act.md`](../methods/step3_1_lesion_act.md) | Step 3.1 lesion-aware tractography details |
-| [`../references.md`](../references.md) | Full pipeline bibliography |
+| [`../lesion_aware.md`](../../lesion_aware.md) | Lesion-aware ACT methodology + factorial design + LeAPP framework |
+| [`../disconnectome.md`](../../disconnectome.md) | Step 4.1 methods (Options A/B/C spared connectomes + integrity QC) |
+| [`../methods/step3_1_lesion_act.md`](../../methods/step3_1_lesion_act.md) | Step 3.1 lesion-aware tractography details |
+| [`../references.md`](../../references.md) | Full pipeline bibliography |
 
 ---
 
@@ -121,22 +121,22 @@ Five contributions ranked by novelty and venue-unlock potential:
 | **Patient-specific vs normative-atlas SDC head-to-head in TBI** | **Genuinely new** | Divergence + clinical consequence | **NeuroImage** |
 | Combined biology + methods story | Combined | Both cleanly delivered | Nature Comm (stretch, needs replication) |
 
-Full contribution reasoning in [paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019](paper2_disconnectome_outcomes.md#our-contribution-relative-to-griffis-2019--expanded).
+Full contribution reasoning in [paper2_disconnectome_outcomes.md § Our contribution relative to Griffis 2019](outcomes_planning.md#our-contribution-relative-to-griffis-2019--expanded).
 
 ---
 
 ## Immediate next steps
 
-1. **Request TRACK-TBI clinical data dictionary** (see [Appendix D in journal_tier.md](journal_tier.md#appendix-d--what-track-tbi-clinical-export-should-include))
-2. **Build complete-case tracker** (populate [disconnectome_paper_complete_case.md](disconnectome_paper_complete_case.md) as data arrives)
+1. **Request TRACK-TBI clinical data dictionary** (see [Appendix D in journal_tier.md](../journal_tier.md#appendix-d--what-track-tbi-clinical-export-should-include))
+2. **Build complete-case tracker** (populate [disconnectome_paper_complete_case.md](complete_case.md) as data arrives)
 3. **Confirm rs-fMRI coverage** cohort-wide (pilot has it; verify full cohort mirrors)
-4. **Lock analysis plan** ([disconnectome_paper_analysis_plan.md](disconnectome_paper_analysis_plan.md)) before opening any group results
+4. **Lock analysis plan** ([disconnectome_paper_analysis_plan.md](analysis_plan.md)) before opening any group results
 5. **Build fMRI preprocessing arm** (fMRIPrep + XCP-D) into pipeline
 6. **Install LQT + BCBtoolkit** and prepare per-subject batch scripts
 7. **Add Schaefer / 4S parcellation** to Paper 2 subset for network-native analyses
 
 ## See also
 
-- [`../papers/index.md`](index.md) — papers workspace landing page
-- [`publication_strategy.md`](publication_strategy.md) — full four-paper portfolio
-- [`../TBI_Experimental_Arms.md`](../TBI_Experimental_Arms.md) — factorial design (Paper 1 context)
+- [`../papers/index.md`](../index.md) — papers workspace landing page
+- [`publication_strategy.md`](../publication_strategy.md) — full four-paper portfolio
+- [`../TBI_Experimental_Arms.md`](../../TBI_Experimental_Arms.md) — factorial design (Paper 1 context)

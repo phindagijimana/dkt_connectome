@@ -3,10 +3,10 @@
 **Purpose:** subject-level data-tracking template for Paper 2. Populate as
 the TrackTBI clinical export arrives and as cohort processing completes.
 Determines complete-case N, which drives the venue-decision rule per
-[disconnectome_paper_analysis_plan.md § 8](disconnectome_paper_analysis_plan.md#8-complete-case-n-threshold).
+[disconnectome_paper_analysis_plan.md § 8](analysis_plan.md#8-complete-case-n-threshold).
 
-**Related:** [disconnectome_paper.md](disconnectome_paper.md) ·
-[disconnectome_paper_analysis_plan.md](disconnectome_paper_analysis_plan.md)
+**Related:** [disconnectome_paper.md](index.md) ·
+[disconnectome_paper_analysis_plan.md](analysis_plan.md)
 
 **Status:** template — populate with actual cohort as data becomes available.
 
