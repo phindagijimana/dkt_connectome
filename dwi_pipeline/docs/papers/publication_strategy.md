@@ -268,15 +268,31 @@ TBI011011 as one sensitivity figure — not a third manuscript).
 **Usually not the right home for paper 1:** *Journal of Neurotrauma* (injury biology
 outcomes), JOSS (software-only), *Radiology* / *AJNR* (clinical radiology practice).
 
-### Paper 2 — disconnectome + outcomes (**paused**)
+### Paper 2 — disconnectome + outcomes (**conditional**)
 
 Requires TRACK-TBI clinical merge (GOSE, etc.) — see [Clinical outcomes for Paper 2](#clinical-outcomes-for-paper-2).
+PI has now indicated clinical outcomes are available for the TBI cohort;
+un-pause once complete-case N is confirmed. **rs-fMRI is present in the TBI
+BIDS** (pilot has it; full cohort assumed to mirror), which upgrades the
+Paper 2 ceiling by enabling the full Griffis SC→FC→behavior chain — see
+[paper2_disconnectome_outcomes.md § Journal-tier landscape](paper2_disconnectome_outcomes.md#journal-tier-landscape)
+for the full ten-venue analysis, editorial identities, and path selection.
 
-| Priority | Journal |
-|----------|---------|
-| **1** | [*Journal of Neurotrauma*](https://home.liebertpub.com/publications/journal-of-neurotrauma/1/overview) |
-| **Stretch** | [*Brain*](https://academic.oup.com/brain), [*Neurology*](https://n.neurology.org/) |
-| **Alternative** | *Human Brain Mapping* if disconnectome is the main figure set |
+Condensed:
+
+| Framing | Primary target | Rationale |
+|---------|---------------|-----------|
+| Methods-lead (patient-specific vs LQT/BCB normative-atlas SDC) | [*NeuroImage*](https://www.sciencedirect.com/journal/neuroimage) | Rewards head-to-head methods with quantitative validation |
+| Biology-lead (full SC→FC→behavior in TBI) | [*Brain*](https://academic.oup.com/brain) | Rewards clinical-mechanistic story with prognostic value |
+| Either framing at lower N/novelty | [*Human Brain Mapping*](https://onlinelibrary.wiley.com/journal/10659471) | LeAPP's venue; safe fallback under either lead |
+| Backup / faster | [*Journal of Neurotrauma*](https://home.liebertpub.com/publications/journal-of-neurotrauma/1/overview), [*NeuroImage: Clinical*](https://www.sciencedirect.com/journal/neuroimage-clinical) | TBI-focused clinical-imaging tiers |
+| Stretch (not to design for) | *Nature Communications*, *Nature Human Behaviour* | Requires N ≥ 80 + external replication cohort |
+| Not in play | *Nature* main, *Cell Reports* (Griffis's venue) | — |
+
+**Path-selection rule:** design the analysis to unlock either the methods
+or the biology path, run both, then choose venue by which contribution is
+quantitatively stronger. Lock the analysis plan (contrasts, primary metrics,
+benchmarks) before opening group results.
 
 ### Paper 3 — Deep Atropos comparison
 
