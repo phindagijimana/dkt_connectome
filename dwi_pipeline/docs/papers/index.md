@@ -9,11 +9,19 @@ complete-case tables. Pipeline methodology docs live one level up in
 the four-paper portfolio, journal targets, cohort plans, and prior-work
 analog table.
 
-**Deep dives:**
+**Disconnectome paper cluster** (Paper 2 planning artifacts, all with matching `.docx`):
+
+- [`disconnectome_paper.md`](disconnectome_paper.md) — canonical cover doc and navigation for the disconnectome paper; includes cross-tier paper-citation matrix
+- [`paper2_disconnectome_outcomes.md`](paper2_disconnectome_outcomes.md) — full detailed planning (RQs, data-level ceiling, Griffis-2019 contribution breakdown, design decisions)
+- [`disconnectome_paper_analysis_plan.md`](disconnectome_paper_analysis_plan.md) — pre-registration template with locked design choices + sign-off block
+- [`disconnectome_paper_manuscript_skeleton.md`](disconnectome_paper_manuscript_skeleton.md) — section-by-section outline with word budgets and figure/table lists
+- [`disconnectome_paper_complete_case.md`](disconnectome_paper_complete_case.md) — subject-level tracking template with assembly diagram
+
+**Deep dives / reference:**
 
 - [`journal_tier.md`](journal_tier.md) / [`journal_tier.docx`](journal_tier.docx) — full ten-venue landscape for Paper 2 with per-venue framing, required analyses, and section-by-section manuscript breakdown
 - [`LQT.md`](LQT.md) / [`LQT.docx`](LQT.docx) — reference summary of the Lesion Quantification Toolkit and the normative-atlas disconnection family (LQT / BCBtoolkit / NeMo). Comparator for Paper 2 methods contribution.
-- [`Griffis_later.md`](Griffis_later.md) / [`Griffis_later.docx`](Griffis_later.docx) — follow-up literature on the Griffis 2019 lineage (Salvalaggio 2020, Talozzi 2023, Kuceyeski work). Establishes reviewer-expected practice and where Paper 2 sits.
+- [`Griffis_later.md`](Griffis_later.md) / [`Griffis_later.docx`](Griffis_later.docx) — follow-up literature on the Griffis 2019 lineage (Salvalaggio 2020, Talozzi 2023, Kuceyeski work, Boes 2015, Fox 2018). Establishes reviewer-expected practice and where Paper 2 sits.
 
 ---
 
