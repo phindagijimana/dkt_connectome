@@ -9,6 +9,14 @@ complete-case tables. Pipeline methodology docs live one level up in
 the four-paper portfolio, journal targets, cohort plans, and prior-work
 analog table.
 
+**Factorial paper cluster** — all artifacts live in [`factorial_paper/`](factorial_paper/) subfolder, each with matching `.docx`:
+
+- [`factorial_paper/index.md`](factorial_paper/index.md) — canonical cover doc and navigation for the factorial paper; includes cross-tier paper-citation matrix
+- [`factorial_paper/analysis_plan.md`](factorial_paper/analysis_plan.md) — pre-registration template with locked design choices + sign-off block (13 sections including the 6 arms, primary numeric outcome, contrast set, N thresholds, synthetic-lesion decision)
+- [`factorial_paper/manuscript_skeleton.md`](factorial_paper/manuscript_skeleton.md) — section-by-section outline with word budgets, figure/table lists, and reference-list anchors
+- [`factorial_paper/completion_tracker.md`](factorial_paper/completion_tracker.md) — per-subject × per-arm completion matrix with CONSORT-style assembly diagram and QC-metric dashboard
+- [`factorial_paper/leapp_lineage.md`](factorial_paper/leapp_lineage.md) — deep summary of Bey 2024 (LeAPP) and lineage papers (Radwan VBG, Pollak neuroLIT, Smith ACT); establishes what we extend
+
 **Disconnectome paper cluster** — all artifacts live in [`disconnectome/`](disconnectome/) subfolder, each with matching `.docx`:
 
 - [`disconnectome/index.md`](disconnectome/index.md) — canonical cover doc and navigation for the disconnectome paper; includes cross-tier paper-citation matrix
@@ -27,12 +35,12 @@ analog table.
 
 ## Papers at a glance
 
-| # | Paper | Status | Target | Per-paper doc |
-|---|-------|--------|--------|---------------|
-| 1 | **Factorial: anatomy × lesion-aware ACT in TBI** (flagship) | Active | *Human Brain Mapping* | [paper1_factorial.md](paper1_factorial.md) |
-| 2 | **Clinical disconnectome → outcomes** | Conditional (pending clinical merge confirmation) | *J Neurotrauma* → *Brain* stretch | [paper2_disconnectome_outcomes.md](disconnectome/outcomes_planning.md) |
-| 3 | **Deep Atropos vs HSVS 5TT** | Supplement to Paper 1 | Paper 1 supplement | [paper3_deep_atropos.md](paper3_deep_atropos.md) |
-| 4 | **Longitudinal connectome resource** (~1200 sessions) | Active parallel | *Scientific Data* / *GigaScience* | [paper4_longitudinal.md](paper4_longitudinal.md) |
+| # | Paper | Status | Target | Per-paper docs |
+|---|-------|--------|--------|----------------|
+| 1 | **Factorial: anatomy × lesion-aware ACT in TBI** (flagship) | Active | *Human Brain Mapping* | [`factorial_paper/`](factorial_paper/) — cluster (5 docs + .docx) |
+| 2 | **Clinical disconnectome → outcomes** | Conditional (pending clinical merge confirmation) | *J Neurotrauma* → *Brain* stretch | [`disconnectome/`](disconnectome/) — cluster (5 docs + .docx) |
+| 3 | **Deep Atropos vs HSVS 5TT** | Supplement to Paper 1 | Paper 1 supplement | [`paper3_deep_atropos.md`](paper3_deep_atropos.md) |
+| 4 | **Longitudinal connectome resource** (~1200 sessions) | Active parallel | *Scientific Data* / *GigaScience* | [`paper4_longitudinal.md`](paper4_longitudinal.md) |
 
 ---
 
