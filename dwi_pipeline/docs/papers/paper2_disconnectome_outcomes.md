@@ -322,6 +322,74 @@ or better behavior prediction). If divergence is small, the methods
 contribution shrinks and the paper leads with biology, with methods as
 robustness supplement.
 
+## Data-level ceiling and primary-paper mapping
+
+Realistic venue ceiling depends on which data actually materialize from the
+TRACK-TBI clinical export and cohort processing. Four practical scenarios,
+each with the primary precedent papers that anchor the venue claim.
+
+### Ceiling table
+
+| Data on hand | Realistic ceiling | Anchoring precedents |
+|--------------|-------------------|----------------------|
+| **GOSE only + covariates, N ≥ 40** | *J Neurotrauma* solid; ordinal regression + incremental validity vs lesion volume | Palacios 2022, Warren 2015, Kuceyeski 2020 |
+| **GOSE + RPQ, N ≥ 40** | Same tier, richer story (dual outcome) | Adds RPQ (King 1995 tool; TRACK-TBI standard practice) |
+| **GOSE + neuropsych battery, N ≥ 50** | *Brain* / *HBM* in play — domain-specific network story (Griffis-analog) | Griffis 2019, Corbetta 2015, Salvalaggio 2020, Bey 2024 (LeAPP) |
+| **GOSE + neuropsych + rs-fMRI, N ≥ 60** | *Brain* / *Neurology* stretch — full SC→FC→behavior Griffis chain | Griffis 2019, Salvalaggio 2020, Talozzi 2023, Boes 2015, Fox 2018 |
+
+**Orthogonal path — methods-lead (any data level ≥ N=40):**
+| **Methods head-to-head (any N, plus LQT/BCB run)** | *NeuroImage* if divergence lands cleanly | Griffis 2021 (LQT), Foulon 2018 (BCB), Kuceyeski 2013 (NeMo), Bey 2024, Radwan 2023 |
+
+### Primary papers grouped by ceiling tier
+
+**J Neurotrauma tier (baseline clinical outcome prediction):**
+
+| Paper | Reference | Role |
+|-------|-----------|------|
+| Palacios et al. 2022 | *J Neurotrauma* 39(19-20):1272–1282; DOI [10.1089/neu.2022.0070](https://doi.org/10.1089/neu.2022.0070) | Multisite TRACK-TBI DTI + GOSE precedent, N≈391 |
+| Warren et al. 2015 | *Brain* 138(9):2673–2687; DOI [10.1093/brain/awv075](https://doi.org/10.1093/brain/awv075) | TBI graph metrics → cognition classic |
+| Kuceyeski et al. 2020 | *Human Brain Mapping* — verify exact citation | Small-cohort mTBI longitudinal connectome + cognition |
+
+**Brain / HBM domain-specific tier (Griffis-analog in TBI):**
+
+| Paper | Reference | Role |
+|-------|-----------|------|
+| Griffis et al. 2019 | *Cell Reports* 28(10):2527–2540; DOI [10.1016/j.celrep.2019.07.100](https://doi.org/10.1016/j.celrep.2019.07.100) | **The direct template we extend to TBI** |
+| Corbetta et al. 2015 | *Neuron* 85(5):927–941 | Multi-domain behavioral factor analysis framework |
+| Salvalaggio et al. 2020 | *Brain* 143(7):2173–2188; DOI [10.1093/brain/awaa156](https://doi.org/10.1093/brain/awaa156) | Multi-domain outcome prediction + combined SC/FC ridge regression |
+| Bey et al. 2024 (LeAPP) | *Human Brain Mapping*; DOI [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) | HBM precedent for our methodological family |
+
+**Brain / Neurology stretch tier (full SC→FC→behavior chain):**
+
+| Paper | Reference | Role |
+|-------|-----------|------|
+| Griffis et al. 2019 | (as above) | Full three-part chain in stroke — we replicate in TBI |
+| Salvalaggio et al. 2020 | (as above) | Combined SC + FC modeling in stroke |
+| Talozzi et al. 2023 | *Brain* 146(5):1963–1978; DOI [10.1093/brain/awad013](https://doi.org/10.1093/brain/awad013) | Current methodological frontier — latent disconnectome |
+| Boes et al. 2015 | *Brain* 138(10):3061–3075; DOI [10.1093/brain/awv228](https://doi.org/10.1093/brain/awv228) | Parallel lineage — lesion network mapping using rs-fMRI |
+| Fox 2018 | *NEJM* 379(23):2237–2245; DOI [10.1056/NEJMra1706158](https://doi.org/10.1056/NEJMra1706158) | High-visibility LNM paradigm review |
+
+**NeuroImage methods-lead tier (patient-specific vs normative-atlas SDC head-to-head):**
+
+| Paper | Reference | Role |
+|-------|-----------|------|
+| Griffis et al. 2021 (LQT) | *NeuroImage: Clinical* 30:102639; DOI [10.1016/j.nicl.2021.102639](https://doi.org/10.1016/j.nicl.2021.102639) | The direct normative-atlas comparator we run head-to-head against |
+| Foulon et al. 2018 (BCBtoolkit) | *GigaScience* 7(3):giy004; DOI [10.1093/gigascience/giy004](https://doi.org/10.1093/gigascience/giy004) | Second normative-atlas comparator (voxel-level maps) |
+| Kuceyeski et al. 2013 (NeMo) | *Brain Connectivity* 3(5):451–463; DOI [10.1089/brain.2013.0147](https://doi.org/10.1089/brain.2013.0147) | Older normative-atlas tool; sensitivity comparator if reviewers request |
+| Bey et al. 2024 (LeAPP) | (as above) | Methodological ancestor of our patient-specific pipeline |
+| Radwan et al. 2023 | *Network Neuroscience* 7(2):444–466; DOI [10.1162/netn_a_00277](https://doi.org/10.1162/netn_a_00277) | TBI + VBG + ACT small-N proof-of-concept; establishes we're not first to consider patient-specific tractography in TBI, but no cohort-scale head-to-head exists |
+
+**NeuroImage: Clinical / Journal of Neurotrauma backup tier:**
+
+| Paper | Reference | Role |
+|-------|-----------|------|
+| Palacios et al. 2022 | (as above) | TRACK-TBI subset precedent |
+| Osmanlıoğlu et al. 2022 | *Human Brain Mapping* 43(5):1567–1583; DOI [10.1002/hbm.25894](https://doi.org/10.1002/hbm.25894) | TBI longitudinal + cognition, normative-score approach |
+
+**Caveat:** verify citation details (issue, pages, DOI, author order) against
+source before including in submitted manuscript — some metadata may need
+correction, particularly for the Kuceyeski 2020 HBM entry.
+
 ## Journal-tier landscape
 
 **Full analysis:** [`journal_tier.md`](journal_tier.md) / [`journal_tier.docx`](journal_tier.docx) — per-venue framing, required analyses, section-by-section manuscript breakdowns, effort estimates, and failure modes.

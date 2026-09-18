@@ -238,22 +238,90 @@ analog for Paper 4 (longitudinal resource).
 
 ---
 
-## 4. Additional Griffis-lineage papers worth knowing
+## 4. Parallel lineage — Boes / Fox / Kletenik lesion-network mapping
 
-Beyond the three above, the following are frequently cited in this literature:
+An adjacent but distinct methodological family developed in parallel to the
+Griffis SDC lineage. Where Griffis-style SDC uses **structural** (white-matter
+tract) disconnection, Boes/Fox-style **lesion network mapping (LNM)** uses
+**functional** connectivity from a normative rs-fMRI atlas to identify
+brain networks affected by the lesion. Both lineages sit under the umbrella
+of "lesion → network dysfunction → symptom" work but arrive at it from
+different modalities.
+
+### 4a. Boes et al. 2015 — Lesion network mapping
+
+**Reference:** Boes, Prasad, Liu, Liu, Pascual-Leone, Caviness, Fox (2015).
+*Network localization of neurological symptoms from focal brain lesions.*
+**Brain 138(10):3061–3075.** DOI:
+[10.1093/brain/awv228](https://doi.org/10.1093/brain/awv228)
+
+**What they did:**
+- Instead of asking *which tracts does the lesion damage?*, asked *which
+  functional networks does the lesion location connect to in a healthy brain?*
+- Overlaid patient lesion masks (MNI) on a **normative rs-fMRI connectivity
+  atlas** built from healthy participants.
+- For each voxel in the lesion, extracted the healthy-brain functional
+  connectivity map — i.e. which distant voxels are functionally connected to
+  the lesioned area in healthy people.
+- Aggregated across all voxels of the lesion to produce a per-patient
+  "lesion network map."
+- Showed that specific neurological symptoms map to specific lesion networks
+  across heterogeneous lesion locations.
+
+**Why it matters for our paper:**
+- Established the lesion-network-mapping paradigm — a **parallel** approach
+  to Griffis-style SDC that is now widely used.
+- Foundational reference in the broader "lesion → network" literature that
+  reviewers expect to see cited.
+- **Contrast to our approach:** we use *patient-specific* SDC from *individual
+  DWI*; Boes uses *normative* FC from *lesion location alone*. Both use
+  normative reference data, but Boes doesn't need patient imaging beyond the
+  lesion mask.
+
+### 4b. Fox 2018 — Lesion network mapping paradigm (editorial synthesis)
+
+**Reference:** Fox (2018). *Mapping symptoms to brain networks with the human
+connectome.* **New England Journal of Medicine 379(23):2237–2245.** DOI:
+[10.1056/NEJMra1706158](https://doi.org/10.1056/NEJMra1706158)
+
+**What it did:**
+- Editorial-style review in *NEJM* synthesizing the lesion-network-mapping
+  paradigm for a clinical audience.
+- Established the terminology, method framework, and clinical potential of
+  mapping lesion locations to human-connectome-atlas-defined networks.
+- High-visibility reference — the *NEJM* citation lends legitimacy to the
+  broader network-mapping approach.
+
+**Why it matters for our paper:**
+- Not a direct methodological precedent (it's a review, not a primary study)
+  but the highest-visibility overview of the parallel lineage.
+- Cite in Paper 2 introduction alongside Griffis 2019 to position our work in
+  the broader "lesion → network → symptom" landscape.
+- If reviewers ask why we don't use lesion network mapping directly, this is
+  the paper that describes what they'd be asking us to do — and we can
+  distinguish our SDC-based approach as complementary.
+
+### 4c. Kletenik and follow-up applications
+
+Multiple papers from Fox's lab (2020–2023) applied lesion network mapping to
+diverse symptom domains — depression, memory, addiction, movement disorders,
+etc. Not directly comparable to our disconnection-outcomes paper, but the
+broader field is aware of them.
+
+The Griffis 2019 → Salvalaggio 2020 → Talozzi 2023 line is the **direct
+lineage** we're extending. The Boes 2015 → Fox 2018 → Kletenik lineage is a
+**parallel lineage** on rs-fMRI-based lesion network mapping that we cite for
+completeness in the intro but do not directly extend.
+
+## 4d. Additional lineage references worth knowing
+
+Beyond the parallel LNM lineage, the following are frequently cited:
 
 | Paper | Contribution | Relevance to Paper 2 |
 |-------|--------------|----------------------|
 | **Yeh et al. 2018 NeuroImage** — HCP-842 tractography atlas | The normative tractogram everyone uses | Underpins LQT + NeMo; cite in methods |
-| **Griffis et al. 2020 Brain** — network dysfunction in stroke followup | Extended their 2019 framework longitudinally | Cite in intro |
+| **Griffis et al. 2020 Brain** — network dysfunction in stroke followup | Extended 2019 framework longitudinally | Cite in intro |
 | **Corbetta et al. 2015 Neuron** — WashU stroke behavior battery | Multi-domain factor analysis of behavior | Motivates neuropsych domain-specificity we adopt |
-| **Boes et al. 2015 Brain** — lesion network mapping using rs-fMRI | Established the lesion-network-mapping paradigm | Cite in intro as parallel lineage |
-| **Kletenik / Fox lab papers 2020–2023** — lesion network mapping applications | Extended lesion-network-mapping to symptoms, novel targets | Cite in intro as parallel lineage |
-
-The Griffis 2019 → Salvalaggio 2020 → Talozzi 2023 line is the **direct
-lineage** we're extending; the Boes / Fox / Kletenik line is a **parallel
-lineage** on rs-fMRI-based lesion network mapping that we should cite for
-completeness in the intro but that we're not directly extending.
 
 ---
 

@@ -527,6 +527,58 @@ Roughly 60% of Brain effort.
 
 # Strategic path selection
 
+## Same data, three different papers
+
+Given the realistic-case data scenario of **GOSE + neuropsych battery + N ≥ 50**
+(the second-highest ceiling in the data-tier table), the same underlying data
+supports three fundamentally different manuscripts — one per candidate venue.
+The papers differ in their *core claim*, not their evidence base.
+
+### Comparison at the same data level
+
+| Aspect | NeuroImage version | Brain version | HBM version |
+|--------|--------------------|---------------|-------------|
+| Core claim | Patient-specific SDC captures signal that normative-atlas SDC misses in TBI (methods advance) | SDC mechanistically explains domain-specific cognitive deficits in TBI (biology extension of Griffis 2019) | Same as Brain, framed more descriptively |
+| Primary contribution | Methods (SDC computation improvement) | Biology (mechanism generalization) | Either — coherent whole |
+| Main use of neuropsych | Validation of methods divergence via downstream ΔAUC per domain | The central story: SDC → domain-specific deficit mapping | The central story (Brain equivalent) |
+| Requires LQT/BCB head-to-head | **Yes** (or paper collapses to Brain/HBM) | Supplement only (robustness check) | Supplement only |
+| Requires rs-fMRI | Optional (helps but not central) | Preferable — pushes closer to Brain-tier | Not required |
+| Central figure | Patient-specific vs LQT vs BCB divergence + downstream ΔAUC/ΔR² | Grid of scatter plots (each domain vs its network's SDC) + face-validity group disconnectome | Same as Brain, fewer panels |
+| Face-validity group disconnectome | Supplement | Main Fig 1 | Main Fig 1 |
+| Expected outcome bar | Must beat LQT downstream | Must beat lesion volume alone | Must beat lesion volume alone |
+| Intro word budget | ~1000 (methods-forward) | ~1200 (clinical-mechanistic) | ~800 (concise) |
+| Discussion word budget | ~1500 | ~1800 | ~1200 |
+| Main figures / tables | 5 / 2 | 5 / 3 | 4 / 2 |
+| Reader base | Imaging methodologists | Clinical neurologists | Broad imaging + clinical |
+| Expected reviewer question | *"Does patient-specific actually help vs LQT standard?"* | *"Does mechanism generalize from stroke to TBI, and survive incremental validity?"* | *"Is the whole coherent, honest, and reproducible?"* |
+| Additional effort | +LQT+BCB install + head-to-head analysis (~4 wk) | +neuropsych factor analysis + domain-network mapping (~3 wk) | Baseline |
+
+### When to write which version
+
+The strategic point is that **the underlying data supports all three**; the
+write-up should follow whichever contribution turns out quantitatively
+stronger.
+
+- **Write NeuroImage version if:** the patient-specific vs normative-atlas
+  SDC divergence figure shows meaningful separation, and that separation
+  translates into ΔAUC/ΔR² improvements on FC or behavior prediction. The
+  methods contribution is the paper.
+- **Write Brain version if:** the domain-specific network → cognitive-deficit
+  mapping is clean (each domain has an identifiable network signal), the
+  incremental validity vs lesion volume is meaningful (ΔAUC ≥ 0.05), and the
+  cohort N ≥ 50 with rich neuropsych. The biology is the paper.
+- **Write HBM version if:** neither the head-to-head nor the mechanism story
+  is exceptional but the whole is coherent. Same data, more modest framing.
+
+### Do not shop venues after seeing results
+
+The choice among the three is by *contribution strength*, not by ambition.
+This is why the analysis plan (contrasts, primary metrics, benchmarks) is
+locked *before* group-level results are opened — otherwise the venue choice
+becomes p-hacking dressed up as strategy.
+
+---
+
 ## Design the analysis to unlock either path
 
 Regardless of which venue is the eventual target, the following analyses are
