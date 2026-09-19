@@ -51,7 +51,10 @@ The factorial paper is documented across the following files in this folder:
 | [`manuscript_skeleton.md`](manuscript_skeleton.md) | Section-by-section outline with word budgets |
 | [`completion_tracker.md`](completion_tracker.md) | Per-arm × per-subject completion tracker with assembly diagram |
 | [`neuroimage_prerequisites.md`](neuroimage_prerequisites.md) | Three open items that gate NeuroImage-tier submission (synthetic validation, N ≥ 80, TBI-specific complications) |
+| [`contribution_strategy.md`](contribution_strategy.md) | Distance-from-LeAPP analysis + ranked enhancement menu (framework-extension vs framework-formation framing) |
 | [`differentiation_from_leapp.md`](differentiation_from_leapp.md) | Ranked menu of 20 candidate additions that enlarge our distance from LeAPP (Tier 0 table-stakes + Tier 1 high-leverage + Tier 2 medium + Tier 3 skip); marginal-value analysis and reviewer-defense mapping |
+| [`factorial_missing.md`](factorial_missing.md) | ★ Submission-readiness checklist: blockers (must-have), should-have (HBM tier), stretch (NeuroImage tier), timeline placeholder, dependencies flowchart, risk register |
+| [`factorial_abstract.md`](factorial_abstract.md) | ★ Honest working abstract for PI/coauthor review (contingencies acknowledged, is/is-not framing, questions for coauthors) |
 
 ### Prior-work reference
 

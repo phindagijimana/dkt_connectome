@@ -55,6 +55,8 @@ folder, listed by role:
 | [`disconnectome_paper_analysis_plan.md`](analysis_plan.md) | Pre-registration doc — locked design choices with sign-off dates |
 | [`disconnectome_paper_manuscript_skeleton.md`](manuscript_skeleton.md) | Section-by-section outline with word budgets |
 | [`disconnectome_paper_complete_case.md`](complete_case.md) | Subject-level data-tracking template (build as clinical export arrives) |
+| [`disconnectome_missing.md`](disconnectome_missing.md) | ★ Submission-readiness checklist: external blockers (TRACK-TBI export), internal blockers, HBM/Brain/NeuroImage tier gates, timeline placeholder, dependencies flowchart, risk register |
+| [`disconnectome_abstract.md`](disconnectome_abstract.md) | ★ Honest working abstract for PI/coauthor review (three framing-dependent working titles, contingencies acknowledged, is/is-not framing, sample-size honesty vs precedent) |
 | [`journal_tier.md`](../journal_tier.md) / [`.docx`](../journal_tier.docx) | Full ten-venue landscape + per-venue framing + manuscript breakdowns |
 
 ### Prior-work reference
