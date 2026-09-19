@@ -152,6 +152,23 @@ saved intermediate `.vbt_work` files from the failed run:
 **Conclusion:** deterministic bug-and-fix. Not a compute-environment
 issue.
 
+### End-to-end pipeline validation (2026-09-19, TBI011011 ses-2WK)
+
+After patching `run_vbt.py` and forcing the host script to bind-mount
+into the container (`VBT_BIND_DEV=1`), the full 14-step Snakemake DAG
+for both VBT arms completed:
+
+| Arm | SLURM job | Runtime | Steps done | Connectome | Empty nodes | Disconnectome |
+|-----|-----------|---------|-----------:|-----------:|------------:|:--------------|
+| vbt-lesion | 76167 | 6h 47m | 14/14 | 78 × 78 (DKT, deterministic) | 0 | 5842 edges > 0 (SIFT2), mean disconnection 0.249 |
+| vbt-std    | 76168 | 5h 05m | 14/14 | 78 × 78 (DKT, deterministic) | 0 | n/a (standard ACT, no lesion-aware disconnection) |
+
+Overall `subject_qc.json` reports `overall_status: PASS` for both arms
+— first successful VBT run for this subject after five deterministic
+midtrans SIGSEGVs (jobs 64321, 64330, 64332, 64767, 76165). The fix +
+bind-mount path is now the standard invocation for VBT arms until the
+qsiprep container SIF is rebuilt with the patched `run_vbt.py` baked in.
+
 ---
 
 ## Why this is a TBI-specific finding
@@ -277,11 +294,12 @@ VBT arms until the container is rebuilt.
 - [x] Root cause identified (negative-determinant sform → midtrans SIGSEGV)
 - [x] Fix implemented in `dwi_pipeline/scripts/run_vbt.py` (fslreorient2std preprocessing)
 - [x] Standalone reproduction verified (crash without fix, success with fix)
-- [ ] End-to-end pipeline verification via SLURM (in progress — job 76165)
+- [x] End-to-end pipeline verification via SLURM (TBI011011 ses-2WK, jobs 76167 + 76168, both PASS)
 - [ ] Cohort-scale prevalence characterization (pending cohort processing)
 - [ ] Upstream issue filed with BrainModes/LeAPP
 - [ ] Methods paragraph drafted for Paper 1 manuscript
 - [ ] QC figure showing pre-vs-post-fix VBT completion rate (contingent on cohort data)
+- [ ] qsiprep container SIF rebuilt with patched `run_vbt.py` (drops `VBT_BIND_DEV=1` requirement)
 
 ---
 
