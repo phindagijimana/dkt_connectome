@@ -184,10 +184,17 @@ dwi_pipeline/config/bids_repair_phase2_rsfmap.json
 dwi_pipeline/workflow/config/config.local.yaml
 
 # --- Study exports and local cohort data (never public) ------------------------
-dwi_pipeline/networks_URMC/
-dwi_pipeline/networks_URMC2/
+dwi_pipeline/networks_URMC_Siemens/
+dwi_pipeline/networks_URMC_GE/
 dwi_pipeline/sample_software_paper/
 dwi_pipeline/docs/presentations/
+
+# --- Nested standalone repos (own git remote, own life cycle) ----------------
+fMRI_pipeline/
+
+# --- NFS temp files -----------------------------------------------------------
+.nfs*
+dwi_pipeline/.nfs*
 dwi_pipeline/docs/img/qc/tbi011011_*.png
 dwi_pipeline/retry_*.txt
 dwi_pipeline/subject_list_cidur_*.txt
