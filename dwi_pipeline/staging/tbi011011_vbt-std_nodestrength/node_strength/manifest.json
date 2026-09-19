@@ -1,0 +1,46 @@
+{
+  "connectome_root": "/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment/sub-TBI011011_fastsurfer_experiment/arms/vbt-std/connectomes",
+  "fs_root": "/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment/sub-TBI011011_fastsurfer_experiment/arms/vbt-std/freesurfer",
+  "subjects": [
+    "sub-TBI011011"
+  ],
+  "n_subjects": 1,
+  "bct_backend": true,
+  "analysis_scheme": "dkt",
+  "analysis_atlas": "fs_dkt",
+  "analysis_n_nodes": 78,
+  "viz_scheme": "dk",
+  "viz_cortical_parcellation": "aparc_fsa5",
+  "viz_surface": "fsaverage5",
+  "atlas": "Desikan-Killiany-Tourville (MRtrix3 fs_dkt)",
+  "connectome_shape": [
+    78,
+    78
+  ],
+  "analysis_connectome_file": "dkt_connectome.csv",
+  "layout": {
+    "strength": "strength/ \u2014 per-subject strength + strength AI and cohort tables",
+    "volume": "volume/ \u2014 per-subject volume + volume AI (with --with-volume-ai)",
+    "compare": "compare/ \u2014 cross-modality tables (with --with-volume-ai)",
+    "reports": "reports/ \u2014 clinical PDF + full figure gallery per subject (default)"
+  },
+  "ai_formulas": {
+    "side_ai": "(L - R) / (L + R)",
+    "log_ai": "ln(L / R)",
+    "intrahemispheric_strength": "row sum of connectome edges within the same hemisphere only",
+    "interhemispheric_strength": "row sum of connectome edges across hemispheres only (L\u2194R)"
+  },
+  "volume_ai_enabled": true,
+  "caveats": [
+    "DK does NOT subdivide the thalamus into AV/CM/MDPf/PUL nuclei.",
+    "Whole-thalamus AI here is L vs R of the single Thalamus-Proper node.",
+    "For per-nucleus AI as in Piper et al. 2026, add a THOMAS step on top."
+  ],
+  "warnings": [],
+  "volume_source": "dk_nodes.mif (tractography grid)",
+  "n_subjects_with_volume": 1,
+  "clinical_reports": [
+    "reports/sub-TBI011011/report.pdf"
+  ],
+  "n_clinical_reports": 1
+}

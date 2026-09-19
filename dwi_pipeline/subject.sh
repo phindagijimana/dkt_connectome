@@ -872,7 +872,7 @@ run_inpaint() {
           --smoothing-factor "${VBT_SMOOTHING_FACTOR}" \
           --work-dir /out/.vbt_work
     else
-      apptainer exec --cleanenv --containall \
+      apptainer run --cleanenv --containall \
         -B "$(dirname "${t1w}")":/t1w_input:ro \
         -B "${mask_prepared}":/mask/lesion_mask_prepared.nii.gz:ro \
         -B "${outdir}":/out \
