@@ -126,8 +126,9 @@ Two arms of validation:
 1. **Population:** TBI vs stroke (Radwan 2023 had N=5 TBI; we have ~100)
 2. **Anatomy backend:** we add **neuroLIT** (Pollak 2025 DDPM inpainting) as a third arm alongside orig and VBT
 3. **Bilateral-lesion handling:** VBT's mirror assumption breaks for bilateral TBI (~30–40% of moderate-severe cases); we quantify how our arms handle this
-4. **Cohort scale:** LeAPP had N=36 stroke; we target ~100 TBI — 3× larger real-cohort N (LeAPP had more synthetic subjects at N=81)
-5. **Reproducibility infrastructure:** we ship containerized pipeline (GHCR + DockerHub) with per-subject provenance JSON at every step + Snakemake DAG + BIDS-App wrapper. LeAPP has a public repo but less reproducibility infrastructure.
+4. **Radiological-convention T1w handling:** LeAPP's VBT crashes deterministically on T1w with negative-determinant sform (radiological-convention DICOMs, common in clinical TBI cohorts); we add `fslreorient2std` preprocessing to normalize orientation before mirror-flirt-midtrans. See [`vbt_orientation_finding.md`](vbt_orientation_finding.md).
+5. **Cohort scale:** LeAPP had N=36 stroke; we target ~100 TBI — 3× larger real-cohort N (LeAPP had more synthetic subjects at N=81)
+6. **Reproducibility infrastructure:** we ship containerized pipeline (GHCR + DockerHub) with per-subject provenance JSON at every step + Snakemake DAG + BIDS-App wrapper. LeAPP has a public repo but less reproducibility infrastructure.
 
 ---
 

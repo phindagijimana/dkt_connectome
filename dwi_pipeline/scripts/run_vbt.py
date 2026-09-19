@@ -23,6 +23,7 @@ from scipy.ndimage import gaussian_filter
 
 
 REQUIRED_FSL_COMMANDS = (
+    "fslreorient2std",
     "fslswapdim",
     "flirt",
     "midtrans",
@@ -110,10 +111,22 @@ def virtual_brain_transplant(
     if t1w_img.shape != mask_img.shape or not np.allclose(t1w_img.affine, mask_img.affine):
         raise ValueError("VBT mask must already match the T1w grid and affine")
 
-    shutil.copy2(t1w, work / "Orig.nii.gz")
-    binary_mask = (mask_img.get_fdata() != 0).astype(np.float32)
-    save_like(binary_mask, t1w_img, work / "Mask.nii.gz")
-    save_like(1.0 - binary_mask, t1w_img, work / "Mask_invert.nii.gz")
+    # Reorient T1w + mask to FSL standard (positive-determinant sform).
+    # Some FSL binaries (notably midtrans) segfault on negative-determinant
+    # sforms; fslreorient2std normalizes orientation without changing anatomy.
+    # We reorient the T1w first, then apply the same reorientation to the
+    # mask via a save-with-matching-affine so the two remain aligned.
+    shutil.copy2(t1w, work / "Orig_raw.nii.gz")
+    run("fslreorient2std", str(work / "Orig_raw.nii.gz"), str(work / "Orig.nii.gz"))
+    # Re-load reoriented T1w so mask save uses the standard-orientation affine
+    orig_std_img = nib.load(work / "Orig.nii.gz")
+    # Apply same reorientation to the mask by running fslreorient2std on it
+    shutil.copy2(mask, work / "Mask_raw.nii.gz")
+    run("fslreorient2std", str(work / "Mask_raw.nii.gz"), str(work / "Mask_std.nii.gz"))
+    mask_std_img = nib.load(work / "Mask_std.nii.gz")
+    binary_mask = (mask_std_img.get_fdata() != 0).astype(np.float32)
+    save_like(binary_mask, orig_std_img, work / "Mask.nii.gz")
+    save_like(1.0 - binary_mask, orig_std_img, work / "Mask_invert.nii.gz")
 
     run("fslswapdim", str(work / "Orig.nii.gz"), "-x", "y", "z", str(work / "Mirror.nii.gz"))
     run("fslswapdim", str(work / "Mask.nii.gz"), "-x", "y", "z", str(work / "MaskMirror.nii.gz"))

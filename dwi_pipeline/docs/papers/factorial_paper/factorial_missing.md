@@ -190,6 +190,7 @@ Submission
 |------|-----------|
 | Cohort N < 40 per arm | Report as failure-mode analysis; consider dropping low-N arm from primary; fall back to NeuroImage: Reports |
 | VBT systematic failures on bilateral cases | Document as first-class finding; validate as TBI-specific limitation of LeAPP's method |
+| **VBT `midtrans` SIGSEGV on radiological-convention T1w** | ✅ **Fixed** — `fslreorient2std` preprocessing added to `run_vbt.py`. See [`vbt_orientation_finding.md`](vbt_orientation_finding.md) for finding + fix + suggested manuscript treatment (methods note + supplement figure of pre-vs-post fix VBT completion rate stratified by sform determinant) |
 | neuroLIT out-of-distribution behavior | Sensitivity analysis in supplement; may motivate future retraining |
 | Deep Atropos supplement N insufficient | Fold into pilot-only qualitative supplement |
 | Reviewer perceives paper as "just LeAPP re-run on TBI" | Foreground bilateral handling + neuroLIT + reproducibility infrastructure in intro |

@@ -55,6 +55,7 @@ The factorial paper is documented across the following files in this folder:
 | [`differentiation_from_leapp.md`](differentiation_from_leapp.md) | Ranked menu of 20 candidate additions that enlarge our distance from LeAPP (Tier 0 table-stakes + Tier 1 high-leverage + Tier 2 medium + Tier 3 skip); marginal-value analysis and reviewer-defense mapping |
 | [`factorial_missing.md`](factorial_missing.md) | ★ Submission-readiness checklist: blockers (must-have), should-have (HBM tier), stretch (NeuroImage tier), timeline placeholder, dependencies flowchart, risk register |
 | [`factorial_abstract.md`](factorial_abstract.md) | ★ Honest working abstract for PI/coauthor review (contingencies acknowledged, is/is-not framing, questions for coauthors) |
+| [`vbt_orientation_finding.md`](vbt_orientation_finding.md) | ★ TBI-specific finding: LeAPP VBT crashes on negative-determinant sform T1w (common in radiological-convention DICOMs); fixed with `fslreorient2std` preprocessing. Real Paper 1 methods contribution (RQ4 failure mode + supplement). |
 
 ### Prior-work reference
 
