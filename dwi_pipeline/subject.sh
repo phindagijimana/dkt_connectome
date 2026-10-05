@@ -160,6 +160,8 @@
 #                          node counts across a cohort)
 #   CONNECTOME_LUT_DKT     labelconvert LUT for the DKT parcellation (78 nodes)
 #   CONNECTOME_FAIL_ON_EMPTY_NODES=1  fail instead of warn when a node has no streamlines
+#   CONNECTOME_MAX_EMPTY_NODES=10   fail when empty node count exceeds this (default 10)
+#   QSIPREP_FORCE_SYN=1            with use_syn_sdc, pass --force-syn (--syn sets both)
 #   CONNECTOME_DETERMINISTIC=0|1  pin ITK to 1 thread for a reproducible matrix (default 1)
 #   CONNECTOME_RESAMPLE_TO_DWI=0|1  resample the segmentation onto the DWI grid (default 1)
 #   QSIPREP_USE_SYN_SDC=1  opt-in SyN when no measured fmaps (same as --syn)
@@ -238,6 +240,11 @@ shift 2 || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --syn|--use-syn-sdc)
+      QSIPREP_USE_SYN_SDC=1
+      QSIPREP_FORCE_SYN=1
+      ;;
+    --force-syn)
+      QSIPREP_FORCE_SYN=1
       QSIPREP_USE_SYN_SDC=1
       ;;
     --fmap-retry)
@@ -513,6 +520,7 @@ CONNECTOME_LUT_DKT="${CONNECTOME_LUT_DKT:-${REPO_ROOT}/dwi_pipeline/containers/c
 # also be genuine in severe pathology (resection, large lesion), so warn by
 # default and let callers escalate.
 CONNECTOME_FAIL_ON_EMPTY_NODES="${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}"
+CONNECTOME_MAX_EMPTY_NODES="${CONNECTOME_MAX_EMPTY_NODES:-10}"
 # ITK sums its registration metric across threads in a nondeterministic order, so
 # repeat runs of Step 4b differ by ~1e-10 in the affine. That is usually invisible
 # after nearest-neighbour label resampling, but it can flip boundary voxels and
@@ -661,6 +669,7 @@ prepare_qsiprep_bids_filter() {
     QSIPREP_FILTER_HOST="${BIDS_FILTER_CACHE}"
     QSIPREP_FILTER_CONTAINER="/work/bids_filter.json"
     echo "QSIPrep: dwi-select ${DWI_SELECT_JSON} -> ${BIDS_FILTER_CACHE}"
+    echo "dwi_select=${DWI_SELECT_JSON} sha256=$(sha256sum "${DWI_SELECT_JSON}" | awk '{print $1}')"
   else
     [[ -f "${QSIPREP_BIDS_FILTER}" ]] || _pipeline_fail "bids-filter" "missing QSIPREP_BIDS_FILTER=${QSIPREP_BIDS_FILTER}"
     QSIPREP_FILTER_HOST="${QSIPREP_BIDS_FILTER}"
@@ -672,29 +681,35 @@ prepare_qsiprep_bids_filter() {
 _configure_qsiprep_sdc() {
   local filter_file="$1"
   local -n _out=$2
+  local fmap_in_filter=0 force_syn=false sdc=none
+
+  if [[ -n "${filter_file}" ]] && _bids_filter_includes_fmap "${filter_file}"; then
+    fmap_in_filter=1
+  fi
 
   if [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]]; then
-    _out+=(--ignore fieldmaps --use-syn-sdc error)
+    _out+=(--ignore fieldmaps --use-syn-sdc error --force-syn)
+    sdc=syn
+    force_syn=true
     echo "QSIPrep: sub-${SUBJECT}: explicit --fmap-retry -> SyN SDC"
-    return 0
-  fi
-  if [[ -n "${filter_file}" ]] && _bids_filter_includes_fmap "${filter_file}"; then
+  elif [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" || "${QSIPREP_FORCE_SYN:-0}" == "1" ]]; then
+    _out+=(--use-syn-sdc error --force-syn)
+    sdc=syn
+    force_syn=true
+    echo "QSIPrep: sub-${SUBJECT}: explicit SyN request -> --use-syn-sdc error --force-syn"
+  elif [[ "${fmap_in_filter}" == "1" ]]; then
+    sdc=measured
     echo "QSIPrep: sub-${SUBJECT}: dwi-select includes fmap -> measured SDC"
-    return 0
-  fi
-  if [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]]; then
-    _out+=(--use-syn-sdc error)
-    echo "QSIPrep: sub-${SUBJECT}: explicit --syn -> SyN SDC"
-    return 0
-  fi
-  if [[ "${QSIPREP_NO_SDC:-0}" == "1" ]]; then
+  elif [[ "${QSIPREP_NO_SDC:-0}" == "1" ]]; then
+    sdc=none
     echo "QSIPrep: sub-${SUBJECT}: explicit --no-sdc -> NO SDC (matches previous no-fieldmap GE runs)"
-    return 0
+  else
+    _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${SUBJECT}" \
+      "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
+      "Or pass --syn (QSIPREP_USE_SYN_SDC=1) or --fmap-retry (QSIPREP_FMAP_RETRY=1)." \
+      "Or pass --no-sdc (QSIPREP_NO_SDC=1) to explicitly skip SDC (matches previous no-fieldmap GE runs)."
   fi
-  _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${SUBJECT}" \
-    "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
-    "Or pass --syn (QSIPREP_USE_SYN_SDC=1) or --fmap-retry (QSIPREP_FMAP_RETRY=1)." \
-    "Or pass --no-sdc (QSIPREP_NO_SDC=1) to explicitly skip SDC (matches previous no-fieldmap GE runs)."
+  echo "sdc=${sdc} force_syn=${force_syn} fmap_in_filter=${fmap_in_filter}"
 }
 
 # -----------------------------------------------------------------------------
@@ -1701,16 +1716,31 @@ run_connectome() {
 
     # The image only ships fs_default.txt, so a DKT run binds its LUT in.
     local -a lut_args=()
+    local lut_source="" lut_sha256=""
     if [[ "${parc}" == "dkt" ]]; then
       if [[ "${CONNECTOME_BIND_DEV:-0}" == "1" ]]; then
+        echo "Connectome: CONNECTOME_BIND_DEV=1 (host LUT + run_connectome.sh)"
         [[ -f "${CONNECTOME_LUT_DKT}" ]] || _pipeline_fail "connectome" "missing DKT LUT: ${CONNECTOME_LUT_DKT}" \
           "Generate it: python3 dwi_pipeline/scripts/make_dkt_lut.py"
         binds+=(-B "${CONNECTOME_LUT_DKT}":/lut/fs_dkt.txt:ro)
         lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
-        echo "Using DKT LUT: ${CONNECTOME_LUT_DKT}"
-      else
+        lut_source="dev_bind"
+        lut_sha256="$(sha256sum "${CONNECTOME_LUT_DKT}" | awk '{print $1}')"
+      elif apptainer exec --cleanenv --containall "${CONTAINER_CONNECTOME}" \
+          test -f /opt/dkt/lut/fs_dkt.txt; then
         lut_args+=(--mrtrix-lut /opt/dkt/lut/fs_dkt.txt)
-        echo "Using baked DKT LUT: /opt/dkt/lut/fs_dkt.txt"
+        lut_source="baked"
+        lut_sha256="$(apptainer exec --cleanenv --containall "${CONTAINER_CONNECTOME}" \
+          sha256sum /opt/dkt/lut/fs_dkt.txt | awk '{print $1}')"
+        echo "Connectome: using baked DKT LUT /opt/dkt/lut/fs_dkt.txt"
+      elif [[ -f "${CONNECTOME_LUT_DKT}" ]]; then
+        binds+=(-B "${CONNECTOME_LUT_DKT}":/lut/fs_dkt.txt:ro)
+        lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+        lut_source="host"
+        lut_sha256="$(sha256sum "${CONNECTOME_LUT_DKT}" | awk '{print $1}')"
+        echo "Connectome: baked LUT missing; using host fallback ${CONNECTOME_LUT_DKT}"
+      else
+        _pipeline_fail "connectome" "missing DKT LUT in image (/opt/dkt/lut/fs_dkt.txt) and on host (${CONNECTOME_LUT_DKT})"
       fi
     fi
 
@@ -1828,6 +1858,8 @@ run_connectome() {
     echo "         or a large lesion. Check ${outdir}/parcellation.json."
     if [[ "${CONNECTOME_FAIL_ON_EMPTY_NODES}" == "1" ]]; then
       _pipeline_fail "connectome" "${empty_nodes} empty nodes in ${matrix} (CONNECTOME_FAIL_ON_EMPTY_NODES=1)"
+    elif [[ "${empty_nodes}" -gt "${CONNECTOME_MAX_EMPTY_NODES}" ]]; then
+      _pipeline_fail "connectome" "${empty_nodes} empty nodes in ${matrix} (CONNECTOME_MAX_EMPTY_NODES=${CONNECTOME_MAX_EMPTY_NODES})"
     fi
   fi
 
@@ -1837,6 +1869,8 @@ run_connectome() {
   "atlas": "${atlas}",
   "nodes": ${node_count},
   "labelconvert_lut": "${lut_used}",
+  "lut_source": "${lut_source}",
+  "lut_sha256": "${lut_sha256}",
   "primary_measure": "${PRIMARY_CONNECTOME_MEASURE}",
   "connectome_csv": "${matrix##*/}",
   "matrices": {
@@ -1851,6 +1885,7 @@ run_connectome() {
     "md": ${md_json}
   },
   "empty_nodes": ${empty_nodes},
+  "max_empty_nodes": ${CONNECTOME_MAX_EMPTY_NODES},
   "deterministic": ${CONNECTOME_DETERMINISTIC},
   "selected_by": "${parc_source}",
   "freesurfer_subject_dir": "${fs_dir}",

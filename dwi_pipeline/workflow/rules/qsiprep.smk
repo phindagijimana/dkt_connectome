@@ -70,21 +70,42 @@ rule qsiprep:
           has_fmap=0
         fi
 
+        fmap_in_filter="${{has_fmap}}"
+        want_syn=0
+        force_syn=0
+        sdc="none"
         if [[ "{QSIPREP_FMAP_RETRY}" == "True" ]]; then
-          xtra+=(--ignore fieldmaps --use-syn-sdc error)
-          echo "QSIPrep: sub-${{SUBJECT}}: explicit fmap_retry -> SyN SDC"
-        elif [[ "${{has_fmap}}" == "1" ]]; then
-          echo "QSIPrep: sub-${{SUBJECT}}: filter includes fmap -> measured SDC"
-        elif [[ "{QSIPREP_USE_SYN_SDC}" == "True" ]]; then
-          xtra+=(--use-syn-sdc error)
-          echo "QSIPrep: sub-${{SUBJECT}}: explicit use_syn_sdc -> SyN SDC"
+          want_syn=1
+          force_syn=1
+        fi
+        if [[ "{QSIPREP_USE_SYN_SDC}" == "True" ]]; then
+          want_syn=1
+        fi
+        if [[ "{QSIPREP_FORCE_SYN}" == "True" ]]; then
+          want_syn=1
+          force_syn=1
+        fi
+        if [[ "${{want_syn}}" == "1" ]]; then
+          if [[ "{QSIPREP_FMAP_RETRY}" == "True" ]]; then
+            xtra+=(--ignore fieldmaps)
+          fi
+          xtra+=(--use-syn-sdc error --force-syn)
+          sdc="syn"
+        elif [[ "${{fmap_in_filter}}" == "1" ]]; then
+          sdc="measured"
         elif [[ "{QSIPREP_NO_SDC}" == "True" ]]; then
-          echo "QSIPrep: sub-${{SUBJECT}}: explicit no_sdc -> NO SDC (legacy no-fieldmap GE runs)"
+          sdc="none"
         else
           _pipeline_fail "QSIPrep/SDC" "no distortion correction configured for sub-${{SUBJECT}}" \
             "Measured SDC requires fmaps in the dwi-select filter (IntendedFor -> target DWI)." \
             "Or set qsiprep.use_syn_sdc / qsiprep.fmap_retry / qsiprep.no_sdc in config" \
             "(equivalents: --syn, --fmap-retry, --no-sdc; env: QSIPREP_USE_SYN_SDC, QSIPREP_FMAP_RETRY, QSIPREP_NO_SDC)."
+        fi
+        echo "sdc=${{sdc}} force_syn=$([[ "${{force_syn}}" == "1" ]] && echo true || echo false) fmap_in_filter=${{fmap_in_filter}}"
+        if [[ -n "{params.dwi_select_json}" ]]; then
+          echo "dwi_select={params.dwi_select_json} sha256=$(sha256sum "{params.dwi_select_json}" | awk '{{print $1}}')"
+        elif [[ -n "{params.bids_filter}" ]]; then
+          echo "bids_filter={params.bids_filter} sha256=$(sha256sum "{params.bids_filter}" | awk '{{print $1}}')"
         fi
 
         apptainer run --cleanenv --containall \

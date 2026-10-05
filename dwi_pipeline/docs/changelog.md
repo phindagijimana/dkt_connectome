@@ -6,6 +6,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Added
+
+- **Label-file fallback.** The connectome step uses `/opt/dkt/lut/fs_dkt.txt` inside the pinned v0.3.0 image. If that file is absent, it mounts only the host `fs_dkt.txt` and does not replace `run_connectome.sh`. `parcellation.json` records `lut_source` (`baked` or `host`) and `lut_sha256`. See [Reproducible SyN, label file, and empty-node behavior](repro_sdc_lut.md).
+- **SyN passes both flags.** `--syn` sends `--use-syn-sdc error` and `--force-syn`, including when the BIDS filter contains a fieldmap. The QSIPrep log records `sdc`, `force_syn`, and `fmap_in_filter`. Measured fieldmap correction remains the default when the run did not ask for SyN.
+- **`connectome.max_empty_nodes`** (default 10). The connectome step fails above that count. The applied limit is stored in `parcellation.json`.
+- **b=3000 session selectors** `config/dwi_select_b3000_ses-2WK.json` and `config/dwi_select_b3000_ses-6MO.json` (`dwi_acquisition` null, so the shell value selects the series). The QSIPrep log includes the selector SHA-256.
+
+### Changed
+
+- Connectome image digest is unchanged at v0.3.0. These edits are workflow and config only.
+
 ## [0.3.0] — Tier 1 reproducibility (baked step scripts)
 
 ### Added

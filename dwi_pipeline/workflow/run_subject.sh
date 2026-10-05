@@ -80,6 +80,7 @@ _apply_env() {
   return 0
 }
 [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && _apply_env qsiprep.use_syn_sdc true
+[[ "${QSIPREP_FORCE_SYN:-0}" == "1" ]] && _apply_env qsiprep.force_syn true
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && _apply_env qsiprep.fmap_retry true
 [[ "${QSIPREP_NO_SDC:-0}"      == "1" ]] && _apply_env qsiprep.no_sdc      true
 _apply_env qsiprep.bids_filter        "${QSIPREP_BIDS_FILTER:-}"
@@ -116,6 +117,7 @@ _apply_env experiment.arm              "${EXPERIMENT_ARM:-}"
 _apply_env connectome.enabled         "$([[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.parcellation    "${CONNECTOME_PARCELLATION:-}"
 _apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.max_empty_nodes "${CONNECTOME_MAX_EMPTY_NODES:-10}"
 _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
@@ -153,7 +155,8 @@ _apply_env templateflow_home          "${TEMPLATEFLOW_HOME:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true ;;
+    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true; OVERRIDES[qsiprep.force_syn]=true ;;
+    --force-syn)           OVERRIDES[qsiprep.force_syn]=true; OVERRIDES[qsiprep.use_syn_sdc]=true ;;
     --fmap-retry)          OVERRIDES[qsiprep.fmap_retry]=true ;;
     --no-sdc)              OVERRIDES[qsiprep.no_sdc]=true ;;
     --bids-filter)         OVERRIDES[qsiprep.bids_filter]="${2:?Need path after --bids-filter}"; shift ;;

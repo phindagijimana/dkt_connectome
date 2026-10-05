@@ -76,6 +76,7 @@ Contents
    references
    citation
    license
+   repro_sdc_lut
    changelog
 
 .. toctree::

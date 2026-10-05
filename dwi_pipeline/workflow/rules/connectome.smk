@@ -33,6 +33,7 @@ CONNECTOME_PARCJSON_PATTERN = f"{CONNECTOME_OUT}/sub-{{subject}}/parcellation.js
 CONNECTOME_PARCELLATION_CFG = str(CONNECTOME_CFG.get("parcellation", "dkt"))
 CONNECTOME_DETERMINISTIC = bool(CONNECTOME_CFG.get("deterministic", True))
 CONNECTOME_FAIL_ON_EMPTY_NODES = bool(CONNECTOME_CFG.get("fail_on_empty_nodes", False))
+CONNECTOME_MAX_EMPTY_NODES = int(CONNECTOME_CFG.get("max_empty_nodes", 10))
 CONNECTOME_RESAMPLE_TO_DWI = bool(CONNECTOME_CFG.get("resample_to_dwi", True))
 CONNECTOME_WEIGHTING = str(CONNECTOME_CFG.get("weighting", "count")).lower()
 CONNECTOME_PRIMARY_MEASURE = str(
@@ -205,6 +206,7 @@ rule connectome:
         lut_lausanne_mrtrix=LAUSANNE60_LUT_MRTRIX,
         deterministic="1" if CONNECTOME_DETERMINISTIC else "0",
         fail_on_empty="1" if CONNECTOME_FAIL_ON_EMPTY_NODES else "0",
+        max_empty_nodes=str(CONNECTOME_MAX_EMPTY_NODES),
         weighting=CONNECTOME_WEIGHTING,
         primary_measure=CONNECTOME_RUN_PRIMARY,
         session=lambda wc: resolve_session(wc.subject),
@@ -337,13 +339,31 @@ rule connectome:
           act_binds=(-B "{LESION_AWARE_ACT_OUT}":/lesion_act:ro)
         fi
         lut_args=()
+        lut_source=""
+        lut_sha256=""
         if [[ "{params.parc}" == "dkt" ]]; then
           if [[ "{CONNECTOME_BIND_DEV}" == "True" ]]; then
+            echo "Connectome: CONNECTOME_BIND_DEV=1 (host LUT + run_connectome.sh)"
             [[ -f "{params.lut_dkt}" ]] || _pipeline_fail "connectome" "missing DKT LUT: {params.lut_dkt}"
             binds+=(-B "{params.lut_dkt}":/lut/fs_dkt.txt:ro)
             lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
-          else
+            lut_source="dev_bind"
+            lut_sha256="$(sha256sum "{params.lut_dkt}" | awk '{{print $1}}')"
+          elif apptainer exec --cleanenv --containall "{CONTAINER_CONNECTOME}" \
+              test -f "{CONNECTOME_LUT_BAKED}"; then
             lut_args+=(--mrtrix-lut {CONNECTOME_LUT_BAKED})
+            lut_source="baked"
+            lut_sha256="$(apptainer exec --cleanenv --containall "{CONTAINER_CONNECTOME}" \
+              sha256sum "{CONNECTOME_LUT_BAKED}" | awk '{{print $1}}')"
+            echo "Connectome: using baked DKT LUT {CONNECTOME_LUT_BAKED}"
+          elif [[ -f "{params.lut_dkt}" ]]; then
+            binds+=(-B "{params.lut_dkt}":/lut/fs_dkt.txt:ro)
+            lut_args+=(--mrtrix-lut /lut/fs_dkt.txt)
+            lut_source="host"
+            lut_sha256="$(sha256sum "{params.lut_dkt}" | awk '{{print $1}}')"
+            echo "Connectome: baked LUT missing; using host fallback {params.lut_dkt}"
+          else
+            _pipeline_fail "connectome" "missing DKT LUT in image ({CONNECTOME_LUT_BAKED}) and on host ({params.lut_dkt})"
           fi
         elif [[ "{params.parc}" == "lausanne60" ]]; then
           [[ -f "{params.lut_lausanne_fs}" ]] || _pipeline_fail "connectome" "missing Lausanne FS LUT"
@@ -420,10 +440,13 @@ rule connectome:
         done
 
         empty_nodes="$(_count_empty_nodes "{output.count_matrix}")"
+        max_empty="{params.max_empty_nodes}"
         if [[ "${{empty_nodes}}" -gt 0 ]]; then
           echo "WARNING: ${{empty_nodes}} of ${{node_count}} ${{atlas}} nodes received no streamlines."
           if [[ "{params.fail_on_empty}" == "1" ]]; then
             _pipeline_fail "connectome" "${{empty_nodes}} empty nodes (fail_on_empty_nodes=true)"
+          elif [[ "${{empty_nodes}}" -gt "${{max_empty}}" ]]; then
+            _pipeline_fail "connectome" "${{empty_nodes}} empty nodes (max_empty_nodes=${{max_empty}})"
           fi
         fi
 
@@ -433,6 +456,8 @@ rule connectome:
   "atlas": "${{atlas}}",
   "nodes": ${{node_count}},
   "labelconvert_lut": "${{lut_used}}",
+  "lut_source": "${{lut_source}}",
+  "lut_sha256": "${{lut_sha256}}",
   "primary_measure": "{params.primary_measure}",
   "act_mode": "{ACT_MODE}",
   "experiment_arm": "{EXPERIMENT_ARM}",
@@ -450,6 +475,7 @@ rule connectome:
   }},
   "nodes_image": "$(basename "{output.nodes}")",
   "empty_nodes": ${{empty_nodes}},
+  "max_empty_nodes": ${{max_empty}},
   "deterministic": {params.deterministic},
   "freesurfer_subject_dir": "{params.fs_dir}",
   "aparc_aseg": "${{aparc}}"

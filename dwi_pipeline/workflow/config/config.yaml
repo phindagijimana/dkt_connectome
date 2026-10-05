@@ -60,6 +60,7 @@ fs_lut: null   # default: dirname(fs_license)/FreeSurferColorLUT.txt
 # --- Step 1: QSIPrep ---
 qsiprep:
   use_syn_sdc: false       # --syn / QSIPREP_USE_SYN_SDC=1
+  force_syn: false         # set true with --syn; SyN requests pass --use-syn-sdc and --force-syn
   fmap_retry: false        # --fmap-retry / QSIPREP_FMAP_RETRY=1
   no_sdc: false            # --no-sdc / QSIPREP_NO_SDC=1 — skip SDC entirely (legacy no-fieldmap GE runs)
   bids_filter: null        # static filter JSON (--bids-filter); mutually exclusive with dwi-select
@@ -127,6 +128,7 @@ connectome:
   atlases: [dkt]            # optional: add lausanne60 for robustness connectomes
   lut_dkt: null             # default: containers/connectome/mrtrix_lut/fs_dkt.txt
   fail_on_empty_nodes: false
+  max_empty_nodes: 10      # fail connectome when empty_nodes exceeds this (unless fail_on_empty_nodes)
   deterministic: true
   resample_to_dwi: true
   weighting: count          # count | sift2 — must match Step 4.1 disconnectome weighting
