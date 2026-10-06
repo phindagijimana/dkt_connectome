@@ -63,7 +63,10 @@ RECON_SESSION="${RECON_SESSION:-2WK}"
 export BIDS_DIR
 export RECON_SESSION
 export SUBJECT_LIST_USE_EXISTING=1
-export SUBJECT_LIST_FILE="${DWI_ROOT}/subjects.txt"
+# Per-subject file to avoid a race when multiple subjects are submitted in
+# parallel: each SLURM job env captures a stable path pointing at a file
+# holding only that subject's ID. Callers can pre-set SUBJECT_LIST_FILE.
+export SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects_${SUBJECT}.txt}"
 printf '%s\n' "${SUBJECT}" > "${SUBJECT_LIST_FILE}"
 
 export SBATCH_CPUS="${SBATCH_CPUS:-8}"

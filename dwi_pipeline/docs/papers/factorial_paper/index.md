@@ -56,6 +56,7 @@ The factorial paper is documented across the following files in this folder:
 | [`factorial_missing.md`](factorial_missing.md) | ★ Submission-readiness checklist: blockers (must-have), should-have (HBM tier), stretch (NeuroImage tier), timeline placeholder, dependencies flowchart, risk register |
 | [`factorial_abstract.md`](factorial_abstract.md) | ★ Honest working abstract for PI/coauthor review (contingencies acknowledged, is/is-not framing, questions for coauthors) |
 | [`vbt_orientation_finding.md`](vbt_orientation_finding.md) | ★ TBI-specific finding: LeAPP VBT crashes on negative-determinant sform T1w (common in radiological-convention DICOMs); fixed with `fslreorient2std` preprocessing. Real Paper 1 methods contribution (RQ4 failure mode + supplement). |
+| [`sidecar_repair_finding.md`](sidecar_repair_finding.md) | ★ Cohort-scale BIDS repair for Case-2 phasediff fmaps (EchoTime1/2, magnitude1/2, IntendedFor, PE block) — code walkthrough of `repair_bids_sidecars.py`, per-subject applicability table, methods paragraph draft. |
 
 ### Prior-work reference
 

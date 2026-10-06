@@ -8,6 +8,10 @@
   "subjects": {
     "SUBJ01": {
       "total_readout_time": 0.0522511
+    },
+    "TBI011204": {
+      "total_readout_time": 0.0346501,
+      "phase_encoding_direction": "j-"
     }
   }
 }
