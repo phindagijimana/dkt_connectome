@@ -56,6 +56,11 @@ export DWI_CONNECTOMES="${DWI_CONNECTOMES:-${EXPERIMENT_ROOT}/validation_v030/ar
 export FMRIPREP_DIR="${FMRIPREP_DIR:-${EXPERIMENT_ROOT}/fmri_derivatives_inpaint/fmriprep}"
 export LQT_STAGING="${LQT_STAGING:-${EXPERIMENT_ROOT}/lqt_batch/staging}"
 export LQT_DIR="${LQT_DIR:-${EXPERIMENT_ROOT}/lqt_batch/outputs}"
+export LQT_ATLAS_DIR="${LQT_ATLAS_DIR:-${EXPERIMENT_ROOT}/lqt_batch/atlas}"
+DEFAULT_PARCEL="${LQT_ATLAS_DIR}/dkt78_mni152nlin6asym_res-2.nii.gz"
+if [[ -z "${LQT_PARCEL_NII:-}" && -f "${DEFAULT_PARCEL}" ]]; then
+    export LQT_PARCEL_NII="${DEFAULT_PARCEL}"
+fi
 
 mkdir -p "${SCRIPT_DIR}/logs"
 

@@ -31,12 +31,14 @@ Default job: **MNI lesion staging only** (ANTs via host or `qsirecon.sif`).
 **Recommended comparator (no MATLAB):** R [jdwor/LQT](https://github.com/jdwor/LQT) (Griffis 2021 equivalent):
 
 ```bash
-# once: R -e "remotes::install_github('jdwor/LQT')"
-export LQT_PARCEL_NII=/path/to/dkt78_mni_parcellation.nii.gz
+bash dwi_pipeline/analysis/paper2b/prepare_dkt78_mni_parcellation.sh TBI011011
+bash dwi_pipeline/analysis/paper2b/install_lqt_r.sh
 export LQT_BACKEND=r
-sbatch --export=ALL,LQT_BACKEND,LQT_PARCEL_NII \
+sbatch --export=ALL,LQT_BACKEND \
   dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
 ```
+
+Atlas path (auto-detected if present): `$EXPERIMENT_ROOT/lqt_batch/atlas/dkt78_mni152nlin6asym_res-2.nii.gz`
 
 MATLAB Griffis toolkit: `LQT_BACKEND=matlab` + `LQT_ROOT=...`.
 

@@ -14,7 +14,7 @@
 | fMRI Arm B (dual stream) | ✅ | ⚠️ DKT BOLD fallback | |
 | 7-subject pilot | ✅ | | |
 | Analysis scripts (`analysis/paper2b/`) | ✅ | | |
-| **LQT batch** | | | ❌ |
+| **LQT batch** | ⚠️ MNI lesions + DKT atlas | | R LQT run pending |
 | BCB (optional) | | | ❌ |
 | Imaging cohort N ≥ 40 | | | ❌ |
 | Analysis plan sign-off | | ⚠️ | |

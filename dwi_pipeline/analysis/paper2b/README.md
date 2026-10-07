@@ -27,10 +27,14 @@ bash dwi_pipeline/analysis/paper2b/run_paper2b_analysis.sh
 
 | Step | Command |
 |------|---------|
-| SLURM (7 pilot subjects) | `sbatch dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm` |
-| One subject (staging) | `bash dwi_pipeline/analysis/paper2b/run_lqt_one_subject.sh TBI011011` |
+| **DKT-78 MNI atlas** (once) | `bash dwi_pipeline/analysis/paper2b/prepare_dkt78_mni_parcellation.sh TBI011011` |
+| Install R LQT (once) | `bash dwi_pipeline/analysis/paper2b/install_lqt_r.sh` |
+| SLURM (7 pilot subjects) | `sbatch --export=ALL,LQT_BACKEND=r dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm` |
+| One subject | `bash dwi_pipeline/analysis/paper2b/run_lqt_one_subject.sh TBI011011` |
 | MNI lesion only | `bash dwi_pipeline/analysis/paper2b/prepare_lesion_mni_for_lqt.sh TBI011011` |
 | Docx export | `bash dwi_pipeline/analysis/paper2b/export_paper2b_docx.sh` |
+
+Default `LQT_PARCEL_NII`: `$EXPERIMENT_ROOT/lqt_batch/atlas/dkt78_mni152nlin6asym_res-2.nii.gz`
 
 Default batch: MNI lesions under `$EXPERIMENT_ROOT/lqt_batch/staging/` (ANTs via host or `qsirecon.sif`).
 

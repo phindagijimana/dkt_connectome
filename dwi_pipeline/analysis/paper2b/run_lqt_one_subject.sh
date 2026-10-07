@@ -27,6 +27,11 @@ DRY_RUN="${DRY_RUN:-0}"
 
 SUB_STAGING="${LQT_STAGING}/sub-${SUBJECT}"
 SUB_OUT="${LQT_DIR}/sub-${SUBJECT}"
+LQT_ATLAS_DIR="${LQT_ATLAS_DIR:-${EXPERIMENT_ROOT}/lqt_batch/atlas}"
+DEFAULT_PARCEL="${LQT_ATLAS_DIR}/dkt78_mni152nlin6asym_res-2.nii.gz"
+if [[ -z "${LQT_PARCEL_NII:-}" && -f "${DEFAULT_PARCEL}" ]]; then
+    export LQT_PARCEL_NII="${DEFAULT_PARCEL}"
+fi
 mkdir -p "${SUB_STAGING}" "${SUB_OUT}"
 
 bash "${SCRIPT_DIR}/prepare_lesion_mni_for_lqt.sh" "${SUBJECT}"
