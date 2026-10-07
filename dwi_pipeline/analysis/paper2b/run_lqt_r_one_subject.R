@@ -41,13 +41,18 @@ if (is.na(parcel_path) || !file.exists(parcel_path)) {
 }
 
 pat_id <- paste0("sub-", subject)
-cfg <- LQT::create_cfg_object(
+dsi_path <- Sys.getenv("LQT_DSI_PATH", unset = "")
+cfg_args <- list(
   pat_ids = pat_id,
   lesion_paths = lesion_mni,
   out_path = out_dir,
   parcel_path = parcel_path,
   con_type = "end"
 )
+if (nzchar(dsi_path)) {
+  cfg_args$dsi_path <- dsi_path
+}
+cfg <- do.call(LQT::create_cfg_object, cfg_args)
 
 LQT::get_parcel_cons(cfg)
 

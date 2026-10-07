@@ -69,9 +69,21 @@ export LQT_BACKEND="${LQT_BACKEND:-r}"
 LQT_R_MARKER="${EXPERIMENT_ROOT}/lqt_batch/.lqt_r_package_ready"
 LQT_TEMPLATES_MARKER="${EXPERIMENT_ROOT}/lqt_batch/.lqt_templates_ready"
 
+_templates_ok_quick() {
+    export LQT_SCRIPT_DIR="${SCRIPT_DIR}"
+    paper2b_Rscript -e "
+      source('${SCRIPT_DIR}/lqt_templates_ok.R');
+      quit(status=if (lqt_templates_ok()) 0 else 1)
+    " 2>/dev/null
+}
+
 _ensure_lqt_templates() {
+    if [[ "$(uname -s)" == "Linux" ]]; then
+        # shellcheck source=ensure_dsi_studio_for_lqt.sh
+        source "${SCRIPT_DIR}/ensure_dsi_studio_for_lqt.sh" || true
+    fi
     if [[ -f "${LQT_TEMPLATES_MARKER}" ]]; then
-        return 0
+        _templates_ok_quick && return 0
     fi
     if [[ "${SLURM_ARRAY_TASK_ID}" == "1" ]]; then
         echo "=== LQT Figshare templates (array task 1, serial) ==="

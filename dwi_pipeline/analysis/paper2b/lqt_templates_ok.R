@@ -4,6 +4,10 @@ lqt_tract_ok <- function() {
 }
 
 lqt_dsi_ok <- function() {
+  env_path <- Sys.getenv("LQT_DSI_PATH", unset = "")
+  if (nzchar(env_path) && file.exists(env_path)) {
+    return(TRUE)
+  }
   extdata <- system.file("extdata", package = "LQT")
   if (!nzchar(extdata)) {
     return(FALSE)

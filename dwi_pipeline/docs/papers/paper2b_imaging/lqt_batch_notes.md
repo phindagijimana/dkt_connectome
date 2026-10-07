@@ -41,7 +41,9 @@ sbatch --export=ALL,LQT_BACKEND \
   dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
 ```
 
-**DSI Studio:** large `DSI_studio.zip` often fails to `unzip` directly on NFS; `install_lqt_templates.sh` falls back to `repair_lqt_dsi_studio.sh` (local `/tmp` extract).
+**DSI Studio (Linux HPC):** jdwor/LQT only auto-detects the **macOS** bundle from Figshare. On Linux, `ensure_dsi_studio_for_lqt.sh` pulls `docker://dsistudio/dsistudio` (override with `LQT_DSI_IMAGE` / `LQT_DSI_SIF`) and writes an Apptainer wrapper exported as `LQT_DSI_PATH` for `create_cfg_object(dsi_path=...)`.
+
+**DSI Studio (Mac):** large `DSI_studio.zip` may fail to `unzip` on NFS; use `repair_lqt_dsi_studio.sh` if needed.
 
 If a prior array failed during template download, clean and retry templates only:
 

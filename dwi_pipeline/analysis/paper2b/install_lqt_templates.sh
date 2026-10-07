@@ -52,7 +52,10 @@ mkdir -p "$(dirname "${LOCK}")"
     paper2b_Rscript "${SCRIPT_DIR}/install_lqt_templates.R"
     rc=$?
     set -e
-    if (( rc == 2 )) || ! _templates_ok; then
+    if [[ "$(uname -s)" == "Linux" ]]; then
+        # shellcheck source=ensure_dsi_studio_for_lqt.sh
+        source "${SCRIPT_DIR}/ensure_dsi_studio_for_lqt.sh"
+    elif (( rc == 2 )) || ! _templates_ok; then
         echo "Running DSI Studio unzip repair (local temp)..."
         bash "${SCRIPT_DIR}/repair_lqt_dsi_studio.sh"
     fi

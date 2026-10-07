@@ -58,6 +58,10 @@ _matlab_lqt_ready() {
 _run_r() {
     echo "=== LQT R (jdwor/LQT) sub-${SUBJECT} ==="
     export LQT_PARCEL_NII
+    if [[ "$(uname -s)" == "Linux" ]]; then
+        # shellcheck source=ensure_dsi_studio_for_lqt.sh
+        source "${SCRIPT_DIR}/ensure_dsi_studio_for_lqt.sh"
+    fi
     paper2b_Rscript "${SCRIPT_DIR}/run_lqt_r_one_subject.R" "${SUBJECT}" "${LESION_MNI}" "${SUB_OUT}"
 }
 
