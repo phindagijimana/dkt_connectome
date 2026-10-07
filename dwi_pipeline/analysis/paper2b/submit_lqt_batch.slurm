@@ -67,6 +67,27 @@ mkdir -p "${SCRIPT_DIR}/logs" "${LQT_DIR}"
 
 export LQT_BACKEND="${LQT_BACKEND:-r}"
 LQT_R_MARKER="${EXPERIMENT_ROOT}/lqt_batch/.lqt_r_package_ready"
+LQT_TEMPLATES_MARKER="${EXPERIMENT_ROOT}/lqt_batch/.lqt_templates_ready"
+
+_ensure_lqt_templates() {
+    if [[ -f "${LQT_TEMPLATES_MARKER}" ]]; then
+        return 0
+    fi
+    if [[ "${SLURM_ARRAY_TASK_ID}" == "1" ]]; then
+        echo "=== LQT Figshare templates (array task 1, serial) ==="
+        bash "${SCRIPT_DIR}/install_lqt_templates.sh"
+    else
+        echo "Waiting for LQT templates (task 1)..."
+        for _ in $(seq 1 240); do
+            [[ -f "${LQT_TEMPLATES_MARKER}" ]] && break
+            sleep 30
+        done
+    fi
+    [[ -f "${LQT_TEMPLATES_MARKER}" ]] || {
+        echo "ERROR: LQT templates not ready; run submit_lqt_install_templates.slurm first" >&2
+        return 1
+    }
+}
 
 _ensure_r_lqt() {
     if paper2b_Rscript -e 'quit(status=if (requireNamespace("LQT", quietly=TRUE)) 0 else 1)' 2>/dev/null; then
@@ -95,6 +116,7 @@ if [[ "${LQT_BACKEND}" == "r" ]]; then
         echo "ERROR: R LQT not available after install wait" >&2
         exit 1
     }
+    _ensure_lqt_templates || exit 1
 fi
 
 echo "=== LQT batch task ${SLURM_ARRAY_TASK_ID}: sub-${SUBJECT} ses-${SESSION} ==="

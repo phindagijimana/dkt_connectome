@@ -13,6 +13,9 @@ _paper2b_r_setup_done=1
 EXPERIMENT_ROOT="${EXPERIMENT_ROOT:-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment}"
 export R_LIBS_USER="${R_LIBS_USER:-${EXPERIMENT_ROOT}/lqt_batch/r_library}"
 mkdir -p "${R_LIBS_USER}"
+# Large Figshare zips: use local temp for download buffers when possible.
+export TMPDIR="${TMPDIR:-/tmp}"
+export APPTAINERENV_TMPDIR="${APPTAINERENV_TMPDIR:-/tmp}"
 
 if [[ -f /etc/profile.d/modules.sh ]]; then
     # shellcheck disable=SC1091
@@ -48,6 +51,7 @@ paper2b_R() {
         "${_APPTAINER}" exec --bind /mnt/nfs:/mnt/nfs \
             --env "R_LIBS_USER=${R_LIBS_USER}" \
             --env "R_LIBS=${R_LIBS_USER}" \
+            --env "TMPDIR=${TMPDIR}" \
             --env "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu" \
             "${LQT_R_IMAGE}" R "$@"
         return $?
@@ -65,6 +69,7 @@ paper2b_Rscript() {
         "${_APPTAINER}" exec --bind /mnt/nfs:/mnt/nfs \
             --env "R_LIBS_USER=${R_LIBS_USER}" \
             --env "R_LIBS=${R_LIBS_USER}" \
+            --env "TMPDIR=${TMPDIR}" \
             --env "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/lib/x86_64-linux-gnu" \
             "${LQT_R_IMAGE}" Rscript "$@"
         return $?

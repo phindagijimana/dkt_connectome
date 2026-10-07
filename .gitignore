@@ -29,6 +29,7 @@ dag.svg
 
 # --- Slurm / driver logs (large, regenerated every run) -----------------------
 logs/
+dwi_pipeline/analysis/paper2b/logs/
 *.out
 *.err
 slurm-*.out

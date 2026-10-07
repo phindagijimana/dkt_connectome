@@ -1,6 +1,6 @@
 # Paper 2B — LQT batch (placeholder)
 
-**Status:** not run. RQ1 (patient-specific vs normative SDC) **requires** this step.
+**Status:** R LQT installed (SLURM 173881); pilot batch **173882 failed** — parallel Figshare downloads corrupted zip extracts on NFS. Run serial template install, then re-batch. RQ1 pending `lqt_disconnection_matrix.csv` for all 7 subjects.
 
 ## Expected output layout
 
@@ -34,10 +34,18 @@ Default job: **MNI lesion staging only** (ANTs via host or `qsirecon.sif`).
 bash dwi_pipeline/analysis/paper2b/prepare_dkt78_mni_parcellation.sh TBI011011
 # R via module OR Apptainer rocker (no module needed):
 sbatch dwi_pipeline/analysis/paper2b/submit_lqt_install_r.slurm
-# after install job OK:
+sbatch dwi_pipeline/analysis/paper2b/submit_lqt_install_templates.slurm
+# after install + templates OK:
 export LQT_BACKEND=r
 sbatch --export=ALL,LQT_BACKEND \
   dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
+```
+
+If a prior array failed during template download, clean and retry templates only:
+
+```bash
+LQT_CLEAN_TEMPLATES=1 sbatch --export=ALL,LQT_CLEAN_TEMPLATES=1 \
+  dwi_pipeline/analysis/paper2b/submit_lqt_install_templates.slurm
 ```
 
 Atlas path (auto-detected if present): `$EXPERIMENT_ROOT/lqt_batch/atlas/dkt78_mni152nlin6asym_res-2.nii.gz`

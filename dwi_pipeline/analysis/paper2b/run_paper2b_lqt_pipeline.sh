@@ -10,12 +10,14 @@ export LQT_BACKEND="${LQT_BACKEND:-r}"
 echo "1) Install R LQT (Apptainer rocker if needed):"
 echo "   sbatch ${SCRIPT_DIR}/submit_lqt_install_r.slurm"
 echo
-echo "2) After install OK, LQT per subject:"
+echo "2) One-time Figshare templates (serial; do not skip before batch):"
+echo "   sbatch ${SCRIPT_DIR}/submit_lqt_install_templates.slurm"
+echo
+echo "3) LQT per subject (after templates OK):"
 echo "   sbatch --export=ALL,LQT_BACKEND=${LQT_BACKEND} ${SCRIPT_DIR}/submit_lqt_batch.slurm"
 echo
-echo "3) After LQT array, Paper 2B stats:"
+echo "4) After LQT array, Paper 2B stats:"
 echo "   bash ${SCRIPT_DIR}/run_paper2b_analysis.sh"
 echo
-echo "Or chain 2+3:"
-echo "   JOB=\$(sbatch --parsable --export=ALL,LQT_BACKEND=${LQT_BACKEND} ${SCRIPT_DIR}/submit_lqt_batch.slurm)"
-echo "   sbatch --dependency=afterok:\${JOB} ${SCRIPT_DIR}/submit_paper2b_after_lqt.slurm"
+echo "Or chain templates + batch + stats:"
+echo "   bash ${SCRIPT_DIR}/submit_lqt_pipeline_chain.sh"
