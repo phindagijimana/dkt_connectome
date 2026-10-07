@@ -28,7 +28,7 @@ Use **Linux + Apptainer** on a workstation or HPC (FreeSurfer license required).
 | **Pipeline stages** | [Pipeline steps](pipeline_steps.md) · [Architecture](architecture.md) |
 | **Prepare BIDS** | [Preparing your data](preparing_data.md) |
 | **Upgrade** | [Upgrading](upgrading.md) |
-| **Methods & citations** | [Methods](methods/index.md) · [References](references.md) |
+| **Methods & citations** | [Methods](methods/index.md) · [References](references.md) · [rs-fMRI resources](resources.md) |
 | **Problems** | [FAQ](faq.md) · [Troubleshooting](troubleshooting.md) |
 
 ```{note} Upstream tools

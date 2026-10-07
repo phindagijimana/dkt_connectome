@@ -19,6 +19,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | **4.1** | Disconnectome | Griffis et al. 2019; Kuceyeski et al. 2013 |
 | **5** | Node strength / report | Rubinov & Sporns 2010; Piper et al. 2026 |
 | **All** | BIDS layout & BIDS App | Gorgolewski et al. 2016; Gorgolewski et al. 2017 |
+| **rs-fMRI (optional)** | fMRIPrep → XCP-D; optional fMRIStroke | See [rs-fMRI resources](resources.md) (Yourganov 2017; Siegel 2016/2017; Schaefer 2018; fMRIStroke JOSS 2024) |
 
 ---
 

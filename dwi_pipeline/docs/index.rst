@@ -74,6 +74,7 @@ Contents
    troubleshooting
    comparisons
    references
+   resources
    citation
    license
    repro_sdc_lut
