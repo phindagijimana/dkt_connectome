@@ -17,6 +17,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=ensure_r_for_lqt.sh
+source "${SCRIPT_DIR}/ensure_r_for_lqt.sh"
 SUBJECT="${1:?subject ID}"
 
 EXPERIMENT_ROOT="${EXPERIMENT_ROOT:-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment}"
@@ -46,8 +48,7 @@ fi
 
 _r_lqt_ready() {
     [[ -n "${LQT_PARCEL_NII:-}" && -f "${LQT_PARCEL_NII}" ]] \
-        && command -v Rscript >/dev/null \
-        && Rscript -e 'quit(status=if (requireNamespace("LQT", quietly=TRUE)) 0 else 1)' 2>/dev/null
+        && paper2b_Rscript -e 'quit(status=if (requireNamespace("LQT", quietly=TRUE)) 0 else 1)' 2>/dev/null
 }
 
 _matlab_lqt_ready() {
@@ -57,7 +58,7 @@ _matlab_lqt_ready() {
 _run_r() {
     echo "=== LQT R (jdwor/LQT) sub-${SUBJECT} ==="
     export LQT_PARCEL_NII
-    Rscript "${SCRIPT_DIR}/run_lqt_r_one_subject.R" "${SUBJECT}" "${LESION_MNI}" "${SUB_OUT}"
+    paper2b_Rscript "${SCRIPT_DIR}/run_lqt_r_one_subject.R" "${SUBJECT}" "${LESION_MNI}" "${SUB_OUT}"
 }
 
 _run_matlab() {

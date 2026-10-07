@@ -21,9 +21,15 @@ lesion_mni <- args[[2]]
 out_dir <- args[[3]]
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
+lib <- Sys.getenv("R_LIBS_USER", unset = "")
+if (nzchar(lib)) {
+  dir.create(lib, recursive = TRUE, showWarnings = FALSE)
+  .libPaths(c(lib, .libPaths()))
+}
+
 if (!requireNamespace("LQT", quietly = TRUE)) {
   stop(
-    "R package 'LQT' not installed. Run: remotes::install_github('jdwor/LQT')"
+    "R package 'LQT' not installed. Run: bash dwi_pipeline/analysis/paper2b/install_lqt_r.sh"
   )
 }
 

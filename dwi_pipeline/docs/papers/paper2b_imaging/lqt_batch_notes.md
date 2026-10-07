@@ -32,7 +32,9 @@ Default job: **MNI lesion staging only** (ANTs via host or `qsirecon.sif`).
 
 ```bash
 bash dwi_pipeline/analysis/paper2b/prepare_dkt78_mni_parcellation.sh TBI011011
-bash dwi_pipeline/analysis/paper2b/install_lqt_r.sh
+# R via module OR Apptainer rocker (no module needed):
+sbatch dwi_pipeline/analysis/paper2b/submit_lqt_install_r.slurm
+# after install job OK:
 export LQT_BACKEND=r
 sbatch --export=ALL,LQT_BACKEND \
   dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
