@@ -49,6 +49,15 @@ def main() -> int:
     if src.resolve() != args.output.resolve():
         shutil.copy2(src, args.output)
 
+    # LQT often exports percent disconnection (0–100); patient SDC is 0–1.
+    import numpy as np
+
+    arr = np.loadtxt(args.output, delimiter=",")
+    finite = arr[np.isfinite(arr)]
+    if finite.size and float(np.nanmax(finite)) > 1.5:
+        arr = arr / 100.0
+        np.savetxt(args.output, arr, delimiter=",", fmt="%.6f")
+
     prov = args.output.with_suffix(".provenance.json")
     prov.write_text(
         json.dumps(

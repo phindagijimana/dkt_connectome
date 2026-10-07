@@ -46,15 +46,10 @@ SCRIPT_DIR="${REPO}/dwi_pipeline/analysis/paper2b"
 DWI="${REPO}/dwi_pipeline"
 EXPERIMENT_ROOT="${EXPERIMENT_ROOT:-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment}"
 
-# ANTs for lesion → MNI (same stack as DWI pipeline jobs).
 # shellcheck source=/dev/null
 source "${DWI}/workflow/lib/slurm_env.sh"
-if [[ -x "${DWI}/scripts/stage_qsirecon_tools.sh" ]]; then
-    bash "${DWI}/scripts/stage_qsirecon_tools.sh" >/dev/null 2>&1 || true
-    if [[ -d "${HOME}/.local/ants/bin" ]]; then
-        export PATH="${HOME}/.local/ants/bin:${PATH}"
-    fi
-fi
+# shellcheck source=ensure_pipeline_ants.sh
+source "${SCRIPT_DIR}/ensure_pipeline_ants.sh"
 
 export EXPERIMENT_ROOT SESSION
 export DWI_CONNECTOMES="${DWI_CONNECTOMES:-${EXPERIMENT_ROOT}/validation_v030/arms/neurolit-lesion/connectomes}"

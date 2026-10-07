@@ -32,7 +32,9 @@ bash dwi_pipeline/analysis/paper2b/run_paper2b_analysis.sh
 | MNI lesion only | `bash dwi_pipeline/analysis/paper2b/prepare_lesion_mni_for_lqt.sh TBI011011` |
 | Docx export | `bash dwi_pipeline/analysis/paper2b/export_paper2b_docx.sh` |
 
-Without `LQT_ROOT`, the batch writes MNI lesions under `$EXPERIMENT_ROOT/lqt_batch/staging/` and `RUN_LQT.pending` under outputs. After installing [Griffis LQT](https://github.com/JDGriffis/lesion-quantification-toolkit), configure `lqt_run_subject.m` and resubmit with `LQT_ROOT` set.
+Default batch: MNI lesions under `$EXPERIMENT_ROOT/lqt_batch/staging/` (ANTs via host or `qsirecon.sif`).
+
+**Recommended:** R [jdwor/LQT](https://github.com/jdwor/LQT) — set `LQT_BACKEND=r` and `LQT_PARCEL_NII` (MNI DKT-78). MATLAB Griffis toolkit: `LQT_BACKEND=matlab` + `LQT_ROOT`.
 
 ## Scripts
 

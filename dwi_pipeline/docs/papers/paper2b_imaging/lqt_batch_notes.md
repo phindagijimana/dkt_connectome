@@ -24,12 +24,23 @@ bash dwi_pipeline/analysis/paper2b/run_paper2b_analysis.sh
 ```bash
 cd /path/to/TrackTBI-Sub
 sbatch dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
-# After LQT install:
-sbatch --export=ALL,LQT_ROOT=/path/to/lesion-quantification-toolkit \
+```
+
+Default job: **MNI lesion staging only** (ANTs via host or `qsirecon.sif`).
+
+**Recommended comparator (no MATLAB):** R [jdwor/LQT](https://github.com/jdwor/LQT) (Griffis 2021 equivalent):
+
+```bash
+# once: R -e "remotes::install_github('jdwor/LQT')"
+export LQT_PARCEL_NII=/path/to/dkt78_mni_parcellation.nii.gz
+export LQT_BACKEND=r
+sbatch --export=ALL,LQT_BACKEND,LQT_PARCEL_NII \
   dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
 ```
 
-MNI lesion warps use fMRIPrep `from-T1w_to-MNI152NLin6Asym` + disconnectome `lesion_binary_t1w.nii.gz` (`prepare_lesion_mni_for_lqt.sh`).
+MATLAB Griffis toolkit: `LQT_BACKEND=matlab` + `LQT_ROOT=...`.
+
+MNI lesion warps use fMRIPrep `from-T1w_to-MNI152NLin6Asym` + disconnectome `lesion_binary_t1w.nii.gz` (`prepare_lesion_mni_for_lqt.sh` + `ensure_pipeline_ants.sh`).
 
 ## References
 

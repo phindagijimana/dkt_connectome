@@ -14,6 +14,10 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=ensure_pipeline_ants.sh
+source "${SCRIPT_DIR}/ensure_pipeline_ants.sh"
+
 SUBJECT="${1:?subject ID e.g. TBI011011}"
 SESSION="${SESSION:-2WK}"
 
@@ -40,15 +44,18 @@ for f in "${LESION_T1W}" "${REF_T1W}" "${XFM_T1W_TO_MNI}" "${MNI_TEMPLATE}"; do
     fi
 done
 
-command -v antsApplyTransforms >/dev/null || {
-    echo "ERROR: antsApplyTransforms not on PATH" >&2
-    exit 1
-}
-
 echo "Lesion T1w: ${LESION_T1W}"
 echo "MNI out:    ${OUT_MNI}"
+if command -v antsApplyTransforms >/dev/null 2>&1; then
+    echo "ANTs:       host PATH"
+elif [[ -f "${CONTAINER_QSIRECON:-}" ]]; then
+    echo "ANTs:       apptainer ${CONTAINER_QSIRECON}"
+else
+    echo "ERROR: no ANTs (host or qsirecon.sif)" >&2
+    exit 1
+fi
 
-antsApplyTransforms -d 3 \
+pipeline_antsApplyTransforms -d 3 \
     -i "${LESION_T1W}" \
     -r "${MNI_TEMPLATE}" \
     -t "${XFM_T1W_TO_MNI}" \
