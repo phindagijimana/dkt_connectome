@@ -7,7 +7,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/ensure_r_for_lqt.sh"
 
 EXTDATA="${R_LIBS_USER}/LQT/extdata"
-DSI_URL="${LQT_DSI_STUDIO_URL:-https://figshare.com/ndownloader/files/31708106?private_link=c67b652f2056867a5648}"
+DSI_URL="${LQT_DSI_STUDIO_URL:-https://ndownloader.figshare.com/files/31708106?private_link=c67b652f2056867a5648}"
+MIN_ZIP_BYTES="${LQT_DSI_MIN_ZIP_BYTES:-5000000}"
 WORKDIR="${TMPDIR:-/tmp}/lqt_dsi_repair_$$"
 DEST="${EXTDATA}/DSI_studio"
 
@@ -20,15 +21,33 @@ _zip_ok() {
 }
 
 ZIP="${EXTDATA}/DSI_studio.zip"
+rm -f "${EXTDATA}/DSI_studio.zip" 2>/dev/null || true
+
 if ! _zip_ok "${ZIP}"; then
     echo "Downloading DSI_studio.zip via R (Figshare) to ${WORKDIR}..."
     paper2b_Rscript -e "
-      utils::download.file(
-        '${DSI_URL}',
-        '${WORKDIR}/DSI_studio.zip',
-        mode = 'wb',
-        quiet = TRUE
-      )
+      dest <- '${WORKDIR}/DSI_studio.zip'
+      ok <- FALSE
+      for (meth in c('libcurl', 'auto', 'wget')) {
+        res <- try(
+          utils::download.file(
+            '${DSI_URL}',
+            dest,
+            mode = 'wb',
+            quiet = TRUE,
+            method = meth
+          ),
+          silent = TRUE
+        )
+        if (!inherits(res, 'try-error') && file.exists(dest)) {
+          sz <- file.info(dest)\$size
+          if (!is.na(sz) && sz >= ${MIN_ZIP_BYTES}) {
+            ok <- TRUE
+            break
+          }
+        }
+      }
+      if (!ok) stop('DSI_studio.zip download failed or too small')
     "
     ZIP="${WORKDIR}/DSI_studio.zip"
 fi
