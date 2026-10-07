@@ -21,9 +21,20 @@ _zip_ok() {
 
 ZIP="${EXTDATA}/DSI_studio.zip"
 if ! _zip_ok "${ZIP}"; then
-    echo "Downloading DSI_studio.zip to ${WORKDIR}..."
-    curl -fsSL --retry 3 --retry-delay 5 -o "${WORKDIR}/DSI_studio.zip" "${DSI_URL}"
+    echo "Downloading DSI_studio.zip via R (Figshare) to ${WORKDIR}..."
+    paper2b_Rscript -e "
+      utils::download.file(
+        '${DSI_URL}',
+        '${WORKDIR}/DSI_studio.zip',
+        mode = 'wb',
+        quiet = TRUE
+      )
+    "
     ZIP="${WORKDIR}/DSI_studio.zip"
+fi
+if ! _zip_ok "${ZIP}"; then
+    echo "ERROR: DSI_studio.zip missing or corrupt after download" >&2
+    exit 1
 fi
 
 echo "Extracting DSI Studio to ${DEST} (via ${WORKDIR})..."
@@ -44,7 +55,12 @@ else
     mv "${WORKDIR}/extract"/* "${DEST}/"
 fi
 
-if ! paper2b_Rscript -e "source('${SCRIPT_DIR}/lqt_templates_ok.R'); quit(status=if (lqt_dsi_ok()) 0 else 1)" 2>/dev/null; then
+if ! paper2b_Rscript -e "
+  lib <- Sys.getenv('R_LIBS_USER', unset='');
+  if (nzchar(lib)) .libPaths(c(lib, .libPaths()));
+  source('${SCRIPT_DIR}/lqt_templates_ok.R');
+  quit(status=if (lqt_dsi_ok()) 0 else 1)
+"; then
     echo "ERROR: DSI Studio still not found under ${DEST}" >&2
     exit 1
 fi

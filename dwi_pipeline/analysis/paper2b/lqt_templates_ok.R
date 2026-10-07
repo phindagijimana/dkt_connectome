@@ -8,7 +8,12 @@ lqt_dsi_ok <- function() {
   if (!nzchar(extdata)) {
     return(FALSE)
   }
-  hits <- Sys.glob(file.path(extdata, "DSI_studio", "**", "dsi_studio"), recursive = TRUE)
+  hits <- list.files(
+    file.path(extdata, "DSI_studio"),
+    pattern = "^dsi_studio$",
+    recursive = TRUE,
+    full.names = TRUE
+  )
   hits <- hits[file.exists(hits)]
   length(hits) > 0L
 }
