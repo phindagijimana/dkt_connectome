@@ -41,6 +41,8 @@ sbatch --export=ALL,LQT_BACKEND \
   dwi_pipeline/analysis/paper2b/submit_lqt_batch.slurm
 ```
 
+**DSI Studio:** large `DSI_studio.zip` often fails to `unzip` directly on NFS; `install_lqt_templates.sh` falls back to `repair_lqt_dsi_studio.sh` (local `/tmp` extract).
+
 If a prior array failed during template download, clean and retry templates only:
 
 ```bash

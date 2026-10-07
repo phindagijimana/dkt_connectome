@@ -14,9 +14,11 @@ EXTDATA="${R_LIBS_USER}/LQT/extdata"
 paper2b_Rscript -e 'quit(status=if (requireNamespace("LQT", quietly=TRUE)) 0 else 1)'
 
 _templates_ok() {
-  paper2b_Rscript -e '
-    quit(status=if (dir.exists(system.file("extdata","Tractography_Atlas",package="LQT"))) 0 else 1)
-  ' 2>/dev/null
+  export LQT_SCRIPT_DIR="${SCRIPT_DIR}"
+  paper2b_Rscript -e "
+    source('${SCRIPT_DIR}/lqt_templates_ok.R');
+    quit(status=if (lqt_templates_ok()) 0 else 1)
+  " 2>/dev/null
 }
 
 if [[ -f "${MARKER}" ]] && _templates_ok; then
@@ -45,7 +47,19 @@ mkdir -p "$(dirname "${LOCK}")"
     if [[ -f "${MARKER}" ]] && _templates_ok; then
         exit 0
     fi
+    export LQT_SCRIPT_DIR="${SCRIPT_DIR}"
+    set +e
     paper2b_Rscript "${SCRIPT_DIR}/install_lqt_templates.R"
+    rc=$?
+    set -e
+    if (( rc == 2 )) || ! _templates_ok; then
+        echo "Running DSI Studio unzip repair (local temp)..."
+        bash "${SCRIPT_DIR}/repair_lqt_dsi_studio.sh"
+    fi
+    _templates_ok || {
+        echo "ERROR: LQT templates still incomplete" >&2
+        exit 1
+    }
     touch "${MARKER}"
 ) 9>"${LOCK}"
 
