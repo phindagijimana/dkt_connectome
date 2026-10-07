@@ -60,7 +60,7 @@ similar) and add functional-connectivity outputs to the Paper 2 subject subset.
 - **Multi-domain outcomes** (not just GOSE) — request neuropsych composites from clinical export
 - **Multisite harmonization** (ComBat or site regressors) — TRACK-TBI is multi-site; Griffis was single-site
 - **Network-native parcellation** — add Schaefer/4S atlases alongside DKT for the Paper 2 subset
-- **fMRI preprocessing arm** — fMRIPrep + XCP-D (or similar) is not yet in the pipeline; needs adding
+- **fMRI preprocessing arm** — ✅ **`fMRI_pipeline/`** built (fMRIPrep 24.1.1 + XCP-D 0.10.6 + DKT + lesion FC + fMRIStroke sensitivity); **7-subject neurolit-inpaint pilot complete** (Oct 2026). Cohort scale + document primary DKT BOLD source (pilot: fMRIPrep preproc fallback when XCP-D lacks T1w NIfTI).
 
 ## Our contribution relative to Griffis 2019 — expanded
 
@@ -84,18 +84,20 @@ where we differentiate, and what genuine advance our paper contributes on top.
 |-----------|--------|
 | Patient-level SDC | ✅ Pipeline fully built (Steps 1.1 through 4.1 with disconnection Options A/B/C) |
 | rs-fMRI (raw) | ✅ Present in TBI BIDS: `task-rest_bold.nii.gz` per subject/session on both 2WK and 6MO for the pilot; full ~100-subject cohort presumed to mirror |
-| fMRI preprocessing arm | ❌ Not yet in pipeline — needs fMRIPrep + XCP-D or similar |
-| Healthy-control FC normative distribution | ⚠️ Options: CIDUR controls if rs-fMRI available (~26 subjects); or a public normative distribution (HCP, UK Biobank subset, ABCD) |
+| fMRI preprocessing arm | ✅ Pilot complete (`run_pilot.sh --inpaint --fmristroke`); primary XCP-D + sensitivity fMRIStroke; DKT Arm B on DKT-78 |
+| Empirical FC disconnection (Arm B) | ✅ Pilot 7/7 (`desc-empirical_fc_disconnection.csv`); exploratory coupling in `run_pilot_fc_analysis.sh` |
+| Healthy-control FC normative distribution | ⚠️ Options: CIDUR controls if rs-fMRI available (~26 subjects); or public normative (HCP, UKB subset); Griffis used HC FC *abnormality* — we also use **patient empirical D** (Arm B) |
 | Multi-domain behavior | ⚠️ Depends on TRACK-TBI clinical export scope — PI has confirmed GOSE + others; specific neuropsych battery to be verified |
+| Prior work / novelty map | ✅ [prior_work_novelty.md](prior_work_novelty.md) (Oct 2026) |
 
 **What we execute:**
 
-1. Preprocess rs-fMRI for the Paper 2 subset (fMRIPrep + XCP-D at minimum; probably ComBat harmonization for multisite).
-2. Construct FC matrices per subject/session using a network-native parcellation (Schaefer 200 or 4S 156-parcel).
-3. Establish a healthy-control FC normative distribution (CIDUR first; augment with public normative data if N insufficient).
-4. Compute per-subject FC-abnormality scores relative to the normative distribution.
-5. Run canonical correlation analysis (CCA) linking SDC ↔ FC-abnormality — replicating Griffis 2019's Figure 2 in TBI.
-6. Fit predictive models linking SDC + FC → behavior at 6 months.
+1. ~~Preprocess rs-fMRI~~ — **done for pilot**; scale Paper 2 subset with same neurolit-inpaint policy where lesion ROI exists.
+2. **Primary:** DKT-78 FC + Griffis-style empirical FC disconnection (Arm B); **sensitivity:** fMRIStroke stream ([FC.md §13.1](../../../../fMRI_pipeline/FC.md)).
+3. Optional: Schaefer/4S from XCP-D for domain-specific analyses ([atlas_decision.md](../../../../fMRI_pipeline/configs/atlas_decision.md)).
+4. Establish HC FC normative distribution if replicating Griffis *abnormality* path (in addition to Arm B).
+5. Run **CCA** SDC ↔ FC disconnection (Griffis Fig. 2 analog) — prespecified in [analysis_plan.md](analysis_plan.md); not yet coded at group level.
+6. Fit predictive models SDC + FC → GOSE / composites at 6 months after clinical merge.
 
 ### 2. Differentiate: patient-specific lesion-aware SDC vs normative-atlas SDC
 

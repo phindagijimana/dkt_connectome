@@ -41,6 +41,8 @@ the factorial paper (Paper 1). Fill in as writing progresses.
 
 ## Introduction (word budget: ~1200)
 
+**Prior work map (fill from):** [prior_work_novelty.md](prior_work_novelty.md) §2–§6.
+
 **Suggested paragraph structure:**
 
 1. Clinical framing — TBI burden, focal-lesion subset (~2M TBIs/yr US, focal-lesion subset with imaging characterizable)

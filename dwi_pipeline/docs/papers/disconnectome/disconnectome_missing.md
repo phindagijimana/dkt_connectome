@@ -11,10 +11,11 @@ external clinical data) and a submitted manuscript.
 [../journal_tier.md](../journal_tier.md) · [../LQT.md](../LQT.md) ·
 [../Griffis_later.md](../Griffis_later.md)
 
-**Status as of 2026-09-18:** SC pipeline mature; fMRI pipeline v0.1 built
-+ published to GitHub (github.com/phindagijimana/fMRI); pilot test in
-progress on smdodwork01; **primary blocker = external TRACK-TBI clinical
-data export** (not in our direct control).
+**Status as of 2026-10-07:** SC pipeline mature; **fMRI neurolit-inpaint pilot
+complete (7 × 2WK)** — dual stream, Arm A/B matrices, exploratory
+`run_pilot_fc_analysis.sh`. Prior work map:
+[prior_work_novelty.md](prior_work_novelty.md). **Primary blockers:**
+TRACK-TBI clinical export + complete-case N + prespecified group analysis code.
 
 ---
 
@@ -23,7 +24,9 @@ data export** (not in our direct control).
 | Category | Ready | Partial | Not started / blocked |
 |----------|:-----:|:-------:|:--------------------:|
 | SC pipeline (patient-specific lesion-aware) | ✅ | | |
-| fMRI pipeline (fMRIPrep + XCP-D + DKT post-hoc) | ✅ (v0.1 built) | ⚠️ (pilot still running) | |
+| fMRI pipeline (fMRIPrep + XCP-D + DKT + Arm B + fMRIStroke) | ✅ | ⚠️ (DKT BOLD: XCP-D T1w denoised missing on pilot — fallback documented) | |
+| fMRI pilot (7-subject neurolit-inpaint) | ✅ | | |
+| Prior work / novelty map | ✅ | | |
 | Reproducibility infrastructure | ✅ | | |
 | Planning docs (index, outcomes_planning, analysis_plan, skeleton, tracker) | ✅ | | |
 | Prior-work reference docs (LQT, Griffis_later, journal_tier) | ✅ | | |
@@ -64,11 +67,12 @@ Per [`analysis_plan.md § 8`](analysis_plan.md#8-complete-case-n-threshold):
 
 ### Pilot execution
 
-- [ ] **fMRI pipeline test succeeds on TBI011011 ses-2WK** (job 72700 currently running on smdodwork01)
-- [ ] **fMRI pipeline validated on all 3 pilot subject-sessions** (TBI011011 ses-2WK + ses-6MO; TBI011204 ses-2WK)
-- [ ] **DKT post-hoc extraction verified** — matches SC-pipeline DKT parcellation exactly
-- [ ] **XCP-D atlases produced cleanly** — 4S156, 4S256 (Schaefer 200), Gordon, Glasser, HCP
-- [ ] **Motion QC acceptable** — mean FD, spike-censoring rate reasonable
+- [x] **fMRI neurolit-inpaint pilot — 7 × 2WK** (SLURM 172440 / 173003; Arm B both streams)
+- [x] **DKT Arm B + DWI disconnectome** on same DKT-78 order (pilot)
+- [x] **Exploratory QC** — `bash fMRI_pipeline/scripts/run_pilot_fc_analysis.sh`
+- [ ] **Primary DKT BOLD = XCP-D denoised T1w** — pilot used fMRIPrep fallback; fix or document in methods
+- [ ] **XCP-D network atlases** for domain analyses (Schaefer/4S) — available from XCP-D run; not yet in Paper 2 analysis
+- [ ] **Motion QC table cohort-wide** — extract mean FD from confounds TSV per subject
 
 ### Data — after external gate clears
 

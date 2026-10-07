@@ -11,6 +11,8 @@ against the actual publication patterns of every paper we cite.
 
 **Related docs:**
 [publication_strategy.md](publication_strategy.md) · [journal_tier.md](journal_tier.md) ·
+[factorial_paper/prior_work_novelty.md](factorial_paper/prior_work_novelty.md) ·
+[disconnectome/prior_work_novelty.md](disconnectome/prior_work_novelty.md) ·
 [factorial_paper/differentiation_from_leapp.md](factorial_paper/differentiation_from_leapp.md) ·
 [factorial_paper/leapp_lineage.md](factorial_paper/leapp_lineage.md) ·
 [Griffis_later.md](Griffis_later.md)

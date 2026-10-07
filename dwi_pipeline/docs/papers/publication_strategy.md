@@ -44,6 +44,7 @@ tractography hangs). At N≈100, pass/fail tables are primary results, not footn
 |------------|------------------|----------------------|------------------------|
 | **Paper 1 (flagship)** | Factorial inpainting × lesion-aware ACT in TBI | Always — default target | **Active — submit first** |
 | **Paper 2 (clinical)** | Lesion topology → structural disconnection → outcomes | Only if behavioral / cognitive / recovery variables exist on the cohort | **Paused** — needs TRACK-TBI outcome merge (GOSE, etc.) |
+| **Paper 2B (imaging)** | Patient-specific SDC vs LQT; SC ↔ FC (no outcomes) | When clinical export delayed or as parallel methods paper | **Active** — pilot 7 complete; LQT + cohort N pending ([`paper2b_imaging/`](paper2b_imaging/)) |
 | **Paper 3 (methods branch)** | Deep Atropos vs HSVS for pathology ACT in TBI | Only after a full head-to-head cohort run — otherwise a supplement to paper 1 | **Deprioritized** — supplement to Paper 1 only |
 | **Paper 4 (longitudinal)** | Structural connectivity trajectories / resource at ~1200 sessions | Resource or trajectory paper on one standard arm | **Active — parallel batch** (does not block Paper 1) |
 
@@ -52,8 +53,9 @@ tractography hangs). At N≈100, pass/fail tables are primary results, not footn
 ```text
 1. Paper 1 (factorial)     — primary manuscript; imaging + pipeline only
 2. Paper 4 (longitudinal)  — background batch on orig-std (or similar); no GOSE required for resource framing
-3. Paper 2 (clinical)      — on hold until TRACK-TBI clinical outcomes are confirmed and merged
-4. Paper 3 (Deep Atropos)  — optional sensitivity figure in Paper 1; not a standalone manuscript
+3. Paper 2B (imaging)      — SDC vs LQT + SC↔FC; no GOSE; can proceed while Paper 2 paused
+4. Paper 2 (clinical)      — on hold until TRACK-TBI clinical outcomes are confirmed and merged
+5. Paper 3 (Deep Atropos)  — optional sensitivity figure in Paper 1; not a standalone manuscript
 ```
 
 Paper 1 and Paper 4 do **not** require GOSE or other clinical scores. Paper 2 requires

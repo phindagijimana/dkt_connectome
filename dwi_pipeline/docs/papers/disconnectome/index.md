@@ -4,8 +4,11 @@
 the portfolio). Consolidates planning artifacts, cross-links supporting docs,
 and provides the cross-tier paper-citation matrix.
 
-**Note on nomenclature:** "the disconnectome paper" and "Paper 2" refer to
-the same manuscript. This doc is the cover; [paper2_disconnectome_outcomes.md](outcomes_planning.md)
+**Note on nomenclature:** "the disconnectome paper" and **Paper 2 (full)** refer to
+the outcome-driven manuscript. **Paper 2B** is the **imaging-only** sibling (no GOSE):
+[`../paper2b_imaging/index.md`](../paper2b_imaging/index.md).
+
+This doc is the Paper 2 cover; [paper2_disconnectome_outcomes.md](outcomes_planning.md)
 is the detailed planning artifact.
 
 **As-of:** 2026-09-17. **Author:** Phind Ndagijimana (with Claude planning assist).
@@ -57,6 +60,7 @@ folder, listed by role:
 | [`disconnectome_paper_complete_case.md`](complete_case.md) | Subject-level data-tracking template (build as clinical export arrives) |
 | [`disconnectome_missing.md`](disconnectome_missing.md) | ★ Submission-readiness checklist: external blockers (TRACK-TBI export), internal blockers, HBM/Brain/NeuroImage tier gates, timeline placeholder, dependencies flowchart, risk register |
 | [`disconnectome_abstract.md`](disconnectome_abstract.md) | ★ Honest working abstract for PI/coauthor review (three framing-dependent working titles, contingencies acknowledged, is/is-not framing, sample-size honesty vs precedent) |
+| [`prior_work_novelty.md`](prior_work_novelty.md) | ★ Consolidated prior-work map + novelty claims + evidence checklist (Related work / Introduction) |
 | [`journal_tier.md`](../journal_tier.md) / [`.docx`](../journal_tier.docx) | Full ten-venue landscape + per-venue framing + manuscript breakdowns |
 
 ### Prior-work reference

@@ -46,6 +46,8 @@ biology-lead / default) based on the venue-decision rule in
 
 ## Introduction (word budget: 1000 methods / 1200 biology / 800 HBM)
 
+**Prior work map (fill from):** [prior_work_novelty.md](prior_work_novelty.md) §2–§8.
+
 **Suggested paragraph structure:**
 
 1. **Clinical framing** — TBI burden, focal-lesion subset, network-dysfunction problem

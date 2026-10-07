@@ -17,7 +17,16 @@ analog table.
 - [`factorial_paper/completion_tracker.md`](factorial_paper/completion_tracker.md) — per-subject × per-arm completion matrix with CONSORT-style assembly diagram and QC-metric dashboard
 - [`factorial_paper/leapp_lineage.md`](factorial_paper/leapp_lineage.md) — deep summary of Bey 2024 (LeAPP) and lineage papers (Radwan VBG, Pollak neuroLIT, Smith ACT); establishes what we extend
 
-**Disconnectome paper cluster** — all artifacts live in [`disconnectome/`](disconnectome/) subfolder, each with matching `.docx`:
+**Paper 2B (imaging-only disconnectome)** — no clinical outcomes; [`paper2b_imaging/`](paper2b_imaging/) cluster, each with matching `.docx`:
+
+- [`paper2b_imaging/index.md`](paper2b_imaging/index.md) — thesis, navigation, venue targets
+- [`paper2b_imaging/planning.md`](paper2b_imaging/planning.md) — RQs, hypotheses
+- [`paper2b_imaging/analysis_plan.md`](paper2b_imaging/analysis_plan.md) — pre-registration (imaging-only)
+- [`paper2b_imaging/readiness_missing.md`](paper2b_imaging/readiness_missing.md) — submission checklist
+- [`paper2b_imaging/lqt_batch_notes.md`](paper2b_imaging/lqt_batch_notes.md) — LQT + SLURM
+- Analysis code: [`../analysis/paper2b/`](../analysis/paper2b/) (`submit_lqt_batch.slurm`, `export_paper2b_docx.sh`)
+
+**Disconnectome paper cluster (Paper 2 full)** — all artifacts live in [`disconnectome/`](disconnectome/) subfolder, each with matching `.docx`:
 
 - [`disconnectome/index.md`](disconnectome/index.md) — canonical cover doc and navigation for the disconnectome paper; includes cross-tier paper-citation matrix
 - [`disconnectome/outcomes_planning.md`](disconnectome/outcomes_planning.md) — full detailed planning (RQs, data-level ceiling, Griffis-2019 contribution breakdown, design decisions)
@@ -40,6 +49,7 @@ analog table.
 |---|-------|--------|--------|----------------|
 | 1 | **Factorial: anatomy × lesion-aware ACT in TBI** (flagship) | Active | *Human Brain Mapping* | [`factorial_paper/`](factorial_paper/) — cluster (5 docs + .docx) |
 | 2 | **Clinical disconnectome → outcomes** | Conditional (pending clinical merge confirmation) | *J Neurotrauma* → *Brain* stretch | [`disconnectome/`](disconnectome/) — cluster (5 docs + .docx) |
+| 2B | **Imaging-only SDC vs LQT + SC↔FC** | Active (pilot 7; LQT pending) | *NeuroImage* / *HBM* | [`paper2b_imaging/`](paper2b_imaging/) + [`analysis/paper2b/`](../../analysis/paper2b/) |
 | 3 | **Deep Atropos vs HSVS 5TT** | Supplement to Paper 1 | Paper 1 supplement | [`paper3_deep_atropos.md`](paper3_deep_atropos.md) |
 | 4 | **Longitudinal connectome resource** (~1200 sessions) | Active parallel | *Scientific Data* / *GigaScience* | [`paper4_longitudinal.md`](paper4_longitudinal.md) |
 

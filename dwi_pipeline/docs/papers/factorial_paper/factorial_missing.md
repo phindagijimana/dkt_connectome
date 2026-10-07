@@ -9,8 +9,8 @@ pilot complete, planning docs mature) and a submitted manuscript.
 [differentiation_from_leapp.md](differentiation_from_leapp.md) ·
 [neuroimage_prerequisites.md](neuroimage_prerequisites.md)
 
-**Status as of 2026-09-18:** planning docs mature; N=1 pilot processed;
-cohort scaling not started.
+**Status as of 2026-10-07:** planning docs mature; N=1 pilot processed all arms;
+[prior_work_novelty.md](prior_work_novelty.md) consolidated; cohort scaling not started.
 
 ---
 
