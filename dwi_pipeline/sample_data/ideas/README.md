@@ -17,9 +17,22 @@ See [SUBJECTS.md](SUBJECTS.md) for download provenance.
 
 ## Download / refresh
 
-### 1. Install the AWS command-line tool (once)
+The script is a single self-contained file. It needs only `bash` and `curl`, which are standard on Linux, macOS and Git Bash on Windows. It works without the rest of this repository.
 
-The data come from OpenNeuro's public storage. The script reads it anonymously, so **no AWS account or credentials are needed**, only the `aws` program. Either option works:
+The data come from OpenNeuro's public storage and are read anonymously, so **no AWS account or credentials are needed**.
+
+### Standalone use (without cloning the repository)
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/phindagijimana/dkt_connectome/main/dwi_pipeline/scripts/download_ideas_sample.sh
+bash download_ideas_sample.sh            # menu; saves to ./ideas_bids/
+bash download_ideas_sample.sh -o ~/ideas # or choose the folder
+bash download_ideas_sample.sh -h         # help
+```
+
+### 1. Optional: install the AWS command-line tool (faster)
+
+If `aws` is installed the script uses it, because it downloads files in parallel. Otherwise it uses `curl` automatically. To force one, set `IDEAS_DOWNLOADER=aws` or `IDEAS_DOWNLOADER=curl`. Either install option works:
 
 | Option | Command | Notes |
 |--------|---------|-------|
@@ -67,20 +80,22 @@ Other ways to run it:
 bash dwi_pipeline/scripts/download_ideas_sample.sh sample        # sample, no menu
 bash dwi_pipeline/scripts/download_ideas_sample.sh all           # everything, no menu
 bash dwi_pipeline/scripts/download_ideas_sample.sh 3 sub-10      # specific subjects
-IDEAS_OUT=/scratch/ideas bash dwi_pipeline/scripts/download_ideas_sample.sh   # other folder
+bash dwi_pipeline/scripts/download_ideas_sample.sh -o /scratch/ideas          # other folder
+IDEAS_OUT=/scratch/ideas bash dwi_pipeline/scripts/download_ideas_sample.sh   # same, via env var
 ```
 
-Data land in `dwi_pipeline/sample_data/ideas/bids/` (gitignored, so downloaded imaging data is never committed). When run without a terminal (SLURM job, CI, another script), the menu is skipped and the sample is downloaded.
+Run from inside the repository, data land in `dwi_pipeline/sample_data/ideas/bids/` (gitignored, so downloaded imaging data is never committed). Run as a standalone file, they land in `./ideas_bids/` unless you pass `-o`. When run without a terminal (SLURM job, CI, another script), the menu is skipped and the sample is downloaded.
 
 ### Troubleshooting
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| `ERROR: aws CLI required` | `aws` not installed or not on `PATH` | Install (step 1); add `~/.local/bin` to `PATH` |
+| `ERROR: need curl or aws installed` | Neither tool found | Install `curl` (system package manager), or `aws` (step 1) |
+| `curl: (6) Could not resolve host` | No internet access (common on cluster compute nodes) | Run on a login node or a machine with internet |
 | `./aws/install: Permission denied` | Installer unzipped in `/tmp`, which is mounted `noexec` on many clusters | Unzip and install from your home folder (`cd ~` first) |
 | `Unable to locate credentials` | Older copy of the script without anonymous access | Update the script; current version uses `--no-sign-request` |
 | `ERROR: sub-999 not found in ds007401` | Subject ID does not exist (typo) | Check IDs on [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401) |
-| `aws` crashes on start with `MemoryError` | Restricted environment (memory-limited sandbox or container) | Run from a normal login shell or a compute node with more memory |
+| `aws` crashes on start with `MemoryError` | Restricted environment (memory-limited sandbox or container) | Use `IDEAS_DOWNLOADER=curl`, or run from a normal login shell |
 | Download stopped partway (Ctrl-C, lost connection, job time limit) | Interrupted transfer | Run the same command again; only missing files are fetched |
 | Full download takes too long | ~40 GB total | Use a compute node or `screen`/`tmux`; or download only the subjects you need |
 
