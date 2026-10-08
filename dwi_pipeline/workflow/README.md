@@ -231,7 +231,7 @@ instead of shipping an SDC-less subject that appears to have completed
 normally. If you genuinely want that subject to proceed without SDC, add
 `--no-sdc` explicitly.
 
-**Cohort split example — mixed-manufacturer URMC clinical cohort**:
+**Cohort split example — mixed-manufacturer clinical cohort**:
 
 ```bash
 # Group 1: Siemens-with-fmap → default (measured SDC)

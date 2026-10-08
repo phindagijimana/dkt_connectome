@@ -28,8 +28,8 @@ TBI contusion, edema, hemorrhage, and bilateral injury are the new territory.
 | Resource | Role in publications |
 |----------|----------------------|
 | **TrackTBI lesion subset** (~100 subjects with manual lesion masks) | Primary factorial sensitivity and QC cohort for paper 1 |
-| **URMC / CIDUR controls** (non-lesion) | Normative connectome or **synthetic lesion injection** on healthy anatomy — not pooled with lesion factorial arms without a separate claim |
-| **Pilot subject** (`sub-TBI011011`, six-arm experiment tree) | Engineering gate before full cohort; ACPC lesion warp + pathology QA |
+| **Internal CIDUR controls** (non-lesion) | Normative connectome or **synthetic lesion injection** on healthy anatomy — not pooled with lesion factorial arms without a separate claim |
+| **Pilot subject** (`sub-EXAMPLE01`, six-arm experiment tree) | Engineering gate before full cohort; ACPC lesion warp + pathology QA |
 
 Report **completion rates by arm** (Step 3.1 pathology QA, registration, empty nodes,
 tractography hangs). At N≈100, pass/fail tables are primary results, not footnotes.
@@ -205,7 +205,7 @@ but does not block Paper 1 submission. Plan **session-aware** `RESULTS_ROOT` lay
 Only if **native-T1 Deep Atropos 5TT** (`5ttgen deep_atropos`) is run as a full
 alternative branch with cohort-level head-to-head metrics. Otherwise document as
 future work or a **supplement to Paper 1** (recommended: `deep-atropos-pilot` on
-TBI011011 as one sensitivity figure — not a third manuscript).
+the pilot subject as one sensitivity figure — not a third manuscript).
 
 ---
 
@@ -493,7 +493,7 @@ Paper 4        → How does structural connectivity evolve over time at scale?
 - Primary contrast: `*-std` vs `*-lesion` within each anatomy backend.
 - Secondary: orig vs neuroLIT vs VBT; interaction anatomy × ACT.
 - Outcomes: QC-by-arm tables, quantitative matrix/edge sensitivity, representative cases.
-- Validation: synthetic lesions on CIDUR controls (LeAPP-style); TBI011011 = engineering pilot.
+- Validation: synthetic lesions on CIDUR controls (LeAPP-style); single pilot subject = engineering pilot.
 - Comparator: Bey et al. 2024 LeAPP; emphasize TBI vs stroke and ACPC/HSVS workflow.
 - Default venue: *Human Brain Mapping*.
 
@@ -507,7 +507,7 @@ Paper 4        → How does structural connectivity evolve over time at scale?
 #### Paper 3 (**deprioritized**)
 
 - Head-to-head 5TT on same subjects — **supplement to Paper 1**, not standalone.
-- TBI011011 `deep-atropos-pilot` → one sensitivity figure only unless cohort N≥30 shows large effects.
+- Pilot subject `deep-atropos-pilot` → one sensitivity figure only unless cohort N≥30 shows large effects.
 
 #### Paper 4 (**active parallel**)
 
@@ -562,7 +562,7 @@ radiology; **not** in this repository today. See [Clinical outcomes for Paper 2]
 **Current execution focus:** Paper 1 (factorial cohort + analysis registry) and
 Paper 4 (longitudinal `orig-std` batch). Paper 2 paused; Paper 3 → Paper 1 supplement.
 
-**Current engineering status (pilot):** `sub-TBI011011` six-arm tree on NAS; CIDUR
+**Current engineering status (pilot):** `sub-EXAMPLE01` six-arm tree on NAS; CIDUR
 Group 1 = 26/27 controls with connectomes (no lesion/disconnectome); full TrackTBI
 factorial cohort not yet run at scale.
 

@@ -238,7 +238,7 @@ Legacy `DK_*` env names still work and print a deprecation note (`DK_PARCELLATIO
 
 | Variable | Default | What it does |
 |----------|---------|--------------|
-| `EXCLUDE_NODES` | `smdodwork05` | Comma-list for `sbatch --exclude`. |
+| `EXCLUDE_NODES` | empty | Comma-list for `sbatch --exclude` (e.g. `node05`). |
 | `SBATCH_GRES` | auto when inpaint/GPU | e.g. `gpu:l40s.24g:1`. Auto-set when inpaint may run or FastSurfer cuda. |
 | `SBATCH_DEPENDENCY` | unset | e.g. `afterok:JOBID` to chain arrays. |
 | `SBATCH_PARTITION` | from `array.sh` | Override partition. |

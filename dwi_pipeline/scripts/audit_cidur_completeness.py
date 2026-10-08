@@ -254,7 +254,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
         "--results-root",
-        default="/mnt/nfs/Gugger_Lab/NIR/dwi_CIDUR/results",
+        required=True,
+        help="CIDUR results directory (RESULTS_ROOT)",
     )
     ap.add_argument(
         "--subject-list",
