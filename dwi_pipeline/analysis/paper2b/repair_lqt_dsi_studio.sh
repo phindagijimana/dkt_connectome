@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/ensure_r_for_lqt.sh"
 
 EXTDATA="${R_LIBS_USER}/LQT/extdata"
-DSI_URL="${LQT_DSI_STUDIO_URL:-https://ndownloader.figshare.com/files/31708106?private_link=c67b652f2056867a5648}"
+DSI_URL="${LQT_DSI_STUDIO_URL:-https://figshare.com/ndownloader/files/31708106?private_link=c67b652f2056867a5648}"
 MIN_ZIP_BYTES="${LQT_DSI_MIN_ZIP_BYTES:-5000000}"
 WORKDIR="${TMPDIR:-/tmp}/lqt_dsi_repair_$$"
 DEST="${EXTDATA}/DSI_studio"

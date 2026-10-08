@@ -3,7 +3,7 @@
 #SBATCH --partition=interactive
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
-#SBATCH --time=06:00:00
+#SBATCH --time=08:00:00
 #SBATCH --output=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/analysis/paper2b/logs/lqt_templates_%j.out
 #SBATCH --error=/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/analysis/paper2b/logs/lqt_templates_%j.err
 
