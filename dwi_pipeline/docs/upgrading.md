@@ -106,8 +106,6 @@ bash workflow/run_subject.sh nodestrength SUBJECT
 bash workflow/run_subject.sh subject_qc SUBJECT
 ```
 
-Cohort helpers: `scripts/lib/rigid_reg_rerun_helpers.sh`.
-
 ---
 
 ## v0.2.0 baseline
