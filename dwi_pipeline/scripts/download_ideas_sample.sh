@@ -2,9 +2,11 @@
 # Download IDEAS II BIDS data from OpenNeuro ds007401 (public; no AWS account needed).
 #
 # Usage:
-#   download_ideas_sample.sh                 # 2-subject sample (sub-1 sub-6)
-#   download_ideas_sample.sh sub-3 sub-10    # specific subjects
+#   download_ideas_sample.sh                 # menu: (1) all data, (2) sample
+#                                            # (non-interactive: sample)
 #   download_ideas_sample.sh all             # full dataset (large)
+#   download_ideas_sample.sh sample          # 2-subject sample (sub-1 sub-6)
+#   download_ideas_sample.sh sub-3 sub-10    # specific subjects
 # Env:
 #   IDEAS_OUT=/path/to/bids                  # override output directory
 set -euo pipefail
@@ -20,12 +22,41 @@ if ! command -v aws >/dev/null 2>&1; then
   exit 1
 fi
 
-if (( $# == 0 )); then
-  SUBJECTS=(sub-1 sub-6)
-elif [[ "$1" == "all" ]]; then
-  mapfile -t SUBJECTS < <(aws s3 ls "${AWS_OPTS[@]}" "${S3}/" | awk '/PRE sub-/{sub("/","",$2); print $2}')
-  echo "[ideas] full dataset: ${#SUBJECTS[@]} subjects (~70 MB each). Ctrl-C within 10 s to abort."
-  sleep 10
+SAMPLE_SUBJECTS=(sub-1 sub-6)
+
+_list_all_subjects() {
+  aws s3 ls "${AWS_OPTS[@]}" "${S3}/" | awk '/PRE sub-/{sub("/","",$2); print $2}'
+}
+
+MODE="${1:-}"
+if [[ -z "${MODE}" ]]; then
+  if [[ -t 0 ]]; then
+    echo "IDEAS II (OpenNeuro ds007401) -> ${OUT}"
+    echo "  1) Download all data (542 subjects, ~40 GB)"
+    echo "  2) Download a sample (${SAMPLE_SUBJECTS[*]}, ~150 MB)"
+    read -r -p "Choose [1/2] (default 2): " choice
+    case "${choice:-2}" in
+      1) MODE=all ;;
+      2) MODE=sample ;;
+      *) echo "ERROR: invalid choice '${choice}' (expected 1 or 2)" >&2; exit 2 ;;
+    esac
+  else
+    MODE=sample
+  fi
+fi
+
+if [[ "${MODE}" == "sample" ]]; then
+  SUBJECTS=("${SAMPLE_SUBJECTS[@]}")
+elif [[ "${MODE}" == "all" ]]; then
+  mapfile -t SUBJECTS < <(_list_all_subjects)
+  echo "[ideas] full dataset: ${#SUBJECTS[@]} subjects (~70 MB each)."
+  if [[ -t 0 ]]; then
+    read -r -p "Continue? [y/N]: " ok
+    [[ "${ok}" =~ ^[Yy] ]] || { echo "[ideas] aborted"; exit 0; }
+  else
+    echo "[ideas] Ctrl-C within 10 s to abort."
+    sleep 10
+  fi
 else
   SUBJECTS=()
   for sub in "$@"; do
