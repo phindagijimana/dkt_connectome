@@ -96,7 +96,7 @@ Does **not** block using the BIDS App today. Runbook: [v1_science_track.md](dwi_
 |------|-------|
 | Freeze **v1.0** tag + SDC release notes | Philbert |
 | **Container digest table** (S4) | Philbert — `generate_container_digests_md.py` after full `install.sh` |
-| URMC **n=61** end-to-end + QC CSV | cohort team + HPC |
+| Internal clinical cohort **n=61** end-to-end + QC CSV | cohort team + HPC |
 | HCP-YA **n=10** baseline stats | methods team |
 | Radiological review rubric | James |
 | Table 1 + Figures 1–7 | Team |
@@ -124,7 +124,7 @@ Only if single-image or official `bids-apps` namespace is required:
 2. RTD rebuild (latest docs live)
 3. Dockstore link (P0.5)
 4. Zenodo DOI for v0.2.0 (P2.2)
-5. Parallel: URMC n=61 + HCP n=10 (P4)
+5. Parallel: internal clinical cohort n=61 + HCP n=10 (P4)
 6. Digest table + v1.0 tag + preprint
 7. Optional: BIDS Apps registry · WorkflowHub · legacy code removal (P3)
 ```

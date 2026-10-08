@@ -15,7 +15,7 @@ Runbook for **QSIPrep-level trust**: cohort validation, paper artifacts, and the
 | Tag | Meaning |
 |-----|---------|
 | **v0.2.x** | BIDS App + docs + CI dry-run; registry optional |
-| **v1.0** | Frozen science claim: SDC matrix documented, digest table, URMC n=61 + HCP n=10 QC, preprint DOI |
+| **v1.0** | Frozen science claim: SDC matrix documented, digest table, internal clinical cohort n=61 + HCP n=10 QC, preprint DOI |
 
 Do **not** tag v1.0 until P4.3–P4.4 complete and [container digests](container_digests.md) regenerated from production pulls.
 
@@ -27,7 +27,7 @@ Do **not** tag v1.0 until P4.3–P4.4 complete and [container digests](container
 |---|------|-------|-------------------|
 | P4.1 | Freeze **v1.0** + release notes (4 SDC modes) | Philbert | `dwi_pipeline/RELEASE_NOTES.md`, `git tag v1.0` |
 | P4.2 | Pin container digests + supplement S4 | Philbert | `bash scripts/install.sh --mode all` → `python3 scripts/generate_container_digests_md.py` |
-| P4.3 | URMC **n=61** end-to-end + QC CSV | cohort team | `submit.sh` + `batch_postprocess.sh` → `cohort_qc.html` |
+| P4.3 | Internal clinical cohort **n=61** end-to-end + QC CSV | cohort team | `submit.sh` + `batch_postprocess.sh` → `cohort_qc.html` |
 | P4.4 | HCP-YA **n=10** baseline stats | methods team | Public HCP IDs in supplement S6 |
 | P4.5 | Radiological review rubric | James | Supplement S5 |
 | P4.6 | Comparison Table 1 finalized | Nishant | `paper_plan.md` |
@@ -37,7 +37,7 @@ Do **not** tag v1.0 until P4.3–P4.4 complete and [container digests](container
 
 ---
 
-## URMC n=61 batch (P4.3)
+## Internal clinical cohort n=61 batch (P4.3)
 
 **Inputs (in-repo):**
 
@@ -47,7 +47,7 @@ Do **not** tag v1.0 until P4.3–P4.4 complete and [container digests](container
 **Run:**
 
 ```bash
-export BIDS_DIR=/path/to/URMC/BIDS
+export BIDS_DIR=/path/to/cohort/BIDS
 export RESULTS_ROOT=/scratch/tracktbi/dkt_v1
 export FS_LICENSE=/path/to/license.txt
 export SUBJECT_LIST_FILE=dwi_pipeline/subject_list_urmc_with_fmap.txt
@@ -70,8 +70,8 @@ bash dwi_pipeline/scripts/batch_postprocess.sh   # cohort QC + derivatives
 ## HCP-YA n=10 (P4.4)
 
 1. Select 10 HCP subject IDs (document in supplement S6).
-2. BIDS layout per HCP conversion used at URMC.
-3. Run `./run` with **same v1.0 config** as URMC (no site-specific hacks).
+2. BIDS layout per HCP conversion used for the internal cohort.
+3. Run `./run` with **same v1.0 config** as the internal cohort (no site-specific hacks).
 4. Compare DKT connectome edges to reference (correlation / ICC table in manuscript §3).
 5. If r &lt; 0.9 per-edge, document in limitations — do not silently change specs.
 
@@ -92,7 +92,7 @@ See [Maintainer tasks §17](maintainer_tasks.md#17-zenodo-archive-doi).
 
 ```text
 Parallel track A (engineering):  integration CI green → digest table → v1.0-rc tag
-Parallel track B (cohorts):      URMC 61 + HCP 10 on frozen config
+Parallel track B (cohorts):      internal cohort (n=61) + HCP 10 on frozen config
 Merge:                           radiology review → figures → bioRxiv → v1.0 tag + Zenodo
 ```
 

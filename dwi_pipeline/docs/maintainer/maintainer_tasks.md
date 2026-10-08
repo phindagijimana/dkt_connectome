@@ -356,7 +356,7 @@ These require compute time, data access, or people — not a single afternoon of
 
 | Blocked on | Items | Where tracked |
 |------------|-------|---------------|
-| FS license + GPU/HPC hours | Real `./run` on HPC (each user’s license), URMC n=61 (P4.3) | [Integration CI](integration_ci.md), [Readiness checklist](readiness_checklist.md) P1, P4 |
+| FS license + GPU/HPC hours | Real `./run` on HPC (each user’s license), internal clinical cohort n=61 (P4.3) | [Integration CI](integration_ci.md), [Readiness checklist](readiness_checklist.md) P1, P4 |
 | Public HCP data + compute | HCP-YA n=10 baseline (P4.4) | [paper plan](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md) §11 |
 | Radiologist | Review rubric (P4.5) | paper plan |
 | Paper writing | Figures, preprint, Table 1 (P4.6–P4.8) | paper plan |

@@ -161,12 +161,12 @@ or mean absolute edge difference on the upper triangle.
 
 ---
 
-## Pilot: `sub-TBI011011`
+## Pilot: `sub-EXAMPLE01`
 
 The seven-arm tree on NAS is the **engineering gate** before cohort scale-up:
 
 ```text
-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment/sub-TBI011011_fastsurfer_experiment/arms/
+/path/to/experiment/sub-EXAMPLE01_fastsurfer_experiment/arms/
 ├── orig-std/
 ├── orig-lesion/
 ├── neurolit-std/
@@ -183,7 +183,7 @@ disconnectome, QC PASS).
 **Pilot analysis** (N=1, descriptive only):
 
 ```bash
-bash dwi_pipeline/scripts/run_tbi011011_factorial_analysis.sh
+bash /path/to/run_factorial_analysis.sh   # local analysis script (not tracked)
 # → writes analysis/ under the experiment root (report.md, CSVs, figures)
 ```
 
@@ -206,14 +206,14 @@ bash dwi_pipeline/submit.sh --experiment-arm neurolit-lesion
 **Single subject:**
 
 ```bash
-bash dwi_pipeline/workflow/run_subject.sh all TBI011011 \
+bash dwi_pipeline/workflow/run_subject.sh all EXAMPLE01 \
   --experiment-arm vbt-lesion --disconnection
 ```
 
 **Equivalent manual flags** (no arm prefix on `RESULTS_ROOT`):
 
 ```bash
-bash dwi_pipeline/workflow/run_subject.sh all TBI011011 \
+bash dwi_pipeline/workflow/run_subject.sh all EXAMPLE01 \
   --anat-mitigation vbt --act-mode lesion-aware --disconnection
 ```
 

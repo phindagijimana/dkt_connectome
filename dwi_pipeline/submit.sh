@@ -61,7 +61,7 @@
 #   QSIPREP_NO_SDC=1             # same as --no-sdc (skip SDC entirely)
 #   DWI_SHELL_B=1000             # b-value for default dwi-select config
 #   QSIPREP_NO_DWI_FILTER=1      # same as --no-dwi-filter
-#   EXCLUDE_NODES=smdodwork05    # comma-list passed to sbatch --exclude
+#   EXCLUDE_NODES=node05         # comma-list passed to sbatch --exclude
 #   SBATCH_GRES=gpu:l40s.24g:1   # GPU for Step 1.1 inpainting (auto-set when inpaint on)
 #   SBATCH_DEPENDENCY=afterok:JOBID
 #                                # chain this submission after another Slurm job
@@ -323,10 +323,10 @@ QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 QSIRECON_ATLASES="${QSIRECON_ATLASES-4S156Parcels}"
 RECON_OUT="${RECON_OUT:-${RESULTS_ROOT}/freesurfer}"
 FS_SUBJECTS_DIR="${FS_SUBJECTS_DIR:-${RECON_OUT}}"
-# Workaround: smdodwork05 fails the Slurm prolog ("mkdir /var/spool/slurmd/logs:
-# Permission denied"). Excluded by default; override with EXCLUDE_NODES="" or a
-# different comma-list when the node is healthy again.
-EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork05}"
+# Comma-list of nodes to skip (e.g. a node that fails the Slurm prolog with
+# "mkdir /var/spool/slurmd/logs: Permission denied"). Empty by default; set
+# EXCLUDE_NODES=node01,node02 for your cluster.
+EXCLUDE_NODES="${EXCLUDE_NODES-}"
 
 [[ -d "${BIDS_DIR}" ]] || { echo "BIDS directory missing: ${BIDS_DIR}"; exit 1; }
 [[ -f "${ARRAY_SCRIPT}" ]] || { echo "Missing array script: ${ARRAY_SCRIPT}"; exit 1; }

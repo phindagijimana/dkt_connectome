@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Migrate home CIDUR results to Gugger Lab, then submit backfill batches.
+# Migrate repo-local CIDUR results to the shared results store, then submit backfill batches.
 set -euo pipefail
 
-SRC="/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/results"
-DEST="/mnt/nfs/Gugger_Lab/NIR/dwi_CIDUR/results"
-LOG="/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/logs/cidur_results_rsync_$(date +%Y%m%d_%H%M%S).log"
-DWI_ROOT="/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline"
+DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
+SRC="${SRC:-${DWI_ROOT}/results}"
+DEST="${RESULTS_ROOT:?Set RESULTS_ROOT to the shared CIDUR results directory (rsync destination)}"
+LOG="${REPO_ROOT}/logs/cidur_results_rsync_$(date +%Y%m%d_%H%M%S).log"
 
 mkdir -p "${DEST}" "$(dirname "${LOG}")"
 

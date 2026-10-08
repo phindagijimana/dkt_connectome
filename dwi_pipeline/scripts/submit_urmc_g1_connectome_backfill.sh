@@ -8,7 +8,7 @@ set -euo pipefail
 
 DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-export BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
+export BIDS_DIR="${BIDS_DIR:?Set BIDS_DIR to the CIDUR BIDS dataset directory}"
 export RESULTS_ROOT="${RESULTS_ROOT:-${DWI_ROOT}/results}"
 export DWI_SELECT_JSON="${DWI_SELECT_JSON:-${DWI_ROOT}/config/dwi_select_64dirax_with_fmap.json}"
 export DWI_SHELL_B="${DWI_SHELL_B:-1000}"
@@ -31,7 +31,7 @@ export SBATCH_PARTITION="${SBATCH_PARTITION:-interactive}"
 export SBATCH_CPUS=8
 export SBATCH_MEM=48G
 export SBATCH_JOB_NAME=urmc_g1_conn
-export EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork05}"
+export EXCLUDE_NODES="${EXCLUDE_NODES-}"
 
 [[ -s "${SUBJECT_LIST_FILE}" ]] || {
   echo "Missing subject list: ${SUBJECT_LIST_FILE}" >&2

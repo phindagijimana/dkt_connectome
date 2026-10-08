@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
-# Resume TBI factorial experiment arms from Gugger Lab archive.
+# Resume TBI factorial experiment arms from the shared experiment archive.
 #
 # Usage:
-#   bash scripts/submit_tbi_experiment_resume.sh prep          # backfill markers + clean stale Step 3.1 (all arms)
-#   bash scripts/submit_tbi_experiment_resume.sh wave1         # 4 arms in parallel
-#   bash scripts/submit_tbi_experiment_resume.sh wave2         # VBT arms (after wave1 or VBT fix)
-#   bash scripts/submit_tbi_experiment_resume.sh all           # wave1 then wave2 (no wait between)
-#   bash scripts/submit_tbi_experiment_resume.sh arm orig-lesion   # single arm
-#   bash scripts/submit_tbi_experiment_resume.sh remaining       # incomplete arms, sequential (skips running)
+#   bash scripts/submit_tbi_experiment_resume.sh prep SUBJECT          # backfill markers + clean stale Step 3.1 (all arms)
+#   bash scripts/submit_tbi_experiment_resume.sh wave1 SUBJECT         # 4 arms in parallel
+#   bash scripts/submit_tbi_experiment_resume.sh wave2 SUBJECT         # VBT arms (after wave1 or VBT fix)
+#   bash scripts/submit_tbi_experiment_resume.sh all SUBJECT           # wave1 then wave2 (no wait between)
+#   bash scripts/submit_tbi_experiment_resume.sh arm orig-lesion SUBJECT   # single arm
+#   bash scripts/submit_tbi_experiment_resume.sh remaining SUBJECT       # incomplete arms, sequential (skips running)
+#
+# Requires TBI_EXPERIMENT_ARCH (experiment archive holding bids/ and
+# sub-<SUBJECT>_fastsurfer_experiment/).
 #
 # Requires rebuilt dkt_lesion_act.sif (ACPC-first Step 3.1 + mrstats QA fix):
 #   CONTAINER_QSIRECON=/path/to/qsirecon.sif OUT_SIF=/path/to/dkt_lesion_act.sif \
@@ -17,16 +20,17 @@
 
 set -euo pipefail
 
-WAVE="${1:?Usage: $0 prep|wave1|wave2|all|remaining|arm [ARM] [SUBJECT]}"
-SUBJECT="${2:-TBI011011}"
+WAVE="${1:?Usage: $0 prep|wave1|wave2|all|remaining|arm [ARM] SUBJECT}"
 if [[ "${WAVE}" == "arm" ]]; then
-  SINGLE_ARM="${2:?Usage: $0 arm <arm-name> [SUBJECT]}"
-  SUBJECT="${3:-TBI011011}"
+  SINGLE_ARM="${2:?Usage: $0 arm <arm-name> SUBJECT}"
+  SUBJECT="${3:?Usage: $0 arm <arm-name> SUBJECT}"
+else
+  SUBJECT="${2:?Usage: $0 ${WAVE} SUBJECT}"
 fi
 SUBJECT="${SUBJECT#sub-}"
 
 DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ARCH="${TBI_EXPERIMENT_ARCH:-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment}"
+ARCH="${TBI_EXPERIMENT_ARCH:?Set TBI_EXPERIMENT_ARCH to the TBI experiment archive directory}"
 
 export BIDS_DIR="${BIDS_DIR:-${ARCH}/bids}"
 export RESULTS_ROOT="${RESULTS_ROOT:-${ARCH}/sub-${SUBJECT}_fastsurfer_experiment}"
@@ -37,7 +41,7 @@ export SBATCH_MEM="${SBATCH_MEM:-48G}"
 export SBATCH_CPUS="${SBATCH_CPUS:-8}"
 export NTHREADS="${NTHREADS:-8}"
 export OMP_NTHREADS="${OMP_NTHREADS:-8}"
-export EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork05}"
+export EXCLUDE_NODES="${EXCLUDE_NODES-}"
 export SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-/tmp/tbi_experiment_subjects.txt}"
 
 ARMS_ROOT="${RESULTS_ROOT}/arms"
@@ -58,7 +62,7 @@ preflight_dwi_select() {
     rm -f "${tmp_filter}"
     echo "ERROR: dwi-select does not match sub-${SUBJECT} BIDS DWI." >&2
     echo "  Config: ${TBI_DWI_SELECT}" >&2
-    echo "  TBI011011 ses-2WK/6MO DWI nonzero shells are b=1300 (not 1000)." >&2
+    echo "  The pilot subject's ses-2WK/6MO DWI nonzero shells are b=1300 (not 1000)." >&2
     echo "  Use TBI_DWI_SELECT or TBI_DWI_SHELL to override dwi-select config." >&2
     exit 1
   fi

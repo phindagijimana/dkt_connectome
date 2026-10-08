@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
-# Re-run Step 4 (+ SIFT2, nodestrength, disconnectome) on all TBI011011 factorial
-# arms after the rigid FS-T1 -> QSIPrep ACPC label registration change.
+# Re-run Step 4 (+ SIFT2, nodestrength, disconnectome) on all factorial
+# arms of the pilot subject after the rigid FS-T1 -> QSIPrep ACPC label
+# registration change.
+#
+# Requires SUBJECT, EXP (sub-<SUBJECT>_fastsurfer_experiment directory) and BIDS.
 #
 # Usage:
-#   bash dwi_pipeline/scripts/rerun_tbi011011_connectome_rigid_reg.sh
-#   bash dwi_pipeline/scripts/rerun_tbi011011_connectome_rigid_reg.sh --dry-run
-#   bash dwi_pipeline/scripts/rerun_tbi011011_connectome_rigid_reg.sh --from-phase disconnectome
+#   SUBJECT=EXAMPLE01 EXP=/path/to/experiment/sub-EXAMPLE01_fastsurfer_experiment \
+#     BIDS=/path/to/experiment/bids \
+#     bash dwi_pipeline/scripts/rerun_experiment_connectome_rigid_reg.sh
+#   ... bash dwi_pipeline/scripts/rerun_experiment_connectome_rigid_reg.sh --dry-run
+#   ... bash dwi_pipeline/scripts/rerun_experiment_connectome_rigid_reg.sh --from-phase disconnectome
 
 set -euo pipefail
 
@@ -38,9 +43,9 @@ DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck disable=SC1091
 source "${DWI_ROOT}/scripts/lib/rigid_reg_rerun_helpers.sh"
 
-EXP="${EXP:-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment/sub-TBI011011_fastsurfer_experiment}"
-BIDS="${BIDS:-/mnt/nfs/Gugger_Lab/NIR/dwi_test_TBI_experiment/bids}"
-SUBJECT="${SUBJECT:-TBI011011}"
+EXP="${EXP:?Set EXP to the sub-<SUBJECT>_fastsurfer_experiment directory}"
+BIDS="${BIDS:?Set BIDS to the experiment BIDS directory}"
+SUBJECT="${SUBJECT:?Set SUBJECT to the pilot subject ID}"
 SUBJECT="${SUBJECT#sub-}"
 SID="sub-${SUBJECT}"
 
@@ -120,7 +125,7 @@ run_arm_mode() {
 source "${DWI_ROOT}/workflow/lib/slurm_env.sh"
 cd "${DWI_ROOT}"
 
-echo "=== TBI011011 connectome rerun (rigid FS->ACPC registration) ==="
+echo "=== ${SID} connectome rerun (rigid FS->ACPC registration) ==="
 echo "  FROM_PHASE=${FROM_PHASE}"
 date
 
@@ -179,7 +184,7 @@ if should_run qc; then
 
   echo ""
   echo "=== verify ==="
-  run_cmd bash scripts/verify_tbi011011_arms.sh
+  run_cmd bash "scripts/verify_${SUBJECT,,}_arms.sh"
 fi
 
 echo "=== Done ==="

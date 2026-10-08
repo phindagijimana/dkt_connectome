@@ -76,7 +76,7 @@ bash dwi_pipeline/scripts/integration_verify_qsiprep.sh /path/to/RESULTS_ROOT EX
 
 ---
 
-## Self-hosted runner (full DAG / URMC)
+## Self-hosted runner (full DAG / on-prem HPC)
 
 GitHub-hosted runners are small (~7 GB disk). For **full pipeline** integration on your cluster:
 

@@ -9,7 +9,7 @@
 set -euo pipefail
 
 DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-GUGGER_RESULTS="${RESULTS_ROOT:-/mnt/nfs/Gugger_Lab/NIR/dwi_CIDUR/results}"
+RESULTS_DEST="${RESULTS_ROOT:?Set RESULTS_ROOT to the CIDUR results directory}"
 G1_LIST="${DWI_ROOT}/subject_list_cidur_backfill_group1.txt"
 G2_LIST="${DWI_ROOT}/subject_list_cidur_backfill_group2.txt"
 
@@ -17,7 +17,7 @@ G2_LIST="${DWI_ROOT}/subject_list_cidur_backfill_group2.txt"
 [[ -s "${G2_LIST}" ]] || { echo "Missing ${G2_LIST}" >&2; exit 1; }
 
 echo "=== CIDUR backfill batches ==="
-echo "  RESULTS_ROOT=${GUGGER_RESULTS}"
+echo "  RESULTS_ROOT=${RESULTS_DEST}"
 echo "  Group 1 (with fmap): $(wc -l < "${G1_LIST}") subjects -> ${G1_LIST##*/}"
 echo "  Group 2 (no fmap):   $(wc -l < "${G2_LIST}") subjects -> ${G2_LIST##*/}"
 echo "  ARRAY_CONCURRENCY=${ARRAY_CONCURRENCY:-8}"
@@ -35,7 +35,7 @@ submit_one() {
   else
     unset SBATCH_DEPENDENCY
   fi
-  export RESULTS_ROOT="${GUGGER_RESULTS}"
+  export RESULTS_ROOT="${RESULTS_DEST}"
   export SUBJECT_LIST_FILE="${list}"
   export SUBJECT_LIST_USE_EXISTING=1
   export ARRAY_CONCURRENCY="${ARRAY_CONCURRENCY:-8}"

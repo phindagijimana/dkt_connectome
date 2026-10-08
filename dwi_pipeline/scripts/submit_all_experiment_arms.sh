@@ -2,10 +2,10 @@
 # Submit one Slurm array job per factorial experiment arm (all optional flags on).
 #
 # Usage:
-#   bash scripts/submit_all_experiment_arms.sh TBI011011
-#   bash scripts/submit_all_experiment_arms.sh TBI011011 --sequential   # one job at a time (Slurm afterok chain)
-#   bash scripts/submit_all_experiment_arms.sh TBI011011 --syn
-#   bash scripts/submit_all_experiment_arms.sh TBI011011 --arms vbt-lesion,neurolit-lesion
+#   bash scripts/submit_all_experiment_arms.sh EXAMPLE01
+#   bash scripts/submit_all_experiment_arms.sh EXAMPLE01 --sequential   # one job at a time (Slurm afterok chain)
+#   bash scripts/submit_all_experiment_arms.sh EXAMPLE01 --syn
+#   bash scripts/submit_all_experiment_arms.sh EXAMPLE01 --arms vbt-lesion,neurolit-lesion
 #
 # When your account allows only one running job, use --sequential (or cancel extras and
 # submit remaining arms manually with SBATCH_DEPENDENCY=afterok:JOBID).
@@ -15,7 +15,7 @@
 #
 set -euo pipefail
 
-SUBJECT="${1:?Need subject id (e.g. TBI011011)}"
+SUBJECT="${1:?Need subject id (e.g. EXAMPLE01)}"
 SUBJECT="${SUBJECT#sub-}"
 shift || true
 

@@ -1,6 +1,6 @@
 # DKT Connectome — BIDS App orchestrator (Docker + Apptainer on HPC via build_orchestrator_sif.sh).
 #
-# Production on URMC HPC: submit.sh with PIPELINE_ENGINE=bids_app (default).
+# Production on an HPC cluster: submit.sh with PIPELINE_ENGINE=bids_app (default).
 # This Dockerfile is for cloud/docker-only deployments if needed later.
 #
 # Bundles Python + Snakemake + ./run only. Step images must still be mounted at runtime.
