@@ -5,13 +5,20 @@
 # Download IDEAS II BIDS data from OpenNeuro ds007401 (public; no AWS account needed).
 #
 # How to run (step by step):
-#   1. Install the AWS command-line tool once:   pip install awscli
+#   1. Install the AWS command-line tool once (either option works; no AWS account needed):
+#        a) pip:  pip install --user awscli        (AWS CLI v1)
+#        b) official installer, no admin rights:   (AWS CLI v2)
+#             cd ~      # not /tmp: it is often "noexec" and the installer fails
+#             curl -sSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip
+#             unzip -q awscliv2.zip && ./aws/install -i ~/.local/aws-cli -b ~/.local/bin
+#      Make sure ~/.local/bin is on your PATH, then check with:  aws --version
 #   2. Go to the repository root:                cd /path/to/TrackTBI-Sub
 #   3. Start the script:                         bash dwi_pipeline/scripts/download_ideas_sample.sh
 #   4. At the menu, type 1 (all data, ~40 GB) or 2 (sample, ~150 MB) and press Enter.
 #      Pressing Enter alone picks 2. For option 1, type y to confirm.
 #   5. Data is saved to dwi_pipeline/sample_data/ideas/bids/ (or to $IDEAS_OUT if set).
 #   6. If a download is interrupted, run the same command again; it resumes.
+#   Troubleshooting: see dwi_pipeline/sample_data/ideas/README.md
 #
 # Usage:
 #   download_ideas_sample.sh                 # menu: (1) all data, (2) sample
@@ -22,7 +29,7 @@
 # Env:
 #   IDEAS_OUT=/path/to/bids                  # override output directory
 #
-# Requirements: the AWS command-line tool ("aws"). Install with: pip install awscli
+# Requirements: the AWS command-line tool ("aws"); see step 1 above.
 
 # Safety settings: -e stops the script at the first failing command,
 # -u treats use of an undefined variable as an error,
@@ -48,7 +55,7 @@ AWS_OPTS=(--no-sign-request)
 # Check that the aws tool is installed before doing anything else.
 if ! command -v aws >/dev/null 2>&1; then
   # Print the error to stderr (>&2) so it is not mixed with normal output.
-  echo "ERROR: aws CLI required. Install: pip install awscli" >&2
+  echo "ERROR: aws CLI required. Install: pip install --user awscli (or AWS CLI v2; see script header)" >&2
   # Exit with status 1 to signal failure.
   exit 1
 fi
