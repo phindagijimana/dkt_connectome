@@ -55,7 +55,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **`--prefetch-only`** on `run_deep_atropos_seg.py` — login-node ANTsXNet weight warmup
 - **ACT Snakemake CI dry-run** — `target_act` + Deep Atropos branch via `snakemake_act_ci_setup.sh`
 - **Theory docs** — methods pages for Steps 1.1, 3.1, 4 multi-measure outputs; experiment-arm citations
-- **Rigid Step 4 registration** — FS T1 → QSIPrep ACPC rigid affine (`fs_to_preproc_T1w_0GenericAffine.mat`); `scripts/lib/rigid_reg_rerun_helpers.sh` for connectome backfill
+- **Rigid Step 4 registration** — FS T1 → QSIPrep ACPC rigid affine (`fs_to_preproc_T1w_0GenericAffine.mat`)
 - **[TBI experimental arms](TBI_Experimental_Arms.md)** — factorial design, LeAPP relationship, pilot usage
 - **[Upgrading guide](upgrading.md)** — version migration for external users
 

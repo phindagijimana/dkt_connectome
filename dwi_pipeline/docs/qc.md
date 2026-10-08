@@ -40,8 +40,6 @@ python3 scripts/render_subject_qc.py --results-root OUT --subject EXAMPLE
 
 Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 
-Regenerate doc QC figures locally: `python3 scripts/render_qc_doc_figures.py` (requires local dwi_test_TBI outputs; figures are gitignored).
-
 #### Step 1.1 — Inpaint (if lesion mask)
 
 | Panel | What to look for |
