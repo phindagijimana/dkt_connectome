@@ -4,6 +4,15 @@
 #
 # Download IDEAS II BIDS data from OpenNeuro ds007401 (public; no AWS account needed).
 #
+# How to run (step by step):
+#   1. Install the AWS command-line tool once:   pip install awscli
+#   2. Go to the repository root:                cd /path/to/TrackTBI-Sub
+#   3. Start the script:                         bash dwi_pipeline/scripts/download_ideas_sample.sh
+#   4. At the menu, type 1 (all data, ~40 GB) or 2 (sample, ~150 MB) and press Enter.
+#      Pressing Enter alone picks 2. For option 1, type y to confirm.
+#   5. Data is saved to dwi_pipeline/sample_data/ideas/bids/ (or to $IDEAS_OUT if set).
+#   6. If a download is interrupted, run the same command again; it resumes.
+#
 # Usage:
 #   download_ideas_sample.sh                 # menu: (1) all data, (2) sample
 #                                            # (non-interactive: sample)
