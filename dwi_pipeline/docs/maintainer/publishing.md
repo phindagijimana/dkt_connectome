@@ -10,7 +10,6 @@ Use this page as a **pre-flight checklist** before tagging. Step-by-step runbook
 2. Regenerate generated docs:
    ```bash
    python3 dwi_pipeline/scripts/generate_config_catalog.py
-   python3 dwi_pipeline/scripts/render_qc_doc_figures.py
    ```
 3. Verify docs build: `cd dwi_pipeline && mkdocs build --strict`
 4. Create tag and GitHub Release — **[§10 GitHub Release](maintainer_tasks.md#10-github-release-v020)**
