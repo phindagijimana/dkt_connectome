@@ -5,7 +5,7 @@ Reference for optional **native-T1 Deep Atropos** as the Step 3.1 ACT five-tissu
 
 **Public doc:** [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) (Read the Docs).
 
-**Status:** **Implemented** (Aug 2026). Pilot on `sub-TBI011011` with `--deep-atropos-seg-mode generate`.  
+**Status:** **Implemented** (Aug 2026). Pilot on `sub-EXAMPLE01` with `--deep-atropos-seg-mode generate`.  
 **Related:** [Step 3.1 methods](../methods/step3_1_lesion_act.md) · [Publication strategy § Paper 3](../publication_strategy.md).
 
 ---
@@ -41,7 +41,7 @@ Default path unchanged: `act.five_tt_source: hsvs` uses only `dkt_lesion_act.sif
 ## CLI / config
 
 ```bash
-bash workflow/run_subject.sh act TBI011011 \
+bash workflow/run_subject.sh act EXAMPLE01 \
   --recon-session 2WK \
   --act-mode lesion-aware \
   --act-5tt-source deep-atropos-native \
@@ -188,7 +188,7 @@ Plus existing factorial fields (`cross_source_factorial_intentional`, etc.).
 # Reuse qsiprep/qsirecon from neurolit-lesion via symlinks; fresh deep-atropos outputs
 RESULTS_ROOT=.../arms/deep-atropos-pilot \
 DEEP_ATROPOS_ANTSXNET_CACHE=.../.cache/antsxnet \
-  bash workflow/run_subject.sh act TBI011011 \
+  bash workflow/run_subject.sh act EXAMPLE01 \
     --recon-session 2WK \
     --act-mode lesion-aware \
     --act-5tt-source deep-atropos-native \

@@ -155,6 +155,9 @@ backups/
 /dwi_pipeline/subjects_*.txt
 /dwi_pipeline/subject_list_urmc_*.txt
 !/dwi_pipeline/subject_list_urmc_*.example.txt
+/dwi_pipeline/subject_list_*.txt
+!/dwi_pipeline/subject_list_*.example.txt
+/dwi_pipeline/*_ARCHIVED.txt
 /dwi_pipeline/config/bids_repair_subjects.local.csv
 
 # --- Report figures (per-subject, derived from real study data) ---------------

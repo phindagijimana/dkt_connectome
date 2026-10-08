@@ -1,5 +1,5 @@
 #!/bin/bash
-# Submit Group 1 recon + connectome backfill (19 subjects missing aparc on Gugger).
+# Submit Group 1 recon + connectome backfill (19 subjects missing aparc in RESULTS_ROOT).
 #
 # Usage:
 #   bash dwi_pipeline/scripts/submit_cidur_g1_recon_backfill.sh
@@ -9,8 +9,8 @@ set -euo pipefail
 DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 REPO_ROOT="$(cd "${DWI_ROOT}/.." && pwd)"
 
-export BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
-export RESULTS_ROOT="${RESULTS_ROOT:-/mnt/nfs/Gugger_Lab/NIR/dwi_CIDUR/results}"
+export BIDS_DIR="${BIDS_DIR:?Set BIDS_DIR to the CIDUR BIDS dataset directory}"
+export RESULTS_ROOT="${RESULTS_ROOT:?Set RESULTS_ROOT to the CIDUR results directory}"
 unset RECON_SESSION
 export DWI_SELECT_JSON="${DWI_SELECT_JSON:-${DWI_ROOT}/config/dwi_select_64dirax_with_fmap.json}"
 export DWI_SHELL_B="${DWI_SHELL_B:-1000}"
@@ -33,7 +33,7 @@ export SBATCH_PARTITION="${SBATCH_PARTITION:-interactive}"
 export SBATCH_CPUS=8
 export SBATCH_MEM=48G
 export SBATCH_JOB_NAME=cidur_g1_recon
-export EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork01}"
+export EXCLUDE_NODES="${EXCLUDE_NODES-}"
 
 [[ -s "${SUBJECT_LIST_FILE}" ]] || {
   echo "Missing subject list: ${SUBJECT_LIST_FILE}"

@@ -90,7 +90,7 @@ From [paper_plan.md §11](https://github.com/phindagijimana/dkt_connectome/blob/
 |---|------|
 | P4.1 | Freeze pipeline **v1.0** with release note listing all four SDC modes | Runbook: [v1_science_track.md](v1_science_track.md) |
 | P4.2 | Container digests pinned + published; digest table in supplement | `scripts/generate_container_digests_md.py` → [container_digests.md](container_digests.md) |
-| P4.3 | URMC cohort **n=61** end-to-end + per-subject QC summary CSV |
+| P4.3 | Internal clinical cohort **n=61** end-to-end + per-subject QC summary CSV |
 | P4.4 | HCP-YA **n=10** baseline comparison + statistics table |
 | P4.5 | Radiological review (James) with rubric per subject |
 | P4.6 | Comparison table (Table 1) finalized with citations |
@@ -143,7 +143,7 @@ Only if cloud-only / BIDS Apps reviewers demand single-image UX.
 Week 1 (P0):  registry PR · GitHub Release · Docker verify · RTD webhook · push doc trim
 Week 2 (P1):  bids-validator CI · app.json flags · install_smoke schedule
 Week 3+ (P1): integration_qsiprep.yml green (pull + version; license-free)
-Parallel (P4): URMC 61 + HCP 10 — [v1_science_track.md](v1_science_track.md)
+Parallel (P4): internal cohort (n=61) + HCP 10 — [v1_science_track.md](v1_science_track.md)
 Before v1.0:   Zenodo DOI · digest table · P4 checklist · version bump
 ```
 

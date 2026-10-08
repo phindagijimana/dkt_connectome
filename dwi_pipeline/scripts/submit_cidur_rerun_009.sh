@@ -8,7 +8,7 @@ set -euo pipefail
 
 DWI_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-export BIDS_DIR="${BIDS_DIR:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/CIDUR_BIDS/data_bids}"
+export BIDS_DIR="${BIDS_DIR:?Set BIDS_DIR to the CIDUR BIDS dataset directory}"
 export RESULTS_ROOT="${RESULTS_ROOT:-${DWI_ROOT}/results}"
 export SESSION_AWARE_ROOT="${SESSION_AWARE_ROOT:-${RESULTS_ROOT}/session_aware}"
 # submit.sh preflight checks FS_SUBJECTS_DIR/sub-009; session-aware recon lives under ses-1.
@@ -31,7 +31,7 @@ export SBATCH_PARTITION="${SBATCH_PARTITION:-interactive}"
 export SBATCH_CPUS=8
 export SBATCH_MEM=48G
 export SBATCH_JOB_NAME=cidur_rerun_009
-export EXCLUDE_NODES="${EXCLUDE_NODES-smdodwork05}"
+export EXCLUDE_NODES="${EXCLUDE_NODES-}"
 
 chmod +x "${ARRAY_SCRIPT}"
 

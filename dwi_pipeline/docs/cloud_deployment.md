@@ -1,6 +1,6 @@
 # Cloud and group deployment
 
-Patterns for running DKT Connectome outside URMC HPC: Docker orchestrator, cached step containers, and cohort post-processing.
+Patterns for running DKT Connectome outside an on-prem HPC cluster: Docker orchestrator, cached step containers, and cohort post-processing.
 
 ---
 
@@ -77,7 +77,7 @@ This builds `cohort_qc.html` and optional BIDS Derivatives export — no reproce
 
 ## Slurm array (HPC)
 
-Production path at URMC and similar sites:
+Production path on on-prem HPC sites:
 
 ```bash
 export BIDS_DIR=/path/to/BIDS
