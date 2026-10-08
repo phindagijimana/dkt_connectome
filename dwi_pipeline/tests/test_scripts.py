@@ -34,13 +34,11 @@ def test_edge_stats_count_weighting_sane():
     assert stats["mean_disconnection_clipped"] == pytest.approx(0.1)
 
 
-def test_write_disconnection_matrix_clips():
+def test_write_disconnection_matrix_clips(tmp_path):
     mod = _load_module("run_disconnectome", DWI / "scripts" / "run_disconnectome.py")
-    tmp = Path(__file__).parent / "_tmp_disc"
-    tmp.mkdir(exist_ok=True)
-    primary = tmp / "p.csv"
-    spared = tmp / "s.csv"
-    out = tmp / "d.csv"
+    primary = tmp_path / "p.csv"
+    spared = tmp_path / "s.csv"
+    out = tmp_path / "d.csv"
     np.savetxt(primary, np.array([[0.0, 10.0], [10.0, 0.0]]), delimiter=",")
     np.savetxt(spared, np.array([[0.0, 12.0], [8.0, 0.0]]), delimiter=",")
     summary = mod.write_disconnection_matrix(primary, spared, out)
