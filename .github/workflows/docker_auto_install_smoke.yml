@@ -13,12 +13,21 @@ on:
       - 'dwi_pipeline/docker-entrypoint.sh'
       - 'dwi_pipeline/scripts/install.sh'
       - '.github/workflows/docker_auto_install_smoke.yml'
+  pull_request:
+    paths:
+      - 'dwi_pipeline/Dockerfile'
+      - 'dwi_pipeline/docker-entrypoint.sh'
+      - 'dwi_pipeline/scripts/install.sh'
+      - '.github/workflows/docker_auto_install_smoke.yml'
 
 permissions:
   contents: read
 
 jobs:
   auto-install:
+    # Orchestrator Dockerfile FROM python:3.12-slim-bookworm (Docker Hub).
+    # Skip scheduled/push runs when DOCKERHUB_* secrets are empty (anonymous 429).
+    if: ${{ github.event_name == 'workflow_dispatch' || secrets.DOCKERHUB_USERNAME != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 150
 
