@@ -24,10 +24,28 @@ permissions:
   contents: read
 
 jobs:
+  hub-credentials:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.creds.outputs.present }}
+    steps:
+      - id: creds
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [[ -n "${DOCKERHUB_USERNAME}" && -n "${DOCKERHUB_TOKEN}" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "DOCKERHUB_* secrets empty; Hub-rate-limited smoke will be skipped on push/PR/schedule"
+          fi
+
   auto-install:
     # Orchestrator Dockerfile FROM python:3.12-slim-bookworm (Docker Hub).
     # Skip scheduled/push runs when DOCKERHUB_* secrets are empty (anonymous 429).
-    if: ${{ github.event_name == 'workflow_dispatch' || secrets.DOCKERHUB_USERNAME != '' }}
+    needs: hub-credentials
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.hub-credentials.outputs.present == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 150
 

@@ -43,10 +43,28 @@ env:
   IMAGE_TAG: ${{ github.event.inputs.image_tag || '0.3.0' }}
 
 jobs:
+  hub-credentials:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.creds.outputs.present }}
+    steps:
+      - id: creds
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [[ -n "${DOCKERHUB_USERNAME}" && -n "${DOCKERHUB_TOKEN}" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "DOCKERHUB_* secrets empty; ACT Hub pulls (qsirecon/ubuntu) will be skipped on push/PR"
+          fi
+
   build-and-push:
     # Stages pennlinc/qsirecon and builds FROM ubuntu:22.04 (Docker Hub).
     # qsirecon:1.2.1 is also unpublished; skip Hub pulls when secrets are empty.
-    if: ${{ github.event_name == 'workflow_dispatch' || secrets.DOCKERHUB_USERNAME != '' }}
+    needs: hub-credentials
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.hub-credentials.outputs.present == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
