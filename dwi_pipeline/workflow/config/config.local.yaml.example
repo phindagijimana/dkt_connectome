@@ -43,6 +43,6 @@ fs_license: /path/to/others/data_mining/freesurfer/license.txt
 # bids:
 #   validate: true
 
-# Local TBI test layout example:
-# bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids
-# results_root: /path/to/dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint
+# Local paths (you provide BIDS and a RESULTS_ROOT):
+# bids_dir: /path/to/BIDS
+# results_root: /path/to/results

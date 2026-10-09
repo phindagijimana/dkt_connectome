@@ -41,16 +41,16 @@ Do **not** tag v1.0 until P4.3–P4.4 complete and [container digests](container
 
 **Inputs (in-repo):**
 
-- Subject lists: `subject_list_urmc_with_fmap.txt`, `subject_list_urmc_no_fmap.txt`
+- Subject lists: `subject_list.txt`
 - Config: `workflow/config/config.yaml` + site `config.local.yaml`
 
 **Run:**
 
 ```bash
 export BIDS_DIR=/path/to/cohort/BIDS
-export RESULTS_ROOT=/scratch/tracktbi/dkt_v1
+export RESULTS_ROOT=/path/to/results
 export FS_LICENSE=/path/to/license.txt
-export SUBJECT_LIST_FILE=dwi_pipeline/subject_list_urmc_with_fmap.txt
+export SUBJECT_LIST_FILE=dwi_pipeline/subject_list.txt
 
 bash dwi_pipeline/submit.sh          # Slurm array
 bash dwi_pipeline/scripts/batch_postprocess.sh   # cohort QC + derivatives

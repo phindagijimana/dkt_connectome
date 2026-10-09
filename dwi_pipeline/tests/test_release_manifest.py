@@ -31,6 +31,24 @@ def test_release_manifest_matches_app_version():
     assert data["pipeline_version"] == app["PipelineVersion"]
 
 
+def _load_script(name: str):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(name, SCRIPTS / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_export_scripts_pipeline_version_matches_app_json():
+    expected = json.loads((REPO / "app.json").read_text(encoding="utf-8"))["PipelineVersion"]
+    write_desc = _load_script("write_derivatives_description")
+    export_bids = _load_script("export_bids_derivatives")
+    assert write_desc.PIPELINE_VERSION == expected
+    assert export_bids.PIPELINE_VERSION == expected
+
+
 def test_apply_manifest_pins_overrides_connectome(container_install):
     cfg = {
         "container_pins": {
