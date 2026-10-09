@@ -727,8 +727,8 @@ rebuilding or re-validating the tractography/connectome container, and vice vers
 **Caveats carried through from the underlying method** (recorded in every `manifest.json`):
 DK/DKT do not subdivide the thalamus into AV/CM/MDPf/PUL nuclei the way THOMAS does, so the
 whole-thalamus AI here is L-vs-R of one `Thalamus-Proper` node, not a per-nucleus breakdown;
-values are raw asymmetry indices, not age/sex-adjusted normative z-scores (§ENIGMA.md
-discusses when a normative cohort model would be needed instead).
+values are raw asymmetry indices, not age/sex-adjusted normative z-scores
+(a normative cohort model would be needed for that).
 
 ---
 

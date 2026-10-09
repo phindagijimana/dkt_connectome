@@ -1,4 +1,4 @@
-# DKT Connectome — BIDS App orchestrator (Docker + Apptainer on HPC via build_orchestrator_sif.sh).
+# DKT Connectome — BIDS App orchestrator (Docker; optional HPC Apptainer SIF via ./dkt install).
 #
 # Production on an HPC cluster: submit.sh with PIPELINE_ENGINE=bids_app (default).
 # This Dockerfile is for cloud/docker-only deployments if needed later.

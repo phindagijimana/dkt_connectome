@@ -121,7 +121,7 @@ run_orchestrator_participant() {
 
   local sif dwi_root repo_root
   sif="$(resolve_orchestrator_sif)" || _orchestrator_fail \
-    "orchestrator SIF not found — run: bash dwi_pipeline/scripts/build_orchestrator_sif.sh"
+    "orchestrator SIF not found — optional; install via bash dwi_pipeline/scripts/install.sh (see dwi_pipeline/docs/installation.md)"
   dwi_root="$(_orchestrator_repo_dwi)"
   repo_root="$(dirname "${dwi_root}")"
 
