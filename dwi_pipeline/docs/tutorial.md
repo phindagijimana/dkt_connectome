@@ -11,7 +11,7 @@ End-to-end walkthrough using the public [IDEAS II](datasets/ideas.md) sample (tw
 3. Inspect QC HTML and the DKT connectome
 4. Optionally run disconnectome integrity checks
 
-**Time:** several hours on HPC (QSIPrep + recon dominate). Use `--dry-run` first to validate the plan.
+**Time:** several hours on HPC (QSIPrep + recon dominate). Use `--dry-run` first to validate the plan. Preflight still requires cached step containers for `--dry-run`; export `BIDS_APP_CI=1` only to skip those checks for a plan-only / CI dry-run — do not set it for real runs.
 
 ---
 

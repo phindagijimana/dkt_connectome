@@ -47,8 +47,8 @@ After install:
   bash scripts/download_ideas_sample.sh   # optional public sample
 
 Environment:
-  DKT_CONTAINER_CACHE   Same as --cache
-  APPTAINER_TMPDIR      Temp dir for apptainer pull (default: <cache>/../apptainer_tmp)
+  DKT_CONTAINER_CACHE   Same as --cache (prefer local disk, not NFS)
+  APPTAINER_TMPDIR      Temp dir for apptainer pull (default: <cache>/../apptainer_tmp; prefer local disk)
 EOF
 }
 
