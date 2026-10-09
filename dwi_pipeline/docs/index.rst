@@ -16,6 +16,7 @@ Contents
    tutorial
    upgrading
    datasets/ideas
+   datasets/btc_glioma
    cloud_deployment
 
 .. toctree::

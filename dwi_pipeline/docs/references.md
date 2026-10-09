@@ -191,6 +191,20 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 
 ---
 
+## Public glioma lesion demo — BTC_preop (OpenNeuro) — **not TBI**
+
+One glioma subject (`sub-PAT20`) from [OpenNeuro ds001226](https://openneuro.org/datasets/ds001226) via [`scripts/download_btc_glioma_sample.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/download_btc_glioma_sample.sh). **Glioma tumor mask, not a traumatic lesion. Do not cite as TRACK-TBI validation.**
+
+| Topic | Reference | DOI / link |
+|-------|-----------|------------|
+| **eNeuro (required when using this sample)** | Aerts H, Schirner M, Jeurissen B, Van Roost D, Achten E, Ritter P, Marinazzo D. Modeling Brain Dynamics in Brain Tumor Patients Using the Virtual Brain. *eNeuro*. 2018;5(3):ENEURO.0083-18.2018. | [10.1523/ENEURO.0083-18.2018](https://doi.org/10.1523/ENEURO.0083-18.2018) |
+| OpenNeuro dataset record | BTC_preop (ds001226) | [10.18112/openneuro.ds001226.v5.0.0](https://doi.org/10.18112/openneuro.ds001226.v5.0.0) |
+| Dataset descriptor (optional) | Aerts H, Colenbier N, Almgren H, et al. *Scientific Data*. 2022;9:676. | [10.1038/s41597-022-01806-4](https://doi.org/10.1038/s41597-022-01806-4) |
+
+**Docs:** [Glioma sample (BTC_preop)](datasets/btc_glioma.md)
+
+---
+
 ## TBI / clinical context (optional)
 
 These resources informed cohort design and QC; cite separately when discussing TBI outcomes or study populations.
