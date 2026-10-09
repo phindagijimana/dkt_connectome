@@ -20,8 +20,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PIPELINE_NAME = "DKT Connectome"
-PIPELINE_VERSION = "0.2.0"
 CODE_URL = "https://github.com/phindagijimana/dkt_connectome"
+
+
+def _load_pipeline_version() -> str:
+    app_json = Path(__file__).resolve().parent.parent / "app.json"
+    if not app_json.is_file():
+        return "0.3.0"
+    return str(json.loads(app_json.read_text())["PipelineVersion"])
+
+
+PIPELINE_VERSION = _load_pipeline_version()
 
 DERIVATIVE_PIPELINES = (
     "qsiprep",

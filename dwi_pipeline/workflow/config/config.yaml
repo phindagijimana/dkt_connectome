@@ -5,8 +5,8 @@
 # =============================================================================
 
 # --- Paths ---
-results_root: /path/to/dwi_pipeline/dwi_test_TBI   # outputs; use a per-run subdir
-bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids  # local TBI test inputs
+results_root: /path/to/results   # outputs; use a per-run subdir
+bids_dir: /path/to/BIDS          # BIDS dataset root
 templateflow_home: null   # default: <repo>/templateflow
 recon_out: null             # default: <results_root>/freesurfer  (RECON_OUT)
 fs_subjects_dir: null       # default: recon_out                 (FS_SUBJECTS_DIR)

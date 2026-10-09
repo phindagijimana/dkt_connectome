@@ -18,12 +18,13 @@
 #SBATCH --output=logs/dwi_act_%A_%a.out
 #SBATCH --error=logs/dwi_act_%A_%a.err
 #SBATCH --time=12:00:00
-#SBATCH --partition=interactive
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
 #SBATCH --mail-type=END,FAIL
 # Set mail in submit.sh via: SBATCH --mail-user=you@example.edu (optional)
-#SBATCH --array=1-76%5
+# Placeholder array; submit.sh overrides --array with the real subject count.
+# Set your site partition via submit.sh / SBATCH_PARTITION.
+#SBATCH --array=1-1%1
 
 set -euo pipefail
 set +H

@@ -22,9 +22,9 @@ Snakemake builds this automatically when `qc.subject_html: true` (default).
 Regenerate manually:
 
 ```bash
-bash workflow/run_subject.sh all EXAMPLE
+bash workflow/run_subject.sh all 1
 # or:
-python3 scripts/render_subject_qc.py --results-root OUT --subject EXAMPLE
+python3 scripts/render_subject_qc.py --results-root "${RESULTS_ROOT}" --subject 1
 ```
 
 ### What to inspect (by step)
@@ -128,15 +128,15 @@ Set in `workflow/config/config.local.yaml`. Disable per-subject HTML with `qc.su
 
 ## Example paths (tutorial data)
 
-After the [Tutorial](tutorial.md) on bundled TBI subjects:
+After the [Tutorial](tutorial.md) on the public IDEAS II sample (`RESULTS_ROOT` from that walkthrough):
 
 ```text
-dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/qc/sub-EXAMPLE/subject_qc.html
-dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/connectomes/sub-EXAMPLE/disconnectome/disconnectome_qc.html
+RESULTS_ROOT/qc/sub-1/subject_qc.html
+RESULTS_ROOT/connectomes/sub-1/disconnectome/disconnectome_qc.html
 ```
 
 ```bash
-firefox dwi_pipeline/dwi_test_TBI/sub-EXAMPLE_fastsurfer_inpaint/qc/sub-EXAMPLE/subject_qc.html
+firefox "${RESULTS_ROOT}/qc/sub-1/subject_qc.html"
 ```
 
 ---

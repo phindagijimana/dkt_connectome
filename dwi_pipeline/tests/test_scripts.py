@@ -72,7 +72,8 @@ def test_write_derivatives_description(tmp_path):
     wmain()
     data = json.loads((out / "dataset_description.json").read_text())
     assert data["DatasetType"] == "derivative"
-    assert data["GeneratedBy"][0]["Version"] == "0.2.0"
+    app = json.loads((DWI / "app.json").read_text())
+    assert data["GeneratedBy"][0]["Version"] == app["PipelineVersion"]
 
 
 def test_render_disconnectome_qc_html(tmp_path):
