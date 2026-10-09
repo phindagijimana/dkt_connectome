@@ -20,20 +20,10 @@ gcloud artifacts repositories create dk-connectome \
 Reference: the
 [Snakemake Google Batch tutorial](https://snakemake.readthedocs.io/en/stable/executor_tutorial/googlebatch.html).
 
-## 2. Mirror container images to Artifact Registry (optional)
+## 2. Pull container images from GHCR
 
-Public images work out of the box; for VPC-only / egress-restricted projects,
-mirror to Artifact Registry first:
-
-```bash
-for img in pennlinc/qsiprep:1.0.0 \
-           pennlinc/qsirecon:1.2.1 \
-           freesurfer/freesurfer:7.4.1 \
-           ghcr.io/phindagijimana/dk-connectome:0.1.0
-do
-  ./scripts/mirror_to_gar.sh "$img"   # docker pull -> tag -> push to your AR repo
-done
-```
+Images are published to GHCR (see [docs/maintainer/publishing.md](../../dwi_pipeline/docs/maintainer/publishing.md));
+pull from there. Public images work out of the box when the project has egress.
 
 ## 3. Override config to use GCS URIs
 

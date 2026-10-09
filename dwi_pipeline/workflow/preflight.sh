@@ -79,7 +79,7 @@ case "${ENGINE}" in
     source "${WORKFLOW_DIR}/lib/orchestrator.sh"
     orch="$(resolve_orchestrator_sif 2>/dev/null || true)"
     [[ -n "${orch}" && -f "${orch}" ]] || fail \
-      "orchestrator SIF missing (run: bash dwi_pipeline/scripts/build_orchestrator_sif.sh)"
+      "orchestrator SIF missing (optional; install via bash dwi_pipeline/scripts/install.sh)"
     echo "preflight: orchestrator=${orch}"
     ;;
   *)

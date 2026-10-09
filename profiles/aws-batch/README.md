@@ -17,21 +17,11 @@ aws s3 mb s3://dk-connectome-workdir
 Reference the full procedure in the
 [AWS Batch + Snakemake quickstart](https://snakemake.readthedocs.io/en/stable/executor_tutorial/aws-batch.html).
 
-## 2. Push container images to ECR (or use ghcr.io pull-through cache)
+## 2. Pull container images from GHCR
 
-The four container images this workflow needs are public on Docker Hub /
-ghcr.io. AWS Batch can pull them directly if your compute environment has
-internet egress; for VPC-only setups, mirror to ECR:
-
-```bash
-for img in pennlinc/qsiprep:1.0.0 \
-           pennlinc/qsirecon:1.2.1 \
-           freesurfer/freesurfer:7.4.1 \
-           ghcr.io/phindagijimana/dk-connectome:0.1.0
-do
-  ./scripts/mirror_to_ecr.sh "$img"   # docker pull -> tag -> push to your ECR repo
-done
-```
+Images are published to GHCR (see [docs/maintainer/publishing.md](../../dwi_pipeline/docs/maintainer/publishing.md));
+pull from there. AWS Batch can use them directly if the compute environment
+has internet egress.
 
 ## 3. Override config to use S3 URIs
 
