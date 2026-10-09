@@ -28,7 +28,7 @@ TBI contusion, edema, hemorrhage, and bilateral injury are the new territory.
 | Resource | Role in publications |
 |----------|----------------------|
 | **TrackTBI lesion subset** (~100 subjects with manual lesion masks) | Primary factorial sensitivity and QC cohort for paper 1 |
-| **Internal CIDUR controls** (non-lesion) | Normative connectome or **synthetic lesion injection** on healthy anatomy — not pooled with lesion factorial arms without a separate claim |
+| **Second / control clinical cohort** (non-lesion) | Normative connectome or **synthetic lesion injection** on healthy anatomy — not pooled with lesion factorial arms without a separate claim |
 | **Pilot subject** (`sub-EXAMPLE01`, six-arm experiment tree) | Engineering gate before full cohort; ACPC lesion warp + pathology QA |
 
 Report **completion rates by arm** (Step 3.1 pathology QA, registration, empty nodes,
@@ -78,7 +78,7 @@ Part II” on identical subjects; pipeline note followed by “application” wi
 new data.
 
 **Strong splits:** methods factorial (paper 1) vs clinical disconnection (paper 2)
-with **different primary claims**; TBI lesion cohort vs normative atlas (CIDUR)
+with **different primary claims**; TBI lesion cohort vs a second / control clinical cohort
 with **different cohorts and questions**; HSVS factorial vs Deep Atropos with
 **new experiments**.
 
@@ -136,7 +136,7 @@ is not purely exploratory.
 |------|---------|
 | **Technical** | Pathology channel coverage, lesion→5TT overlap, streamline counts, empty-node rate |
 | **Internal consistency** | Bootstrap / split-half stability of key edges where repeat scans exist |
-| **Synthetic lesions** | Inject known lesions on CIDUR or healthy subset; measure connectivity recovery |
+| **Synthetic lesions** | Inject known lesions on a control / healthy subset; measure connectivity recovery |
 | **Clinical face validity** | Disconnectome vs lesion location; moderation by volume and lobar site |
 
 ### Differentiation from LeAPP (required in intro / discussion)
@@ -493,7 +493,7 @@ Paper 4        → How does structural connectivity evolve over time at scale?
 - Primary contrast: `*-std` vs `*-lesion` within each anatomy backend.
 - Secondary: orig vs neuroLIT vs VBT; interaction anatomy × ACT.
 - Outcomes: QC-by-arm tables, quantitative matrix/edge sensitivity, representative cases.
-- Validation: synthetic lesions on CIDUR controls (LeAPP-style); single pilot subject = engineering pilot.
+- Validation: synthetic lesions on a control clinical cohort (LeAPP-style); single pilot subject = engineering pilot.
 - Comparator: Bey et al. 2024 LeAPP; emphasize TBI vs stroke and ACPC/HSVS workflow.
 - Default venue: *Human Brain Mapping*.
 
@@ -553,7 +553,7 @@ Paper 4        → How does structural connectivity evolve over time at scale?
 | Deep Atropos 5TT | `deep_atropos/sub-<ID>/base_5tt_native.mif` |
 
 **Still to build:** factorial harvest script (walk six arms → paired Δ metrics CSV);
-synthetic lesion injection on CIDUR (~26 connectomes on NAS, ~61 DWI locally).
+synthetic lesion injection on a second / control clinical cohort.
 
 **External (Paper 2 gate):** TRACK-TBI **study** clinical export — GOSE, RPQ, neuropsych,
 GCS, age, sex — merged on `sub-<ID>` + visit window. **Not** from hospital EMR or
@@ -562,9 +562,9 @@ radiology; **not** in this repository today. See [Clinical outcomes for Paper 2]
 **Current execution focus:** Paper 1 (factorial cohort + analysis registry) and
 Paper 4 (longitudinal `orig-std` batch). Paper 2 paused; Paper 3 → Paper 1 supplement.
 
-**Current engineering status (pilot):** `sub-EXAMPLE01` six-arm tree on NAS; CIDUR
-Group 1 = 26/27 controls with connectomes (no lesion/disconnectome); full TrackTBI
-factorial cohort not yet run at scale.
+**Current engineering status (pilot):** `sub-EXAMPLE01` six-arm tree; a second / control
+clinical cohort is available for normative connectomes (no lesion/disconnectome on that
+cohort); full TrackTBI factorial cohort not yet run at scale.
 
 ---
 
