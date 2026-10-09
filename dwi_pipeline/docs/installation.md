@@ -57,7 +57,7 @@ mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install
 ```
 
-`install.sh` sets `APPTAINER_TMPDIR` from the cache parent when unset.
+`install.sh` sets `APPTAINER_TMPDIR` from the cache parent when unset. First-time `docker://` OCI→SIF conversion of QSIPrep / QSIRecon / FreeSurfer can take 30–90 minutes — keep `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR` on local (non-NFS) disks.
 
 Verify before your first run:
 

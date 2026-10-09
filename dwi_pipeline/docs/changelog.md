@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Fixed
+- **`./dkt install` URI order** — use `release_manifest.json` pins first; skip `oras://` on multi-layer Docker Hub images (`pennlinc` / `freesurfer` / `deepmi`) and pull them with `docker://`. GHCR DKT SIFs still try `oras://ghcr.io/...` first.
+
 ## [0.3.0] — Tier 1 reproducibility (baked step scripts)
 
 ### Added

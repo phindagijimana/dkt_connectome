@@ -258,18 +258,58 @@ def apptainer_uri(pin: str) -> str:
     return f"docker://{pin}"
 
 
+# Docker Hub namespaces that publish multi-layer OCI images, not single-layer SIF.
+# Auto-wrapping these as oras:// fails: "ORAS SIF should have a single layer, found N".
+_OCI_NOT_SIF_NAMESPACES = (
+    "pennlinc/",
+    "freesurfer/",
+    "deepmi/",
+)
+
+
+def _bare_image_ref(raw: str) -> str:
+    if raw.startswith("docker://"):
+        return raw[len("docker://") :]
+    if raw.startswith("oras://index.docker.io/"):
+        return raw[len("oras://index.docker.io/") :]
+    if raw.startswith("oras://"):
+        return raw[len("oras://") :]
+    return raw
+
+
+def _is_multi_layer_oci_dockerhub(raw: str) -> bool:
+    ref = _bare_image_ref(raw)
+    if ref.startswith("ghcr.io/"):
+        return False
+    return any(ref.startswith(ns) for ns in _OCI_NOT_SIF_NAMESPACES)
+
+
 def pull_uris_for_key(key: str, pin: str) -> list[str]:
-    """Ordered URIs to try for apptainer pull (primary pin first, then fallbacks)."""
+    """Ordered URIs to try for apptainer pull (manifest/pin first, then fallbacks).
+
+    GHCR pins try oras:// first (DKT step SIFs). Official Docker Hub images
+    (pennlinc / freesurfer / deepmi) are multi-layer OCI — skip oras:// and
+    use docker:// only (explicit oras:// for those namespaces is rewritten).
+    """
     seen: set[str] = set()
     out: list[str] = []
 
     def add(raw: str) -> None:
+        if raw.startswith("oras://"):
+            if _is_multi_layer_oci_dockerhub(raw):
+                raw = f"docker://{_bare_image_ref(raw)}"
+            elif raw not in seen:
+                seen.add(raw)
+                out.append(raw)
+                return
         if raw.startswith("ghcr.io/"):
             oras_uri = f"oras://{raw}"
             if oras_uri not in seen:
                 seen.add(oras_uri)
                 out.append(oras_uri)
-        elif not raw.startswith(("docker://", "oras://")):
+        elif not raw.startswith(("docker://", "oras://")) and not _is_multi_layer_oci_dockerhub(
+            raw
+        ):
             oras_dh = f"oras://index.docker.io/{raw}"
             if oras_dh not in seen:
                 seen.add(oras_dh)
@@ -608,6 +648,16 @@ def pull_all(
         str(Path(os.environ.get("APPTAINER_TMPDIR", cache.parent / "apptainer_tmp"))),
     )
     Path(os.environ["APPTAINER_TMPDIR"]).mkdir(parents=True, exist_ok=True)
+    if not quiet:
+        print(
+            "[install] Using release_manifest / container_pins URIs first "
+            "(GHCR oras:// for DKT SIFs; docker:// for pennlinc/freesurfer/deepmi)."
+        )
+        print(
+            "[install] First-time docker:// OCI→SIF conversion can take 30–90 min; "
+            "set DKT_CONTAINER_CACHE and APPTAINER_TMPDIR to local (non-NFS) disks "
+            f"(cache={cache} tmpdir={os.environ['APPTAINER_TMPDIR']})."
+        )
 
     for key in keys:
         pin_rows = list_plan(cache, (key,))
