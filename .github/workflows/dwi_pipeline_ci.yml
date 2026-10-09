@@ -49,6 +49,8 @@ jobs:
 
       - name: bids-validator (minimal fixture)
         working-directory: dwi_pipeline
+        env:
+          BIDS_VALIDATOR_NPM: bids-validator@1.14.10
         run: bash scripts/run_bids_validator.sh tests/fixtures/bids_minimal --ignore-warnings
 
       - name: Privacy check (no personal paths in git)

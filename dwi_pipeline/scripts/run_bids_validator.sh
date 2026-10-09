@@ -40,7 +40,10 @@ if [[ -n "${BIDS_VALIDATOR_SIF:-}" && -f "${BIDS_VALIDATOR_SIF}" ]]; then
 fi
 
 if command -v npx >/dev/null 2>&1; then
-  run_cli npx --yes bids-validator "${BIDS_DIR}" "${ARGS[@]}"
+  # Pin the npm package. Unpinned `npx bids-validator` resolves latest and
+  # intermittently fails with npm ETARGET on @aws-sdk/checksums.
+  BIDS_VALIDATOR_NPM="${BIDS_VALIDATOR_NPM:-bids-validator@1.14.10}"
+  run_cli npx --yes "${BIDS_VALIDATOR_NPM}" "${BIDS_DIR}" "${ARGS[@]}"
   exit $?
 fi
 
