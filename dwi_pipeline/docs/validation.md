@@ -37,15 +37,11 @@ Two-subject BIDS subset for tutorials and external smoke tests — **not** a val
 
 ---
 
-## Bundled test subjects (golden QC)
+## Golden QC (produced locally)
 
-Under [`dwi_test_TBI/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/dwi_test_TBI) — full pipeline outputs for documentation figures and integrity checks:
-
-Local checkouts may include placeholder subjects under `dwi_test_TBI/` (e.g. `sub-EXAMPLE_fastsurfer_inpaint`). Open QC HTML under `RESULTS_ROOT/qc/sub-<ID>/` and `connectomes/sub-<ID>/disconnectome/` after running the pipeline locally — paths and figures are not shipped in git.
+Golden QC is **not shipped** in the repository. After you complete the [Tutorial](tutorial.md) on the public IDEAS II sample, open QC HTML under `RESULTS_ROOT/qc/sub-<ID>/` and (if disconnectome ran) `RESULTS_ROOT/connectomes/sub-<ID>/disconnectome/`.
 
 Doc figures: [Quality control](qc.md) (`docs/img/qc/*.png`).
-
-Walkthrough: [Tutorial](tutorial.md).
 
 ---
 

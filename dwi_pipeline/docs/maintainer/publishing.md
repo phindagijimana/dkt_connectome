@@ -11,8 +11,11 @@ Use this page as a **pre-flight checklist** before tagging. Step-by-step runbook
    ```bash
    python3 dwi_pipeline/scripts/generate_config_catalog.py
    ```
-3. Verify docs build: `cd dwi_pipeline && mkdocs build --strict`
-4. Create tag and GitHub Release — **[§10 GitHub Release](maintainer_tasks.md#10-github-release-v020)**
+3. Verify docs build:
+   ```bash
+   sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
+   ```
+4. Create tag and GitHub Release for the current `app.json` `PipelineVersion` (v0.3.0) — **[§10 GitHub Release](maintainer_tasks.md#10-github-release-v020)**
 
 ---
 
