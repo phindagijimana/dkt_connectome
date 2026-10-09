@@ -59,7 +59,7 @@ docker run --rm -e BIDS_APP_CI=1 -e FS_LICENSE=/tmp/license.txt \
   phindagijimana321/dkt-connectome:0.3.0 dkt check
 ```
 
-If the Docker tag is unavailable, use the **Apptainer** path above (`./dkt install` pulls step images from GHCR per [`release_manifest.json`](dwi_pipeline/release_manifest.json)).
+If the Docker tag is unavailable, use the **Apptainer** path above. `./dkt install` uses [`release_manifest.json`](dwi_pipeline/release_manifest.json): DKT-owned step SIFs from GHCR (`oras://ghcr.io/...`), upstream pennlinc/freesurfer/deepmi images from Docker Hub via `docker://` (first-time OCI→SIF can take 30–90 min; use a local, non-NFS `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`).
 
 **CLI:** `./dkt install | pull | run | log | check | version` — `./dkt run …` equals `./run …` (BIDS App). See [Usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
 
