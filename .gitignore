@@ -49,6 +49,11 @@ derivatives/
 !/dwi_pipeline/sample_data/ideas/SUBJECTS.md
 !/dwi_pipeline/sample_data/README.md
 
+# BTC_preop glioma sample BIDS (OpenNeuro ds001226) — downloaded NIfTI, not committed.
+# GLIOMA, not TBI. Demo of lesion-aware inputs only.
+/dwi_pipeline/sample_data/btc_glioma/bids/**
+!/dwi_pipeline/sample_data/btc_glioma/README.md
+
 # --- Container images (huge, distributed separately) --------------------------
 *.sif
 *.img

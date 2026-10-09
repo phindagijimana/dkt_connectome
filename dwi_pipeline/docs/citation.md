@@ -212,6 +212,49 @@ Full sample-data guide: [datasets/ideas.md](datasets/ideas.md).
 
 ---
 
+## Public glioma lesion demo (**not TBI**)
+
+A one-subject subset of **BTC_preop** ([OpenNeuro ds001226](https://openneuro.org/datasets/ds001226)) is available as a **glioma** demo of lesion-aware BIDS inputs (tumor mask copied next to T1w as `*_T1w_label-lesion_roi.nii.gz`).
+
+**This is glioma, not traumatic brain injury.** It is **not** TRACK-TBI data. **Do not cite results from this subject as TRACK-TBI validation.** The mask is a **tumor** mask, not a traumatic lesion.
+
+Download: [`scripts/download_btc_glioma_sample.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/scripts/download_btc_glioma_sample.sh). Default subject: `sub-PAT20` / `ses-preop`.
+
+If you use these volumes, cite:
+
+1. **eNeuro** — Aerts H, Schirner M, Jeurissen B, Van Roost D, Achten E, Ritter P, Marinazzo D. Modeling Brain Dynamics in Brain Tumor Patients Using the Virtual Brain. *eNeuro*. 2018;5(3):ENEURO.0083-18.2018. [doi:10.1523/ENEURO.0083-18.2018](https://doi.org/10.1523/ENEURO.0083-18.2018)
+2. **OpenNeuro** — Aerts H, Colenbier N, Almgren H, Marinazzo D. BTC_preop. [doi:10.18112/openneuro.ds001226.v5.0.0](https://doi.org/10.18112/openneuro.ds001226.v5.0.0)
+3. **Optional** — Aerts H, Colenbier N, Almgren H, et al. Pre- and post-surgery brain tumor multimodal magnetic resonance imaging data optimized for large scale computational modelling. *Scientific Data*. 2022;9:676. [doi:10.1038/s41597-022-01806-4](https://doi.org/10.1038/s41597-022-01806-4)
+
+```bibtex
+@article{Aerts2018TVBTumor,
+  author  = {Aerts, Hannelore and Schirner, Michael and Jeurissen, Ben and
+             Van Roost, Dirk and Achten, Eric and Ritter, Petra and
+             Marinazzo, Daniele},
+  title   = {Modeling Brain Dynamics in Brain Tumor Patients Using the Virtual Brain},
+  journal = {eNeuro},
+  volume  = {5},
+  number  = {3},
+  pages   = {ENEURO.0083-18.2018},
+  year    = {2018},
+  doi     = {10.1523/ENEURO.0083-18.2018}
+}
+
+@misc{OpenNeuroBTCpreop,
+  author       = {Aerts, Hannelore and Colenbier, Nigel and Almgren, Hannes and
+                  Marinazzo, Daniele},
+  title        = {{BTC\_preop}},
+  year         = {2019},
+  publisher    = {OpenNeuro},
+  doi          = {10.18112/openneuro.ds001226.v5.0.0},
+  url          = {https://openneuro.org/datasets/ds001226}
+}
+```
+
+Guide: [datasets/btc_glioma.md](datasets/btc_glioma.md).
+
+---
+
 ## Contact
 
 Questions about citing or software metadata: [phindagiji@gmail.com](mailto:phindagiji@gmail.com) · [GitHub Issues](https://github.com/phindagijimana/dkt_connectome/issues)
