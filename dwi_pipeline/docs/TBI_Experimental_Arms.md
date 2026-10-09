@@ -258,4 +258,3 @@ Full bibliography: [References — experiment arms](references.md#experiment-arm
 - [Publication strategy](publication_strategy.md) — Paper 1 cohort plan and journal targets
 - [Step 1.1 — Inpainting](methods/step1_1_inpaint.md) · [Step 3.1 — Lesion-aware ACT](methods/step3_1_lesion_act.md)
 - [Deep Atropos branch](deep_atropos_5tt.md) — `deep-atropos-pilot` details
-- `dwi_pipeline/scripts/analyze_factorial_arms.py` — harvest script for paired Δ metrics

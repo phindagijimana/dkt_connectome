@@ -480,7 +480,6 @@ T1w/DWI grid.
 | `containers/connectome/` | Step 4 container (Dockerfile, build script, entrypoint) |
 | `containers/lit/` | Step 1.1 container (`build_lit.sh` pulls `deepmi/lit` from Docker Hub) |
 | `config/dwi_select_b1000.json` | Default b1000 + IntendedFor fmaps |
-| `reports/scripts/` | Per-subject visualization scripts (connectome, morphometry, imaging, ENIGMA 3D) |
 | [`node_strength` on Docker Hub](https://hub.docker.com/r/phindagijimana321/nodestrength) | Step 5 — separate repo/container; node strength, AI, ENIGMA figures |
 
 ---
