@@ -1,0 +1,4 @@
+#!/bin/sh
+# Unified CLI at the repository root (same as dwi_pipeline/dkt).
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$ROOT/dwi_pipeline/dkt" "$@"

@@ -1,0 +1,6 @@
+#!/bin/sh
+# BIDS App entrypoint at the repository root.
+# Same contract as dwi_pipeline/run:
+#   ./run <bids_dir> <output_dir> <analysis_level> [options]
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$ROOT/dwi_pipeline/run" "$@"

@@ -8,8 +8,9 @@ The DKT Connectome implements the [BIDS Apps](https://bids-apps.neuroimaging.io/
 
 | File | Role |
 |------|------|
-| [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | BIDS App entrypoint (`./run`) |
-| [`dkt`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/dkt) | Unified CLI (`./dkt install|pull|run|log|check`) |
+| [`run`](https://github.com/phindagijimana/dkt_connectome/blob/main/run) (repo root) | BIDS App entrypoint — forwards to `dwi_pipeline/run` |
+| [`dwi_pipeline/run`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/run) | Same CLI when you work from `dwi_pipeline/` |
+| [`dkt`](https://github.com/phindagijimana/dkt_connectome/blob/main/dkt) | Unified CLI (`./dkt install|pull|run|log|check`) |
 | [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json) | Machine-readable BIDS App metadata |
 | [`dkt_connectome_bids_app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/dkt_connectome_bids_app.json) | Boutiques / BIDS Exec descriptor |
 | [Documentation site](home.md) | Human-readable guide (this site) |

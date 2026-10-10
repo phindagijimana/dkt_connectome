@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'dwi_pipeline/**'
+      - 'run'
+      - 'dkt'
       - '.github/workflows/dwi_pipeline_ci.yml'
       - '.readthedocs.yaml'
   push:
@@ -79,6 +81,12 @@ jobs:
           test "$(./dkt version)" = "0.3.0"
           bash -n dkt
           python3 -m py_compile scripts/check_outputs.py
+
+      - name: Root BIDS App wrappers
+        run: |
+          test "$(./run --version)" = "0.3.0"
+          test "$(./dkt version)" = "0.3.0"
+          ./run --help | grep -q participant
 
       - name: Install list + doctor (CI stubs)
         working-directory: dwi_pipeline
