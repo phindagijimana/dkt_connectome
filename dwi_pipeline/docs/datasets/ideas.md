@@ -65,6 +65,7 @@ cd dwi_pipeline
 - Participant label is **`1`** or **`6`** (with or without `sub-` prefix).
 - Full pipeline takes hours on CPU; use **`--dry-run`** first.
 - Golden output path (when complete): `sample_data/ideas/results/sub-1_golden/`
+- Public demo notes and citations: [sample_data/ideas/RESULTS.md](../../sample_data/ideas/RESULTS.md)
 
 See also: [Tutorial](../tutorial.md).
 
@@ -87,5 +88,6 @@ BibTeX and acknowledgment templates: [Citation](../citation.md#sample-tutorial-d
 ## See also
 
 - [sample_data/ideas/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/ideas/README.md)
+- [sample_data/ideas/RESULTS.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/ideas/RESULTS.md)
 - [Validation](../validation.md)
 - [Preparing your data](../preparing_data.md)

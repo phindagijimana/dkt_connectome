@@ -43,16 +43,24 @@ derivatives/
 /dwi_pipeline/dwi_test_TBI/**
 !/dwi_pipeline/dwi_test_TBI/README.md
 
-# IDEAS II sample BIDS (OpenNeuro ds007401) — downloaded NIfTI, not committed.
+# IDEAS II sample BIDS + local demo outputs (OpenNeuro ds007401) — NIfTI/results not committed.
 /dwi_pipeline/sample_data/ideas/bids/**
+/dwi_pipeline/sample_data/ideas/results/**
 !/dwi_pipeline/sample_data/ideas/README.md
 !/dwi_pipeline/sample_data/ideas/SUBJECTS.md
+!/dwi_pipeline/sample_data/ideas/RESULTS.md
 !/dwi_pipeline/sample_data/README.md
 
-# BTC_preop glioma sample BIDS (OpenNeuro ds001226) — downloaded NIfTI, not committed.
+# BTC_preop glioma sample BIDS + local demo outputs (OpenNeuro ds001226).
 # GLIOMA, not TBI. Demo of lesion-aware inputs only.
 /dwi_pipeline/sample_data/btc_glioma/bids/**
+/dwi_pipeline/sample_data/btc_glioma/results/**
 !/dwi_pipeline/sample_data/btc_glioma/README.md
+!/dwi_pipeline/sample_data/btc_glioma/RESULTS.md
+
+# Local sample-run job scripts (cluster-specific; not public).
+/dwi_pipeline/sample_data/_jobs/**
+!/dwi_pipeline/sample_data/_jobs/README.md
 
 # --- Container images (huge, distributed separately) --------------------------
 *.sif
