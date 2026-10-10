@@ -22,46 +22,42 @@
 | Python 3.9+ · [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration |
 | **FreeSurfer license** | [Free registration](https://surfer.nmr.mgh.harvard.edu/registration.html) — `export FS_LICENSE=/path/to/license.txt` |
 
-Optional: Slurm for cohort arrays · Docker for cloud (`phindagijimana321/dkt-connectome:0.3.0`)
+Optional: Slurm for cohort arrays. Docker is optional for the orchestrator only — step `.sif` images still required ([Installation](https://dkt-connectome.readthedocs.io/en/latest/installation.html)).
 
 ---
 
-## Quick start (5 commands)
+## Quick start
+
+After clone, always work from `dwi_pipeline/`:
 
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
 chmod +x dkt run install
-
 export FS_LICENSE=/path/to/your/license.txt
 export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
 export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
 mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
-./dkt install          # pull step .sif images + write config.local.yaml
-./dkt check --strict   # verify tools, license, and pinned container digests
+./dkt install
+./dkt check --strict
+bash scripts/download_ideas_sample.sh
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
+  --participant-label 1 --session-filter ses-1 --fastsurfer --syn \
+  --dwi-select config/dwi_select_ideas_b2500.json --dry-run
+```
 
-# Plan first (no compute):
-./dkt run /path/to/BIDS /path/to/out participant \
-  --participant-label 01 --session-filter ses-1 --dry-run
+Download the sample only with `bash scripts/download_ideas_sample.sh` from `dwi_pipeline/`. `./dkt run` is the same command as `./run` (BIDS App). See [Usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
 
-# Full run:
+`./dkt install` uses [`release_manifest.json`](dwi_pipeline/release_manifest.json): DKT-owned step SIFs from GHCR (`oras://ghcr.io/...`), upstream pennlinc/freesurfer/deepmi images from Docker Hub via `docker://` (first-time OCI→SIF can take 30–90 min; use a local, non-NFS `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`).
+
+### After your first subject (your own BIDS)
+
+```bash
 ./dkt run /path/to/BIDS /path/to/out participant \
   --participant-label 01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn
 ```
 
-**Sample data:** `bash scripts/download_ideas_sample.sh` then follow [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html).
-
-**Docker** (optional; orchestrator only — step `.sif` images still required):
-
-```bash
-docker pull phindagijimana321/dkt-connectome:0.3.0
-docker run --rm -e BIDS_APP_CI=1 -e FS_LICENSE=/tmp/license.txt \
-  phindagijimana321/dkt-connectome:0.3.0 dkt check
-```
-
-If the Docker tag is unavailable, use the **Apptainer** path above. `./dkt install` uses [`release_manifest.json`](dwi_pipeline/release_manifest.json): DKT-owned step SIFs from GHCR (`oras://ghcr.io/...`), upstream pennlinc/freesurfer/deepmi images from Docker Hub via `docker://` (first-time OCI→SIF can take 30–90 min; use a local, non-NFS `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`).
-
-**CLI:** `./dkt install | pull | run | log | check | version` — `./dkt run …` equals `./run …` (BIDS App). See [Usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
+Full walkthrough: [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html).
 
 ---
 
@@ -69,16 +65,15 @@ If the Docker tag is unavailable, use the **Apptainer** path above. `./dkt insta
 
 ![DKT Connectome pipeline workflow](dwi_pipeline/docs/img/pipeline_overview.svg)
 
-| Step | Tool | Notes |
-|------|------|--------|
-| 1 | [QSIPrep](https://qsiprep.readthedocs.io/) | DWI preprocessing, SDC, T1w–DWI alignment |
-| 1.1 | neuroLIT / VBT | Optional inpainting when a BIDS lesion mask exists |
-| 2 | FreeSurfer / FastSurfer | Surfaces + DKT parcellation |
-| 3 | [QSIRecon](https://qsirecon.readthedocs.io/) | SS3T-CSD + ACT-HSVS tractography |
-| 3.1 | Lesion-aware ACT | Optional `--act-mode lesion-aware` |
-| 4 | `dkt_connectome.sif` | 78×78 DKT connectome (count, length, FA, MD) |
-| 4.1 | Disconnectome | Opt-in `--disconnection` |
-| 5 | nodestrength | Graph metrics + ENIGMA-style report |
+| Step | Tool |
+|------|------|
+| 1 | [QSIPrep](https://qsiprep.readthedocs.io/) — DWI preprocessing |
+| 1.1 | Optional inpainting when a BIDS lesion mask exists |
+| 2 | FreeSurfer / FastSurfer — surfaces + DKT |
+| 3 | [QSIRecon](https://qsirecon.readthedocs.io/) — ACT tractography |
+| 4 | 78×78 DKT connectome (count, length, FA, MD) |
+| 4.1 | Optional `--disconnection` |
+| 5 | Node strength + ENIGMA-style report |
 
 Which steps run in containers vs on the host: [Architecture](https://dkt-connectome.readthedocs.io/en/latest/architecture.html).
 
@@ -99,7 +94,9 @@ Which steps run in containers vs on the host: [Architecture](https://dkt-connect
 
 ---
 
-## HPC / cohort
+## After your first subject
+
+### HPC / cohort
 
 ```bash
 export BIDS_DIR=/path/to/BIDS
@@ -109,9 +106,7 @@ bash dwi_pipeline/submit.sh          # Slurm array (from repo root)
 bash dwi_pipeline/workflow/run_subject.sh all SUBJ01 --fastsurfer --syn
 ```
 
----
-
-## Legacy root workflow
+### Legacy root workflow
 
 > Repo-root [`./connectome`](connectome) and [`Snakefile`](Snakefile) remain for **Dockstore compatibility only**. New work: `dwi_pipeline/` + `./dkt` or `./run`.
 

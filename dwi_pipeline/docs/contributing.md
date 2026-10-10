@@ -15,6 +15,8 @@ export FS_LICENSE=/path/to/license.txt
 
 Read [Installation](installation.md) for Apptainer images and HPC setup.
 
+**Commit attribution:** commits must be authored by a human GitHub account — see [Commit attribution](https://github.com/phindagijimana/dkt_connectome/blob/main/docs/commit_attribution.md).
+
 ## Public repo privacy
 
 Never commit study-specific exports or identifiers to the shared repository:

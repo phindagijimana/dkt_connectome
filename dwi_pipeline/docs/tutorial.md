@@ -6,28 +6,49 @@ End-to-end walkthrough using the public [IDEAS II](datasets/ideas.md) sample (tw
 
 ## What you will do
 
-1. Download the public IDEAS II BIDS sample (or point the pipeline at your own BIDS)
-2. Run Steps 1–5 for one subject (`sub-1`)
-3. Inspect QC HTML and the DKT connectome
-4. Optionally run disconnectome integrity checks
+1. Clone, install containers, and run `./dkt check --strict`
+2. Download the public IDEAS II BIDS sample (or point the pipeline at your own BIDS)
+3. Run Steps 1–5 for one subject (`sub-1`)
+4. Inspect QC HTML and the DKT connectome
+5. Optionally run disconnectome integrity checks
 
 **Time:** several hours on HPC (QSIPrep + recon dominate). Use `--dry-run` first to validate the plan. Preflight still requires cached step containers for `--dry-run`; export `BIDS_APP_CI=1` only to skip those checks for a plan-only / CI dry-run — do not set it for real runs.
 
 ---
 
-## 1. Layout
-
-**Option A — IDEAS II sample (recommended, public data):**
+## 1. Clone, install, and verify
 
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh
+git clone https://github.com/phindagijimana/dkt_connectome.git
+cd dkt_connectome/dwi_pipeline
+chmod +x dkt run install
+export FS_LICENSE=/path/to/your/license.txt
+export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
+mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
+./dkt install
+./dkt check --strict
 ```
 
-Two subjects (`sub-1`, `sub-6`) from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401). See [IDEAS sample data](datasets/ideas.md). After `cd dwi_pipeline` in the next section, set `BIDS_DIR="$(pwd)/sample_data/ideas/bids"`.
+**FreeSurfer license (required before real runs):** register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), download `license.txt`, then export `FS_LICENSE` as above. The project does not provide a shared license — each user obtains their own. Details: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
 
-**Option B — your own BIDS + local RESULTS_ROOT:**
+Apptainer images: [Installation → Auto-install](installation.md#auto-install-recommended).
 
-You provide BIDS. A typical `RESULTS_ROOT` layout:
+---
+
+## 2. Download the IDEAS sample
+
+From `dwi_pipeline/` (the same directory as `./dkt`):
+
+```bash
+bash scripts/download_ideas_sample.sh
+```
+
+Two subjects (`sub-1`, `sub-6`) from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401). See [IDEAS sample data](datasets/ideas.md). After download, BIDS is at `$(pwd)/sample_data/ideas/bids`.
+
+**Your own BIDS:** skip the download and pass your dataset path to `./dkt run` after this first subject.
+
+A typical `RESULTS_ROOT` layout:
 
 ```text
 sub-<SUBJECT>_<recon>[_inpaint]/
@@ -37,35 +58,14 @@ Example: `sub-1_fastsurfer` = FastSurfer, no inpaint. You may keep local test da
 
 ---
 
-## 2. Prerequisites
-
-```bash
-git clone https://github.com/phindagijimana/dkt_connectome.git
-cd dkt_connectome/dwi_pipeline
-```
-
-**FreeSurfer license (required before real runs):** register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), download `license.txt`, then:
-
-```bash
-export FS_LICENSE=/path/to/your/license.txt
-./dkt check
-# or: ./run doctor
-```
-
-The project does not provide a shared license — each user obtains their own. Details: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
-
-Apptainer images: [Installation → Auto-install](installation.md#auto-install-recommended).
-
----
-
 ## 3. Dry-run (validate plan)
 
 IDEAS DWI shells are 0, 300, 700, and **2500** s/mm² — pass `--dwi-select config/dwi_select_ideas_b2500.json` (not the default b=1000 filter). Use `--syn` (no fieldmaps in this sample).
 
+`./dkt run` is the same command as `./run`.
+
 ```bash
-export BIDS_DIR="$(pwd)/sample_data/ideas/bids"
-export RESULTS_ROOT="$(pwd)/sample_data/ideas/results/sub-1_tutorial"
-./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
   --participant-label 1 --session-filter ses-1 --fastsurfer --syn \
   --dwi-select config/dwi_select_ideas_b2500.json --dry-run
 ```
@@ -79,14 +79,12 @@ Review Snakemake rule list: `qsiprep` → `inpaint` (if mask) → `recon` → `q
 Same command without `--dry-run`, with `--n-cpus 8`:
 
 ```bash
-export BIDS_DIR="$(pwd)/sample_data/ideas/bids"
-export RESULTS_ROOT="$(pwd)/sample_data/ideas/results/sub-1_tutorial"
-./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
   --participant-label 1 --session-filter ses-1 --fastsurfer --syn \
   --dwi-select config/dwi_select_ideas_b2500.json --n-cpus 8
 ```
 
-HPC equivalent:
+HPC equivalent (after your first subject):
 
 ```bash
 bash workflow/run_subject.sh all 1 --session-filter ses-1 --fastsurfer --syn \
@@ -121,7 +119,7 @@ What each panel means: [Quality control](qc.md).
 Step 4.1 is off by default. With a lesion mask and validated settings:
 
 ```bash
-./run "${BIDS_DIR}" "${RESULTS_ROOT}" participant \
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
   --participant-label 1 \
   --session-filter ses-1 \
   --disconnection
@@ -131,7 +129,7 @@ Integrity check:
 
 ```bash
 python3 scripts/evaluate_disconnectome_integrity.py \
-  --disconnectome-dir "${RESULTS_ROOT}/connectomes/sub-1/disconnectome"
+  --disconnectome-dir "$(pwd)/sample_data/ideas/results/sub-1_tutorial/connectomes/sub-1/disconnectome"
 ```
 
 Expected results for test subjects: [Validation](validation.md).
@@ -143,7 +141,7 @@ Expected results for test subjects: [Validation](validation.md).
 After processing multiple subjects:
 
 ```bash
-./run "${BIDS_DIR}" "${RESULTS_ROOT}" group
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" group
 # -> cohort_qc.html, derivatives/ export
 ```
 

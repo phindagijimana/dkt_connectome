@@ -11,11 +11,16 @@ Contents
    :maxdepth: 2
    :caption: Getting started
 
-   science_overview
    installation
    tutorial
-   upgrading
    datasets/ideas
+   upgrading
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Learn more
+
+   science_overview
    datasets/btc_glioma
    cloud_deployment
 
@@ -49,11 +54,16 @@ Contents
    methods/step3_1_lesion_act
    deep_atropos_5tt
    lesion_aware
-   TBI_Experimental_Arms
-   publication_strategy
    methods/step4_connectome
    methods/step4_1_disconnectome
    methods/step5_node_strength
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Research
+
+   TBI_Experimental_Arms
+   publication_strategy
 
 .. toctree::
    :maxdepth: 2
