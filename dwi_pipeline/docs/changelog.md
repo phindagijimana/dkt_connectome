@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 ## [Unreleased]
 
 ### Changed
+- **BIDS App root wrappers** — `./run` and `./dkt` at the repository root forward to `dwi_pipeline/`. Registry submission guide set to **0.3.0**.
 - **Name map** — display name, `./dkt`, repo, orchestrator image, and Step 4 `dk-connectome` leftover tag documented in the README and [Containers](containers.md).
 - **Cohort wording** — TRACK-TBI DoD Phase 1 use is documented as restricted (DUA; data not in the repo). Public software checks are one IDEAS II subject and one BTC glioma subject.
 - **Removed the legacy root pipeline** (`Snakefile`, `./connectome`, plugins, profiles). The only workflow is `dwi_pipeline/` + `./dkt`.

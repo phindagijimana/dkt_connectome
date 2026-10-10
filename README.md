@@ -9,7 +9,7 @@ QSIPrep → optional inpainting → recon → QSIRecon ACT tractography → DKT 
 
 **New here?** Use the **[documentation site](https://dkt-connectome.readthedocs.io/en/latest/)** or the commands below.
 
-The only pipeline in this repository is **`dwi_pipeline/`** (Snakemake + `./dkt`). Work from that directory.
+The only pipeline in this repository is **`dwi_pipeline/`**. BIDS App contract: **`./run`** at the repo root (or `dwi_pipeline/run`). Day-to-day commands: `cd dwi_pipeline` and use **`./dkt`**.
 
 | What | Name |
 |------|------|

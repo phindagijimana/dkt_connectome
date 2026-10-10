@@ -7,7 +7,7 @@ GHCR-published step `.sif` images.
 **Docker (orchestrator):** `phindagijimana321/dkt-connectome:0.3.0`  
 **GHCR:** `ghcr.io/phindagijimana/dkt-connectome:0.3.0`  
 **Step SIFs (GHCR):** `dk-connectome`, `dkt-vbt`, `dkt-lesion-act`, `dkt-deep-atropos`, `dkt-deep-atropos-seg` — all tag **`0.3.0`**  
-**Entrypoints:** `dwi_pipeline/run` (BIDS App) · `dwi_pipeline/dkt` (install / pull / run / log / check)
+**Entrypoints:** `./run` at repo root (BIDS App; same as `dwi_pipeline/run`) · `./dkt` (install / pull / run / log / check)
 
 ---
 

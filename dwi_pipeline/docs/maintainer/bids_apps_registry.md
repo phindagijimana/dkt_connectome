@@ -19,11 +19,11 @@ The registry lists apps that follow the [BIDS Apps specification](https://bids-a
 | Field | DKT Connectome value |
 |-------|----------------------|
 | **Name** | DKT Connectome |
-| **Version** | `0.2.0` (`./run --version`) |
+| **Version** | `0.3.0` (`./run --version`) |
 | **GitHub** | https://github.com/phindagijimana/dkt_connectome |
-| **Entrypoint** | `dwi_pipeline/run` (working directory: `dwi_pipeline/`) |
+| **Entrypoint** | `./run` at repo root (forwards to `dwi_pipeline/run`) |
 | **Documentation** | https://dkt-connectome.readthedocs.io/en/latest/ |
-| **Docker Hub** | `phindagijimana321/dkt-connectome:0.2.0` |
+| **Docker Hub** | `phindagijimana321/dkt-connectome:0.3.0` |
 | **Test dataset** | `dwi_pipeline/tests/fixtures/bids_minimal/` (public, synthetic) |
 | **CI workflow** | `.github/workflows/dwi_pipeline_ci.yml` (`name: dwi_pipeline`) |
 | **License** | Apache-2.0 |
@@ -44,8 +44,8 @@ Check each item. Most repo work is already done; remaining steps are maintainer 
 | 3 | Human-readable docs (URL) | Done | https://dkt-connectome.readthedocs.io/en/latest/ |
 | 4 | Minimal public test BIDS dataset | Done | `dwi_pipeline/tests/fixtures/bids_minimal/` |
 | 5 | CI tests the app interface | Done | `.github/workflows/dwi_pipeline_ci.yml` |
-| 6 | Docker image on Docker Hub | Verify | `docker pull phindagijimana321/dkt-connectome:0.2.0` |
-| 7 | Git tag + GitHub Release | Open | Tag `v0.2.0` exists; create release with [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md) |
+| 6 | Docker image on Docker Hub | Verify | `docker pull phindagijimana321/dkt-connectome:0.3.0` |
+| 7 | Git tag + GitHub Release | Open | Tag `v0.3.0` exists; create release with [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md) |
 | 8 | RTD builds on push | Verify | https://readthedocs.org/projects/dkt-connectome/ |
 
 ---
@@ -98,10 +98,10 @@ docker run --rm \
 
 ```bash
 git push origin main
-git push origin v0.2.0   # if not already on remote
+git push origin v0.3.0   # if not already on remote
 
-gh release create v0.2.0 \
-  --title "DKT Connectome 0.2.0" \
+gh release create v0.3.0 \
+  --title "DKT Connectome 0.3.0" \
   --notes-file dwi_pipeline/RELEASE_NOTES.md
 ```
 
@@ -109,7 +109,7 @@ gh release create v0.2.0 \
 
 ```bash
 cd dwi_pipeline
-bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.2.0
+bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.3.0
 ```
 
 Or set GitHub secrets `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` and re-run the Docker publish workflow.
@@ -120,18 +120,18 @@ Or set GitHub secrets `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` and re-run the Do
 
 Send to **bids.maintenance+apps@gmail.com**.
 
-**Subject:** `BIDS App submission — DKT Connectome v0.2.0`
+**Subject:** `BIDS App submission — DKT Connectome v0.3.0`
 
 **Body (copy-paste and adjust if needed):**
 
 ```text
 Name: DKT Connectome
-Version: 0.2.0
+Version: 0.3.0
 
 GitHub: https://github.com/phindagijimana/dkt_connectome
-Entrypoint: dwi_pipeline/run (BIDS App CLI; run from dwi_pipeline/ or use Docker image)
+Entrypoint: ./run at repo root (same as dwi_pipeline/run; Docker image WORKDIR is dwi_pipeline/)
 Documentation: https://dkt-connectome.readthedocs.io/en/latest/
-Docker Hub: docker.io/phindagijimana321/dkt-connectome:0.2.0
+Docker Hub: docker.io/phindagijimana321/dkt-connectome:0.3.0
 License: Apache-2.0
 
 Analysis levels: participant, group
@@ -224,7 +224,7 @@ gh pr create --repo bids-standard/bids-website \
   --title "Add DKT Connectome BIDS App" \
   --body "$(cat <<'EOF'
 ## Summary
-Adds **DKT Connectome v0.2.0** — lesion-aware structural connectomics BIDS App.
+Adds **DKT Connectome v0.3.0** — lesion-aware structural connectomics BIDS App.
 
 - GitHub: https://github.com/phindagijimana/dkt_connectome
 - Docs: https://dkt-connectome.readthedocs.io/en/latest/
@@ -284,11 +284,11 @@ For copy-paste into forms, emails, or grant data-management plans:
 ```json
 {
   "name": "DKT Connectome",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "bids_app_spec": "https://bids-apps.neuroimaging.io/",
   "github": "https://github.com/phindagijimana/dkt_connectome",
   "documentation": "https://dkt-connectome.readthedocs.io/en/latest/",
-  "docker_hub": "docker.io/phindagijimana321/dkt-connectome:0.2.0",
+  "docker_hub": "docker.io/phindagijimana321/dkt-connectome:0.3.0",
   "entrypoint": "dwi_pipeline/run",
   "test_dataset": "dwi_pipeline/tests/fixtures/bids_minimal",
   "analysis_levels": ["participant", "group"],
@@ -310,7 +310,7 @@ Full machine-readable descriptor: [`dwi_pipeline/app.json`](https://github.com/p
 | Human documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Minimal public test dataset | `dwi_pipeline/tests/fixtures/bids_minimal/` |
 | CI smoke test | `.github/workflows/dwi_pipeline_ci.yml` |
-| Docker orchestrator image | `phindagijimana321/dkt-connectome:0.2.0` |
+| Docker orchestrator image | `phindagijimana321/dkt-connectome:0.3.0` |
 
 Prioritized backlog: [Readiness checklist](readiness_checklist.md).
 
@@ -337,4 +337,4 @@ The `workflow:` field in `apps.yml` must match the **`name:`** key in `.github/w
 
 ---
 
-*Last updated for v0.2.0 — update version strings when releasing v0.3.0+.*
+*Last updated for v0.3.0.*
