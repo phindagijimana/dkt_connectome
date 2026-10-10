@@ -11,29 +11,22 @@
 
 ## Getting started (new users)
 
-1. **Requirements:** Linux, Apptainer, Python 3.9+, Snakemake ≥ 8, [FreeSurfer license](https://surfer.nmr.mgh.harvard.edu/registration.html).
-2. **Install & verify:**
+Follow the [root README](../README.md) Quick start, then the [Tutorial](docs/tutorial.md). After clone, always work from `dwi_pipeline/`:
 
 ```bash
 cd dwi_pipeline          # from repo clone
 chmod +x dkt run install
-export FS_LICENSE=/path/to/license.txt
+export FS_LICENSE=/path/to/your/license.txt
+export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
+mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install
-./dkt check
+./dkt check --strict
 ```
 
-3. **Dry-run then run** (replace paths and subject ID):
+**Sample data:** from `dwi_pipeline/`, `bash scripts/download_ideas_sample.sh` — then the IDEAS dry-run in the [Tutorial](docs/tutorial.md) (`./dkt run` is the same as `./run`).
 
-```bash
-./dkt run /path/to/BIDS /path/to/out participant \
-  --participant-label SUBJ01 --session-filter ses-1 --dry-run
-
-./dkt run /path/to/BIDS /path/to/out participant \
-  --participant-label SUBJ01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn
-```
-
-4. **Sample data:** from repo root, `bash dwi_pipeline/scripts/download_ideas_sample.sh` — then [Tutorial](docs/tutorial.md).
-5. **Full guide on Read the Docs:** [installation](https://dkt-connectome.readthedocs.io/en/latest/installation.html) → [tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html) → [usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
+**Full guide on Read the Docs:** [installation](https://dkt-connectome.readthedocs.io/en/latest/installation.html) → [tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html) → [usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
 
 | `./dkt` command | Purpose |
 |-----------------|---------|
@@ -96,8 +89,9 @@ so that one run cannot overwrite another's outputs.
 **Public sample data (IDEAS II)** — two subjects from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401) for tutorials and smoke tests:
 
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh
-export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
+# from dwi_pipeline/
+bash scripts/download_ideas_sample.sh
+export BIDS_DIR="$(pwd)/sample_data/ideas/bids"
 ```
 
 See [`sample_data/ideas/README.md`](sample_data/ideas/README.md) and [docs/datasets/ideas.md](docs/datasets/ideas.md). **Cite Taylor et al. 2026** (*Epilepsia*) when using these data.

@@ -12,10 +12,11 @@ Public demo of OpenNeuro **IDEAS II** `sub-1` (`ses-1`). This is **epilepsy** sa
 ## Reproduce
 
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh sub-1
+# from dwi_pipeline/
+bash scripts/download_ideas_sample.sh sub-1
 ```
 
-Then the `./run` command in [docs/datasets/ideas.md](../../docs/datasets/ideas.md) (`--fastsurfer --syn --dwi-select config/dwi_select_ideas_b2500.json`), writing to `sample_data/ideas/results/sub-1_public_demo/`.
+Then the `./dkt run` command in [docs/datasets/ideas.md](../../docs/datasets/ideas.md) (`--fastsurfer --syn --dwi-select config/dwi_select_ideas_b2500.json`), writing to `sample_data/ideas/results/sub-1_public_demo/`.
 
 ## Citation
 

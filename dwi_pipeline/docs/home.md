@@ -41,38 +41,45 @@ This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIR
 
 **Requirements:** Linux · Apptainer · Python 3.9+ · Snakemake ≥ 8 · [FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this)
 
+After clone, always work from `dwi_pipeline/`:
+
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
 chmod +x dkt run install
-
 export FS_LICENSE=/path/to/your/license.txt
+export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
+mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install
 ./dkt check --strict
-
-./dkt run /path/to/BIDS /path/to/derivatives participant \
-  --participant-label 009 \
-  --session-filter ses-1 \
-  --dry-run
-
-./dkt run /path/to/BIDS /path/to/derivatives participant \
-  --participant-label 009 \
-  --session-filter ses-1 \
-  --n-cpus 8 --fastsurfer --syn
+bash scripts/download_ideas_sample.sh
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
+  --participant-label 1 --session-filter ses-1 --fastsurfer --syn \
+  --dwi-select config/dwi_select_ideas_b2500.json --dry-run
 ```
+
+Download the sample only with `bash scripts/download_ideas_sample.sh` from `dwi_pipeline/`. `./dkt run` is the same command as `./run` (BIDS App).
 
 | Command | Purpose |
 |---------|---------|
 | `./dkt install` | Pull step `.sif` images + write `config.local.yaml` |
-| `./dkt check` | Verify tools, license, containers |
+| `./dkt check --strict` | Verify tools, license, and pinned container digests |
 | `./dkt run …` | Run pipeline (same as `./run`) |
 | `./dkt log …` | View logs under `RESULTS_ROOT/logs` |
 
-**Sample data:** [IDEAS II (OpenNeuro ds007401)](datasets/ideas.md) — `bash scripts/download_ideas_sample.sh` from repo root.
+**Sample data:** [IDEAS II (OpenNeuro ds007401)](datasets/ideas.md) — `bash scripts/download_ideas_sample.sh` from `dwi_pipeline/`.
 
-**Docker:** `docker pull phindagijimana321/dkt-connectome:0.3.0` — see [Installation § Docker](installation.md). Step `.sif` images are pinned in [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json); run `./dkt check --strict` after install.
+**Docker** (optional; orchestrator only): see [Installation § Docker](installation.md).
 
-**HPC cohort:**
+### After your first subject (your own BIDS)
+
+```bash
+./dkt run /path/to/BIDS /path/to/out participant \
+  --participant-label 01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn
+```
+
+HPC cohort (from the repo root, after the IDEAS dry-run above):
 
 ```bash
 export BIDS_DIR=/path/to/BIDS

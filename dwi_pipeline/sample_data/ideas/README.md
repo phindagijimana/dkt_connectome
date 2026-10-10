@@ -57,10 +57,10 @@ aws --version
 
 ### 2. Run the script
 
-From the repository root:
+From `dwi_pipeline/`:
 
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh
+bash scripts/download_ideas_sample.sh
 ```
 
 A menu appears:
@@ -77,14 +77,14 @@ Choose [1/2] (default 2):
 Other ways to run it:
 
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh sample        # sample, no menu
-bash dwi_pipeline/scripts/download_ideas_sample.sh all           # everything, no menu
-bash dwi_pipeline/scripts/download_ideas_sample.sh 3 sub-10      # specific subjects
-bash dwi_pipeline/scripts/download_ideas_sample.sh -o /scratch/ideas          # other folder
-IDEAS_OUT=/scratch/ideas bash dwi_pipeline/scripts/download_ideas_sample.sh   # same, via env var
+bash scripts/download_ideas_sample.sh sample        # sample, no menu
+bash scripts/download_ideas_sample.sh all           # everything, no menu
+bash scripts/download_ideas_sample.sh 3 sub-10      # specific subjects
+bash scripts/download_ideas_sample.sh -o /scratch/ideas          # other folder
+IDEAS_OUT=/scratch/ideas bash scripts/download_ideas_sample.sh   # same, via env var
 ```
 
-Run from inside the repository, data land in `dwi_pipeline/sample_data/ideas/bids/` (gitignored, so downloaded imaging data is never committed). Run as a standalone file, they land in `./ideas_bids/` unless you pass `-o`. When run without a terminal (SLURM job, CI, another script), the menu is skipped and the sample is downloaded.
+Run from `dwi_pipeline/`, data land in `sample_data/ideas/bids/` (gitignored, so downloaded imaging data is never committed). Run as a standalone file, they land in `./ideas_bids/` unless you pass `-o`. When run without a terminal (SLURM job, CI, another script), the menu is skipped and the sample is downloaded.
 
 ### Troubleshooting
 
@@ -103,16 +103,17 @@ Typing `1` or `2` **as a command-line argument** means subject `sub-1` / `sub-2`
 
 ## Run DKT Connectome
 
+From `dwi_pipeline/` (`./dkt run` is the same as `./run`):
+
 ```bash
-export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
 export FS_LICENSE=/path/to/license.txt
 
-cd dwi_pipeline
-./run "${BIDS_DIR}" /tmp/ideas_derivatives participant \
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
   --participant-label 1 \
   --session-filter ses-1 \
   --fastsurfer \
   --syn \
+  --dwi-select config/dwi_select_ideas_b2500.json \
   --dry-run
 ```
 

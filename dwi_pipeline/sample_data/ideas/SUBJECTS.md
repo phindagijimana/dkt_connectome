@@ -10,5 +10,6 @@ Downloaded from **OpenNeuro ds007401** ([doi:10.18112/openneuro.ds007401.v1.0.0]
 Refresh:
 
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh
+# from dwi_pipeline/
+bash scripts/download_ideas_sample.sh
 ```

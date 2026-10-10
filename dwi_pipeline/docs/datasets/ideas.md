@@ -34,22 +34,24 @@ No resection masks are bundled in this two-subject sample. For RAMPS resection m
 
 ## Download
 
+From `dwi_pipeline/`:
+
 ```bash
-bash dwi_pipeline/scripts/download_ideas_sample.sh
+bash scripts/download_ideas_sample.sh
 ```
 
-Requires AWS CLI (public read-only S3 — no credentials needed).
+Requires AWS CLI (public read-only S3 — no credentials needed). Do not run this from the repository root as `dwi_pipeline/scripts/...` — `cd dwi_pipeline` first.
 
 ---
 
 ## Example run
 
+From `dwi_pipeline/` (`./dkt run` is the same as `./run`):
+
 ```bash
-export BIDS_DIR="$(pwd)/dwi_pipeline/sample_data/ideas/bids"
 export FS_LICENSE=/path/to/license.txt
 
-cd dwi_pipeline
-./run "${BIDS_DIR}" sample_data/ideas/results/sub-1_golden participant \
+./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
   --participant-label 1 \
   --session-filter ses-1 \
   --fastsurfer \

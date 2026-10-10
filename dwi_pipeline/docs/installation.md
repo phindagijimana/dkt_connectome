@@ -1,6 +1,6 @@
 # Installation
 
-**New users:** follow [Home → Quick start](home.md#quick-start) or the [GitHub README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md#quick-start-5-commands), then return here for containers, Docker, and HPC details.
+**New users:** start with the [Tutorial](tutorial.md) (clone → `./dkt install` → `./dkt check --strict` → IDEAS dry-run). This page covers containers, an optional Docker orchestrator, and HPC details. The same first-run block is on the [GitHub README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md#quick-start).
 
 ## Requirements
 
@@ -67,44 +67,11 @@ export FS_LICENSE=/path/to/license.txt
 # or: ./run doctor
 ```
 
-`--strict` compares cached `.sif` SHA-256 digests to [`release_manifest.json`](../release_manifest.json).
-
-**Docker orchestrator** with first-run pull:
-
-```bash
-docker run --rm \
-  -v /data/bids:/data/bids:ro -v /data/out:/out \
-  -v ~/dkt_containers:/opt/dkt-connectome/containers \
-  -v ~/license.txt:/license.txt:ro \
-  -e FS_LICENSE=/license.txt \
-  -e DKT_AUTO_INSTALL=1 \
-  phindagijimana321/dkt-connectome:0.3.0 \
-  /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
-```
+`--strict` compares cached `.sif` SHA-256 digests to [`release_manifest.json`](../release_manifest.json). Run **`./dkt check --strict`** after every install.
 
 HPC: `sbatch containers/pull_freesurfer_sif.sbatch` for FreeSurfer only on a compute node; full install on a login node with network.
 
 **VBT, lesion-aware ACT, and Deep Atropos images** are built locally when GHCR pull fails (`install.sh` falls back to `containers/vbt/build_vbt.sh`, `containers/lesion_act/build_lesion_act.sh`, `containers/deep_atropos/build_deep_atropos.sh`, and `containers/deep_atropos_seg/build_deep_atropos_seg.sh`, staging tools from your existing `qsiprep.sif` / `qsirecon.sif`). Use `bash install.sh --mode act` for all Step 3.1 containers. See [Containers](containers.md).
-
-**Docker Compose** (orchestrator + persistent cache volume):
-
-```bash
-cd dwi_pipeline
-mkdir -p data/bids data/out
-# copy or symlink license.txt beside docker-compose.yml
-docker compose build
-docker compose run --rm dkt-connectome \
-  /data/bids /data/out participant \
-  --participant-label 1 --session-filter ses-1 --fastsurfer --syn --dry-run
-```
-
-Publish orchestrator to Docker Hub (maintainers):
-
-```bash
-bash scripts/publish_docker.sh          # local build + smoke
-bash scripts/publish_docker.sh --push   # requires docker login
-# or: GitHub Actions → "Docker publish" workflow (workflow_dispatch)
-```
 
 Verify registry pins without pulling:
 
@@ -218,6 +185,45 @@ See [README.md §Containers](https://github.com/phindagijimana/dkt_connectome/bl
 
 ---
 
+## Docker (optional)
+
+Docker is optional and covers the **orchestrator only** — step `.sif` images are still required. New users should follow the [Tutorial](tutorial.md) on Linux + Apptainer first.
+
+**Docker orchestrator** with first-run pull:
+
+```bash
+docker run --rm \
+  -v /data/bids:/data/bids:ro -v /data/out:/out \
+  -v ~/dkt_containers:/opt/dkt-connectome/containers \
+  -v ~/license.txt:/license.txt:ro \
+  -e FS_LICENSE=/license.txt \
+  -e DKT_AUTO_INSTALL=1 \
+  phindagijimana321/dkt-connectome:0.3.0 \
+  /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
+```
+
+**Docker Compose** (orchestrator + persistent cache volume):
+
+```bash
+cd dwi_pipeline
+mkdir -p data/bids data/out
+# copy or symlink license.txt beside docker-compose.yml
+docker compose build
+docker compose run --rm dkt-connectome \
+  /data/bids /data/out participant \
+  --participant-label 1 --session-filter ses-1 --fastsurfer --syn --dry-run
+```
+
+Publish orchestrator to Docker Hub (maintainers):
+
+```bash
+bash scripts/publish_docker.sh          # local build + smoke
+bash scripts/publish_docker.sh --push   # requires docker login
+# or: GitHub Actions → "Docker publish" workflow (workflow_dispatch)
+```
+
+---
+
 ## BIDS validation (optional)
 
 ```bash
@@ -287,13 +293,9 @@ Key defaults:
 
 ```bash
 cd dwi_pipeline
-./run doctor
-./run --help
-
-# Dry-run one subject (after install.sh + FS_LICENSE)
 export FS_LICENSE=/path/to/license.txt
-./run /path/to/BIDS /path/to/out participant \
-  --participant-label 009 --dry-run
+./dkt check --strict
+./dkt run --help
 ```
 
-Next: [Tutorial](tutorial.md) · [Usage](usage.md)
+Next: [Tutorial](tutorial.md) (IDEAS dry-run) · [Usage](usage.md)
