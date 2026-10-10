@@ -6,7 +6,7 @@ orphan: true
 
 **BIDS App** for **lesion-aware structural connectomics** — from raw diffusion MRI to DKT connectomes and optional disconnectome mapping.
 
-The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). Public software demos: [IDEAS II](datasets/ideas.md) and [BTC glioma](datasets/btc_glioma.md) (lesion-aware).
+The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was used on TRACK-TBI DoD Phase 1 under a data-use agreement (data not in this repo). Public software checks: [IDEAS II](datasets/ideas.md) (one subject) and [BTC glioma](datasets/btc_glioma.md) (one lesion-aware subject) — not TRACK-TBI clinical validation.
 
 **Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.3.0](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.0-step-sifs)
 

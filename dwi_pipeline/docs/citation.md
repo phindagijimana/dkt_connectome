@@ -169,7 +169,9 @@ Replace `10.5281/zenodo.xxxxx` with the DOI from your Zenodo record.
 
 ## Study cohorts and data use
 
-Validated on the **TRACK-TBI study (~14 centers)** and **URMC clinical MRI cohorts**. Acknowledge institutional data-use agreements and study-specific requirements as required by your IRB.
+This software was used on the **TRACK-TBI DoD** project (Phase 1: on the order of **650** participants, **two timepoints** each; about **100** with lesion masks). Those inputs and derivatives remain under the study **data-use agreement** and are **not** published here.
+
+Public software checks in this repository are **one IDEAS II subject** and **one BTC glioma subject** (lesion-aware). They demonstrate the pipeline; they are **not** TRACK-TBI clinical validation. Acknowledge IRB and data-use requirements separately when you report restricted-cohort results.
 
 ---
 
