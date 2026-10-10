@@ -86,6 +86,7 @@ cd dwi_pipeline
   mask exists.
 - Participant label is **`PAT20`** (with or without `sub-`).
 - This is a **layout / CLI demo**, not a validation cohort.
+- Public demo notes and citations: [sample_data/btc_glioma/RESULTS.md](../../sample_data/btc_glioma/RESULTS.md)
 
 ---
 
@@ -106,5 +107,6 @@ BibTeX: [Citation](../citation.md#public-glioma-lesion-demo-not-tbi).
 ## See also
 
 - [sample_data/btc_glioma/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/btc_glioma/README.md)
+- [sample_data/btc_glioma/RESULTS.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/btc_glioma/RESULTS.md)
 - [IDEAS II sample](ideas.md) (epilepsy DWI smoke test — also not TBI)
 - [Preparing your data](../preparing_data.md)
