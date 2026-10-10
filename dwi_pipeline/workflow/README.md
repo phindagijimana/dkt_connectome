@@ -238,18 +238,18 @@ normally. If you genuinely want that subject to proceed without SDC, add
 while read s; do
   bash dwi_pipeline/submit.sh --subject "$s" \
        --dwi-select dwi_pipeline/config/dwi_select_64dirax_with_fmap.json
-done < dwi_pipeline/subject_list_urmc_with_fmap.txt
+done < dwi_pipeline/subject_list_with_fmap.txt
 
 # Group 2: GE + Siemens-no-fmap → --no-sdc (reproduces previous behavior)
 while read s; do
   bash dwi_pipeline/submit.sh --subject "$s" \
        --dwi-select dwi_pipeline/config/dwi_select_64dirax_with_fmap.json \
        --no-sdc
-done < dwi_pipeline/subject_list_urmc_no_fmap.txt
+done < dwi_pipeline/subject_list_no_fmap.txt
 ```
 
-Ready-made lists: copy `subject_list_urmc_{with_fmap,no_fmap}.example.txt` to
-`subject_list_urmc_{with_fmap,no_fmap}.txt` locally (gitignored; do not commit real IDs).
+Ready-made lists: copy `subject_list_{with_fmap,no_fmap}.example.txt` to
+`subject_list_{with_fmap,no_fmap}.txt` locally (gitignored; do not commit real IDs).
 Both groups run through Snakemake via `submit.sh`.
 
 **Behaviour changes, by design, not oversight:**

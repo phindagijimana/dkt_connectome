@@ -86,7 +86,7 @@ The following files live in the repository but are **not** published on Read the
 
 | Topic | Path |
 |-------|------|
-| Open-work tracker (canonical) | [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) |
+| Open-work tracker | [`docs/maintainer/remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/remaining.md) |
 | Maintainer one-shot tasks (release, Docker, RTD, Dockstore, Zenodo) | [`docs/maintainer/maintainer_tasks.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md) |
 | Release checklist | [`docs/maintainer/publishing.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/publishing.md) |
 | Readiness checklist (P0–P5) | [`docs/maintainer/readiness_checklist.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/readiness_checklist.md) |

@@ -10,13 +10,13 @@
 #
 # Pipeline per subject (see subject.sh / workflow/run_subject.sh):
 #   QSIPrep -> Inpaint (Step 1.1, only if a lesion mask exists) ->
-#   Recon (recon-all by default, FastSurfer with --fastsurfer) ->
+#   Recon (FastSurfer by default; recon-all with --freesurfer) ->
 #   QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> connectome ->
 #   Node strength / ENIGMA report (Step 5, auto-on when the connectome ran)
 #
 # Usage:
-#   ./submit.sh                    # full pipeline, recon-all (slow, ~10 h/subject)
-#   ./submit.sh --fastsurfer       # full pipeline, FastSurfer (~1-2 h/subject CPU)
+#   ./submit.sh                    # full pipeline, FastSurfer (~1-2 h/subject CPU)
+#   ./submit.sh --freesurfer       # full pipeline, recon-all (slow, ~10 h/subject)
 #   ./submit.sh --fast-fs          # FastSurfer + --fsaparc (adds a DK-68 atlas too)
 #   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
 #   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV (skips Step 5 too)
@@ -87,7 +87,7 @@ DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
 DWI_SHELL_B="${DWI_SHELL_B:-1000}"
 QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
 RUN_RECON="${RUN_RECON:-1}"
-RECON_TOOL="${RECON_TOOL:-freesurfer}"
+RECON_TOOL="${RECON_TOOL:-fastsurfer}"
 RECON_FSAPARC="${RECON_FSAPARC:-0}"
 RUN_INPAINT="${RUN_INPAINT:-1}"
 ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"

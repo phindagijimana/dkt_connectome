@@ -10,7 +10,7 @@ End-to-end walkthrough using the public [IDEAS II](datasets/ideas.md) sample (tw
 2. Download the public IDEAS II BIDS sample (or point the pipeline at your own BIDS)
 3. Run Steps 1–5 for one subject (`sub-1`)
 4. Inspect QC HTML and the DKT connectome
-5. Optionally run disconnectome integrity checks
+5. Optionally run the [BTC glioma](datasets/btc_glioma.md) lesion-aware demo (`--disconnection`)
 
 **Time:** several hours on HPC (QSIPrep + recon dominate). Use `--dry-run` first to validate the plan. Preflight still requires cached step containers for `--dry-run`; export `BIDS_APP_CI=1` only to skip those checks for a plan-only / CI dry-run — do not set it for real runs.
 
@@ -114,22 +114,22 @@ What each panel means: [Quality control](qc.md).
 
 ---
 
-## 6. Optional — disconnectome
+## 6. Optional — lesion-aware disconnectome
 
-Step 4.1 is off by default. With a lesion mask and validated settings:
+Step 4.1 is off by default. IDEAS II `sub-1` has **no** lesion mask. For the public lesion-aware demo, download [BTC glioma PAT20](datasets/btc_glioma.md) and pass `--disconnection`:
 
 ```bash
-./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
-  --participant-label 1 \
-  --session-filter ses-1 \
-  --disconnection
+bash scripts/download_btc_glioma_sample.sh
+./dkt run "$(pwd)/sample_data/btc_glioma/bids" "$(pwd)/sample_data/btc_glioma/results/sub-PAT20_tutorial" participant \
+  --participant-label PAT20 --fastsurfer --syn --disconnection \
+  --dwi-select config/dwi_select_btc_hardi.json --dry-run
 ```
 
 Integrity check:
 
 ```bash
 python3 scripts/evaluate_disconnectome_integrity.py \
-  --disconnectome-dir "$(pwd)/sample_data/ideas/results/sub-1_tutorial/connectomes/sub-1/disconnectome"
+  --disconnectome-dir "$(pwd)/sample_data/btc_glioma/results/sub-PAT20_tutorial/connectomes/sub-PAT20/disconnectome"
 ```
 
 Expected results for test subjects: [Validation](validation.md).

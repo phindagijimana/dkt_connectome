@@ -1,0 +1,51 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+      "about": {"@id": "./"}
+    },
+    {
+      "@id": "./",
+      "@type": ["Dataset", "SoftwareSourceCode"],
+      "name": "DKT Connectome",
+      "description": "Lesion-aware structural connectomics BIDS App (Snakemake).",
+      "version": "0.3.0",
+      "license": "Apache-2.0",
+      "codeRepository": "https://github.com/phindagijimana/dkt_connectome",
+      "programmingLanguage": "Python",
+      "author": {"@id": "#author"},
+      "hasPart": [
+        {"@id": "dwi_pipeline/workflow/Snakefile"},
+        {"@id": "dwi_pipeline/app.json"},
+        {"@id": "dwi_pipeline/release_manifest.json"}
+      ]
+    },
+    {
+      "@id": "#author",
+      "@type": "Person",
+      "name": "Philbert Ndagijimana",
+      "affiliation": "University of Rochester Medical Center"
+    },
+    {
+      "@id": "dwi_pipeline/workflow/Snakefile",
+      "@type": "File",
+      "name": "Canonical Snakemake workflow",
+      "encodingFormat": "text/plain"
+    },
+    {
+      "@id": "dwi_pipeline/app.json",
+      "@type": "File",
+      "name": "BIDS App descriptor",
+      "encodingFormat": "application/json"
+    },
+    {
+      "@id": "dwi_pipeline/release_manifest.json",
+      "@type": "File",
+      "name": "Pinned step-container manifest",
+      "encodingFormat": "application/json"
+    }
+  ]
+}

@@ -31,15 +31,13 @@ Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside 
 
 ---
 
-## Migrating from legacy entrypoints
+## Migrating from old entrypoints
 
 | Old | New |
 |-----|-----|
-| Repo root `./connectome bids` | `dwi_pipeline/run` |
-| `PIPELINE_ENGINE=bash` | Snakemake (default in `submit.sh`) |
+| Repo root `./connectome` / root `Snakefile` | **Removed.** Use `cd dwi_pipeline && ./dkt run` |
+| `PIPELINE_ENGINE=bash` / `subject.sh` | Snakemake (default in `submit.sh`) |
 | MkDocs site (old) | [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) |
-
-Legacy paths remain for Dockstore compatibility only — see [Comparisons § Legacy](comparisons.md).
 
 ---
 

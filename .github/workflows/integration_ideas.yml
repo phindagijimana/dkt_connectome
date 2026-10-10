@@ -21,9 +21,6 @@ on:
         description: Session (without ses- prefix)
         type: string
         default: "1"
-  schedule:
-    - cron: "0 9 1 * *"
-
 permissions:
   contents: read
 

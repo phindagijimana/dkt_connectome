@@ -2,6 +2,8 @@
 
 HTML reports summarize pipeline outputs for Steps 1–5. This page covers **where to find reports**, **how to regenerate them**, and **what to inspect** in each panel.
 
+Public demos ([IDEAS II](datasets/ideas.md), [BTC glioma](datasets/btc_glioma.md)) write the same QSIPrep / QSIRecon / subject QC HTML under `RESULTS_ROOT` after a real run. Those HTML files are **not** committed (large, subject-derived). Open them locally from your results directory.
+
 Pipeline overview diagram: [How it works — science & theory](science_overview.md). Step 4.1 theory: [Disconnectome methods](methods/step4_1_disconnectome.md). Automated disconnectome checks: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
 
 ---

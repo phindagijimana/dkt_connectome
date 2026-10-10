@@ -1,6 +1,6 @@
 {
   "pipeline_version": "0.3.0",
-  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. Null sha256 means digest not yet recorded at release build time \u2014 strict check skips those keys.",
+  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. The orchestrator image sha256 is null until a release rebuild records it \u2014 strict check skips that key only. Step images are fully pinned.",
   "orchestrator": {
     "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.0",
     "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.0",

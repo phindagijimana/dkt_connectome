@@ -14,6 +14,7 @@ Contents
    installation
    tutorial
    datasets/ideas
+   datasets/btc_glioma
    upgrading
 
 .. toctree::
@@ -21,7 +22,6 @@ Contents
    :caption: Learn more
 
    science_overview
-   datasets/btc_glioma
    cloud_deployment
 
 .. toctree::

@@ -18,8 +18,8 @@
 #SBATCH --output=logs/dwi_act_%A_%a.out
 #SBATCH --error=logs/dwi_act_%A_%a.err
 #SBATCH --time=12:00:00
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=24G
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
 #SBATCH --mail-type=END,FAIL
 # Set mail in submit.sh via: SBATCH --mail-user=you@example.edu (optional)
 # Placeholder array; submit.sh overrides --array with the real subject count.
@@ -64,8 +64,8 @@ esac
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 
 # Threading inside each container (should match --cpus-per-task)
-export NTHREADS="${NTHREADS:-4}"
-export OMP_NTHREADS="${OMP_NTHREADS:-4}"
+export NTHREADS="${NTHREADS:-8}"
+export OMP_NTHREADS="${OMP_NTHREADS:-8}"
 
 mkdir -p "${REPO_ROOT}/logs"
 

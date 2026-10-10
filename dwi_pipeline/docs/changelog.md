@@ -6,8 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Changed
+- **Removed the legacy root pipeline** (`Snakefile`, `./connectome`, plugins, profiles). The only workflow is `dwi_pipeline/` + `./dkt`.
+- **Slurm defaults** match the tutorial: 8 CPUs, FastSurfer (`submit.sh`; use `--freesurfer` for recon-all).
+- **Public software validation** documented as IDEAS II + BTC glioma PAT20 (not a TBI cohort claim).
+
 ### Fixed
 - **`./dkt install` URI order** — use `release_manifest.json` pins first; skip `oras://` on multi-layer Docker Hub images (`pennlinc` / `freesurfer` / `deepmi`) and pull them with `docker://`. GHCR DKT SIFs still try `oras://ghcr.io/...` first.
+- Version fallbacks in `./run`, docs, and the orchestrator helper now report **0.3.0**.
 
 ## [0.3.0] — Tier 1 reproducibility (baked step scripts)
 

@@ -1,7 +1,6 @@
 #!/bin/sh
-# Strip AI co-author trailers. Exit 0 always.
-# Matches Co-authored-by / Co-Authored-By lines that mention
-# Cursor, cursoragent, Claude, or anthropic.
+# Strip Co-authored-by trailers. Exit 0 always.
+# Policy: docs/commit_attribution.md
 
 msg_file=$1
 if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
@@ -9,8 +8,6 @@ if [ -z "$msg_file" ] || [ ! -f "$msg_file" ]; then
 fi
 
 tmp=${msg_file}.dkt-hook
-# grep -v: keep lines that do NOT match; empty result is OK
-grep -viE '^[[:space:]]*Co-[Aa]uthored-[Bb]y:.*(Cursor|cursoragent|Claude|anthropic)' \
-  "$msg_file" > "$tmp" || true
+grep -viE '^[[:space:]]*Co-[Aa]uthored-[Bb]y:' "$msg_file" > "$tmp" || true
 mv "$tmp" "$msg_file"
 exit 0

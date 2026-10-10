@@ -7,9 +7,9 @@
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.3.0-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
-**New here?** Use the **[documentation site](https://dkt-connectome.readthedocs.io/en/latest/)** (tutorial, flags, troubleshooting) or follow the steps below on GitHub.
+**New here?** Use the **[documentation site](https://dkt-connectome.readthedocs.io/en/latest/)** or the commands below.
 
-**Recommended path:** Linux workstation or HPC with **Apptainer** (not Docker-only). Clone → `./dkt install` → `./dkt check --strict` → dry-run on [IDEAS sample](dwi_pipeline/docs/datasets/ideas.md) → run your BIDS data.
+The only pipeline in this repository is **`dwi_pipeline/`** (Snakemake + `./dkt`). Work from that directory.
 
 ---
 
@@ -19,16 +19,14 @@
 |-----------|--------|
 | Linux | HPC or workstation |
 | [Apptainer](https://apptainer.org/) | Step containers (`.sif`) |
-| Python 3.9+ · [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration |
+| Python 3.9+ · [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration (`environment.yml`) |
 | **FreeSurfer license** | [Free registration](https://surfer.nmr.mgh.harvard.edu/registration.html) — `export FS_LICENSE=/path/to/license.txt` |
 
-Optional: Slurm for cohort arrays. Docker is optional for the orchestrator only — step `.sif` images still required ([Installation](https://dkt-connectome.readthedocs.io/en/latest/installation.html)).
+Optional: Slurm for cohort arrays. Docker is optional for the orchestrator only — step `.sif` images are still required.
 
 ---
 
 ## Quick start
-
-After clone, always work from `dwi_pipeline/`:
 
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
@@ -46,18 +44,20 @@ bash scripts/download_ideas_sample.sh
   --dwi-select config/dwi_select_ideas_b2500.json --dry-run
 ```
 
-Download the sample only with `bash scripts/download_ideas_sample.sh` from `dwi_pipeline/`. `./dkt run` is the same command as `./run` (BIDS App). See [Usage](https://dkt-connectome.readthedocs.io/en/latest/usage.html).
-
-`./dkt install` uses [`release_manifest.json`](dwi_pipeline/release_manifest.json): DKT-owned step SIFs from GHCR (`oras://ghcr.io/...`), upstream pennlinc/freesurfer/deepmi images from Docker Hub via `docker://` (first-time OCI→SIF can take 30–90 min; use a local, non-NFS `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`).
-
-### After your first subject (your own BIDS)
-
-```bash
-./dkt run /path/to/BIDS /path/to/out participant \
-  --participant-label 01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn
-```
+`./dkt install` reads [`release_manifest.json`](dwi_pipeline/release_manifest.json). First-time image pulls can take 30–90 minutes; use a **local (non-NFS)** `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`.
 
 Full walkthrough: [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html).
+
+---
+
+## Public demos (software validation)
+
+| Demo | Role | Download |
+|------|------|----------|
+| [IDEAS II](dwi_pipeline/docs/datasets/ideas.md) (`ds007401`) | First-run / no-lesion smoke test | `bash scripts/download_ideas_sample.sh` |
+| [BTC glioma PAT20](dwi_pipeline/docs/datasets/btc_glioma.md) (`ds001226`) | Lesion-aware path (`--disconnection`) | `bash scripts/download_btc_glioma_sample.sh` |
+
+These public subjects demonstrate the software. They are not a TBI clinical validation cohort.
 
 ---
 
@@ -75,7 +75,18 @@ Full walkthrough: [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tut
 | 4.1 | Optional `--disconnection` |
 | 5 | Node strength + ENIGMA-style report |
 
-Which steps run in containers vs on the host: [Architecture](https://dkt-connectome.readthedocs.io/en/latest/architecture.html).
+Each step uses its own pinned `.sif` image. That is intentional — see [Containers](https://dkt-connectome.readthedocs.io/en/latest/containers.html).
+
+---
+
+## How to start a run
+
+| Situation | Command |
+|-----------|---------|
+| One subject (tutorial / workstation) | `./dkt run …` from `dwi_pipeline/` |
+| Slurm cohort | `bash dwi_pipeline/submit.sh` (FastSurfer by default) |
+
+`./dkt run` is the BIDS App (`./run`). Do not call `subject.sh` for new work.
 
 ---
 
@@ -83,34 +94,12 @@ Which steps run in containers vs on the host: [Architecture](https://dkt-connect
 
 | Start here | Link |
 |------------|------|
-| **Hosted guide (recommended)** | [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/) |
-| Installation & containers | [installation.md](dwi_pipeline/docs/installation.md) · [containers.md](dwi_pipeline/docs/containers.md) |
-| First-run tutorial | [tutorial.md](dwi_pipeline/docs/tutorial.md) |
-| All CLI flags | [usage.md](dwi_pipeline/docs/usage.md) |
-| Prepare BIDS data | [preparing_data.md](dwi_pipeline/docs/preparing_data.md) |
-| Upgrade / changelog | [upgrading.md](dwi_pipeline/docs/upgrading.md) · [changelog.md](dwi_pipeline/docs/changelog.md) |
-| Operator reference (advanced) | [dwi_pipeline/README.md](dwi_pipeline/README.md) |
-| GitHub release | [v0.3.0-step-sifs](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.0-step-sifs) |
-
----
-
-## After your first subject
-
-### HPC / cohort
-
-```bash
-export BIDS_DIR=/path/to/BIDS
-export RESULTS_ROOT=/path/to/out
-bash dwi_pipeline/submit.sh          # Slurm array (from repo root)
-# or one subject:
-bash dwi_pipeline/workflow/run_subject.sh all SUBJ01 --fastsurfer --syn
-```
-
-### Legacy root workflow
-
-> Repo-root [`./connectome`](connectome) and [`Snakefile`](Snakefile) remain for **Dockstore compatibility only**. New work: `dwi_pipeline/` + `./dkt` or `./run`.
-
-[Comparisons § Legacy](dwi_pipeline/docs/comparisons.md)
+| **Hosted guide** | [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/) |
+| Installation | [installation.md](dwi_pipeline/docs/installation.md) |
+| Tutorial | [tutorial.md](dwi_pipeline/docs/tutorial.md) |
+| CLI flags | [usage.md](dwi_pipeline/docs/usage.md) |
+| Configuration order | [configuration.md](dwi_pipeline/docs/configuration.md) |
+| Changelog | [changelog.md](dwi_pipeline/docs/changelog.md) |
 
 ---
 

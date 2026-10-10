@@ -4,6 +4,22 @@ Defaults live in [`workflow/config/config.yaml`](https://github.com/phindagijima
 
 Full CLI + env table: [`flag.md` on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/flag.md).
 
+## What wins (override order)
+
+Later rows override earlier ones for the same setting:
+
+1. `workflow/config/config.yaml` — shipped defaults
+2. `dwi_pipeline/release_manifest.json` / `app.json` — version and container pins
+3. `workflow/config/config.local.yaml` — written by `./dkt install` (never commit)
+4. Environment variables (`CONTAINER_*`, `FS_LICENSE`, `RESULTS_ROOT`, …)
+5. CLI flags on `./dkt run` / `submit.sh` (`--fastsurfer`, `--syn`, `--dwi-select`, …)
+
+```text
+config.yaml  →  release_manifest / app.json  →  config.local.yaml  →  env  →  CLI
+```
+
+Do not edit `config.yaml` in git. Change `config.local.yaml` or pass flags.
+
 ---
 
 ## Path settings
