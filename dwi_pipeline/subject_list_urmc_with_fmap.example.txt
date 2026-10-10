@@ -1,4 +1,0 @@
-# Example clinical cohort list — Siemens sessions with fieldmaps.
-# Copy to subject_list_urmc_with_fmap.txt locally (gitignored).
-EXAMPLE01
-EXAMPLE03

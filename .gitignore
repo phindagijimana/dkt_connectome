@@ -155,6 +155,18 @@ backups/
 # Atlas-only connectome wrapper (lives locally, not in this repo)
 /dwi_connect_default/
 
+# Teaching notes stay local (Word + course markdown). Do not publish.
+/dwi_pipeline/DWI_Connectivity_Pipeline_Documentation.docx
+/dwi_pipeline/acquisition.docx
+/dwi_pipeline/acquisition.md
+/dwi_pipeline/brain.docx
+/dwi_pipeline/brain.md
+/dwi_pipeline/data_engineering.docx
+/dwi_pipeline/data_engineering_part2_advanced.docx
+/dwi_pipeline/pipeline_science.docx
+/dwi_pipeline/pipeline_science.md
+/dwi_pipeline/basic_tools/
+
 # Generated documentation artefacts. The markdown is the source; regenerate figures
 # with scripts/make_brain_figures.py.
 # These are tracked so the documents render on GitHub, which is only safe
@@ -167,7 +179,9 @@ backups/
 # defaults carry placeholder IDs only.
 /dwi_pipeline/subjects_*.txt
 /dwi_pipeline/subject_list_urmc_*.txt
-!/dwi_pipeline/subject_list_urmc_*.example.txt
+/dwi_pipeline/subject_list_no_fmap.txt
+/dwi_pipeline/subject_list_with_fmap.txt
+!/dwi_pipeline/subject_list_*.example.txt
 /dwi_pipeline/subject_list_*.txt
 !/dwi_pipeline/subject_list_*.example.txt
 /dwi_pipeline/*_ARCHIVED.txt

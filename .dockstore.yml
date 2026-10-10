@@ -1,18 +1,5 @@
-# =============================================================================
-# Dockstore registration manifest for dk_connectome
-# =============================================================================
-# Dockstore (https://dockstore.org) is the GA4GH-endorsed workflow registry
-# that the NIH Common Fund / NCI Cloud Resources index against. Pushing this
-# file to the repo root + linking the repo from your Dockstore profile is
-# enough to list dk_connectome there.
-#
-# Two workflow entries are declared:
-#   1. The native Snakemake workflow (primary).
-#   2. A CWL projection (`./connectome cwl` writes one on demand).
-#
-# Dockstore reads `version: 1.2` of the spec:
-#   https://docs.dockstore.org/en/stable/getting-started/dockstore-yml.html
-# =============================================================================
+# Dockstore registration — canonical Snakemake BIDS App only.
+# https://docs.dockstore.org/en/stable/getting-started/dockstore-yml.html
 
 version: 1.2
 
@@ -21,7 +8,7 @@ workflows:
     name: dkt_connectome
     publish: true
     primaryDescriptorPath: /dwi_pipeline/workflow/Snakefile
-    readMePath: /dwi_pipeline/README.md
+    readMePath: /README.md
     authors:
       - name: Philbert Ndagijimana
         orcid: ""
@@ -32,29 +19,3 @@ workflows:
       - Connectomics
       - Diffusion MRI
       - BIDS
-
-  - subclass: SMK                              # Snakemake (legacy 4-stage)
-    name: dk_connectome
-    publish: true
-    primaryDescriptorPath: /Snakefile
-    readMePath: /README.md
-    authors:
-      - name: Philbert Ndagijimana
-        orcid: ""                              # add ORCID iD when available
-    testParameterFiles:
-      - /config/config.yaml
-    topic: "LEGACY: BIDS DWI -> QSIPrep -> QSIRecon -> Desikan-Killiany connectome (use dkt_connectome)"
-    categories:
-      - Connectomics
-      - Diffusion MRI
-      - BIDS
-
-  - subclass: CWL
-    name: dk_connectome-cwl
-    publish: false                             # opt-in: enable after `./connectome cwl` commits a generated descriptor
-    primaryDescriptorPath: /workflow/dk_connectome.cwl
-    readMePath: /README.md
-    authors:
-      - name: Philbert Ndagijimana
-        orcid: ""
-    topic: "CWL projection of the Snakemake dk_connectome workflow"

@@ -1,13 +1,12 @@
-# dk_connectome — conda/mamba environment
+# dkt_connectome — conda/mamba environment for the Snakemake orchestrator
 #
 # Create with:
 #     mamba env create -f environment.yml
-#     conda activate dk_connectome
+#     conda activate dkt_connectome
 #
-# All heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs) happens
-# inside Apptainer/Singularity containers — see README.md for how to pull
-# them. This env only ships what the orchestrator itself needs.
-name: dk_connectome
+# Step tools (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs) run inside
+# Apptainer images — see README.md / ./dkt install.
+name: dkt_connectome
 channels:
   - conda-forge
   - bioconda

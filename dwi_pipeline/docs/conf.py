@@ -13,9 +13,9 @@ APP_JSON = DOCS_ROOT.parent / "app.json"
 if APP_JSON.is_file():
     with APP_JSON.open(encoding="utf-8") as fh:
         _app = json.load(fh)
-    version = release = _app.get("PipelineVersion", "0.2.0")
+    version = release = _app.get("PipelineVersion", "0.3.0")
 else:
-    version = release = "0.2.0"
+    version = release = "0.3.0"
 
 project = "DKT Connectome"
 author = "Inzira Labs, University of Rochester and contributors"

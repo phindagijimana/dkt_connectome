@@ -3,7 +3,7 @@
 !!! note "Repository-local documentation"
     This page is **not** published on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/). User-facing docs stay on the public site; maintainer runbooks live in the repo only. Index: [Contributing § Repository-local documentation](../contributing.md#repository-local-documentation).
 
-Runbook for **credential-based, out-of-repo steps** that complete v0.2.0 publishing and registry visibility. These are done once (or per release) by a maintainer with GitHub, Docker Hub, and RTD access.
+Runbook for **credential-based, out-of-repo steps** (GitHub, Docker Hub, RTD, Dockstore, Zenodo). Current software version is **0.3.0**.
 
 **Time budget:** about one afternoon if credentials are ready.
 
@@ -135,7 +135,7 @@ docker push phindagijimana321/dkt-connectome:latest
 
 ### Step 4 connectome image (separate)
 
-The **Step 4** structural connectome image is **`phindagijimana321/dkt_connectome`** (underscore), built by `build-dk-connectome.yml`. HPC sites typically use Apptainer `.sif` files instead. See [containers/connectome README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
+The **Step 4** structural connectome image is **`phindagijimana321/dkt_connectome`** (underscore). HPC sites use Apptainer `.sif` files from `./dkt install`. See [containers/connectome README](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
 
 ---
 
@@ -226,7 +226,7 @@ Strict build (matches CI): `sphinx-build -W --keep-going -b html dwi_pipeline/do
 | Per-step methods + citations | [Methods](../methods/index.md) |
 | Flags, paths, outputs | [Pipeline steps](../pipeline_steps.md) |
 | `./run` reference | [Usage](../usage.md) · [BIDS App spec](../bids_app.md) |
-| What's left to ship | [remaining.md](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) |
+| What's left to ship | [remaining.md](remaining.md) |
 
 Publishing checklist: [Publishing](publishing.md).
 

@@ -1,16 +1,12 @@
-# =============================================================================
-# WorkflowHub registration metadata for dkt_connectome
-# =============================================================================
-# Canonical pipeline: dwi_pipeline/run (BIDS App) + dwi_pipeline/workflow/
-# Legacy 4-stage root workflow: Snakefile (deprecated)
-# =============================================================================
+# WorkflowHub metadata — canonical Snakemake pipeline only.
 
 name: dkt_connectome
 description: |
-  Lesion-aware structural connectomics BIDS App (v0.2+). QSIPrep → optional
+  Lesion-aware structural connectomics BIDS App (v0.3.0). QSIPrep → optional
   neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS → DKT
   connectome → optional disconnectome → node-strength / ENIGMA report.
-  Validated on TRACK-TBI (~14 centers) and URMC clinical MRI cohorts.
+  Public software demos: IDEAS II (OpenNeuro ds007401) and BTC glioma PAT20
+  (OpenNeuro ds001226, lesion-aware path).
 
 version: "0.3.0"
 license: Apache-2.0
@@ -20,9 +16,6 @@ issue_tracker: https://github.com/phindagijimana/dkt_connectome/issues
 
 main_workflow_file: dwi_pipeline/workflow/Snakefile
 workflow_language: Snakemake
-
-legacy_workflow_file: Snakefile
-legacy_workflow_note: "Root 4-stage dk_connectome — retained for backward compatibility only."
 
 categories:
   - Connectomics
@@ -40,7 +33,6 @@ tags:
   - structural-connectome
   - Desikan-Killiany-Tourville
   - disconnectome
-  - TBI
   - reproducibility
   - Apptainer
   - Snakemake
@@ -63,15 +55,12 @@ containers:
     description: BIDS App orchestrator (Snakemake); step images mount at runtime.
   - name: connectome
     source: docker://ghcr.io/phindagijimana/dk-connectome:0.3.0
-    description: |
-      Step 4 connectome image (FreeSurfer tools + ANTs + MRtrix3).
-      Build: dwi_pipeline/containers/connectome/ or CI build-dk-connectome.yml.
+    description: Step 4 connectome image (FreeSurfer tools + ANTs + MRtrix3).
 
 executors:
   - local
   - slurm
   - docker
-  - kubernetes
 
 provenance:
   ro_crate_path: ro-crate-metadata.json

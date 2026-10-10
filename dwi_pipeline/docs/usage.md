@@ -31,7 +31,7 @@ Examples:
 
 For **which steps run in containers vs on the host**, see [Architecture](architecture.md).
 
-Legacy entrypoints (`./run`, `install`, `bash scripts/install.sh`, `./run doctor`) remain supported.
+`./run` remains the BIDS App contract (`./dkt run` calls it). HPC cohorts should use `bash submit.sh`, not `subject.sh`.
 
 ---
 

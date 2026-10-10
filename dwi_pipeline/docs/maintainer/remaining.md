@@ -1,20 +1,14 @@
-# Remaining work
+# Maintainer status (v0.3.0)
 
-**Canonical tracker:** [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) at the repository root (edit there).
+The public product is the **Snakemake** pipeline in `dwi_pipeline/` (`./dkt`).
 
-**Detailed checklist (P0–P5 IDs):** [readiness_checklist.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/readiness_checklist.md)
+| Item | Status |
+|------|--------|
+| BIDS App `./dkt` / `./run` | Shipped |
+| Step `.sif` pins in `release_manifest.json` | Shipped |
+| Public demos: IDEAS II + BTC glioma | Documented |
+| Legacy root Snakefile / `./connectome` | Removed |
+| Full QSIPrep E2E on GitHub Actions | Not targeted (hours + license) — use dry-run CI |
+| Zenodo DOI / BIDS Apps registry | Optional; use 0.3.0 when submitting |
 
-!!! note "Not on Read the Docs"
-    Maintainer pages under `docs/maintainer/` are **repository-local** only. Public user docs: [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/). Index: [Contributing § Repository-local documentation](../contributing.md#repository-local-documentation).
-
----
-
-## Quick status (v0.2.0)
-
-| | |
-|--|--|
-| **BIDS App ready to run?** | ✅ Yes — `./run`, docs, Docker, release |
-| **Still open** | RTD rebuild · Dockstore · WorkflowHub · Zenodo DOI · integration CI green · v1.0 science |
-| **Optional** | BIDS Apps registry listing |
-
-See the root [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) for the full open-items list (verdict, P0–P5, suggested order).
+Open credential tasks: [maintainer_tasks.md](maintainer_tasks.md).

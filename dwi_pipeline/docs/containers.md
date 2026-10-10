@@ -1,6 +1,10 @@
 # Containers
 
-The DKT Connectome orchestrates **multiple Apptainer `.sif` images** on HPC. Use **`./dkt install`** (or `bash install.sh`) to pull pinned images and write `workflow/config/config.local.yaml`, or set `CONTAINER_*` environment variables (see [Installation](installation.md)).
+The DKT Connectome uses **one `.sif` image per step** (QSIPrep, recon, QSIRecon, connectome, …). That is intentional: each tool ships on its own release cycle. `./dkt install` pulls the pins in [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json) and writes `workflow/config/config.local.yaml`. After install, run **`./dkt check --strict`** to verify SHA256 digests.
+
+Set `CONTAINER_*` only if you need to override a path (see [Installation](installation.md)). FastSurfer is referenced as `deepmi/fastsurfer:latest` but is **pinned by digest** in the manifest — `check --strict` fails if the pulled image does not match.
+
+The Docker image `phindagijimana321/dkt-connectome:0.3.0` is the **orchestrator only**. Step images are still required.
 
 **Docker orchestrator (BIDS App):** `phindagijimana321/dkt-connectome:0.3.0` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:0.3.0`. Step scripts are **baked** into DKT-owned images by default; use `release_manifest.json` + `./dkt check --strict` after install. See [Architecture](architecture.md).
 

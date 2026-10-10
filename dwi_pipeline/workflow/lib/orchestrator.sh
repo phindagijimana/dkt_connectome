@@ -51,7 +51,7 @@ resolve_orchestrator_sif() {
   fi
   local dwi_root cache ver sif
   dwi_root="$(_orchestrator_repo_dwi)"
-  ver="${DKT_ORCHESTRATOR_VERSION:-0.2.0}"
+  ver="${DKT_ORCHESTRATOR_VERSION:-0.3.0}"
   cache="${DKT_CONTAINER_CACHE:-${HOME}/.cache/dkt-connectome/containers}"
   sif="${cache}/dkt_connectome_orchestrator_${ver}.sif"
   if [[ -f "${sif}" ]]; then

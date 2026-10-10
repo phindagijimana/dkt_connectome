@@ -6,22 +6,26 @@ Benchmark subjects, integrity QC expectations, and cohort context for the DKT Co
 
 ## Study context
 
-The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with optional lesion masks. Primary validation cohorts:
+The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with optional lesion masks.
 
-| Cohort | Role |
-|--------|------|
-| **TRACK-TBI** (~14 centers) | Multi-site TBI diffusion MRI; **~100 subjects with manual lesion masks** for factorial validation and manuscript analyses |
-| **Second / control clinical cohort** | Additional clinical MRI (acquisition variants, optional lesion masks) and non-lesion controls for normative or synthetic-lesion validation |
+**Public software validation** uses two OpenNeuro demos (below). Private clinical cohorts stay local and are not required to run the software.
 
-Cite cohort data use separately from pipeline software — see [Citation](citation.md).
-
-Clinical TBI connectivity background: Hayes et al. 2016 ([10.1017/S1355617715000740](https://doi.org/10.1017/S1355617715000740)).
+Cite dataset use separately from pipeline software — see [Citation](citation.md).
 
 ---
 
-## Public sample dataset (IDEAS II)
+## Public software demos
 
-Two-subject BIDS subset for tutorials and external smoke tests — **not** a validation cohort for TBI claims.
+| Demo | Role | OpenNeuro |
+|------|------|-----------|
+| **IDEAS II** | First-run / no-lesion path | [ds007401](https://openneuro.org/datasets/ds007401) |
+| **BTC glioma PAT20** | Lesion-aware path (`--disconnection`) | [ds001226](https://openneuro.org/datasets/ds001226) |
+
+These subjects demonstrate that the pipeline runs. They are **not** a TBI clinical validation cohort.
+
+---
+
+## IDEAS II (no-lesion demo)
 
 | Resource | Link |
 |----------|------|
@@ -34,6 +38,20 @@ Two-subject BIDS subset for tutorials and external smoke tests — **not** a val
 **Golden run command:** see [IDEAS sample page](datasets/ideas.md#example-run). Snakemake dry-run with `config/dwi_select_ideas_b2500.json` validates the full DAG (QSIPrep → FastSurfer → QSIRecon → connectome → nodestrength → QC).
 
 **Cite when using these data:** Taylor PN, et al. *Epilepsia* 2026. [10.1002/epi.70186](https://doi.org/10.1002/epi.70186) and OpenNeuro dataset [10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0).
+
+---
+
+## BTC glioma PAT20 (lesion-aware demo)
+
+One public glioma subject with a tumor mask renamed to the pipeline lesion convention (`*_T1w_label-lesion_roi.nii.gz`). Use `--disconnection` to exercise Step 4.1.
+
+| Resource | Link |
+|----------|------|
+| Download | `bash dwi_pipeline/scripts/download_btc_glioma_sample.sh` |
+| Docs | [BTC glioma sample](datasets/btc_glioma.md) |
+| OpenNeuro | [ds001226](https://openneuro.org/datasets/ds001226) |
+
+This is a **software demo of lesion-aware inputs**, not a TBI or glioma outcome study.
 
 ---
 

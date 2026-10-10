@@ -1,0 +1,4 @@
+# Example cohort list — sessions with fieldmaps.
+# Copy to subject_list_with_fmap.txt locally (gitignored).
+EXAMPLE01
+EXAMPLE03

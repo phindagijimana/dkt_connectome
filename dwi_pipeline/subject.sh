@@ -1,6 +1,14 @@
 #!/bin/bash
 # =============================================================================
-# subject.sh — Process ONE participant: QSIPrep, Recon, QSIRecon, connectome
+# subject.sh — DEPRECATED bash engine (do not use for new work)
+# =============================================================================
+#
+# New work: ./dkt run (BIDS App) or bash submit.sh (Slurm → Snakemake).
+# This script is frozen for PIPELINE_ENGINE=bash only. Prefer
+# workflow/run_subject.sh. Do not add features here.
+#
+# =============================================================================
+# Process ONE participant: QSIPrep, Recon, QSIRecon, connectome
 # =============================================================================
 #
 # Called by array.sh (one Slurm array task = one subject).

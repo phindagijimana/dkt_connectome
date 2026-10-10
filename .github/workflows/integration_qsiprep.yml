@@ -10,8 +10,6 @@ on:
         description: Pull + version smoke only (skip ./run)
         type: boolean
         default: false
-  schedule:
-    - cron: "0 8 * * 0"
   release:
     types: [published]
 

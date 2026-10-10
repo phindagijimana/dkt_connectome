@@ -2,7 +2,7 @@
 
 Prioritized remaining work to reach a **listed, production-ready BIDS App** and get as close as practical to **QSIPrep-level** polish.
 
-**Summary (open items only):** [remaining.md](remaining.md) · repo root [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md)
+**Summary:** [remaining.md](remaining.md) (v0.3.0). Legacy root Snakefile removed.
 
 **Current baseline:** v0.2.0 — `./run`, participant + group levels, Snakemake engine, MkDocs site, CI dry-runs, orchestrator Docker image.
 
@@ -45,7 +45,7 @@ Closes the largest gaps vs mature BIDS Apps: CI confidence, spec completeness, a
 | P1.5 | **Implement or remove `--mem-mb`** | **Done** | Exported as `MEM_MB` when set; documented in `run`, `usage.md`, `bids_app.md`. |
 | P1.6 | **Docker “quick start” that auto-pulls step images** | **Scaffolded** | Apptainer in `Dockerfile`; CI `docker_auto_install_smoke.yml`; docs [cloud_deployment.md](../cloud_deployment.md). |
 | P1.7 | **IDEAS golden run in CI (optional slow job)** | **Scaffolded** | `integration_ideas.yml` (monthly + manual); dry-run default. |
-| P1.8 | **Deprecate root `./connectome bids` in registry docs** | **Done** | Low | Root [`README.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md), [`REGISTRY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/REGISTRY.md), [`USER_GUIDE.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/USER_GUIDE.md) point to `dwi_pipeline/run`. |
+| P1.8 | **Deprecate root `./connectome bids` in registry docs** | **Done** | Low | Root CLI removed; README points to `dwi_pipeline/`. |
 
 **Exit criterion:** CI runs at least one real container step; bids-validator green; external reviewer can `docker pull` + run tutorial without reading HPC docs.
 
@@ -60,7 +60,7 @@ Most user-facing docs are done (~49 pages). Remaining cleanup is consistency and
 | P2.1 | **Align version story (0.2.0 vs 1.0)** | App is 0.2.0; paper plan targets v1.0. Decide when to bump — [paper_plan.md §11](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md). |
 | P2.2 | **Zenodo archive + DOI** | Runbook [Maintainer §17](maintainer_tasks.md#17-zenodo-archive-doi); `CITATION.cff` has `version` + DOI placeholder. |
 | P2.3 | **Formal BIDS Derivatives output spec page** | Internal layout is custom; export is optional — make policy obvious in [derivatives.md](../derivatives.md) + [outputs.md](../outputs.md). |
-| P2.4 | **Refresh root vs `dwi_pipeline/` doc split** | **Done** | Root README / REGISTRY / USER_GUIDE banner + canonical `dwi_pipeline/run` links. |
+| P2.4 | **Refresh root vs `dwi_pipeline/` doc split** | **Done** | Single public tree: `dwi_pipeline/` + root README. |
 | P2.5 | **Update manuscript / paper_plan container digests** | Manuscript still references older image names in places — [`manuscript.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/manuscript.md). |
 
 **Exit criterion:** One canonical doc hub; DOI citable; no stale entrypoints in top-level README.
@@ -75,7 +75,7 @@ Safe to defer until after P0 unless you confirm no site still uses legacy paths.
 |---|------|--------------|
 | P3.1 | **Remove bash engine (`PIPELINE_ENGINE=bash`)** | After confirming no active jobs. Plan: [`workflow/LEGACY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/LEGACY.md). |
 | P3.2 | **Remove dual-container Step 4 path** | `CONNECTOME_LEGACY_DUAL_CONTAINER=1` — `subject.sh` only; Snakemake uses single `dkt_connectome.sif`. |
-| P3.3 | **Remove or gate legacy root 4-stage Snakefile** | Documented in [comparisons.md](../comparisons.md); Dockstore legacy entry. |
+| P3.3 | **Remove or gate legacy root 4-stage Snakefile** | **Done** | Removed from the public tree. |
 | P3.4 | **Promote disconnectome from opt-in default** | Still “under validation” in docs; 2-subject integrity PASS in [validation.md](../validation.md). |
 
 ---

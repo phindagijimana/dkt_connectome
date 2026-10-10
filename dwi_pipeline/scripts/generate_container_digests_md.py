@@ -16,8 +16,8 @@ APP_JSON = DWI_PIPELINE / "app.json"
 
 def pipeline_version() -> str:
     if APP_JSON.is_file():
-        return json.loads(APP_JSON.read_text()).get("PipelineVersion", "0.2.0")
-    return "0.2.0"
+        return json.loads(APP_JSON.read_text()).get("PipelineVersion", "0.3.0")
+    return "0.3.0"
 
 
 def main() -> None:

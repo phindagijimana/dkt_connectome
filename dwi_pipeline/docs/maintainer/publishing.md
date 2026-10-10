@@ -34,7 +34,7 @@ Use this page as a **pre-flight checklist** before tagging. Step-by-step runbook
 ## Optional
 
 - **[BIDS Apps registry submission](bids_apps_registry.md)** — only if you want a listing on bids-apps.neuroimaging.io
-- Open work tracker: [Readiness checklist](readiness_checklist.md) · [remaining.md](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md)
+- Open work tracker: [Readiness checklist](readiness_checklist.md) · [remaining.md](remaining.md)
 
 ---
 
