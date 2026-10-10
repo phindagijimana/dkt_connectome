@@ -52,12 +52,14 @@ Full walkthrough: [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tut
 
 ## Public demos (software validation)
 
+This pipeline was used on the **TRACK-TBI DoD** project (Phase 1: ~650 participants, two timepoints; ~100 with lesion masks). Those data stay under the study **data-use agreement** and are not in this repository.
+
+What we share: **one IDEAS II subject** and **one BTC glioma subject** (lesion-aware path). They show the software runs. They are not TRACK-TBI clinical validation.
+
 | Demo | Role | Download |
 |------|------|----------|
 | [IDEAS II](dwi_pipeline/docs/datasets/ideas.md) (`ds007401`) | First-run / no-lesion smoke test | `bash scripts/download_ideas_sample.sh` |
 | [BTC glioma PAT20](dwi_pipeline/docs/datasets/btc_glioma.md) (`ds001226`) | Lesion-aware path (`--disconnection`) | `bash scripts/download_btc_glioma_sample.sh` |
-
-These public subjects demonstrate the software. They are not a TBI clinical validation cohort.
 
 ---
 

@@ -8,7 +8,9 @@ Benchmark subjects, integrity QC expectations, and cohort context for the DKT Co
 
 The pipeline is **study-agnostic** — it runs on any BIDS DWI dataset with optional lesion masks.
 
-**Public software validation** uses two OpenNeuro demos (below). Private clinical cohorts stay local and are not required to run the software.
+This software was used on the **TRACK-TBI DoD** project (Phase 1: on the order of **650** participants, **two timepoints** each; about **100** with lesion masks). Those inputs and derivatives stay under the study **data-use agreement** and are **not** in this repository.
+
+What we share for software checks is **one IDEAS II subject** (no lesion) and **one BTC glioma subject** (lesion-aware path). Those two runs show the pipeline works; they are **not** TRACK-TBI clinical validation.
 
 Cite dataset use separately from pipeline software — see [Citation](citation.md).
 

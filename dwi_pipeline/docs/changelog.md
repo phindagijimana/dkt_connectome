@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 ## [Unreleased]
 
 ### Changed
+- **Cohort wording** — TRACK-TBI DoD Phase 1 use is documented as restricted (DUA; data not in the repo). Public software checks are one IDEAS II subject and one BTC glioma subject.
 - **Removed the legacy root pipeline** (`Snakefile`, `./connectome`, plugins, profiles). The only workflow is `dwi_pipeline/` + `./dkt`.
 - **Slurm defaults** match the tutorial: 8 CPUs, FastSurfer (`submit.sh`; use `--freesurfer` for recon-all).
 - **Public software validation** documented as IDEAS II + BTC glioma PAT20 (not a TBI cohort claim).
