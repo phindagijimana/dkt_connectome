@@ -1,6 +1,6 @@
-# DKT Connectome
+# DKT Connectome — lesion-aware structural connectomics BIDS App
 
-**Lesion-aware structural connectomics BIDS App** — QSIPrep → optional inpainting → recon → QSIRecon ACT tractography → DKT connectome → optional disconnectome → node strength.
+QSIPrep → optional inpainting → recon → QSIRecon ACT tractography → DKT connectome → optional disconnectome → node strength.
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥8.0-brightgreen.svg)](https://snakemake.readthedocs.io)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -10,6 +10,17 @@
 **New here?** Use the **[documentation site](https://dkt-connectome.readthedocs.io/en/latest/)** or the commands below.
 
 The only pipeline in this repository is **`dwi_pipeline/`** (Snakemake + `./dkt`). Work from that directory.
+
+| What | Name |
+|------|------|
+| Display name | **DKT Connectome** |
+| CLI | `./dkt` |
+| GitHub repo | `phindagijimana/dkt_connectome` |
+| Docs | [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/) |
+| Orchestrator image (BIDS App wrapper) | `dkt-connectome` |
+| Step 4 image (connectome + disconnectome) | GHCR `dk-connectome` · Docker Hub `dkt_connectome` |
+
+`dk-connectome` is a leftover registry name from the older DK (84-node) atlas. The pipeline default is **DKT (78 nodes)**. Do not confuse the Step 4 image with the orchestrator. Details: [Containers](dwi_pipeline/docs/containers.md).
 
 ---
 

@@ -2,9 +2,9 @@
 orphan: true
 ---
 
-# DKT Connectome
+# DKT Connectome — lesion-aware structural connectomics BIDS App
 
-**BIDS App** for **lesion-aware structural connectomics** — from raw diffusion MRI to DKT connectomes and optional disconnectome mapping.
+From raw diffusion MRI to DKT connectomes and optional disconnectome mapping.
 
 The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was used on TRACK-TBI DoD Phase 1 under a data-use agreement (data not in this repo). Public software checks: [IDEAS II](datasets/ideas.md) (one subject) and [BTC glioma](datasets/btc_glioma.md) (one lesion-aware subject) — not TRACK-TBI clinical validation.
 

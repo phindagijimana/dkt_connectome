@@ -2,11 +2,20 @@
 
 The DKT Connectome uses **one `.sif` image per step** (QSIPrep, recon, QSIRecon, connectome, …). That is intentional: each tool ships on its own release cycle. `./dkt install` pulls the pins in [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json) and writes `workflow/config/config.local.yaml`. After install, run **`./dkt check --strict`** to verify SHA256 digests.
 
-Set `CONTAINER_*` only if you need to override a path (see [Installation](installation.md)). FastSurfer is referenced as `deepmi/fastsurfer:latest` but is **pinned by digest** in the manifest — `check --strict` fails if the pulled image does not match.
+## Names (do not mix these up)
 
-The Docker image `phindagijimana321/dkt-connectome:0.3.0` is the **orchestrator only**. Step images are still required.
+| What | Name |
+|------|------|
+| Display name | **DKT Connectome** |
+| CLI | `./dkt` |
+| GitHub repo | `dkt_connectome` |
+| Docs site | `dkt-connectome.readthedocs.io` |
+| Orchestrator image | `phindagijimana321/dkt-connectome` · `ghcr.io/phindagijimana/dkt-connectome` |
+| Step 4 image | `ghcr.io/phindagijimana/dk-connectome` · Docker Hub `phindagijimana321/dkt_connectome` |
 
-**Docker orchestrator (BIDS App):** `phindagijimana321/dkt-connectome:0.3.0` on [Docker Hub](https://hub.docker.com/r/phindagijimana321/dkt-connectome) and `ghcr.io/phindagijimana/dkt-connectome:0.3.0`. Step scripts are **baked** into DKT-owned images by default; use `release_manifest.json` + `./dkt check --strict` after install. See [Architecture](architecture.md).
+The Step 4 registry name **`dk-connectome`** is leftover from the older DK (84-node) atlas. The pipeline default is **DKT (78 nodes)**. The orchestrator does **not** contain QSIPrep or the connectome step; those are separate `.sif` files.
+
+Set `CONTAINER_*` only if you need to override a path (see [Installation](installation.md)). FastSurfer is referenced as `deepmi/fastsurfer:latest` but is **pinned by digest** in the manifest — `check --strict` fails if the pulled image does not match. Step scripts are **baked** into DKT-owned images; see [Architecture](architecture.md).
 
 ---
 
@@ -26,7 +35,7 @@ The Docker image `phindagijimana321/dkt-connectome:0.3.0` is the **orchestrator 
 | 4 — Connectome | `dkt_connectome.sif` | `install.sh` or [`containers/connectome/build_connectome.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/build_connectome.sh) · baked `run_connectome.sh` + `run_disconnectome.py` |
 | 5 — Node strength | `nodestrength_0.1.0.sif` | `install.sh` or Docker Hub `phindagijimana321/nodestrength:0.1.0` |
 
-**Step 4 OCI on Docker Hub (legacy name):** `phindagijimana321/dkt_connectome:latest` — the connectome *step* container, not the orchestrator.
+**Step 4 on Docker Hub** uses underscore (`dkt_connectome`); GHCR still uses `dk-connectome`. Same image role — not the orchestrator. See the names table above.
 
 ---
 
