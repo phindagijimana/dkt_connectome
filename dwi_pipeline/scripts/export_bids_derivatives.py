@@ -19,18 +19,17 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-PIPELINE_NAME = "DKT Connectome"
-CODE_URL = "https://github.com/phindagijimana/dkt_connectome"
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
-
-def _load_pipeline_version() -> str:
-    app_json = Path(__file__).resolve().parent.parent / "app.json"
-    if not app_json.is_file():
-        return "0.3.0"
-    return str(json.loads(app_json.read_text())["PipelineVersion"])
-
-
-PIPELINE_VERSION = _load_pipeline_version()
+from write_derivatives_description import (  # noqa: E402
+    generated_by_block,
+    git_provenance,
+    load_app_metadata,
+    load_container_pins,
+    source_dataset_entry,
+)
 
 DERIVATIVE_PIPELINES = (
     "qsiprep",
@@ -43,18 +42,16 @@ DERIVATIVE_PIPELINES = (
 
 
 def _dataset_description(name: str, description: str, *, extra: dict | None = None) -> dict:
+    generated = generated_by_block()
+    generated["Description"] = description
+    git = git_provenance()
+    if git.get("commit"):
+        generated["Git"] = git
     payload = {
         "Name": name,
         "BIDSVersion": "1.9.0",
         "DatasetType": "derivative",
-        "GeneratedBy": [
-            {
-                "Name": PIPELINE_NAME,
-                "Version": PIPELINE_VERSION,
-                "CodeURL": CODE_URL,
-                "Description": description,
-            }
-        ],
+        "GeneratedBy": [generated],
     }
     if extra:
         payload.update(extra)
@@ -219,12 +216,18 @@ def export_nodestrength(results_root: Path, out_root: Path, subjects: list[str],
 
 
 def write_dataset_descriptions(out_root: Path, bids_dir: Path | None) -> None:
+    app = load_app_metadata()
     root_extra = {
-        "HowToAcknowledge": "See dwi_pipeline/docs/citation.md",
+        "HowToAcknowledge": app.get("how_to_acknowledge") or "See dwi_pipeline/docs/citation.md",
         "PipelineLayout": "BIDS Derivatives export (symlink mirror of internal RESULTS_ROOT layout)",
     }
+    if app.get("documentation"):
+        root_extra["Documentation"] = app["documentation"]
+    pins = load_container_pins()
+    if pins.get("pins"):
+        root_extra["ContainerPins"] = pins
     if bids_dir is not None:
-        root_extra["SourceDatasets"] = [{"URL": f"file://{bids_dir.resolve()}", "Version": "unspecified"}]
+        root_extra["SourceDatasets"] = [source_dataset_entry(bids_dir)]
 
     (out_root / "dataset_description.json").write_text(
         json.dumps(

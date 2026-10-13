@@ -10,6 +10,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Manuscript planning** (`publication_strategy.md`) is no longer in the public repository or on Read the Docs. Factorial operator docs remain at [TBI experimental arms](TBI_Experimental_Arms.md).
 
 ### Changed
+- **`dataset_description.json` provenance** reads `PipelineVersion`, citation, and container tag from `app.json` (plus git HEAD and `release_manifest.json` pins). Source BIDS DOI/version is copied when present. Same identity is used by `export_bids_derivatives.py`.
 - **BIDS App root wrappers** — `./run` and `./dkt` at the repository root forward to `dwi_pipeline/`. Registry submission guide set to **0.3.0**.
 - **Name map** — display name, `./dkt`, repo, orchestrator image, and Step 4 `dk-connectome` leftover tag documented in the README and [Containers](containers.md).
 - **Cohort wording** — TRACK-TBI DoD Phase 1 use is documented as restricted (DUA; data not in the repo). Public software checks are one IDEAS II subject and one BTC glioma subject.
