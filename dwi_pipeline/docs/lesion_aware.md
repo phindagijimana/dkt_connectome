@@ -142,13 +142,6 @@ CLI examples and Slurm usage: [Usage — experiment arms](usage.md).
 Decision guide: [Decision tables — experiment arms](decision_tables.md).
 Citations: [References § Experiment arms](references.md#experiment-arms-factorial-lesion-processing).
 
-### Publication planning
-
-For cohort scale (~100 TrackTBI lesion subjects), manuscript portfolio (flagship
-vs clinical disconnectome vs optional Deep Atropos branch), pre-specified factorial
-contrasts, journal targets, and reporting checklist, see
-**[Publication strategy — TBI lesion-aware connectomics](publication_strategy.md)**.
-
 ### Clinical DWI requires an appropriate preprocessing workflow
 
 The paper uses an MRtrix3-based diffusion workflow designed for clinical

@@ -6,7 +6,7 @@ Reference for optional **native-T1 Deep Atropos** as the Step 3.1 ACT five-tissu
 **Public doc:** [Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) (Read the Docs).
 
 **Status:** **Implemented** (Aug 2026). Pilot on `sub-EXAMPLE01` with `--deep-atropos-seg-mode generate`.  
-**Related:** [Step 3.1 methods](../methods/step3_1_lesion_act.md) · [Publication strategy § Paper 3](../publication_strategy.md).
+**Related:** [Step 3.1 methods](../methods/step3_1_lesion_act.md) · [TBI experimental arms](../TBI_Experimental_Arms.md).
 
 ---
 

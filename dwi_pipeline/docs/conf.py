@@ -42,6 +42,9 @@ exclude_patterns = [
     "schema_reference.md",
     "presentations",
     "presentations/**",
+    "papers",
+    "papers/**",
+    "publication_strategy.md",
 ]
 
 source_suffix = {
@@ -93,6 +96,7 @@ redirects = {
     "methods/step1_5_inpaint": "methods/step1_1_inpaint.html",
     "methods/step3_5_lesion_act": "methods/step3_1_lesion_act.html",
     "methods/step4_5_disconnectome": "methods/step4_1_disconnectome.html",
+    "publication_strategy": "TBI_Experimental_Arms.html",
 }
 
 html_theme = "sphinx_rtd_theme"

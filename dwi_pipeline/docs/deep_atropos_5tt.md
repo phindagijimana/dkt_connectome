@@ -149,5 +149,5 @@ See [Lesion-aware § Intentional cross-source design](lesion_aware.md#intentiona
 ## See also
 
 - [Step 3.1 — Lesion-aware ACT (methods)](methods/step3_1_lesion_act.md)
-- [Publication strategy](publication_strategy.md) — when to report HSVS vs Deep Atropos as a sensitivity analysis
+- [TBI experimental arms](TBI_Experimental_Arms.md) — factorial operator reference, including Deep Atropos as a sensitivity path
 - [Snakemake workflow](snakemake_workflow.md) — `target_act` and plugin rules
