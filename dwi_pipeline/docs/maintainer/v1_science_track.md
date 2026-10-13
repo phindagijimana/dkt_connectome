@@ -2,7 +2,7 @@
 
 Runbook for **QSIPrep-level trust**: cohort validation, paper artifacts, and the **v1.0** release. This does **not** block BIDS App usage at v0.2.x.
 
-**Paper plan (living):** [Publication strategy — TBI lesion-aware connectomics](../publication_strategy.md) (factorial TrackTBI cohort, journal targets, reporting checklist).
+**Factorial operator docs:** [TBI experimental arms](../TBI_Experimental_Arms.md). Manuscript planning stays on the private tree (not in this public repo).
 
 **Deep Atropos native-T1 5TT (implemented):** [deep_atropos_5tt_plan.md](deep_atropos_5tt_plan.md).
 

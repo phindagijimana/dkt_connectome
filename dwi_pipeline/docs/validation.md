@@ -127,7 +127,7 @@ Maintainers: re-run integrity scripts after changing connectome or disconnectome
 2. State pipeline version (`./run --version` → `app.json`)
 3. Document flags: recon tool, SDC mode, weighting, disconnectome opt-in
 4. Report integrity QC pass/fail for disconnectome cohorts
-5. For the six-arm factorial on lesion subjects: report per-arm completion, Step 3.1 pathology QA, and pre-specified contrasts — see **[Publication strategy](publication_strategy.md)**
+5. For the six-arm factorial on lesion subjects: report per-arm completion, Step 3.1 pathology QA, and pre-specified contrasts — see **[TBI experimental arms](TBI_Experimental_Arms.md)**
 
 ---
 

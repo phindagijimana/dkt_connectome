@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Removed
+- **Manuscript planning** (`publication_strategy.md`) is no longer in the public repository or on Read the Docs. Factorial operator docs remain at [TBI experimental arms](TBI_Experimental_Arms.md).
+
 ### Changed
 - **BIDS App root wrappers** — `./run` and `./dkt` at the repository root forward to `dwi_pipeline/`. Registry submission guide set to **0.3.0**.
 - **Name map** — display name, `./dkt`, repo, orchestrator image, and Step 4 `dk-connectome` leftover tag documented in the README and [Containers](containers.md).

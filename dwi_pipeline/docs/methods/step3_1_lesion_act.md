@@ -132,7 +132,7 @@ Provenance is written to `lesion_aware_act.json` (`factorial_design`,
 
 LeAPP validated ischemic stroke. TBI lesions (contusion, hemorrhage, edema, bilateral injury) require cohort-specific QC before treating lesion-aware ACT as production-default. Compare standard vs lesion-aware tractograms side-by-side; do not overwrite the standard tractogram until validated.
 
-Manuscript planning for the TrackTBI factorial cohort: [Publication strategy](../publication_strategy.md).
+Operator reference for the factorial arms: [TBI experimental arms](../TBI_Experimental_Arms.md).
 
 ---
 

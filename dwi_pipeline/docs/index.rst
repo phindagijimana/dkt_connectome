@@ -30,6 +30,7 @@ Contents
 
    usage
    decision_tables
+   TBI_Experimental_Arms
    bids_app
    architecture
    containers
@@ -57,13 +58,6 @@ Contents
    methods/step4_connectome
    methods/step4_1_disconnectome
    methods/step5_node_strength
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Research
-
-   TBI_Experimental_Arms
-   publication_strategy
 
 .. toctree::
    :maxdepth: 2

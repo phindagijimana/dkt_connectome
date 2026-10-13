@@ -24,6 +24,7 @@ Use **Linux + Apptainer** on a workstation or HPC (FreeSurfer license required).
 |--------------|--------|
 | **Install & first run** | [Installation](installation.md) → [Tutorial](tutorial.md) |
 | **All CLI flags** | [Usage](usage.md) (`./dkt` / `./run`) |
+| **Lesion factorial arms** | [TBI experimental arms](TBI_Experimental_Arms.md) |
 | **Why** the workflow exists | [Science overview](science_overview.md) |
 | **Pipeline stages** | [Pipeline steps](pipeline_steps.md) · [Architecture](architecture.md) |
 | **Prepare BIDS** | [Preparing your data](preparing_data.md) |
