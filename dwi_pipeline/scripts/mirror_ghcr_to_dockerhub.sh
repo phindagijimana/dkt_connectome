@@ -7,11 +7,11 @@
 # Usage:
 #   podman login docker.io   # once, as phindagijimana321
 #   bash scripts/mirror_ghcr_to_dockerhub.sh
-#   bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.2.0
+#   bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.3.1
 #
 set -euo pipefail
 
-VERSION="0.3.0"
+VERSION="0.3.1"
 GHCR_IMAGE="ghcr.io/phindagijimana/dkt-connectome"
 DHUB_IMAGE="phindagijimana321/dkt-connectome"
 AUTHFILE="${PODMAN_AUTHFILE:-${HOME}/.config/containers/auth.json}"

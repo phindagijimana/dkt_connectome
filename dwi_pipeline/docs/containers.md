@@ -10,7 +10,7 @@ The DKT Connectome uses **one `.sif` image per step** (QSIPrep, recon, QSIRecon,
 | CLI | `./dkt` |
 | GitHub repo | `dkt_connectome` |
 | Docs site | `dkt-connectome.readthedocs.io` |
-| Orchestrator image | `phindagijimana321/dkt-connectome` · `ghcr.io/phindagijimana/dkt-connectome` |
+| Orchestrator image | `phindagijimana321/dkt-connectome:0.3.1` · `ghcr.io/phindagijimana/dkt-connectome:0.3.1` |
 | Step 4 image | `ghcr.io/phindagijimana/dk-connectome` · Docker Hub `phindagijimana321/dkt_connectome` |
 
 The Step 4 registry name **`dk-connectome`** is leftover from the older DK (84-node) atlas. The pipeline default is **DKT (78 nodes)**. The orchestrator does **not** contain QSIPrep or the connectome step; those are separate `.sif` files.
@@ -66,7 +66,7 @@ Reference upstream tags with `container_pins:` in config — see [Configuration]
 
 **Production (recommended):** [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) + Apptainer on Slurm, or `./run` after `bash install.sh`.
 
-**Docker / cloud:** orchestrator image + cached step `.sif` files (`DKT_AUTO_INSTALL=1`, `docker-compose.yml`). See [Installation § Docker Compose](installation.md) and [BIDS App specification](bids_app.md).
+**Docker / cloud:** pull **`phindagijimana321/dkt-connectome:0.3.1`** (or GHCR) plus cached step `.sif` files (`DKT_AUTO_INSTALL=1`, `docker-compose.yml`). See [Installation § Docker Compose](installation.md) and [BIDS App specification](bids_app.md).
 
 ---
 

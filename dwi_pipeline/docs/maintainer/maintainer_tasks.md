@@ -3,7 +3,7 @@
 !!! note "Repository-local documentation"
     This page is **not** published on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/). User-facing docs stay on the public site; maintainer runbooks live in the repo only. Index: [Contributing § Repository-local documentation](../contributing.md#repository-local-documentation).
 
-Runbook for **credential-based, out-of-repo steps** (GitHub, Docker Hub, RTD, Dockstore, Zenodo). Current software version is **0.3.0**.
+Runbook for **credential-based, out-of-repo steps** (GitHub, Docker Hub, RTD, Dockstore, Zenodo). Current software version is **0.3.1** (orchestrator). Step SIFs stay at **0.3.0**.
 
 **Time budget:** about one afternoon if credentials are ready.
 
@@ -17,7 +17,7 @@ Runbook for **credential-based, out-of-repo steps** (GitHub, Docker Hub, RTD, Do
 
 | # | Task | Credentials | Doc section |
 |---|------|-------------|-------------|
-| 10 | GitHub Release v0.2.0 | `gh auth login` | [§10 GitHub Release](#10-github-release-v020) |
+| 10 | GitHub Release v0.3.1 | `gh auth login` | [§10 GitHub Release](#10-github-release-v020) |
 | 11 | Push orchestrator to Docker Hub | Docker Hub token or `podman login` | [§11 Docker Hub](#11-push-orchestrator-to-docker-hub) |
 | 12 | Verify `docker pull` | Network | [§12 Verify pull](#12-verify-docker-pull) |
 | 13 | BIDS Apps registry | *(optional — skip unless listing)* | [bids_apps_registry.md](bids_apps_registry.md) |
@@ -32,24 +32,24 @@ Runbook for **credential-based, out-of-repo steps** (GitHub, Docker Hub, RTD, Do
 
 1. **Push code** to `main` (including [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md)).
 2. Confirm **CI is green** on GitHub Actions → workflow `dwi_pipeline`.
-3. Confirm tag **`v0.2.0`** exists locally and on remote:
+3. Confirm tag **`v0.3.1`** exists locally and on remote (do **not** retag `v0.3.0`):
 
    ```bash
    git fetch origin
-   git tag -l 'v0.2.*'
-   git ls-remote --tags origin v0.2.0
+   git tag -l 'v0.3.*'
+   git ls-remote --tags origin v0.3.1
    ```
 
    If the tag is missing:
 
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.3.1
+   git push origin v0.3.1
    ```
 
 ---
 
-## 10. GitHub Release v0.2.0
+## 10. GitHub Release v0.3.1
 
 **Goal:** A formal release on GitHub with notes (used by Dockstore, WorkflowHub, citations).
 
@@ -65,33 +65,33 @@ Runbook for **credential-based, out-of-repo steps** (GitHub, Docker Hub, RTD, Do
 cd /path/to/dkt_connectome
 
 # Confirm tag points at the commit you want
-git show v0.2.0 --oneline -1
+git show v0.3.1 --oneline -1
 
 # Create release (notes file is in-repo)
-gh release create v0.2.0 \
-  --title "DKT Connectome 0.2.0" \
+gh release create v0.3.1 \
+  --title "DKT Connectome 0.3.1" \
   --notes-file dwi_pipeline/RELEASE_NOTES.md
 ```
 
 If the release already exists but notes are empty:
 
 ```bash
-gh release edit v0.2.0 --notes-file dwi_pipeline/RELEASE_NOTES.md
+gh release edit v0.3.1 --notes-file dwi_pipeline/RELEASE_NOTES.md
 ```
 
 ### Verify
 
 ```bash
-gh release view v0.2.0
+gh release view v0.3.1
 ```
 
-Open https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0
+Open https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.1
 
 ---
 
 ## 11. Push orchestrator to Docker Hub
 
-**Goal:** `docker pull phindagijimana321/dkt-connectome:0.2.0` works for cloud users.
+**Goal:** `docker pull phindagijimana321/dkt-connectome:0.3.1` works for cloud users.
 
 The **orchestrator** image (Snakemake + `./run`) is built in CI to **GHCR** first. Docker Hub is a mirror unless CI secrets are set.
 
@@ -102,13 +102,13 @@ The **orchestrator** image (Snakemake + `./run`) is built in CI to **GHCR** firs
    - `DOCKERHUB_USERNAME` = `phindagijimana321`
    - `DOCKERHUB_TOKEN` = access token from https://hub.docker.com/settings/security
 3. Trigger or re-run workflow **Docker publish** (`.github/workflows/docker_publish.yml`):
-   - On push of tag `v0.2.0`, or
+   - On push of tag `v0.3.1`, or
    - **Actions → Docker publish → Run workflow** with push enabled
 
 CI pushes to:
 
-- `ghcr.io/phindagijimana/dkt-connectome:0.2.0`
-- `phindagijimana321/dkt-connectome:0.2.0` (if secrets set)
+- `ghcr.io/phindagijimana/dkt-connectome:0.3.1`
+- `phindagijimana321/dkt-connectome:0.3.1` (if secrets set)
 
 ### Option B — Skopeo mirror from GHCR (HPC / manual)
 
@@ -117,7 +117,7 @@ After CI has built on GHCR:
 ```bash
 podman login docker.io    # as phindagijimana321
 cd dwi_pipeline
-bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.2.0
+bash scripts/mirror_ghcr_to_dockerhub.sh --version 0.3.1
 ```
 
 Requires `skopeo` and `~/.config/containers/auth.json` from `podman login`.
@@ -126,10 +126,10 @@ Requires `skopeo` and `~/.config/containers/auth.json` from `podman login`.
 
 ```bash
 cd /path/to/dkt_connectome
-docker build -f dwi_pipeline/Dockerfile -t phindagijimana321/dkt-connectome:0.2.0 .
+docker build -f dwi_pipeline/Dockerfile -t phindagijimana321/dkt-connectome:0.3.1 .
 docker login
-docker push phindagijimana321/dkt-connectome:0.2.0
-docker tag phindagijimana321/dkt-connectome:0.2.0 phindagijimana321/dkt-connectome:latest
+docker push phindagijimana321/dkt-connectome:0.3.1
+docker tag phindagijimana321/dkt-connectome:0.3.1 phindagijimana321/dkt-connectome:latest
 docker push phindagijimana321/dkt-connectome:latest
 ```
 
@@ -144,16 +144,16 @@ The **Step 4** structural connectome image is **`phindagijimana321/dkt_connectom
 **Goal:** Confirm the orchestrator image is public and runnable.
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.2.0
-docker run --rm phindagijimana321/dkt-connectome:0.2.0 --version
-# expect: 0.2.0
+docker pull phindagijimana321/dkt-connectome:0.3.1
+docker run --rm phindagijimana321/dkt-connectome:0.3.1 --version
+# expect: 0.3.1
 
 docker run --rm \
   -v "$PWD/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
   -v /tmp/out:/out \
   -e BIDS_APP_CI=1 \
   -e FS_LICENSE=/tmp/license.txt \
-  phindagijimana321/dkt-connectome:0.2.0 \
+  phindagijimana321/dkt-connectome:0.3.1 \
   /data/bids /out participant \
   --participant-label EXAMPLE --session-filter baseline \
   --dry-run --no-sdc --no-dwi-filter
@@ -265,7 +265,7 @@ Manifest declares:
 
 **Goal:** Index the workflow at https://workflowhub.eu/
 
-Metadata reference: [`workflowhub.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/workflowhub.yml) (version 0.2.0, canonical Snakefile under `dwi_pipeline/workflow/`).
+Metadata reference: [`workflowhub.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/workflowhub.yml) (version 0.3.1, canonical Snakefile under `dwi_pipeline/workflow/`).
 
 ### Prepare RO-Crate
 
@@ -295,7 +295,7 @@ WorkflowHub expects a **Workflow RO-Crate** (zip). Options:
 3. Zip:
 
    ```bash
-   cd "$WORK" && zip -r ../dkt_connectome_0.2.0_crate.zip .
+   cd "$WORK" && zip -r ../dkt_connectome_0.3.1_crate.zip .
    ```
 
 ### Upload
@@ -304,7 +304,7 @@ WorkflowHub expects a **Workflow RO-Crate** (zip). Options:
 2. Upload the zip or connect Git URL if the UI offers import
 3. Fill metadata matching `workflowhub.yml`:
    - **Name:** `dkt_connectome`
-   - **Version:** `0.2.0`
+   - **Version:** `0.3.1`
    - **Main workflow:** `dwi_pipeline/workflow/Snakefile`
    - **License:** Apache-2.0
 4. Save and note the WorkflowHub URL for papers / README
@@ -312,7 +312,7 @@ WorkflowHub expects a **Workflow RO-Crate** (zip). Options:
 ### Verify
 
 - Workflow appears in search
-- Container pins in `workflowhub.yml` match current tags (orchestrator `phindagijimana321/dkt-connectome:0.2.0`, connectome `ghcr.io/phindagijimana/dk-connectome:0.2.0`)
+- Container pins in `workflowhub.yml` match current tags (orchestrator `phindagijimana321/dkt-connectome:0.3.1`, connectome `ghcr.io/phindagijimana/dk-connectome:0.3.0`)
 
 ---
 
@@ -326,7 +326,7 @@ WorkflowHub expects a **Workflow RO-Crate** (zip). Options:
 2. **Account → GitHub** → enable access → toggle **`phindagijimana/dkt_connectome`** ON.
 3. Zenodo creates a draft on each **GitHub Release** you publish.
 
-### Per release (v0.2.0 now, v1.0 later)
+### Per release (v0.3.1 now, v1.0 later)
 
 ```bash
 # After tag + release exist (§10):
@@ -382,4 +382,4 @@ Scientific validation status: [Validation](../validation.md).
 
 ---
 
-*Update version strings when cutting v0.3.0+.*
+*Update version strings when cutting the next orchestrator release. Do not retag 0.3.0.*

@@ -44,8 +44,8 @@ Check each item. Most repo work is already done; remaining steps are maintainer 
 | 3 | Human-readable docs (URL) | Done | https://dkt-connectome.readthedocs.io/en/latest/ |
 | 4 | Minimal public test BIDS dataset | Done | `dwi_pipeline/tests/fixtures/bids_minimal/` |
 | 5 | CI tests the app interface | Done | `.github/workflows/dwi_pipeline_ci.yml` |
-| 6 | Docker image on Docker Hub | Verify | `docker pull phindagijimana321/dkt-connectome:0.3.1` |
-| 7 | Git tag + GitHub Release | Open | Tag `v0.3.1` after merge; create release with [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md) |
+| 6 | Docker image on Docker Hub | **Done** | `docker pull phindagijimana321/dkt-connectome:0.3.1` |
+| 7 | Git tag + GitHub Release | **Done** | [v0.3.1](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.1) |
 | 8 | RTD builds on push | Verify | https://readthedocs.org/projects/dkt-connectome/ |
 
 ---

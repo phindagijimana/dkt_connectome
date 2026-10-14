@@ -9,9 +9,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 ### Added
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
 
+### Changed
+- Maintainer runbooks and readiness notes now describe **0.3.1** as the current orchestrator (step SIFs remain 0.3.0).
+
 ## [0.3.1] — BIDS App flag parity (orchestrator rebuild)
 
-Orchestrator-only bump. **Do not retag 0.3.0.** Step SIFs stay at **0.3.0**. Rebuild and push `dkt-connectome:0.3.1` after this tag.
+Orchestrator-only bump. **Do not retag 0.3.0.** Step SIFs stay at **0.3.0**. Published: `phindagijimana321/dkt-connectome:0.3.1` and `ghcr.io/phindagijimana/dkt-connectome:0.3.1` (GHCR digest in `release_manifest.json`).
 
 ### Removed
 - **Manuscript planning** (`publication_strategy.md`) is no longer in the public repository or on Read the Docs. Factorial operator docs remain at [TBI experimental arms](TBI_Experimental_Arms.md).
