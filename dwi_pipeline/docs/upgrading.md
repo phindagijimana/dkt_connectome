@@ -23,8 +23,8 @@ export FS_LICENSE=/path/to/license.txt
 **Docker / cloud:**
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.3.0
-# or GHCR: ghcr.io/phindagijimana/dkt-connectome:0.3.0
+docker pull phindagijimana321/dkt-connectome:0.3.1
+# or GHCR: ghcr.io/phindagijimana/dkt-connectome:0.3.1
 ```
 
 Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside the orchestrator image — `install.sh` refreshes Apptainer `.sif` paths in `workflow/config/config.local.yaml`. After install, run **`./dkt check --strict`** to verify SHA-256 digests against [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json).
@@ -38,6 +38,21 @@ Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside 
 | Repo root `./connectome` / root `Snakefile` | **Removed.** Use `cd dwi_pipeline && ./dkt run` |
 | `PIPELINE_ENGINE=bash` / `subject.sh` | Snakemake (default in `submit.sh`) |
 | MkDocs site (old) | [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/) |
+
+---
+
+## v0.3.1 — what changed
+
+| Area | Change | Rerun needed? |
+|------|--------|---------------|
+| **Orchestrator** | `./run` forwards lesion/ACT/`--force-syn`/`--fastsurfer-device`; `--cache` is honest; `DKT_AUTO_INSTALL` works on a read-only image | Pull `dkt-connectome:0.3.1` only |
+| **Step SIFs** | Unchanged at **0.3.0** | No |
+
+```bash
+docker pull phindagijimana321/dkt-connectome:0.3.1
+```
+
+Do **not** retag `0.3.0`.
 
 ---
 

@@ -6,6 +6,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+## [0.3.1] — BIDS App flag parity (orchestrator rebuild)
+
+Orchestrator-only bump. **Do not retag 0.3.0.** Step SIFs stay at **0.3.0**. Rebuild and push `dkt-connectome:0.3.1` after this tag.
+
 ### Removed
 - **Manuscript planning** (`publication_strategy.md`) is no longer in the public repository or on Read the Docs. Factorial operator docs remain at [TBI experimental arms](TBI_Experimental_Arms.md).
 
@@ -15,7 +19,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **`./dkt list|check --cache DIR`** reports pin-named files in DIR. Site `config.local.yaml` `containers:` paths are used only when `--cache` is omitted.
 - **`DKT_AUTO_INSTALL=1`** writes `config.local.yaml` to `DKT_CONTAINER_CACHE` when the image path is read-only, and exports `DKT_LOCAL_CONFIG`. `install.sh` falls back to `$CACHE/apptainer_tmp` if the default tmpdir is not writable.
 - **`--stop-on-first-crash`** writes subject QC only for participants that were attempted.
-- **BIDS App root wrappers** — `./run` and `./dkt` at the repository root forward to `dwi_pipeline/`. Registry submission guide set to **0.3.0**.
+- **BIDS App root wrappers** — `./run` and `./dkt` at the repository root forward to `dwi_pipeline/`.
 - **Name map** — display name, `./dkt`, repo, orchestrator image, and Step 4 `dk-connectome` leftover tag documented in the README and [Containers](containers.md).
 - **Cohort wording** — TRACK-TBI DoD Phase 1 use is documented as restricted (DUA; data not in the repo). Public software checks are one IDEAS II subject and one BTC glioma subject.
 - **Removed the legacy root pipeline** (`Snakefile`, `./connectome`, plugins, profiles). The only workflow is `dwi_pipeline/` + `./dkt`.
@@ -24,7 +28,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Fixed
 - **`./dkt install` URI order** — use `release_manifest.json` pins first; skip `oras://` on multi-layer Docker Hub images (`pennlinc` / `freesurfer` / `deepmi`) and pull them with `docker://`. GHCR DKT SIFs still try `oras://ghcr.io/...` first.
-- Version fallbacks in `./run`, docs, and the orchestrator helper now report **0.3.0**.
+- Version fallbacks in `./run`, docs, and the orchestrator helper now report **0.3.1**.
 
 ## [0.3.0] — Tier 1 reproducibility (baked step scripts)
 
@@ -153,6 +157,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - Standalone disconnectome script (`run_disconnectome.py`) and integrity QC
 - BIDS App skeleton (`run`, `app.json`)
 
+[0.3.1]: https://github.com/phindagijimana/dkt_connectome/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/phindagijimana/dkt_connectome/compare/v0.2.0...v0.2.1

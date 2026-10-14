@@ -1,6 +1,6 @@
 # dwi_pipeline
 
-Canonical **DKT Connectome** BIDS App (v0.3.0) — lesion-aware structural connectomics. Snakemake engine + `./dkt`.
+Canonical **DKT Connectome** BIDS App (v0.3.1) — lesion-aware structural connectomics. Snakemake engine + `./dkt`.
 
 Names (repo vs `./dkt` vs orchestrator vs Step 4 image): [Containers](docs/containers.md#names-do-not-mix-these-up).
 

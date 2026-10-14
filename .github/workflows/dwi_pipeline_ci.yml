@@ -65,7 +65,7 @@ jobs:
         run: |
           sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
           grep -q 'DKT Connectome' dwi_pipeline/docs/_build/html/index.html
-          grep -q '0.3.0' dwi_pipeline/docs/_build/html/index.html
+          grep -q '0.3.1' dwi_pipeline/docs/_build/html/index.html
           test -f dwi_pipeline/docs/_build/html/_images/pipeline_overview.svg
 
       - name: Validate ./run and ./dkt CLI
@@ -75,17 +75,17 @@ jobs:
           ./run --help | grep -q session-id
           ./run --help | grep -q nprocs
           ./run --help | grep -q doctor
-          test "$(./run --version)" = "0.3.0"
+          test "$(./run --version)" = "0.3.1"
           ./dkt --help | grep -q install
           ./dkt --help | grep -q check
-          test "$(./dkt version)" = "0.3.0"
+          test "$(./dkt version)" = "0.3.1"
           bash -n dkt
           python3 -m py_compile scripts/check_outputs.py
 
       - name: Root BIDS App wrappers
         run: |
-          test "$(./run --version)" = "0.3.0"
-          test "$(./dkt version)" = "0.3.0"
+          test "$(./run --version)" = "0.3.1"
+          test "$(./dkt version)" = "0.3.1"
           ./run --help | grep -q participant
 
       - name: Install list + doctor (CI stubs)

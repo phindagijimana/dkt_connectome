@@ -12,7 +12,7 @@
       "@type": ["Dataset", "SoftwareSourceCode"],
       "name": "DKT Connectome",
       "description": "Lesion-aware structural connectomics BIDS App (Snakemake).",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "license": "Apache-2.0",
       "codeRepository": "https://github.com/phindagijimana/dkt_connectome",
       "programmingLanguage": "Python",
