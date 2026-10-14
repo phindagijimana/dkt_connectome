@@ -13,11 +13,26 @@ cd "$(dirname "$0")"
 
 CACHE="${DKT_CONTAINER_CACHE:-/opt/dkt-connectome/containers}"
 
+_config_writable() {
+  local dest="$1" dir t
+  dir="$(dirname "${dest}")"
+  mkdir -p "${dir}" 2>/dev/null || return 1
+  t="${dir}/.dkt_write_test"
+  : > "${t}" 2>/dev/null || return 1
+  rm -f "${t}"
+}
+
 if [[ "${DKT_AUTO_INSTALL:-0}" == "1" ]]; then
+  CONFIG_OUT="${DKT_LOCAL_CONFIG:-workflow/config/config.local.yaml}"
+  if ! _config_writable "${CONFIG_OUT}"; then
+    CONFIG_OUT="${CACHE}/config.local.yaml"
+    echo "[entrypoint] image config is read-only — writing ${CONFIG_OUT}" >&2
+  fi
+  export DKT_LOCAL_CONFIG="$(cd "$(dirname "${CONFIG_OUT}")" && pwd)/$(basename "${CONFIG_OUT}")"
   echo "[entrypoint] DKT_AUTO_INSTALL=1 — pulling missing step containers into ${CACHE}"
   bash scripts/install.sh \
     --cache "${CACHE}" \
-    --config workflow/config/config.local.yaml \
+    --config "${DKT_LOCAL_CONFIG}" \
     --missing-only \
     --no-doctor \
     --quiet \

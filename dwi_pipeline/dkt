@@ -189,7 +189,7 @@ Verify install and runtime readiness (wraps ./run doctor + optional checks).
 
 Options:
   --mode MODE           Pipeline mode for container checks (default: all)
-  --cache DIR           Container cache for doctor
+  --cache DIR           Check pin-named .sif files in DIR (ignores config.local.yaml)
   --with-dry-run        Include Snakemake dry-run on bids_minimal fixture
   --preflight           Also run workflow/preflight.sh (--quick)
   --subject ID          With --outputs or --preflight: subject to validate

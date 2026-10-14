@@ -8,7 +8,7 @@
 #
 # Usage (mirrors dwi_pipeline/subject.sh exactly):
 #   bash run_subject.sh all 014                  # full pipeline
-#   bash run_subject.sh all 014 --fastsurfer
+#   bash run_subject.sh all 014 --fastsurfer --fastsurfer-device cpu
 #   bash run_subject.sh all 014 --fast-fs         # FastSurfer + --fsaparc
 #   bash run_subject.sh all 014 --no-recon
 #   bash run_subject.sh all 014 --no-connectome   # (Step 5 with it)
@@ -37,7 +37,26 @@ DWI_PIPELINE_DIR="$(dirname "${WORKFLOW_DIR}")"
 COMMON_SH="${WORKFLOW_DIR}/lib/common.sh"
 SLURM_ENV_SH="${WORKFLOW_DIR}/lib/slurm_env.sh"
 RESOLVE_SESSION_PY="${WORKFLOW_DIR}/lib/resolve_session.py"
+MAKE_DWI_SELECT_CONFIG="${DWI_PIPELINE_DIR}/scripts/make_dwi_select_config.py"
 source "${COMMON_SH}"
+
+_resolve_dwi_select_json() {
+  local shell_b="$1"
+  local explicit="${2:-}"
+  local generated_dir="${RESULTS_ROOT:-/tmp}/intermediate_results_qsiprep_single"
+  mkdir -p "${generated_dir}"
+  local -a args=(
+    "${PIPELINE_PYTHON:-python3.12}" "${MAKE_DWI_SELECT_CONFIG}"
+    --resolve --target-shell-b "${shell_b}"
+    --config-dir "${DWI_PIPELINE_DIR}/config"
+    --output "${generated_dir}/dwi_select_b${shell_b}.generated.json"
+  )
+  if [[ -n "${explicit}" ]]; then
+    printf '%s\n' "${explicit}"
+    return
+  fi
+  "${args[@]}"
+}
 # shellcheck source=workflow/lib/slurm_env.sh
 if [[ -z "${DKT_ORCHESTRATOR_RUNTIME:-}" && "${BIDS_APP_CI:-}" != "1" ]]; then
   source "${SLURM_ENV_SH}"
@@ -68,7 +87,10 @@ declare -a SNAKEMAKE_PASSTHROUGH=()
 
 REPO_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
-mkdir -p "${XDG_CACHE_HOME}"
+if ! mkdir -p "${XDG_CACHE_HOME}" 2>/dev/null; then
+  export XDG_CACHE_HOME="${RESULTS_ROOT:-${TMPDIR:-/tmp}}/.cache"
+  mkdir -p "${XDG_CACHE_HOME}"
+fi
 
 # Apply subject.sh-equivalent env vars when CLI flags did not already set them.
 _apply_env() {
@@ -80,6 +102,7 @@ _apply_env() {
   return 0
 }
 [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && _apply_env qsiprep.use_syn_sdc true
+[[ "${QSIPREP_FORCE_SYN:-0}" == "1" ]] && _apply_env qsiprep.force_syn true
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && _apply_env qsiprep.fmap_retry true
 [[ "${QSIPREP_NO_SDC:-0}"      == "1" ]] && _apply_env qsiprep.no_sdc      true
 _apply_env qsiprep.bids_filter        "${QSIPREP_BIDS_FILTER:-}"
@@ -116,6 +139,7 @@ _apply_env experiment.arm              "${EXPERIMENT_ARM:-}"
 _apply_env connectome.enabled         "$([[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.parcellation    "${CONNECTOME_PARCELLATION:-}"
 _apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.max_empty_nodes "${CONNECTOME_MAX_EMPTY_NODES:-10}"
 _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
@@ -153,11 +177,19 @@ _apply_env templateflow_home          "${TEMPLATEFLOW_HOME:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true ;;
+    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true; OVERRIDES[qsiprep.force_syn]=true ;;
+    --force-syn)           OVERRIDES[qsiprep.force_syn]=true; OVERRIDES[qsiprep.use_syn_sdc]=true ;;
     --fmap-retry)          OVERRIDES[qsiprep.fmap_retry]=true ;;
     --no-sdc)              OVERRIDES[qsiprep.no_sdc]=true ;;
     --bids-filter)         OVERRIDES[qsiprep.bids_filter]="${2:?Need path after --bids-filter}"; shift ;;
     --fastsurfer)          OVERRIDES[recon.tool]=fastsurfer ;;
+    --fastsurfer-device)
+      case "${2:?Need cpu or cuda after --fastsurfer-device}" in
+        cpu|cuda) OVERRIDES[recon.fastsurfer_device]="$2"; export RECON_FASTSURFER_DEVICE="$2" ;;
+        *) echo "Invalid --fastsurfer-device=$2 (use cpu or cuda)" >&2; exit 2 ;;
+      esac
+      shift
+      ;;
     --freesurfer)          OVERRIDES[recon.tool]=freesurfer ;;
     --fast-fs)             OVERRIDES[recon.tool]=fastsurfer; OVERRIDES[recon.fsaparc]=true ;;
     --no-recon)            OVERRIDES[recon.enabled]=false ;;
@@ -245,7 +277,7 @@ fi
 OVERRIDE_YAML="$(mktemp /tmp/dwi_workflow_override_XXXXXX.yaml)"
 trap 'rm -f "${OVERRIDE_YAML}"' EXIT
 BASE_CONFIG="${WORKFLOW_DIR}/config/config.yaml"
-LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
+LOCAL_CONFIG="${DKT_LOCAL_CONFIG:-${WORKFLOW_DIR}/config/config.local.yaml}"
 {
   echo "subject: \"${SUBJECT}\""
   [[ -n "${RESULTS_ROOT}" ]] && echo "results_root: \"${RESULTS_ROOT}\""
@@ -327,7 +359,7 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"
     _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
-    _dwi_select_json="${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-${DWI_PIPELINE_DIR}/config/dwi_select_b${_dwi_shell_b}.json}}"
+    _dwi_select_json="$(_resolve_dwi_select_json "${_dwi_shell_b}" "${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-}}")"
     _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
     declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
     if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
@@ -360,7 +392,7 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"
     _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
-    _dwi_select_json="${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-${DWI_PIPELINE_DIR}/config/dwi_select_b${_dwi_shell_b}.json}}"
+    _dwi_select_json="$(_resolve_dwi_select_json "${_dwi_shell_b}" "${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-}}")"
     _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
     declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
     if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
@@ -389,7 +421,10 @@ if [[ -z "${SNAKEMAKE_WORKDIR:-}" && -n "${_experiment_arm}" && -n "${RESULTS_RO
   SNAKEMAKE_WORKDIR="${RESULTS_ROOT}/.snakemake_workdir"
 fi
 SNAKEMAKE_WORKDIR="${SNAKEMAKE_WORKDIR:-${DWI_PIPELINE_DIR}}"
-mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+if ! mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks" 2>/dev/null; then
+  SNAKEMAKE_WORKDIR="${RESULTS_ROOT}/.snakemake_workdir"
+  mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+fi
 if [[ -n "${_experiment_arm}" ]]; then
   rm -rf "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
   mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"

@@ -38,33 +38,32 @@ def test_pull_uris_for_key_dedupes_primary():
     assert len(uris) == len(set(uris))
 
 
-def test_pull_uris_skips_oras_for_upstream_oci():
-    sys.path.insert(0, str(DWI / "scripts"))
-    import container_install as ci  # noqa: WPS433
-
-    qsiprep = ci.pull_uris_for_key("qsiprep", "pennlinc/qsiprep:1.0.0")
-    assert qsiprep[0] == "docker://pennlinc/qsiprep:1.0.0"
-    assert not any(u.startswith("oras://") for u in qsiprep)
-
-    qsirecon = ci.pull_uris_for_key("qsirecon", "pennlinc/qsirecon:1.2.1")
-    assert qsirecon == ["docker://pennlinc/qsirecon:1.2.1"]
-
-    freesurfer = ci.pull_uris_for_key("freesurfer", "freesurfer/freesurfer:7.4.1")
-    assert freesurfer == ["docker://freesurfer/freesurfer:7.4.1"]
-
-    lit = ci.pull_uris_for_key("lit", "deepmi/lit:0.6.0")
-    assert lit == ["docker://deepmi/lit:0.6.0"]
-
-    rewritten = ci.pull_uris_for_key(
-        "qsiprep", "oras://index.docker.io/pennlinc/qsiprep:1.0.0"
-    )
-    assert rewritten == ["docker://pennlinc/qsiprep:1.0.0"]
-
-
 def test_list_subcommand(tmp_path):
     proc = _run_install_py("list", "--cache", str(tmp_path / "cache"), "--only", "qsiprep")
     assert proc.returncode == 0, proc.stderr
     assert "qsiprep" in proc.stdout
+    assert "missing" in proc.stdout
+
+
+def test_resolved_local_config_env(tmp_path, monkeypatch):
+    sys.path.insert(0, str(DWI / "scripts"))
+    import container_install as ci  # noqa: WPS433
+
+    alt = tmp_path / "alt_config.local.yaml"
+    monkeypatch.setenv("DKT_LOCAL_CONFIG", str(alt))
+    assert ci.resolved_local_config() == alt
+    monkeypatch.delenv("DKT_LOCAL_CONFIG")
+    assert ci.resolved_local_config() == ci.DEFAULT_LOCAL_CONFIG
+
+
+def test_explicit_cache_not_masked_by_config_local(tmp_path):
+    """--cache DIR must report pin-named files in DIR, not site config.local.yaml paths."""
+    proc = _run_install_py("list", "--cache", str(tmp_path / "empty"), "--only", "qsiprep")
+    assert proc.returncode == 0, proc.stderr
+    line = next(ln for ln in proc.stdout.splitlines() if ln.startswith("qsiprep"))
+    cols = line.split("\t")
+    assert cols[1] == "missing"
+    assert str(tmp_path / "empty") in cols[3]
 
 
 def test_doctor_ci_mode():

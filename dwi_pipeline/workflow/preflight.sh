@@ -38,7 +38,7 @@ done
 BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
 RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
 CONFIG="${WORKFLOW_DIR}/config/config.yaml"
-LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
+LOCAL_CONFIG="${DKT_LOCAL_CONFIG:-${WORKFLOW_DIR}/config/config.local.yaml}"
 
 read_config() {
   python3 - "${CONFIG}" "${LOCAL_CONFIG}" "$1" <<'PY'
@@ -79,7 +79,7 @@ case "${ENGINE}" in
     source "${WORKFLOW_DIR}/lib/orchestrator.sh"
     orch="$(resolve_orchestrator_sif 2>/dev/null || true)"
     [[ -n "${orch}" && -f "${orch}" ]] || fail \
-      "orchestrator SIF missing (optional; install via bash dwi_pipeline/scripts/install.sh)"
+      "orchestrator SIF missing (run: bash dwi_pipeline/scripts/build_orchestrator_sif.sh)"
     echo "preflight: orchestrator=${orch}"
     ;;
   *)
@@ -112,9 +112,13 @@ fi
 
 mkdir -p "${RESULTS_ROOT}" "${RESULTS_ROOT}/logs"
 
-# Snakemake cache must live on writable storage (not $HOME on some nodes).
+# Snakemake cache must live on writable storage. Inside the Hub orchestrator
+# image REPO_ROOT is /opt/dkt-connectome (read-only), so fall back to RESULTS_ROOT.
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
-mkdir -p "${XDG_CACHE_HOME}"
+if ! mkdir -p "${XDG_CACHE_HOME}" 2>/dev/null; then
+  export XDG_CACHE_HOME="${RESULTS_ROOT}/.cache"
+  mkdir -p "${XDG_CACHE_HOME}"
+fi
 
 if [[ -n "${SUBJECT}" ]]; then
   [[ -d "${BIDS_DIR}/sub-${SUBJECT}" ]] || fail "subject missing: ${BIDS_DIR}/sub-${SUBJECT}"

@@ -56,8 +56,96 @@ def test_run_help_has_bids_app_flags():
         "--nprocs",
         "--bids-filter-file",
         "--omp-nthreads",
+        "--act-5tt-source",
+        "--deep-atropos-seg",
+        "--deep-atropos-seg-mode",
+        "--connectome-atlases",
+        "--force-syn",
+        "--experiment-arm",
+        "--fastsurfer-device",
     ):
         assert flag in help_text
+
+
+def test_run_accepts_lesion_and_syn_flags(ci_env):
+    """Flags that used to be HPC-only must parse on ./run (exit 2 was Unknown option)."""
+    if not (FIXTURE / "dataset_description.json").is_file():
+        subprocess.run(
+            ["python3", str(DWI / "tests" / "fixtures" / "generate_bids_fixture.py")],
+            cwd=DWI,
+            check=False,
+        )
+    proc = subprocess.run(
+        [
+            str(RUN),
+            str(FIXTURE),
+            str(ci_env / "out"),
+            "participant",
+            "--participant-label",
+            "EXAMPLE",
+            "--act-5tt-source",
+            "hsvs",
+            "--deep-atropos-seg-mode",
+            "auto",
+            "--deep-atropos-seg",
+            str(ci_env / "seg.nii.gz"),
+            "--connectome-atlases",
+            "dkt",
+            "--force-syn",
+            "--experiment-arm",
+            "orig-std",
+            "--fastsurfer-device",
+            "cpu",
+            "--dry-run",
+            "--no-sdc",
+            "--no-dwi-filter",
+        ],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        timeout=90,
+    )
+    combined = proc.stdout + proc.stderr
+    assert "Unknown option" not in combined, combined
+    assert proc.returncode != 2, combined
+
+
+def test_run_rejects_invalid_fastsurfer_device(ci_env):
+    proc = subprocess.run(
+        [
+            str(RUN),
+            str(FIXTURE),
+            str(ci_env / "out"),
+            "participant",
+            "--participant-label",
+            "EXAMPLE",
+            "--fastsurfer-device",
+            "tpu",
+            "--dry-run",
+            "--no-sdc",
+            "--no-dwi-filter",
+        ],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    combined = proc.stdout + proc.stderr
+    assert proc.returncode != 0
+    assert "Unknown option" not in combined
+    assert "fastsurfer-device" in combined
+
+
+def test_run_still_rejects_unknown_option(tmp_path):
+    proc = subprocess.run(
+        [str(RUN), str(tmp_path), str(tmp_path), "participant", "--not-a-real-flag"],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    assert proc.returncode == 2
+    assert "Unknown option" in proc.stderr
 
 
 def test_smoke_preflight_quick(ci_env):
@@ -130,3 +218,5 @@ def test_run_script_skips_postprocess_on_dry_run():
     text = RUN.read_text()
     assert 'if [[ "${DRY_RUN}" -eq 1 ]]; then' in text
     assert "exit \"${exit_code}\"" in text
+    assert "PROCESSED" in text
+    assert 'for sub in "${PROCESSED[@]}"' in text

@@ -11,6 +11,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Changed
 - **`dataset_description.json` provenance** reads `PipelineVersion`, citation, and container tag from `app.json` (plus git HEAD and `release_manifest.json` pins). Source BIDS DOI/version is copied when present. Same identity is used by `export_bids_derivatives.py`.
+- **`./run` forwards** `--experiment-arm`, `--act-mode`, `--act-5tt-source`, `--deep-atropos-seg`, `--deep-atropos-seg-mode`, `--connectome-atlases`, `--force-syn`, and `--fastsurfer-device` (same as `run_subject.sh`).
+- **`./dkt list|check --cache DIR`** reports pin-named files in DIR. Site `config.local.yaml` `containers:` paths are used only when `--cache` is omitted.
+- **`DKT_AUTO_INSTALL=1`** writes `config.local.yaml` to `DKT_CONTAINER_CACHE` when the image path is read-only, and exports `DKT_LOCAL_CONFIG`. `install.sh` falls back to `$CACHE/apptainer_tmp` if the default tmpdir is not writable.
+- **`--stop-on-first-crash`** writes subject QC only for participants that were attempted.
 - **BIDS App root wrappers** — `./run` and `./dkt` at the repository root forward to `dwi_pipeline/`. Registry submission guide set to **0.3.0**.
 - **Name map** — display name, `./dkt`, repo, orchestrator image, and Step 4 `dk-connectome` leftover tag documented in the README and [Containers](containers.md).
 - **Cohort wording** — TRACK-TBI DoD Phase 1 use is documented as restricted (DUA; data not in the repo). Public software checks are one IDEAS II subject and one BTC glioma subject.
