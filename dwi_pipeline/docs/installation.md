@@ -189,11 +189,35 @@ See [README.md §Containers](https://github.com/phindagijimana/dkt_connectome/bl
 
 ---
 
-## Docker (optional)
+## One-pull (Docker / cloud)
 
-Docker is optional and covers the **orchestrator only** — step `.sif` images are still required. New users should follow the [Tutorial](tutorial.md) on Linux + Apptainer first.
+Docker is optional. The published image is an **orchestrator** — it is not QSIPrep. The first run with `DKT_AUTO_INSTALL=1` pulls the pinned step `.sif` files into a cache volume (same pins as `./dkt install` on HPC).
 
-**Docker orchestrator** with first-run pull:
+```bash
+docker pull ghcr.io/phindagijimana/dkt-connectome:0.3.1
+# or: docker pull phindagijimana321/dkt-connectome:0.3.1
+
+docker run --rm \
+  -v /data/bids:/data/bids:ro -v /data/out:/out \
+  -v ~/dkt_containers:/opt/dkt-connectome/containers \
+  -v ~/license.txt:/license.txt:ro \
+  -e FS_LICENSE=/license.txt \
+  -e DKT_AUTO_INSTALL=1 \
+  ghcr.io/phindagijimana/dkt-connectome:0.3.1 \
+  /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
+```
+
+`docker run … --version` must print `0.3.1`. CI checks that against the GHCR tag (`docker_auto_install_smoke.yml`). A real QSIPrep container is pulled weekly in `integration_qsiprep.yml` (`qsiprep --version`, no license).
+
+Keep the cache volume. A second `docker run` without the volume starts from an empty cache.
+
+---
+
+## Docker (optional details)
+
+New users should follow the [Tutorial](tutorial.md) on Linux + Apptainer first. The block above is the supported cloud path.
+
+**Docker orchestrator** with first-run pull (Docker Hub tag):
 
 ```bash
 docker run --rm \

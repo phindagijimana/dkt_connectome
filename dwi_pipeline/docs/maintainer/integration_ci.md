@@ -27,7 +27,7 @@ export FS_LICENSE=/path/to/your/license.txt
 | `act_containers_publish.yml` | Build/push Step 3.1 ACT images to GHCR | No |
 | `integration_qsiprep.yml` | Pull QSIPrep + `qsiprep --version` | No |
 | `integration_ideas.yml` | OpenNeuro download + **dry-run** | No (`BIDS_APP_CI=1` + stub file) |
-| `docker_auto_install_smoke.yml` | Docker dry-run | No (stub file) |
+| `docker_auto_install_smoke.yml` | GHCR `docker run --version`; weekly `DKT_AUTO_INSTALL` + QSIPrep pull | No (stub license) |
 
 These prove registry pins, install paths, and Snakemake wiring — without anyone's personal license.
 
@@ -63,10 +63,10 @@ bash scripts/integration_verify_qsiprep.sh /tmp/out EXAMPLE
 
 | Workflow | When | What it proves |
 |----------|------|----------------|
-| [`integration_qsiprep.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_qsiprep.yml) | Weekly, releases, manual | Pull + version; optional full run |
+| [`integration_qsiprep.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_qsiprep.yml) | Weekly, releases, manual | Pull QSIPrep + `qsiprep --version` (green on v0.3.1); optional full run |
 | [`integration_ideas.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/integration_ideas.yml) | Monthly, manual | IDEAS download + dry-run (or real if secret set) |
-| [`install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/install_smoke.yml) | Weekly | Apptainer pull pins |
-| [`docker_auto_install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/docker_auto_install_smoke.yml) | Weekly | `DKT_AUTO_INSTALL=1` smoke |
+| [`install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/install_smoke.yml) | Weekly | Apptainer pull pins (qsiprep required; ACT best-effort) |
+| [`docker_auto_install_smoke.yml`](https://github.com/phindagijimana/dkt_connectome/blob/main/.github/workflows/docker_auto_install_smoke.yml) | Push/PR + weekly | Published GHCR `--version`; weekly QSIPrep install via `dkt install` |
 
 Local verification after a real local run:
 
@@ -90,8 +90,9 @@ See [v1 science track](v1_science_track.md) for cohort-scale runs.
 
 ## Exit criteria (P1.1)
 
-- [ ] `integration_qsiprep.yml` green weekly (pull + version — **no license required**)
-- [ ] `install_smoke.yml` green weekly
+- [x] `integration_qsiprep.yml` green weekly (pull + version — **no license required**)
+- [x] `install_smoke.yml` qsiprep job green weekly (ACT pull is best-effort)
+- [x] Published orchestrator `docker run --version` (`docker_auto_install_smoke.yml`)
 - [ ] *(Optional)* Real `./run` in CI or on HPC with **your** license
 - [ ] *(Optional)* Self-hosted full DAG job
 

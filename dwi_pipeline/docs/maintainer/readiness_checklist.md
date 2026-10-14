@@ -38,12 +38,12 @@ Closes the largest gaps vs mature BIDS Apps: CI confidence, spec completeness, a
 
 | # | Task | Status | Effort | Notes / path |
 |---|------|--------|--------|--------------|
-| P1.1 | **Add real-container integration test in CI** | **Scaffolded** | Weekly pull + `qsiprep --version` (no license). Optional full run: [Integration CI](integration_ci.md). Users bring own `FS_LICENSE`. |
+| P1.1 | **Add real-container integration test in CI** | **Done** | Weekly QSIPrep pull + `qsiprep --version` (`integration_qsiprep.yml`). Published orchestrator `--version` on GHCR. Optional full `./run` if `FS_LICENSE` secret is set. |
 | P1.2 | **Run `bids-validator` on minimal fixture in CI** | **Done** | Regenerate fixture + validate in `.github/workflows/dwi_pipeline_ci.yml`. |
 | P1.3 | **Schedule `install_smoke.yml`** | **Done** | Weekly cron + `release: published`; default mode `qsiprep`. |
 | P1.4 | **Expand `app.json` + Boutiques flag surface** | **Done** | `app.json` `CommandLineArguments` expanded to match `./run` help. |
 | P1.5 | **Implement or remove `--mem-mb`** | **Done** | Exported as `MEM_MB` when set; documented in `run`, `usage.md`, `bids_app.md`. |
-| P1.6 | **Docker “quick start” that auto-pulls step images** | **Scaffolded** | Apptainer in `Dockerfile`; CI `docker_auto_install_smoke.yml`; docs [cloud_deployment.md](../cloud_deployment.md). |
+| P1.6 | **Docker “quick start” that auto-pulls step images** | **Done** | [Installation § One-pull](../installation.md#one-pull-docker--cloud) (`DKT_AUTO_INSTALL=1`). CI pulls the published GHCR image (no fat image). |
 | P1.7 | **IDEAS golden run in CI (optional slow job)** | **Scaffolded** | `integration_ideas.yml` (monthly + manual); dry-run default. |
 | P1.8 | **Deprecate root `./connectome bids` in registry docs** | **Done** | Low | Root CLI removed; README points to `dwi_pipeline/`. |
 
