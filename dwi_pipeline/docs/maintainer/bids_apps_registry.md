@@ -154,7 +154,7 @@ Container model:
 Machine-readable metadata: dwi_pipeline/app.json
 Boutiques descriptor: dwi_pipeline/dkt_connectome_bids_app.json
 
-Maintainer: [your name / lab contact]
+Maintainer: Philbert Ndagijimana <phindagiji@gmail.com>
 ```
 
 Expect a reply asking for clarification or confirmation; link to the submission doc on GitHub if helpful:

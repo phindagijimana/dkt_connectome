@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from pathlib import Path
 
 DOCS_ROOT = Path(__file__).resolve().parent
@@ -18,8 +17,8 @@ else:
     version = release = "0.3.1"
 
 project = "DKT Connectome"
-author = "Inzira Labs, University of Rochester and contributors"
-copyright = f"2026-{datetime.now().year}, {author}"
+author = "Philbert Ndagijimana and contributors"
+copyright = f"2026, {author}"
 
 needs_sphinx = "4.2.0"
 
