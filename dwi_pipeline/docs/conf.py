@@ -44,6 +44,7 @@ exclude_patterns = [
     "papers",
     "papers/**",
     "publication_strategy.md",
+    "img/demos/README.md",
 ]
 
 source_suffix = {
