@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Added
+- **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
+
 ## [0.3.1] — BIDS App flag parity (orchestrator rebuild)
 
 Orchestrator-only bump. **Do not retag 0.3.0.** Step SIFs stay at **0.3.0**. Rebuild and push `dkt-connectome:0.3.1` after this tag.

@@ -8,7 +8,7 @@ No. The BIDS App **orchestrates multiple Apptainer images** (QSIPrep, FreeSurfer
 
 ### Where is the scientific / theoretical background explained?
 
-Start with **[How it works — science and theory](science_overview.md)** on the docs home. Per-step methods with citations: [Methods overview](methods/index.md).
+Start with **[What DKT Connectome does](what_it_does.md)** (short introduction). Then **[How it works — science and theory](science_overview.md)**. Per-step methods with citations: [Methods overview](methods/index.md).
 
 ### What is the recommended way to run on Slurm HPC?
 

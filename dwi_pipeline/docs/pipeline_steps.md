@@ -1,6 +1,6 @@
 # Pipeline steps
 
-What happens inside each step of the DKT Connectome. **Theory and rationale:** [Science overview](science_overview.md) and [Methods](methods/index.md). For outputs, see [Outputs](outputs.md). For citation tables, see [References by step](references.md).
+What happens inside each step of the DKT Connectome. **Short introduction:** [What DKT Connectome does](what_it_does.md). **Theory and rationale:** [Science overview](science_overview.md) and [Methods](methods/index.md). For outputs, see [Outputs](outputs.md). For citation tables, see [References by step](references.md).
 
 ---
 

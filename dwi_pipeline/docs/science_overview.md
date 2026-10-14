@@ -1,6 +1,6 @@
 # How it works — science and theory
 
-This page explains **why** the DKT Connectome pipeline exists and **what each step does scientifically**. For CLI flags and file paths, see [Pipeline steps](pipeline_steps.md). For step-by-step methods with citations, see [Methods overview](methods/index.md).
+This page explains **why** the DKT Connectome pipeline exists and **what each step does scientifically**. For a short introduction (one paragraph per step, including other atlases), see [What DKT Connectome does](what_it_does.md). For CLI flags and file paths, see [Pipeline steps](pipeline_steps.md). For step-by-step methods with citations, see [Methods overview](methods/index.md).
 
 ---
 
