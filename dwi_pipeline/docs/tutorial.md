@@ -1,45 +1,14 @@
 # Tutorial — first run with public IDEAS II sample
 
-End-to-end walkthrough using the public [IDEAS II](datasets/ideas.md) sample (two subjects from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401)). For theory, see [Methods](methods/index.md). For flag decisions, see [Decision tables](decision_tables.md).
+End-to-end walkthrough using the public [IDEAS II](datasets/ideas.md) sample (two subjects from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401)). **Install first:** [Installation](installation.md) (`./dkt install` + `./dkt check --strict`). Theory: [Methods](methods/index.md). Reportlets: [Sample results](sample_results.md).
+
+**Time:** several hours on HPC (QSIPrep + recon dominate). Use `--dry-run` first. Preflight still needs cached step containers; set `BIDS_APP_CI=1` only for a plan-only / CI dry-run — not for real runs.
+
+Work from `dwi_pipeline/` for every command below.
 
 ---
 
-## What you will do
-
-1. Clone, install containers, and run `./dkt check --strict`
-2. Download the public IDEAS II BIDS sample (or point the pipeline at your own BIDS)
-3. Run Steps 1–5 for one subject (`sub-1`)
-4. Inspect QC HTML and the DKT connectome
-5. Optionally run the [BTC glioma](datasets/btc_glioma.md) lesion-aware demo (`--disconnection`)
-
-Public-demo reportlets already on the docs site: [Sample results](sample_results.md).
-
-**Time:** several hours on HPC (QSIPrep + recon dominate). Use `--dry-run` first to validate the plan. Preflight still requires cached step containers for `--dry-run`; export `BIDS_APP_CI=1` only to skip those checks for a plan-only / CI dry-run — do not set it for real runs.
-
----
-
-## 1. Clone, install, and verify
-
-```bash
-git clone https://github.com/phindagijimana/dkt_connectome.git
-cd dkt_connectome/dwi_pipeline
-chmod +x dkt run install
-export FS_LICENSE=/path/to/your/license.txt
-export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
-export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
-export PROOT_TMP_DIR=${PROOT_TMP_DIR:-$APPTAINER_TMPDIR}
-mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
-./dkt install
-./dkt check --strict
-```
-
-**FreeSurfer license (required before real runs):** register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html), download `license.txt`, then export `FS_LICENSE` as above. The project does not provide a shared license — each user obtains their own. Details: [Installation → FreeSurfer license](installation.md#freesurfer-license-you-must-obtain-this).
-
-Apptainer images: [Installation → Auto-install](installation.md#auto-install-recommended).
-
----
-
-## 2. Download the IDEAS sample
+## 1. Download the IDEAS sample
 
 From `dwi_pipeline/` (the same directory as `./dkt`):
 
@@ -61,7 +30,7 @@ Example: `sub-1_fastsurfer` = FastSurfer, no inpaint. You may keep local test da
 
 ---
 
-## 3. Dry-run (validate plan)
+## 2. Dry-run (validate plan)
 
 IDEAS DWI shells are 0, 300, 700, and **2500** s/mm² — pass `--dwi-select config/dwi_select_ideas_b2500.json` (not the default b=1000 filter). Use `--syn` (no fieldmaps in this sample).
 
@@ -77,7 +46,7 @@ Review Snakemake rule list: `qsiprep` → `inpaint` (if mask) → `recon` → `q
 
 ---
 
-## 4. Full run
+## 3. Full run
 
 Same command without `--dry-run`, with `--n-cpus 8`:
 
@@ -96,7 +65,7 @@ bash workflow/run_subject.sh all 1 --session-filter ses-1 --fastsurfer --syn \
 
 ---
 
-## 5. Check outputs
+## 4. Check outputs
 
 | Artifact | Path |
 |----------|------|
@@ -117,7 +86,7 @@ What each panel means: [Quality control](qc.md).
 
 ---
 
-## 6. Optional — lesion-aware disconnectome
+## 5. Optional — lesion-aware disconnectome
 
 Step 4.1 is off by default. IDEAS II `sub-1` has **no** lesion mask. For the public lesion-aware demo, download [BTC glioma PAT20](datasets/btc_glioma.md) and pass `--disconnection`:
 
@@ -139,7 +108,7 @@ Expected results for test subjects: [Validation](validation.md).
 
 ---
 
-## 7. Cohort QC
+## 6. Cohort QC
 
 After processing multiple subjects:
 
@@ -150,7 +119,7 @@ After processing multiple subjects:
 
 ---
 
-## 8. Common variations
+## 7. Common variations
 
 | Scenario | Add flags |
 |----------|-----------|
@@ -159,13 +128,10 @@ After processing multiple subjects:
 | recon-all instead of FastSurfer | `--freesurfer` |
 | Re-run connectome only | `--mode connectome` |
 
-Full reference: [Usage](usage.md) · [Decision tables](decision_tables.md).
+Full reference: [Usage](usage.md).
 
 ---
 
 ## See also
 
-- [Usage](usage.md)
-- [Validation](validation.md)
-- [Troubleshooting](troubleshooting.md)
-- [IDEAS sample data](datasets/ideas.md)
+- [Installation](installation.md) · [Usage](usage.md) · [Validation](validation.md) · [Troubleshooting](troubleshooting.md) · [IDEAS](datasets/ideas.md)

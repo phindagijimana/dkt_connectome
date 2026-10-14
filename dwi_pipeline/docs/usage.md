@@ -2,7 +2,7 @@
 
 Command-line reference for the DKT Connectome BIDS App (`./run`, `./dkt`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
 
-For a minimal example, see the [Tutorial](tutorial.md). For **when to use which flag**, see [Decision tables](decision_tables.md). For config keys and env vars, see [Configuration](configuration.md).
+**First run?** Use the [Tutorial](tutorial.md), not this page. Flag choices: [Decision tables](decision_tables.md). Config keys: [Configuration](configuration.md).
 
 ---
 
