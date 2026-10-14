@@ -1,6 +1,7 @@
 name: Docker auto-install smoke
 
-# Verifies DKT_AUTO_INSTALL=1 inside the orchestrator image (Apptainer + qsiprep pull).
+# Proves the published orchestrator (GHCR) and the DKT_AUTO_INSTALL=1 one-pull path.
+# Does not build FROM Docker Hub (anonymous Hub pulls 429 on GitHub-hosted runners).
 
 on:
   workflow_dispatch:
@@ -12,76 +13,104 @@ on:
       - 'dwi_pipeline/Dockerfile'
       - 'dwi_pipeline/docker-entrypoint.sh'
       - 'dwi_pipeline/scripts/install.sh'
+      - 'dwi_pipeline/app.json'
       - '.github/workflows/docker_auto_install_smoke.yml'
   pull_request:
     paths:
       - 'dwi_pipeline/Dockerfile'
       - 'dwi_pipeline/docker-entrypoint.sh'
       - 'dwi_pipeline/scripts/install.sh'
+      - 'dwi_pipeline/app.json'
       - '.github/workflows/docker_auto_install_smoke.yml'
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
-  hub-credentials:
+  published-version:
     runs-on: ubuntu-latest
-    outputs:
-      present: ${{ steps.creds.outputs.present }}
-    steps:
-      - id: creds
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          if [[ -n "${DOCKERHUB_USERNAME}" && -n "${DOCKERHUB_TOKEN}" ]]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "DOCKERHUB_* secrets empty; Hub-rate-limited smoke will be skipped on push/PR/schedule"
-          fi
-
-  auto-install:
-    # Orchestrator Dockerfile FROM python:3.12-slim-bookworm (Docker Hub).
-    # Skip scheduled/push runs when DOCKERHUB_* secrets are empty (anonymous 429).
-    needs: hub-credentials
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.hub-credentials.outputs.present == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 150
-
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build orchestrator image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: dwi_pipeline/Dockerfile
-          load: true
-          tags: dkt-connectome:ci-smoke
-
-      - name: Auto-install qsiprep + dry-run
+      - name: Resolve published image
+        id: img
         run: |
-          mkdir -p /tmp/docker_out /tmp/license.txt
+          version="$(python3 -c "import json; print(json.load(open('dwi_pipeline/app.json'))['PipelineVersion'])")"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/phindagijimana/dkt-connectome:${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Pull published orchestrator (GHCR)
+        run: docker pull "${{ steps.img.outputs.image }}"
+
+      - name: docker run --version
+        run: |
+          got="$(docker run --rm "${{ steps.img.outputs.image }}" --version)"
+          echo "got=${got}"
+          test "${got}" = "${{ steps.img.outputs.version }}"
+
+      - name: dkt version
+        run: |
+          got="$(docker run --rm "${{ steps.img.outputs.image }}" dkt version)"
+          test "${got}" = "${{ steps.img.outputs.version }}"
+
+  auto-install:
+    # Weekly / manual: pull QSIPrep into a cache volume via the published image.
+    # Skip on push/PR so every docs merge does not spend 15 minutes on pennlinc/qsiprep.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve published image
+        id: img
+        run: |
+          version="$(python3 -c "import json; print(json.load(open('dwi_pipeline/app.json'))['PipelineVersion'])")"
+          echo "image=ghcr.io/phindagijimana/dkt-connectome:${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Regenerate minimal BIDS fixture
+        run: python3 dwi_pipeline/tests/fixtures/generate_bids_fixture.py
+
+      - name: Pull published orchestrator (GHCR)
+        run: docker pull "${{ steps.img.outputs.image }}"
+
+      - name: Install QSIPrep into a persistent cache volume
+        run: |
+          docker volume create dkt_ci_sifs
           touch /tmp/license.txt
+          docker run --rm \
+            -v dkt_ci_sifs:/opt/dkt-connectome/containers \
+            -e DKT_CONTAINER_CACHE=/opt/dkt-connectome/containers \
+            "${{ steps.img.outputs.image }}" \
+            install --mode qsiprep --missing-only --no-doctor
+
+      - name: Dry-run participant (same cache)
+        run: |
+          mkdir -p /tmp/docker_out
           docker run --rm \
             -v "${{ github.workspace }}/dwi_pipeline/tests/fixtures/bids_minimal:/data/bids:ro" \
             -v /tmp/docker_out:/out \
-            -e FS_LICENSE=/tmp/license.txt \
-            -e BIDS_APP_CI=0 \
-            -e DKT_AUTO_INSTALL=1 \
+            -v /tmp/license.txt:/license.txt:ro \
+            -v dkt_ci_sifs:/opt/dkt-connectome/containers \
+            -e FS_LICENSE=/license.txt \
+            -e BIDS_APP_CI=1 \
+            -e DKT_AUTO_INSTALL=0 \
             -e DKT_CONTAINER_CACHE=/opt/dkt-connectome/containers \
-            dkt-connectome:ci-smoke \
+            "${{ steps.img.outputs.image }}" \
             /data/bids /out participant \
             --participant-label EXAMPLE --session-filter baseline \
             --mode qsiprep --dry-run --no-sdc --no-dwi-filter
 
-      - name: List cached SIFs inside container
+      - name: List cached SIFs
         run: |
           docker run --rm \
-            -e DKT_AUTO_INSTALL=0 \
-            dkt-connectome:ci-smoke \
-            bash -lc 'ls -lh "${DKT_CONTAINER_CACHE}" 2>/dev/null || echo "(empty cache on fresh container)"'
+            -v dkt_ci_sifs:/opt/dkt-connectome/containers \
+            -e DKT_CONTAINER_CACHE=/opt/dkt-connectome/containers \
+            "${{ steps.img.outputs.image }}" \
+            dkt check --mode qsiprep || true
+          docker run --rm \
+            -v dkt_ci_sifs:/opt/dkt-connectome/containers \
+            ubuntu:24.04 \
+            ls -lh /opt/dkt-connectome/containers

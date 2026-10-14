@@ -76,7 +76,7 @@ Download the sample only with `bash scripts/download_ideas_sample.sh` from `dwi_
 
 **Sample data:** [IDEAS II (OpenNeuro ds007401)](datasets/ideas.md) — `bash scripts/download_ideas_sample.sh` from `dwi_pipeline/`.
 
-**Docker** (optional; orchestrator only): see [Installation § Docker](installation.md).
+**Docker** (orchestrator only; steps pull on first run): [Installation § One-pull](installation.md#one-pull-docker--cloud) — `DKT_AUTO_INSTALL=1`.
 
 ### After your first subject (your own BIDS)
 

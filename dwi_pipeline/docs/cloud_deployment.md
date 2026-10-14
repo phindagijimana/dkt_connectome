@@ -9,7 +9,8 @@ Patterns for running DKT Connectome outside an on-prem HPC cluster: Docker orche
 Pull the published image:
 
 ```bash
-docker pull phindagijimana321/dkt-connectome:0.3.1
+docker pull ghcr.io/phindagijimana/dkt-connectome:0.3.1
+# or: docker pull phindagijimana321/dkt-connectome:0.3.1
 ```
 
 Minimal run (bind-mount BIDS, output, FreeSurfer license):

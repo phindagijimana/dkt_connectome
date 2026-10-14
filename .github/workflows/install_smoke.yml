@@ -53,6 +53,7 @@ jobs:
   apptainer-pull-act:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    continue-on-error: true
     if: github.event_name == 'schedule' || github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'act')
     steps:
       - uses: actions/checkout@v4
