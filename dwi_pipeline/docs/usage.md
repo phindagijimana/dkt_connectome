@@ -157,6 +157,7 @@ Without a fieldmap in the filter, the pipeline **requires** one of `--syn`, `--f
 | Flag | Env | Description |
 |------|-----|-------------|
 | `--fastsurfer` | `RECON_TOOL=fastsurfer` | FastSurfer instead of `recon-all` |
+| `--fastsurfer-device cpu\|cuda` | `RECON_FASTSURFER_DEVICE` | FastSurfer device (default `cpu`). `cuda` also auto-requests a GPU in `submit.sh` |
 | `--freesurfer` | `RECON_TOOL=freesurfer` | FreeSurfer `recon-all` (default) |
 | `--fast-fs` | `RECON_FSAPARC=1` | FastSurfer + classic DK aparc |
 
@@ -247,7 +248,7 @@ Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a pe
 
 ### Experiment arms (`--experiment-arm`) {#experiment-arms-experiment-arm}
 
-Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For a concise arm-by-arm guide and LeAPP relationship, see **[TBI experimental arms](TBI_Experimental_Arms.md)**.
+Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For a concise arm-by-arm guide and LeAPP relationship, see **[TBI experimental arms](TBI_Experimental_Arms.md)**. `./run` forwards `--experiment-arm`, ACT flags, and `--fastsurfer-device` the same way as `run_subject.sh`.
 
 | Arm | Step 1.1 anatomy | Step 3.1 ACT | Typical contrast | Cite when contrasting |
 |-----|------------------|--------------|------------------|------------------------|

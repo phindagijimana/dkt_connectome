@@ -45,8 +45,8 @@ def test_export_scripts_pipeline_version_matches_app_json():
     expected = json.loads((REPO / "app.json").read_text(encoding="utf-8"))["PipelineVersion"]
     write_desc = _load_script("write_derivatives_description")
     export_bids = _load_script("export_bids_derivatives")
-    assert write_desc.PIPELINE_VERSION == expected
-    assert export_bids.PIPELINE_VERSION == expected
+    assert write_desc.load_app_metadata()["PipelineVersion"] == expected
+    assert export_bids.load_app_metadata()["PipelineVersion"] == expected
 
 
 def test_apply_manifest_pins_overrides_connectome(container_install):

@@ -20,7 +20,16 @@ except ImportError:  # pragma: no cover
 SCRIPT_DIR = Path(__file__).resolve().parent
 DWI_PIPELINE_DIR = SCRIPT_DIR.parent
 CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.yaml"
-LOCAL_CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.local.yaml"
+DEFAULT_LOCAL_CONFIG = DWI_PIPELINE_DIR / "workflow" / "config" / "config.local.yaml"
+LOCAL_CONFIG = DEFAULT_LOCAL_CONFIG  # argparse defaults; prefer resolved_local_config() at read time
+
+
+def resolved_local_config() -> Path:
+    """Site config path. DKT_LOCAL_CONFIG wins when the image path is read-only."""
+    env = os.environ.get("DKT_LOCAL_CONFIG")
+    if env:
+        return Path(os.path.expandvars(env)).expanduser()
+    return DEFAULT_LOCAL_CONFIG
 RELEASE_MANIFEST = DWI_PIPELINE_DIR / "release_manifest.json"
 APP_JSON = DWI_PIPELINE_DIR / "app.json"
 CONNECTOME_BUILD = DWI_PIPELINE_DIR / "containers" / "connectome" / "build_connectome.sh"
@@ -168,7 +177,9 @@ def verify_release_manifest(
         spec = steps.get(key) if isinstance(steps.get(key), dict) else {}
         expected = str((spec or {}).get("sha256") or "").strip().lower()
         pin = pins.get(key, "")
-        path = resolve_container_path(cfg, cache, key, pin or None)
+        path = resolve_container_path(
+            cfg, cache, key, pin or None, use_configured=False
+        )
         if not expected or expected in ("null", "none"):
             skipped += 1
             if path.is_file():
@@ -209,8 +220,9 @@ def _load_merged_config() -> dict:
     if yaml is None:
         sys.exit("ERROR: PyYAML required (pip install pyyaml)")
     cfg = yaml.safe_load(CONFIG.read_text()) or {}
-    if LOCAL_CONFIG.is_file():
-        local = yaml.safe_load(LOCAL_CONFIG.read_text()) or {}
+    local_path = resolved_local_config()
+    if local_path.is_file():
+        local = yaml.safe_load(local_path.read_text()) or {}
         _deep_merge(cfg, local)
     return apply_manifest_pins(cfg)
 
@@ -258,58 +270,18 @@ def apptainer_uri(pin: str) -> str:
     return f"docker://{pin}"
 
 
-# Docker Hub namespaces that publish multi-layer OCI images, not single-layer SIF.
-# Auto-wrapping these as oras:// fails: "ORAS SIF should have a single layer, found N".
-_OCI_NOT_SIF_NAMESPACES = (
-    "pennlinc/",
-    "freesurfer/",
-    "deepmi/",
-)
-
-
-def _bare_image_ref(raw: str) -> str:
-    if raw.startswith("docker://"):
-        return raw[len("docker://") :]
-    if raw.startswith("oras://index.docker.io/"):
-        return raw[len("oras://index.docker.io/") :]
-    if raw.startswith("oras://"):
-        return raw[len("oras://") :]
-    return raw
-
-
-def _is_multi_layer_oci_dockerhub(raw: str) -> bool:
-    ref = _bare_image_ref(raw)
-    if ref.startswith("ghcr.io/"):
-        return False
-    return any(ref.startswith(ns) for ns in _OCI_NOT_SIF_NAMESPACES)
-
-
 def pull_uris_for_key(key: str, pin: str) -> list[str]:
-    """Ordered URIs to try for apptainer pull (manifest/pin first, then fallbacks).
-
-    GHCR pins try oras:// first (DKT step SIFs). Official Docker Hub images
-    (pennlinc / freesurfer / deepmi) are multi-layer OCI — skip oras:// and
-    use docker:// only (explicit oras:// for those namespaces is rewritten).
-    """
+    """Ordered URIs to try for apptainer pull (primary pin first, then fallbacks)."""
     seen: set[str] = set()
     out: list[str] = []
 
     def add(raw: str) -> None:
-        if raw.startswith("oras://"):
-            if _is_multi_layer_oci_dockerhub(raw):
-                raw = f"docker://{_bare_image_ref(raw)}"
-            elif raw not in seen:
-                seen.add(raw)
-                out.append(raw)
-                return
         if raw.startswith("ghcr.io/"):
             oras_uri = f"oras://{raw}"
             if oras_uri not in seen:
                 seen.add(oras_uri)
                 out.append(oras_uri)
-        elif not raw.startswith(("docker://", "oras://")) and not _is_multi_layer_oci_dockerhub(
-            raw
-        ):
+        elif not raw.startswith(("docker://", "oras://")):
             oras_dh = f"oras://index.docker.io/{raw}"
             if oras_dh not in seen:
                 seen.add(oras_dh)
@@ -363,17 +335,31 @@ def resolve_keys(mode: str | None, only: str | None) -> tuple[str, ...]:
     return DEFAULT_KEYS
 
 
-def resolve_container_path(cfg: dict, cache: Path, key: str, pin: str | None) -> Path:
-    """Resolved .sif path: config.local containers override default cache layout."""
+def resolve_container_path(
+    cfg: dict,
+    cache: Path,
+    key: str,
+    pin: str | None,
+    *,
+    use_configured: bool = True,
+) -> Path:
+    """Resolved .sif path.
+
+    Site doctor (no ``--cache``) uses ``config.local.yaml`` ``containers:`` paths.
+    An explicit ``--cache DIR`` lists/checks pin-named files in DIR so a fresh
+    clone or empty cache is not masked by a leftover site config.
+    """
     configured = (cfg.get("containers") or {}).get(key)
-    if configured:
+    if use_configured and configured:
         return Path(os.path.expandvars(str(configured))).expanduser()
     if pin:
         return cache / sif_name(key, pin)
     return cache / f"{key}.sif"
 
 
-def list_plan(cache: Path, keys: tuple[str, ...]) -> list[dict]:
+def list_plan(
+    cache: Path, keys: tuple[str, ...], *, use_configured: bool = True
+) -> list[dict]:
     cfg = _load_merged_config()
     pins = cfg.get("container_pins") or {}
     rows = []
@@ -382,7 +368,9 @@ def list_plan(cache: Path, keys: tuple[str, ...]) -> list[dict]:
         if not pin:
             rows.append({"key": key, "pin": None, "sif": None, "path": None, "exists": False})
             continue
-        path = resolve_container_path(cfg, cache, key, pin)
+        path = resolve_container_path(
+            cfg, cache, key, pin, use_configured=use_configured
+        )
         rows.append(
             {
                 "key": key,
@@ -648,16 +636,6 @@ def pull_all(
         str(Path(os.environ.get("APPTAINER_TMPDIR", cache.parent / "apptainer_tmp"))),
     )
     Path(os.environ["APPTAINER_TMPDIR"]).mkdir(parents=True, exist_ok=True)
-    if not quiet:
-        print(
-            "[install] Using release_manifest / container_pins URIs first "
-            "(GHCR oras:// for DKT SIFs; docker:// for pennlinc/freesurfer/deepmi)."
-        )
-        print(
-            "[install] First-time docker:// OCI→SIF conversion can take 30–90 min; "
-            "set DKT_CONTAINER_CACHE and APPTAINER_TMPDIR to local (non-NFS) disks "
-            f"(cache={cache} tmpdir={os.environ['APPTAINER_TMPDIR']})."
-        )
 
     for key in keys:
         pin_rows = list_plan(cache, (key,))
@@ -705,7 +683,7 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
         errors.append("apptainer not found on PATH")
 
     fs_license = os.environ.get("FS_LICENSE")
-    if not fs_license and LOCAL_CONFIG.is_file() and yaml:
+    if not fs_license and resolved_local_config().is_file() and yaml:
         merged = _load_merged_config()
         fs_license = merged.get("fs_license")
     if not ci:
@@ -716,13 +694,16 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
             )
 
     cfg = _load_merged_config() if yaml else {}
+    use_configured = cache is None
     if cache is None:
         cache = default_cache()
 
     keys = resolve_keys(mode, None)
     pins = cfg.get("container_pins") or {}
     for key in keys:
-        path = resolve_container_path(cfg, cache, key, pins.get(key))
+        path = resolve_container_path(
+            cfg, cache, key, pins.get(key), use_configured=use_configured
+        )
         if ci:
             continue
         p = path
@@ -774,7 +755,7 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
         print("\nRun: bash scripts/install.sh", file=sys.stderr)
         return 1
     print("doctor: OK")
-    for row in list_plan(cache, keys):
+    for row in list_plan(cache, keys, use_configured=use_configured):
         if row.get("path"):
             status = "OK" if row.get("exists") or ci else "missing"
             print(f"  {row['key']}: {row['path']} [{status}]")
@@ -929,9 +910,10 @@ def _registry_reachable(uri: str) -> tuple[bool, str]:
 
 
 def cmd_list(args: argparse.Namespace) -> None:
-    cache = Path(args.cache).expanduser()
+    explicit = args.cache is not None
+    cache = Path(args.cache).expanduser() if explicit else default_cache()
     keys = resolve_keys(args.mode, args.only)
-    for row in list_plan(cache, keys):
+    for row in list_plan(cache, keys, use_configured=not explicit):
         mark = "present" if row.get("exists") else "missing"
         print(f"{row['key']}\t{mark}\t{row.get('pin') or '-'}\t{row.get('path') or '-'}")
 
@@ -972,7 +954,11 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_list = sub.add_parser("list", help="Show pinned images and cache paths")
-    p_list.add_argument("--cache", default=str(default_cache()))
+    p_list.add_argument(
+        "--cache",
+        default=None,
+        help="List pin-named files in DIR (ignores config.local.yaml containers:)",
+    )
     p_list.add_argument("--mode", default=None)
     p_list.add_argument("--only", default=None, help="Comma-separated keys")
     p_list.set_defaults(func=cmd_list)

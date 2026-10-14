@@ -34,11 +34,13 @@ def test_edge_stats_count_weighting_sane():
     assert stats["mean_disconnection_clipped"] == pytest.approx(0.1)
 
 
-def test_write_disconnection_matrix_clips(tmp_path):
+def test_write_disconnection_matrix_clips():
     mod = _load_module("run_disconnectome", DWI / "scripts" / "run_disconnectome.py")
-    primary = tmp_path / "p.csv"
-    spared = tmp_path / "s.csv"
-    out = tmp_path / "d.csv"
+    tmp = Path(__file__).parent / "_tmp_disc"
+    tmp.mkdir(exist_ok=True)
+    primary = tmp / "p.csv"
+    spared = tmp / "s.csv"
+    out = tmp / "d.csv"
     np.savetxt(primary, np.array([[0.0, 10.0], [10.0, 0.0]]), delimiter=",")
     np.savetxt(spared, np.array([[0.0, 12.0], [8.0, 0.0]]), delimiter=",")
     summary = mod.write_disconnection_matrix(primary, spared, out)
@@ -71,9 +73,32 @@ def test_write_derivatives_description(tmp_path):
     sys.argv = ["prog", "--results-root", str(out), "--bids-dir", str(bids)]
     wmain()
     data = json.loads((out / "dataset_description.json").read_text())
-    assert data["DatasetType"] == "derivative"
     app = json.loads((DWI / "app.json").read_text())
-    assert data["GeneratedBy"][0]["Version"] == app["PipelineVersion"]
+    assert data["DatasetType"] == "derivative"
+    generated = data["GeneratedBy"][0]
+    assert generated["Version"] == app["PipelineVersion"]
+    assert generated["Name"] == app["Name"]
+    assert generated["CodeURL"] == app["Source"]
+    assert generated["Container"]["Tag"] == f"{app['DockerHub']}:{app['PipelineVersion']}"
+    assert generated["Git"]["commit"]
+    assert data["SourceDatasets"][0]["Version"] == "unspecified"
+
+
+def test_write_derivatives_description_reads_bids_doi(tmp_path):
+    mod = _load_module(
+        "write_derivatives_description",
+        DWI / "scripts" / "write_derivatives_description.py",
+    )
+    bids = tmp_path / "bids"
+    bids.mkdir()
+    (bids / "dataset_description.json").write_text(
+        json.dumps({"Name": "Demo BIDS", "DatasetDOI": "doi:10.18112/openneuro.ds007401.v1.0.0"})
+    )
+    out = tmp_path / "derivatives"
+    payload = mod.build_provenance(bids, out)
+    source = payload["SourceDatasets"][0]
+    assert source["Version"] == "doi:10.18112/openneuro.ds007401.v1.0.0"
+    assert source["Name"] == "Demo BIDS"
 
 
 def test_render_disconnectome_qc_html(tmp_path):
@@ -149,6 +174,9 @@ def test_export_bids_derivatives_symlinks(tmp_path):
 
     payload = export_mod.export_bids_derivatives(rr, copy=False)
     export_root = Path(payload["export_root"])
+    exported = json.loads((export_root / "dataset_description.json").read_text())
+    app = json.loads((DWI / "app.json").read_text())
+    assert exported["GeneratedBy"][0]["Version"] == app["PipelineVersion"]
     assert (export_root / "dataset_description.json").is_file()
     assert (export_root / "export_manifest.json").is_file()
     assert (export_root / "qsiprep" / "sub-test").is_symlink()

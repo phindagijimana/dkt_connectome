@@ -38,20 +38,33 @@ Pipeline modes (--mode):
 
 Preprocessing / SDC:
   --syn                 SyN SDC when no fmap in dwi-select filter
+  --force-syn           Same as --syn (explicit force; forwarded to QSIPrep)
   --fmap-retry          Ignore fieldmaps; use SyN SDC
   --no-sdc              Skip SDC entirely
-  --dwi-shell N         Filter to b=N shell (default 1000)
+  --dwi-shell N         Filter to b=N (default 1000; canned JSON if present, else generated)
   --dwi-select PATH     Explicit dwi-select JSON
   --no-dwi-filter       Process all DWI series
   --bids-filter PATH    Static QSIPrep BIDS filter JSON (alias: --bids-filter-file)
 
 Recon / connectome:
   --fastsurfer          FastSurfer for Step 2
+  --fastsurfer-device cpu|cuda   FastSurfer device (default cpu; same as RECON_FASTSURFER_DEVICE)
   --fast-fs             FastSurfer + classic DK aparc
   --freesurfer          recon-all (default)
   --no-recon            Skip Step 2
   --no-connectome       Skip Steps 4 and 5
   --connectome-weighting count|sift2
+  --connectome-atlases LIST   Atlases (comma or space; default dkt)
+
+Lesion / ACT / experiment arms:
+  --experiment-arm ARM          orig-std|orig-lesion|neurolit-std|neurolit-lesion|vbt-std|vbt-lesion|deep-atropos-pilot
+  --act-mode standard|lesion-aware
+  --act-5tt-source hsvs|deep-atropos-native
+  --deep-atropos-seg PATH       Override Deep Atropos segmentation ({subject} {session} OK)
+  --deep-atropos-seg-mode auto|import|generate
+  --act-streamlines N           Lesion-aware ACT streamline count
+  --anat-mitigation none|neurolit|vbt
+  --tractography-model ifod2|sd_stream|both
 
 Lesion / disconnectome:
   --inpaint / --no-inpaint
@@ -158,9 +171,13 @@ while [[ $# -gt 0 ]]; do
     --primary-connectome-measure) EXTRA+=(--primary-connectome-measure "$2"); shift 2 ;;
     --act-mode|--act-streamlines|--tractography-model|--experiment-arm|--anat-mitigation|--recon-session)
       EXTRA+=("$1" "$2"); shift 2 ;;
+    --fastsurfer-device)
+      EXTRA+=("$1" "$2"); export RECON_FASTSURFER_DEVICE="$2"; shift 2 ;;
+    --act-5tt-source|--deep-atropos-seg|--deep-atropos-seg-mode|--connectome-atlases)
+      EXTRA+=("$1" "$2"); shift 2 ;;
     --connectome-sift2)
       EXTRA+=("$1"); shift ;;
-    --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
+    --syn|--use-syn-sdc|--force-syn|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
       EXTRA+=("$1"); shift ;;
     --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnection|--disconnectome)
       EXTRA+=("$1"); shift ;;
@@ -174,20 +191,22 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+PY="${PIPELINE_PYTHON:-python3.12}"
+
 if [[ "${ANALYSIS_LEVEL}" == "group" ]]; then
   echo "[run] group-level: building cohort QC indexes"
-  python3 "${SCRIPT_DIR}/scripts/render_cohort_qc.py" \
+  "${PY}" "${SCRIPT_DIR}/scripts/render_cohort_qc.py" \
     --results-root "${OUTPUT_DIR}" \
     --write-subject-reports || exit 1
-  python3 "${SCRIPT_DIR}/scripts/render_disconnectome_cohort_qc.py" \
+  "${PY}" "${SCRIPT_DIR}/scripts/render_disconnectome_cohort_qc.py" \
     --results-root "${OUTPUT_DIR}" \
     --write-subject-reports || exit 1
-  python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
+  "${PY}" "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
     --results-root "${OUTPUT_DIR}" \
     --bids-dir "${BIDS_DIR}" || exit 1
   export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
   ((EXPORT_COPY)) && export_args+=(--copy)
-  python3 "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit 1
+  "${PY}" "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit 1
   echo "[run] cohort QC: ${OUTPUT_DIR}/cohort_qc.html"
   echo "[run] disconnectome cohort QC: ${OUTPUT_DIR}/disconnectome_cohort_qc.html"
   echo "[run] BIDS Derivatives export: ${OUTPUT_DIR}/derivatives/"
@@ -231,8 +250,10 @@ DRY_FLAG=()
 [[ "${DRY_RUN}" -eq 1 ]] && DRY_FLAG=(--dry-run)
 
 exit_code=0
+PROCESSED=()
 for sub in "${PARTICIPANTS[@]}"; do
   echo "[run] subject=sub-${sub} mode=${MODE} session=${SESSIONS[0]:-auto}"
+  PROCESSED+=("${sub}")
   if ! bash "${RUN_SUBJECT}" "${MODE}" "${sub}" "${SESSION_ARG[@]}" "${EXTRA[@]}" "${DRY_FLAG[@]}"; then
     exit_code=1
     if [[ "${STOP_ON_FIRST_CRASH}" == "1" ]]; then
@@ -246,12 +267,12 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
   exit "${exit_code}"
 fi
 
-python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
+"${PY}" "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
   --results-root "${OUTPUT_DIR}" \
   --bids-dir "${BIDS_DIR}" || exit_code=1
 
-for sub in "${PARTICIPANTS[@]}"; do
-  python3 "${SCRIPT_DIR}/scripts/render_subject_qc.py" \
+for sub in "${PROCESSED[@]}"; do
+  "${PY}" "${SCRIPT_DIR}/scripts/render_subject_qc.py" \
     --results-root "${OUTPUT_DIR}" \
     --subject "${sub}" || exit_code=1
 done
@@ -259,7 +280,7 @@ done
 if ((EXPORT_BIDS_DERIVATIVES)); then
   export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
   ((EXPORT_COPY)) && export_args+=(--copy)
-  python3 "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit_code=1
+  "${PY}" "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit_code=1
 fi
 
 exit "${exit_code}"

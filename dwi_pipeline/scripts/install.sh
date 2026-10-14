@@ -47,8 +47,8 @@ After install:
   bash scripts/download_ideas_sample.sh   # optional public sample
 
 Environment:
-  DKT_CONTAINER_CACHE   Same as --cache (prefer local disk, not NFS)
-  APPTAINER_TMPDIR      Temp dir for apptainer pull (default: <cache>/../apptainer_tmp; prefer local disk)
+  DKT_CONTAINER_CACHE   Same as --cache
+  APPTAINER_TMPDIR      Temp dir for apptainer pull (default: <cache>/../apptainer_tmp)
 EOF
 }
 
@@ -70,8 +70,14 @@ done
 
 export DKT_CONTAINER_CACHE="${CACHE}"
 mkdir -p "${CACHE}"
-export APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-$(dirname "${CACHE}")/apptainer_tmp}"
-mkdir -p "${APPTAINER_TMPDIR}"
+if [[ -z "${APPTAINER_TMPDIR:-}" ]]; then
+  APPTAINER_TMPDIR="$(dirname "${CACHE}")/apptainer_tmp"
+fi
+if ! mkdir -p "${APPTAINER_TMPDIR}" 2>/dev/null; then
+  APPTAINER_TMPDIR="${CACHE}/apptainer_tmp"
+  mkdir -p "${APPTAINER_TMPDIR}"
+fi
+export APPTAINER_TMPDIR
 
 PY="${SCRIPT_DIR}/container_install.py"
 args=(--cache "${CACHE}" --config "${CONFIG_OUT}")

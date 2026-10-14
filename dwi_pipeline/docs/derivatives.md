@@ -25,7 +25,7 @@ The internal layout remains the default write target during processing. A post-r
 | `qc/` | QC | Unified subject dashboards |
 | `node_strength/` | 5 | Node strength / ENIGMA report |
 
-Root provenance: `RESULTS_ROOT/dataset_description.json` (written by `./run`).
+Root provenance: `RESULTS_ROOT/dataset_description.json` (written by `./run` from `app.json`, git HEAD, `release_manifest.json` pins, and the input BIDS `DatasetDOI` when present).
 
 ---
 
