@@ -28,13 +28,13 @@ Use **Linux + Apptainer** on a workstation or HPC (FreeSurfer license required).
 | **Install & first run** | [Installation](installation.md) → [Tutorial](tutorial.md) |
 | **Example reportlets** | [Sample results](sample_results.md) (IDEAS II + glioma; QSIPrep/QSIRecon style) |
 | **All CLI flags** | [Usage](usage.md) (`./dkt` / `./run`) |
-| **Lesion factorial arms** | [TBI experimental arms](TBI_Experimental_Arms.md) |
 | **Why** the workflow exists | [Science overview](science_overview.md) |
-| **Pipeline stages** | [Pipeline steps](pipeline_steps.md) · [Architecture](architecture.md) |
+| **Methods & citations** | [Methods](methods/index.md) · [References](references.md) |
 | **Prepare BIDS** | [Preparing your data](preparing_data.md) |
 | **Upgrade** | [Upgrading](upgrading.md) |
-| **Methods & citations** | [Methods](methods/index.md) · [References](references.md) |
 | **Problems** | [FAQ](faq.md) · [Troubleshooting](troubleshooting.md) |
+
+Advanced (linked, not in the main sidebar): [decision tables](decision_tables.md) · [factorial arms](TBI_Experimental_Arms.md) · [pipeline steps](pipeline_steps.md) · [Deep Atropos](deep_atropos_5tt.md) · [lesion-aware ACT](lesion_aware.md) · [disconnectome CLI](disconnectome.md) · [cloud deployment](cloud_deployment.md).
 
 ```{note} Upstream tools
 This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. Cite the primary method papers — [References by step](references.md).

@@ -56,7 +56,7 @@ It is not a lesion-segmentation tool (you bring the mask). It is not a functiona
 | If you want… | Read… |
 |--------------|--------|
 | Install and a first dry-run | [Installation](installation.md) · [Tutorial](tutorial.md) |
-| Flags for lesions, SDC, atlases | [Usage](usage.md) · [Decision tables](decision_tables.md) |
+| Flags for lesions, SDC, atlases | [Usage](usage.md) |
 | Why each scientific choice exists | [Science overview](science_overview.md) |
-| Commands, paths, and outputs | [Pipeline steps](pipeline_steps.md) · [Outputs](outputs.md) |
-| Citations | [Methods](methods/index.md) · [References](references.md) |
+| Commands, paths, and outputs | [Methods](methods/index.md) · [Outputs](outputs.md) |
+| Citations | [References](references.md) |

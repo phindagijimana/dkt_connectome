@@ -4,7 +4,7 @@ The DKT Connectome orchestrator is released under the **Apache License 2.0**; th
 
 All trademarks referenced herein are property of their respective holders.
 
-Copyright © 2026 Philbert Ndagijimana and contributors. All rights reserved.
+Copyright © 2026 Philbert Ndagijimana and contributors. Licensed under the Apache License, Version 2.0.
 
 SPDX identifier: `Apache-2.0`
 

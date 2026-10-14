@@ -11,6 +11,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
 
 ### Changed
+- **Docs footer and license page** use one copyright line (Philbert Ndagijimana and contributors) under Apache-2.0. Removed “All rights reserved,” which conflicts with the grant.
+- **Public docs nav** is the default path only (getting started, science, methods, usage, QC, citation). Factorial arms, Deep Atropos, decision tables, pipeline-steps, disconnectome CLI, and cloud pages stay built and linked as advanced.
 - **Inpaint QC** fails only when the T1w is unusable (missing volume, wrong grid, NaN *r*, empty mask). Outside-mask Pearson *r*, resampling-control *r*, and drop are always printed. Optional defaults 0.995 / 0.01 are **not** a published cutoff; they abort only if `INPAINT_FAIL_ON_QC=1`.
 - Maintainer runbooks and readiness notes now describe **0.3.1** as the current orchestrator (step SIFs remain 0.3.0).
 - **`./dkt install`** also exports `PROOT_TMP_DIR` (and `SINGULARITY_TMPDIR`) so OCI→SIF conversion works when `/tmp` is `noexec`.
