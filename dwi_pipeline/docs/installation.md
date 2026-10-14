@@ -1,197 +1,72 @@
 # Installation
 
-**New users:** start with the [Tutorial](tutorial.md) (clone → `./dkt install` → `./dkt check --strict` → IDEAS dry-run). This page covers containers, an optional Docker orchestrator, and HPC details. The same first-run block is on the [GitHub README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md#quick-start).
+**New users:** [Tutorial](tutorial.md) after this page. Hosted: [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/). Same first commands: [GitHub README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md#quick-start).
 
 ## Requirements
 
-| Component | Version / notes |
-|-----------|-----------------|
-| OS | Linux (HPC or workstation) |
-| [Apptainer](https://apptainer.org/) or Singularity | On `PATH` |
-| Python | 3.9+ (orchestration scripts, Snakemake) |
-| [Snakemake](https://snakemake.readthedocs.io/) | ≥ 8.0 (workflow engine) |
-| FreeSurfer license | [Free registration](https://surfer.nmr.mgh.harvard.edu/registration.html) |
+| Component | Notes |
+|-----------|-------|
+| Linux | Workstation or HPC |
+| [Apptainer](https://apptainer.org/) | On `PATH` |
+| Python 3.9+ and [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration |
+| FreeSurfer license | [Free registration](https://surfer.nmr.mgh.harvard.edu/registration.html) — you obtain this |
 | Git | Clone [dkt_connectome](https://github.com/phindagijimana/dkt_connectome) |
 
-Optional: Slurm for `submit.sh` array jobs.
+Optional: Slurm for `submit.sh`. Cloud: [One-pull](#one-pull-docker--cloud) instead of a local Apptainer install.
 
 ---
 
-## Clone and enter the BIDS App
+(auto-install-recommended)=
+## Clone and install
 
 ```bash
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
 chmod +x run install dkt
-```
-
-Documentation: [Home](home.md) · [Upgrading](upgrading.md) · Tutorial: [tutorial.md](tutorial.md) · **Hosted:** [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/).
-
----
-
-## Auto-install (recommended)
-
-Pull all pinned step `.sif` images and write `workflow/config/config.local.yaml`:
-
-```bash
-cd dwi_pipeline
-./dkt install
-# or: bash install.sh / bash scripts/install.sh --missing-only
-```
-
-| Variable / flag | Default | Purpose |
-|-----------------|---------|---------|
-| `DKT_CONTAINER_CACHE` | `~/.cache/dkt-connectome/containers` | Where `.sif` files are stored |
-| `APPTAINER_TMPDIR` | `<cache>/../apptainer_tmp` | Temp dir for `apptainer pull` (see HPC note below) |
-| `PROOT_TMP_DIR` | same as `APPTAINER_TMPDIR` | Required when `/tmp` is `noexec` (OCI→SIF / proot) |
-| `--mode qsiprep` | all steps | Pull only what a mode needs |
-| `--missing-only` | off | Skip images already in cache |
-
-### HPC / OOD login nodes
-
-Many clusters mount **`/tmp` with `noexec`**, which breaks `apptainer pull`. Before `./dkt install`, point cache and temp under your home or project space (not `/tmp`):
-
-```bash
+export FS_LICENSE=/path/to/your/license.txt
 export DKT_CONTAINER_CACHE=$HOME/.cache/dkt-connectome/containers
 export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp
 export PROOT_TMP_DIR=$APPTAINER_TMPDIR
 mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install
-```
-
-`install.sh` also sets **`PROOT_TMP_DIR`** and `SINGULARITY_TMPDIR` to the same path. OCI→SIF conversion uses proot, which ignores `APPTAINER_TMPDIR` and fails with `current temporary directory (/tmp) is mounted with no execution permission` unless `PROOT_TMP_DIR` is set. First-time `docker://` conversion of QSIPrep / QSIRecon / FreeSurfer can take 30–90 minutes — keep cache and temp on local (non-NFS) disks when you can.
-
-Rootless **podman** on some HPC logins fails with `lchown /etc/gshadow: invalid argument`. Use **Apptainer** (or Docker with sufficient UIDs), not podman, to pull the orchestrator.
-
-Verify before your first run:
-
-```bash
-export FS_LICENSE=/path/to/license.txt
 ./dkt check --strict
-# or: ./run doctor
 ```
 
-`--strict` compares cached `.sif` SHA-256 digests to [`release_manifest.json`](../release_manifest.json). Run **`./dkt check --strict`** after every install.
+`./dkt install` pulls pinned step `.sif` images and writes `workflow/config/config.local.yaml`. `--strict` compares SHA-256 to [`release_manifest.json`](../release_manifest.json).
 
-HPC: `sbatch containers/pull_freesurfer_sif.sbatch` for FreeSurfer only on a compute node; full install on a login node with network.
+| Variable / flag | Default | Purpose |
+|-----------------|---------|---------|
+| `DKT_CONTAINER_CACHE` | `~/.cache/dkt-connectome/containers` | `.sif` files |
+| `APPTAINER_TMPDIR` / `PROOT_TMP_DIR` | `<cache>/../apptainer_tmp` | Pull temp — **not `/tmp`** if that mount is `noexec` |
+| `--mode qsiprep` | all steps | Pull only what a mode needs |
+| `--missing-only` | off | Skip images already in cache |
 
-**VBT, lesion-aware ACT, and Deep Atropos images** are built locally when GHCR pull fails (`install.sh` falls back to `containers/vbt/build_vbt.sh`, `containers/lesion_act/build_lesion_act.sh`, `containers/deep_atropos/build_deep_atropos.sh`, and `containers/deep_atropos_seg/build_deep_atropos_seg.sh`, staging tools from your existing `qsiprep.sif` / `qsirecon.sif`). Use `bash install.sh --mode act` for all Step 3.1 containers. See [Containers](containers.md).
+Many clusters mount **`/tmp` with `noexec`**. OCI→SIF uses proot, which ignores `APPTAINER_TMPDIR` unless **`PROOT_TMP_DIR`** is set (`install.sh` sets it). First QSIPrep / QSIRecon / FreeSurfer conversion can take 30–90 minutes — prefer local disk, not NFS. Do not use rootless **podman** for the orchestrator pull (`lchown /etc/gshadow`).
 
-Verify registry pins without pulling:
+Step images: [Containers](containers.md). If GHCR miss for VBT / lesion-ACT / Deep Atropos, `install.sh --mode act` builds them locally.
 
-```bash
-python3 scripts/container_install.py verify
-./run doctor --with-dry-run   # adds Snakemake dry-run (slower)
-```
+Next: [Tutorial](tutorial.md).
 
 ---
 
+(freesurfer-license-you-must-obtain-this)=
 ## FreeSurfer license (you must obtain this)
 
-The pipeline **does not include or distribute** a FreeSurfer license. **Each user and site** must register independently (free for research) and point the pipeline at their own `license.txt` file.
+The pipeline **does not ship a license**. Each user registers, downloads `license.txt`, and points `FS_LICENSE` at that file.
 
-### 1. Register
+1. Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html) (up to 48 hours).
+2. Store the file **outside** the clone (`~/.freesurfer/license.txt`, mode `600`). Never commit it.
+3. `export FS_LICENSE=$HOME/.freesurfer/license.txt` in your shell, `~/.bashrc`, or Slurm prologue.
 
-1. Open [FreeSurfer registration](https://surfer.nmr.mgh.harvard.edu/registration.html).
-2. Complete the form for your institution and use case.
-3. Download the email attachment **`license.txt`** (plain text, a few lines).
-
-Allow up to 48 hours for approval on first registration.
-
-### 2. Store the file safely
-
-```bash
-# Example — keep outside the git clone
-mkdir -p ~/.freesurfer
-mv ~/Downloads/license.txt ~/.freesurfer/license.txt
-chmod 600 ~/.freesurfer/license.txt
-```
-
-```{warning} Do not commit the license
-Never add `license.txt` to git or upload it to GitHub. The repository and CI **do not** provide a shared license — that is intentional.
-```
-
-### 3. Export before every run (HPC / Apptainer)
-
-```bash
-export FS_LICENSE="$HOME/.freesurfer/license.txt"
-./run doctor    # confirms license path and containers
-```
-
-Add to your Slurm prologue or `~/.bashrc` on shared systems so batch jobs inherit it:
-
-```bash
-# in submit.sh environment or ~/.bashrc
-export FS_LICENSE=/path/to/your/license.txt
-```
-
-QSIPrep and FreeSurfer steps bind-mount this file into containers at runtime.
-
-### 4. Docker / cloud
-
-Mount **your** file read-only and set the same variable:
-
-```bash
-docker run --rm \
-  -v /path/to/your/license.txt:/opt/freesurfer/license.txt:ro \
-  -e FS_LICENSE=/opt/freesurfer/license.txt \
-  ... \
-  phindagijimana321/dkt-connectome:0.3.1 \
-  /data/bids /out participant --participant-label 01
-```
-
-See also [Cloud deployment](cloud_deployment.md) and [BIDS App specification](bids_app.md).
-
-### 5. When is it required?
-
-| Step | License needed? |
-|------|-----------------|
-| `./run doctor` (full check) | Yes |
-| QSIPrep (Step 1) | Yes (FreeSurfer tools inside QSIPrep) |
-| Recon / FastSurfer (Step 2) | Yes |
-| `--dry-run` in CI-style stubs | No (see [Contributing](contributing.md)) |
-
-If `./run` fails with `Missing FreeSurfer license`, set `FS_LICENSE` to an existing file — see [Troubleshooting](troubleshooting.md).
+Required for `./run doctor`, QSIPrep, and recon. CI-style `--dry-run` with stubs does not need it. If you see `Missing FreeSurfer license`, see [Troubleshooting](troubleshooting.md). Docker: mount the file and set `FS_LICENSE` as in [One-pull](#one-pull-docker--cloud).
 
 ---
 
-## Containers
-
-The pipeline orchestrates **multiple Apptainer images** (not one monolithic image):
-
-| Step | Image | Obtain |
-|------|-------|--------|
-| 1 | `qsiprep.sif` | [QSIPrep releases](https://github.com/pennlinc/qsiprep) |
-| 2 | `freesurfer_7.4.1.sif` | `sbatch containers/pull_freesurfer_sif.sbatch` |
-| 2 alt | `fastsurfer_latest.sif` | Upstream FastSurfer |
-| 3 | `qsirecon.sif` | [QSIRecon releases](https://github.com/pennlinc/qsirecon) |
-| 4 | `dkt_connectome.sif` | `bash containers/connectome/build_connectome.sh` |
-| 1.1 | `lit_0.6.0.sif` | `bash containers/lit/build_lit.sh` |
-| 5 | `nodestrength_0.1.0.sif` | [dwi-AI / nodestrength](https://github.com/phindagijimana/dwi-AI) |
-
-### Default paths
-
-Configure in `workflow/config/config.local.yaml` or environment:
-
-| Variable | Typical default |
-|----------|-----------------|
-| `CONTAINER_QSIPREP` | `.../others/containers/qsiprep.sif` |
-| `CONTAINER_QSIRECON` | `.../others/containers/qsirecon.sif` |
-| `CONTAINER_FREESURFER` | `.../others/containers/freesurfer_7.4.1.sif` |
-| `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` |
-| `CONTAINER_LIT` | `.../others/containers/lit_0.6.0.sif` |
-| `CONTAINER_NODESTRENGTH` | `.../node_strength/containers/nodestrength_0.1.0.sif` |
-| `TEMPLATEFLOW_HOME` | `templateflow/` in repo |
-
-See [README.md §Containers](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/README.md) for full table.
-
-**Pin containers** using `container_pins` in config (reference tags) and local `.sif` paths — see [Derivatives policy](derivatives.md).
-
----
-
+(one-pull-docker--cloud)=
+(docker-optional)=
 ## One-pull (Docker / cloud)
 
-Docker is optional. The published image is an **orchestrator** — it is not QSIPrep. The first run with `DKT_AUTO_INSTALL=1` pulls the pinned step `.sif` files into a cache volume (same pins as `./dkt install` on HPC).
+The published image is an **orchestrator**, not QSIPrep. `DKT_AUTO_INSTALL=1` pulls the same pinned `.sif` files as `./dkt install` into a cache volume.
 
 ```bash
 docker pull ghcr.io/phindagijimana/dkt-connectome:0.3.1
@@ -207,132 +82,37 @@ docker run --rm \
   /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
 ```
 
-`docker run … --version` must print `0.3.1`. CI checks that against the GHCR tag (`docker_auto_install_smoke.yml`). A real QSIPrep container is pulled weekly in `integration_qsiprep.yml` (`qsiprep --version`, no license).
-
-Keep the cache volume. A second `docker run` without the volume starts from an empty cache.
+`docker run … --version` must print `0.3.1`. Keep the cache volume; a new container without it starts empty. Compose, Apptainer-of-orchestrator, and maintainer publish: [Advanced](#advanced).
 
 ---
 
-## Docker (optional details)
+## Advanced
 
-New users should follow the [Tutorial](tutorial.md) on Linux + Apptainer first. The block above is the supported cloud path.
+**BIDS validator (optional):** `bash scripts/run_bids_validator.sh /path/to/BIDS` or `./run … --bids-validation`.
 
-**Docker orchestrator** with first-run pull (Docker Hub tag):
-
-```bash
-docker run --rm \
-  -v /data/bids:/data/bids:ro -v /data/out:/out \
-  -v ~/dkt_containers:/opt/dkt-connectome/containers \
-  -v ~/license.txt:/license.txt:ro \
-  -e FS_LICENSE=/license.txt \
-  -e DKT_AUTO_INSTALL=1 \
-  phindagijimana321/dkt-connectome:0.3.1 \
-  /data/bids /out participant --participant-label 1 --fastsurfer --syn --dry-run
-```
-
-**Docker Compose** (orchestrator + persistent cache volume):
+**Docker Compose** (from `dwi_pipeline/`, with `license.txt` beside `docker-compose.yml`):
 
 ```bash
-cd dwi_pipeline
-mkdir -p data/bids data/out
-# copy or symlink license.txt beside docker-compose.yml
 docker compose build
 docker compose run --rm dkt-connectome \
   /data/bids /data/out participant \
   --participant-label 1 --session-filter ses-1 --fastsurfer --syn --dry-run
 ```
 
-**Apptainer of the published orchestrator** (HPC, after `PROOT_TMP_DIR` is set):
+**Apptainer of the published orchestrator** (after `PROOT_TMP_DIR` is set):
 
 ```bash
 SIF=$DKT_CONTAINER_CACHE/dkt_connectome_orchestrator_0.3.1.sif
 apptainer pull "$SIF" docker://phindagijimana321/dkt-connectome:0.3.1
-# 0.3.1+ uses an absolute entrypoint — no --pwd required
 apptainer run --cleanenv --no-home "$SIF" --version
 ```
 
-Publish orchestrator to Docker Hub (maintainers):
+**Build Step 4 locally** (only if you are not using the GHCR pin): `bash dwi_pipeline/containers/connectome/build_connectome.sh` — [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
 
-```bash
-bash scripts/publish_docker.sh          # local build + smoke
-bash scripts/publish_docker.sh --push   # requires docker login
-# or: GitHub Actions → "Docker publish" workflow (workflow_dispatch)
-```
+**Host Python** for orchestration / disconnectome: `pip install numpy nibabel scipy` plus Snakemake ≥ 8.
 
----
+**Site config:** `workflow/config/config.yaml` (defaults) and `workflow/config/config.local.yaml` (local). Defaults: `connectome.weighting: count`, `connectome.parcellation: dkt`. Full keys: [Configuration](configuration.md).
 
-## BIDS validation (optional)
+**Maintainer publish:** `bash scripts/publish_docker.sh --push` or GitHub Actions “Docker publish”.
 
-```bash
-npm install -g bids-validator   # or use npx / BIDS_VALIDATOR_SIF
-bash scripts/run_bids_validator.sh /path/to/BIDS
-```
-
-Enable on every run:
-
-```bash
-./run BIDS OUT participant --participant-label 009 --bids-validation
-```
-
-Or set `bids.validate: true` in `config.local.yaml`.
-
----
-
-## Build Step 4 connectome image
-
-```bash
-bash dwi_pipeline/containers/connectome/build_connectome.sh
-```
-
-Details: [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md).
-
-> **HPC (recommended):** use [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh) with Apptainer `.sif` images. For Docker/cloud, pull the published orchestrator **`phindagijimana321/dkt-connectome:0.3.1`** — see [Containers](containers.md) and [Installation § Docker Compose](installation.md).
-
-After `./dkt install`, verify pinned digests:
-
-```bash
-./dkt check --strict
-```
-
-This compares cached `.sif` SHA-256 values against [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json). DKT-owned step images (`dk-connectome`, `dkt-vbt`, `dkt-lesion-act`, Deep Atropos) are published on GHCR at tag **`0.3.0`** — see [Upgrading](upgrading.md).
-
----
-
-## Python dependencies (host)
-
-For orchestration and Step 4.1 disconnectome:
-
-```bash
-pip install numpy nibabel scipy
-```
-
-Snakemake is required for `./run` and `workflow/run_subject.sh`.
-
----
-
-## Configuration
-
-| File | Purpose |
-|------|---------|
-| `workflow/config/config.yaml` | Default workflow settings |
-| `workflow/config/config.local.yaml` | Site overrides (create locally) |
-| `config/dwi_select_b1000.json` | Default DWI shell filter |
-
-Key defaults:
-
-- `connectome.weighting: count`
-- `connectome.parcellation: dkt` (78 nodes)
-- Inpaint auto-on when lesion mask present
-
----
-
-## Verify installation
-
-```bash
-cd dwi_pipeline
-export FS_LICENSE=/path/to/license.txt
-./dkt check --strict
-./dkt run --help
-```
-
-Next: [Tutorial](tutorial.md) (IDEAS dry-run) · [Usage](usage.md)
+**HPC:** [`submit.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/submit.sh). FreeSurfer-only pull: `sbatch containers/pull_freesurfer_sif.sbatch`.
