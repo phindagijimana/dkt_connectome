@@ -48,6 +48,7 @@ chmod +x dkt run install
 export FS_LICENSE=/path/to/your/license.txt
 export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
 export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
+export PROOT_TMP_DIR=${PROOT_TMP_DIR:-$APPTAINER_TMPDIR}
 mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install
 ./dkt check --strict
@@ -57,7 +58,7 @@ bash scripts/download_ideas_sample.sh
   --dwi-select config/dwi_select_ideas_b2500.json --dry-run
 ```
 
-`./dkt install` reads [`release_manifest.json`](dwi_pipeline/release_manifest.json). First-time image pulls can take 30–90 minutes; use a **local (non-NFS)** `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`.
+`./dkt install` reads [`release_manifest.json`](dwi_pipeline/release_manifest.json). First-time image pulls can take 30–90 minutes; use a **local (non-NFS)** `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR`. If `/tmp` is `noexec`, keep `PROOT_TMP_DIR` set (install does this when unset).
 
 Full walkthrough: [Tutorial](https://dkt-connectome.readthedocs.io/en/latest/tutorial.html).
 

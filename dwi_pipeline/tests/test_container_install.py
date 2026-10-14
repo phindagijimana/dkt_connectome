@@ -56,6 +56,23 @@ def test_resolved_local_config_env(tmp_path, monkeypatch):
     assert ci.resolved_local_config() == ci.DEFAULT_LOCAL_CONFIG
 
 
+def test_export_apptainer_tmpdir_sets_proot(tmp_path, monkeypatch):
+    sys.path.insert(0, str(DWI / "scripts"))
+    import container_install as ci  # noqa: WPS433
+
+    monkeypatch.delenv("APPTAINER_TMPDIR", raising=False)
+    monkeypatch.delenv("SINGULARITY_TMPDIR", raising=False)
+    monkeypatch.delenv("PROOT_TMP_DIR", raising=False)
+    cache = tmp_path / "containers"
+    cache.mkdir()
+    tmp = ci.export_apptainer_tmpdir(cache)
+    assert tmp == tmp_path / "apptainer_tmp"
+    assert tmp.is_dir()
+    assert os.environ["APPTAINER_TMPDIR"] == str(tmp)
+    assert os.environ["PROOT_TMP_DIR"] == str(tmp)
+    assert os.environ["SINGULARITY_TMPDIR"] == str(tmp)
+
+
 def test_explicit_cache_not_masked_by_config_local(tmp_path):
     """--cache DIR must report pin-named files in DIR, not site config.local.yaml paths."""
     proc = _run_install_py("list", "--cache", str(tmp_path / "empty"), "--only", "qsiprep")

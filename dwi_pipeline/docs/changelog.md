@@ -11,6 +11,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ### Changed
 - Maintainer runbooks and readiness notes now describe **0.3.1** as the current orchestrator (step SIFs remain 0.3.0).
+- **`./dkt install`** also exports `PROOT_TMP_DIR` (and `SINGULARITY_TMPDIR`) so OCI→SIF conversion works when `/tmp` is `noexec`.
+- Orchestrator **Dockerfile** uses an absolute entrypoint so `apptainer run image.sif --version` does not depend on the host cwd. Rebuild `dkt-connectome:0.3.1` after this change (do not retag `0.3.0`).
 
 ## [0.3.1] — BIDS App flag parity (orchestrator rebuild)
 

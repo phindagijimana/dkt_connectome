@@ -12,6 +12,9 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | `FS_LICENSE` missing | No FreeSurfer license on your machine | Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html); `export FS_LICENSE=/path/to/your/license.txt` — [Installation](installation.md#freesurfer-license-you-must-obtain-this) |
 | Container not found | Wrong `.sif` path | Set `CONTAINER_*` or `config.local.yaml` → [Configuration](configuration.md) |
 | `snakemake not found` | Missing on PATH | `pip install snakemake` or `module load` |
+| `apptainer pull` / proot: `/tmp` has no execution permission | Cluster mounts `/tmp` `noexec` | `export PROOT_TMP_DIR=$HOME/.cache/dkt-connectome/apptainer_tmp` (same as `APPTAINER_TMPDIR`); `./dkt install` sets this when unset — [Installation § HPC](installation.md#hpc--ood-login-nodes) |
+| `apptainer run …/orchestrator.sif`: `stat …/docker-entrypoint.sh` | Relative entrypoint + host cwd | Pull `dkt-connectome:0.3.1` rebuilt after the absolute-entrypoint fix, or `apptainer exec --pwd /opt/dkt-connectome/dwi_pipeline IMAGE --version` |
+| `podman pull` `lchown /etc/gshadow` | Rootless podman UID/GID map too small | Use Apptainer or Docker; do not require podman on the login node |
 
 ---
 

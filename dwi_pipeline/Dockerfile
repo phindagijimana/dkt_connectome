@@ -50,5 +50,7 @@ ENV PATH="/opt/dkt-connectome/dwi_pipeline:${PATH}"
 ENV DKT_CONTAINER_CACHE="/opt/dkt-connectome/containers"
 RUN mkdir -p "${DKT_CONTAINER_CACHE}"
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Absolute path so `apptainer run image.sif --version` works when the host
+# cwd is not the image WORKDIR (relative ./docker-entrypoint.sh fails there).
+ENTRYPOINT ["/opt/dkt-connectome/dwi_pipeline/docker-entrypoint.sh"]
 CMD ["--help"]

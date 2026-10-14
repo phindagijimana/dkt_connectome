@@ -16,6 +16,21 @@ Cite dataset use separately from pipeline software — see [Citation](citation.m
 
 ---
 
+## Orchestrator image vs host runs
+
+The published BIDS App image (`phindagijimana321/dkt-connectome:0.3.1` / GHCR) is an **orchestrator**: Snakemake + `./run`. It does **not** contain QSIPrep, FreeSurfer, or the other step `.sif` files.
+
+| What | Where it was checked | What it proves |
+|------|----------------------|----------------|
+| `docker run … --version` / `dkt version` → `0.3.1` | GitHub Actions **Docker publish** on tag `v0.3.1` | Image identity |
+| Fixture `--dry-run --mode qsiprep` (including `--fastsurfer-device`, `--force-syn`, `--act-mode`, `--connectome-atlases`) | Same CI job + HPC Apptainer of the Hub image | Wrapper flags and Snakemake DAG |
+| IDEAS II `sub-1` / `sub-6` Steps 1–5 | Host `./run` + Apptainer **step** SIFs | Default no-lesion path |
+| BTC glioma PAT20 (lesion-aware / `--disconnection`) | Host `./run` + step SIFs | Lesion path |
+
+A from-scratch IDEAS or glioma **rerun inside the orchestrator container** is not required to list the app: the container and the host `./run` are the same scripts. Pull step SIFs with `./dkt install` (or `-e DKT_AUTO_INSTALL=1`) before a real participant run.
+
+---
+
 ## Public software demos
 
 | Demo | Role | OpenNeuro |
