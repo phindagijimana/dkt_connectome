@@ -2,13 +2,13 @@
 
 name: dkt_connectome
 description: |
-  Lesion-aware structural connectomics BIDS App (v0.3.0). QSIPrep → optional
+  Lesion-aware structural connectomics BIDS App (v0.3.1). QSIPrep → optional
   neuroLIT inpainting → FreeSurfer/FastSurfer → QSIRecon ACT-HSVS → DKT
   connectome → optional disconnectome → node-strength / ENIGMA report.
   Public software demos: IDEAS II (OpenNeuro ds007401) and BTC glioma PAT20
   (OpenNeuro ds001226, lesion-aware path).
 
-version: "0.3.0"
+version: "0.3.1"
 license: Apache-2.0
 homepage: https://github.com/phindagijimana/dkt_connectome
 repository: https://github.com/phindagijimana/dkt_connectome.git
@@ -51,7 +51,7 @@ containers:
   - name: freesurfer
     source: docker://freesurfer/freesurfer:7.4.1
   - name: dkt_connectome_orchestrator
-    source: docker://phindagijimana321/dkt-connectome:0.3.0
+    source: docker://phindagijimana321/dkt-connectome:0.3.1
     description: BIDS App orchestrator (Snakemake); step images mount at runtime.
   - name: connectome
     source: docker://ghcr.io/phindagijimana/dk-connectome:0.3.0

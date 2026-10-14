@@ -38,7 +38,7 @@ JSON Schema: [Schema reference](schema_reference.md).
 | `container_pins.deep_atropos_seg` | `ghcr.io/phindagijimana/dkt-deep-atropos-seg:0.3.0` | string |
 | `container_pins.lit` | `deepmi/lit:0.6.0` | string |
 | `container_pins.nodestrength` | `phindagijimana321/nodestrength:0.1.0` | string |
-| `container_pins.orchestrator` | `ghcr.io/phindagijimana/dkt-connectome:0.3.0` | string |
+| `container_pins.orchestrator` | `ghcr.io/phindagijimana/dkt-connectome:0.3.1` | string |
 | `containers.qsiprep` | `/path/to/others/containers/qsiprep.sif` | string |
 | `containers.qsirecon` | `/path/to/others/containers/qsirecon.sif` | string |
 | `containers.fastsurfer` | `/path/to/others/containers/fastsurfer_latest.sif` | string |
@@ -50,7 +50,7 @@ JSON Schema: [Schema reference](schema_reference.md).
 | `containers.deep_atropos_seg` | `/path/to/others/containers/dkt_deep_atropos_seg.sif` | string |
 | `containers.lit` | `/path/to/others/containers/lit_0.6.0.sif` | string |
 | `containers.nodestrength` | `/path/to/node_strength/containers/nodestrength_0.1.0.sif` | string |
-| `containers.orchestrator` | `${HOME}/.cache/dkt-connectome/containers/dkt_connectome_orchestrator_0.3.0.sif` | string |
+| `containers.orchestrator` | `${HOME}/.cache/dkt-connectome/containers/dkt_connectome_orchestrator_0.3.1.sif` | string |
 | `fs_license` | `/path/to/others/data_mining/freesurfer/license.txt` | string |
 | `fs_lut` | `null` | null |
 | `qsiprep.use_syn_sdc` | `false` | bool |

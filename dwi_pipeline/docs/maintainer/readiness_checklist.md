@@ -2,7 +2,7 @@
 
 Prioritized remaining work to reach a **listed, production-ready BIDS App** and get as close as practical to **QSIPrep-level** polish.
 
-**Summary:** [remaining.md](remaining.md) (v0.3.0). Legacy root Snakefile removed.
+**Summary:** [remaining.md](remaining.md) (v0.3.1). Legacy root Snakefile removed.
 
 **Current baseline:** v0.2.0 — `./run`, participant + group levels, Snakemake engine, MkDocs site, CI dry-runs, orchestrator Docker image.
 

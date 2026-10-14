@@ -1,9 +1,9 @@
 {
-  "pipeline_version": "0.3.0",
-  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. The orchestrator image sha256 is null until a release rebuild records it \u2014 strict check skips that key only. Step images are fully pinned.",
+  "pipeline_version": "0.3.1",
+  "notes": "Pin this file with git tag v0.3.1. Orchestrator 0.3.1 is a wrapper rebuild (new ./run flags). Step SIFs stay at 0.3.0. After install, run ./dkt check --strict. The orchestrator sha256 is null until that rebuild is recorded.",
   "orchestrator": {
-    "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.0",
-    "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.0",
+    "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.1",
+    "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.1",
     "sha256": null
   },
   "steps": {
