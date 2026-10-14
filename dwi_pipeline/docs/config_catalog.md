@@ -68,9 +68,9 @@ JSON Schema: [Schema reference](schema_reference.md).
 | `inpaint.batch_size` | `4` | int |
 | `inpaint.labels` | `all` | string |
 | `inpaint.binarize` | `false` | bool |
-| `inpaint.min_outside_corr` | `0.995` | float |
-| `inpaint.max_corr_drop` | `0.01` | float |
-| `inpaint.fail_on_qc` | `false` | bool |
+| `inpaint.min_outside_corr` | `0.995` | float (optional local default; not a published cutoff) |
+| `inpaint.max_corr_drop` | `0.01` | float (optional local default; not a published cutoff) |
+| `inpaint.fail_on_qc` | `false` | bool (opt in: abort on those optional defaults) |
 | `inpaint.vbt.smoothing_factor` | `2.0` | float |
 | `recon.enabled` | `true` | bool |
 | `recon.tool` | `freesurfer` | string |

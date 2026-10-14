@@ -6,7 +6,7 @@ The default graph uses the **Desikan–Killiany–Tourville (DKT)** atlas — 78
 
 The workflow is **study-agnostic**. Any BIDS DWI + T1w cohort can run. Lesion-specific steps (inpainting, lesion-aware tractography, disconnectome) stay off unless a mask and the matching flags are present. It orchestrates [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer or FastSurfer, MRtrix3, and optional neuroLIT — it does not replace those tools; it pins them and carries a lesion mask through to the graph.
 
-Public software checks use [IDEAS II](datasets/ideas.md) and [BTC glioma](datasets/btc_glioma.md). TRACK-TBI DoD Phase 1 was run under a data-use agreement and is **not** in this repository.
+Public software checks use [IDEAS II](datasets/ideas.md) and [BTC glioma](datasets/btc_glioma.md) — reportlets on [Sample results](sample_results.md). TRACK-TBI DoD Phase 1 was run under a data-use agreement and is **not** in this repository.
 
 ---
 

@@ -40,6 +40,8 @@ A from-scratch IDEAS or glioma **rerun inside the orchestrator container** is no
 
 These subjects demonstrate that the pipeline runs. They are **not** a TBI clinical validation cohort.
 
+QSIPrep / QSIRecon-style reportlets and the QC table: **[Sample results](sample_results.md)**.
+
 ---
 
 ## IDEAS II (no-lesion demo)
@@ -115,12 +117,13 @@ Full spec: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc) · [Me
 
 From `inpainting_qc.json` / `check_inpainting.py`:
 
-| Metric | Default gate |
-|--------|--------------|
-| Outside-lesion correlation | ≥ 0.995 |
-| Correlation drop vs resampling control | ≤ 0.01 |
+| What | Rule |
+|------|------|
+| Step FAIL | No volume, wrong grid, NaN *r*, or empty mask |
+| Outside-mask Pearson *r*, control *r*, drop | Always printed (descriptive IQMs) |
+| 0.995 / 0.01 | Optional local defaults, **not** a published cutoff. They abort the run only if `INPAINT_FAIL_ON_QC=1` |
 
-Details: [Methods § Step 1.1](methods/step1_1_inpaint.md).
+Pollak et al. 2025 report SSIM/PSNR of the fill and Dice/HD95 of FastSurfer, not a Pearson *r* ≥ 0.995 gate. Judge the before/after PNGs (MRIQC-style visual QC). Details: [Methods § Step 1.1](methods/step1_1_inpaint.md).
 
 ---
 

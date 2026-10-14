@@ -85,8 +85,8 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 | `dilate` | `INPAINT_DILATE` | Mask dilation voxels (default 2) |
 | `device` | `INPAINT_DEVICE` | `auto`, `cpu`, `cuda` (neuroLIT only) |
 | `vbt.smoothing_factor` | `VBT_SMOOTHING_FACTOR` | Gaussian sigma for VBT (default `2.0`) |
-| `min_outside_corr` | `INPAINT_MIN_OUTSIDE_CORR` | QC threshold |
-| `fail_on_qc` | `INPAINT_FAIL_ON_QC=1` | Fail when QC `ok=false` |
+| `min_outside_corr` | `INPAINT_MIN_OUTSIDE_CORR` | Optional local default (0.995); not a published cutoff |
+| `fail_on_qc` | `INPAINT_FAIL_ON_QC=1` | Opt in: abort if *r* / drop miss those optional defaults |
 
 ---
 

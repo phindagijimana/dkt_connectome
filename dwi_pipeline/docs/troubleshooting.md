@@ -34,7 +34,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | Error / symptom | Fix |
 |-----------------|-----|
 | Step skipped silently | No lesion mask for session (expected) |
-| `inpainting_qc.json` `ok: false` | Check `outside_lesion_correlation`; set `INPAINT_FAIL_ON_QC=1` to hard-fail |
+| `inpainting_qc.json` `ok: false` | Volume unusable (missing, wrong grid, NaN *r*, empty mask). Printed *r* / control / drop are IQMs, not a fail unless `INPAINT_FAIL_ON_QC=1` |
 | GPU OOM | Lower `INPAINT_BATCH_SIZE` (default 4); request larger GPU slice |
 | Wrong grid / geometry | Ensure LIT ran with `--keepgeom` (pipeline default) |
 

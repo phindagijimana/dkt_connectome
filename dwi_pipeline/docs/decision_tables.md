@@ -52,7 +52,7 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 | No mask | Silent skip (raw T1w → Step 2) |
 | Mask present but skip desired | `--no-inpaint` or `--anat-mitigation none` |
 | LeAPP-compatible VBT instead of neuroLIT | `--anat-mitigation vbt` |
-| QC failure should abort run | `INPAINT_FAIL_ON_QC=1` |
+| Abort if optional *r* / drop defaults are missed | `INPAINT_FAIL_ON_QC=1` (default: print IQMs only; those numbers are not a published cutoff) |
 
 ---
 

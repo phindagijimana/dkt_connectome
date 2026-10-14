@@ -68,16 +68,20 @@ When Step 1.1 runs, **`INPAINTED_T1W`** replaces the raw BIDS T1w for:
 
 ## Quality control
 
-`check_inpainting.py` verifies inpainting **only changed voxels inside (or near) the lesion**:
+`check_inpainting.py` reports whether the inpainted T1w is **usable**, then prints outside-mask agreement as **descriptive IQMs** (same idea as MRIQC: numbers for inspection, not an automatic disease grade).
 
-| Metric | Meaning | Default gate |
-|--------|---------|--------------|
-| Outside-lesion correlation | Pearson *r* between original and inpainted outside mask | ≥ 0.995 |
-| Resampling control | Same correlation after conform/resample round-trip without inpainting | baseline |
-| Correlation drop | Control − outside correlation; large values mean network altered healthy tissue | ≤ 0.01 |
-| Regenerated voxels | Count of outside-lesion voxels changed beyond adaptive threshold | reported only |
+**FAIL (`ok: false`) only when the step is broken:** no volume, wrong grid (`geometry_matches_original` false), NaN correlation, or empty mask.
 
-Set `INPAINT_FAIL_ON_QC=1` to fail the run on QC violation (default: warn and continue).
+| Metric | Meaning | Role |
+|--------|---------|------|
+| Outside-lesion Pearson *r* | Original vs inpainted outside the mask | Always printed |
+| Resampling-control *r* | Same correlation after conform/resample with **no** inpaint | Always printed |
+| Correlation drop | Control − outside *r* | Always printed |
+| Regenerated voxels | Outside-mask voxels past an adaptive intensity threshold | Reported only |
+
+Inpaint finished. Outside-mask Pearson *r* is reported for inspection. **0.995 / 0.01 are optional pipeline defaults, not a published cutoff.** Judge the before/after PNGs ([Pollak et al. 2025](https://doi.org/10.1162/imag_a_00446) evaluates SSIM/PSNR and downstream Dice/HD95, not this Pearson gate; [MRIQC](https://doi.org/10.1371/journal.pone.0184661) uses visual reports).
+
+Set `INPAINT_FAIL_ON_QC=1` (or `inpaint.fail_on_qc: true`) if a lab wants those optional defaults to abort the run. Default is report-only.
 
 ---
 

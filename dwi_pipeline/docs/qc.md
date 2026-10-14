@@ -4,6 +4,8 @@ HTML reports summarize pipeline outputs for Steps 1–5. This page covers **wher
 
 Public demos ([IDEAS II](datasets/ideas.md), [BTC glioma](datasets/btc_glioma.md)) write the same QSIPrep / QSIRecon / subject QC HTML under `RESULTS_ROOT` after a real run. Those HTML files are **not** committed (large, subject-derived). Open them locally from your results directory.
 
+Shipped public-demo reportlets (small SVGs/PNGs only; not full derivatives): **[Sample results](sample_results.md)**.
+
 Pipeline overview diagram: [How it works — science & theory](science_overview.md). Step 4.1 theory: [Disconnectome methods](methods/step4_1_disconnectome.md). Automated disconnectome checks: [Disconnectome § Integrity QC](disconnectome.md#integrity-qc).
 
 ---
@@ -47,7 +49,7 @@ Embedded from QSIPrep reportlets under `qsiprep_single_run_output/sub-<ID>/`.
 | Panel | What to look for |
 |-------|------------------|
 | Before / after T1w | Lesion filled; surrounding anatomy unchanged |
-| `inpainting_qc.json` | `outside_lesion_correlation` ≥ 0.995 |
+| `inpainting_qc.json` | Printed IQMs: `outside_lesion_correlation`, `resampling_control_correlation`, `correlation_drop_vs_control`. **FAIL only if the volume is unusable** (missing, wrong grid, NaN, empty mask). 0.995 / 0.01 are optional defaults, not a published cutoff. |
 | Preview PNGs | No obvious blurring outside mask |
 
 #### Step 2 — Recon

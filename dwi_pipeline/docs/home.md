@@ -8,7 +8,7 @@ DKT Connectome turns a BIDS diffusion MRI session (DWI + T1w) into a **structura
 
 It is **study-agnostic** — any BIDS DWI + T1w cohort can run. Lesion steps stay off unless a mask and the matching flags are present. The same streamlines can be counted on other atlases (DK, Lausanne-60, QSIRecon 4S156) without a second pipeline. One paragraph per step, including the disconnectome and extra atlases: **[What DKT Connectome does](what_it_does.md)**.
 
-Public software checks: [IDEAS II](datasets/ideas.md) and [BTC glioma](datasets/btc_glioma.md). TRACK-TBI DoD Phase 1 was run under a data-use agreement (data not in this repo) and is not a public validation claim.
+Public software checks: [IDEAS II](datasets/ideas.md) and [BTC glioma](datasets/btc_glioma.md) — reportlets on [Sample results](sample_results.md). TRACK-TBI DoD Phase 1 was run under a data-use agreement (data not in this repo) and is not a public validation claim.
 
 **Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.3.1](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.1)
 
@@ -26,6 +26,7 @@ Use **Linux + Apptainer** on a workstation or HPC (FreeSurfer license required).
 |--------------|--------|
 | **What it does (short intro)** | [What DKT Connectome does](what_it_does.md) |
 | **Install & first run** | [Installation](installation.md) → [Tutorial](tutorial.md) |
+| **Example reportlets** | [Sample results](sample_results.md) (IDEAS II + glioma; QSIPrep/QSIRecon style) |
 | **All CLI flags** | [Usage](usage.md) (`./dkt` / `./run`) |
 | **Lesion factorial arms** | [TBI experimental arms](TBI_Experimental_Arms.md) |
 | **Why** the workflow exists | [Science overview](science_overview.md) |

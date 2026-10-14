@@ -210,9 +210,9 @@ Set before `./submit.sh` or before `subject.sh` / `run_subject.sh`.
 | `INPAINT_BATCH_SIZE` | `4` | GPU batch size (lower if OOM on small MIG slices). |
 | `INPAINT_LABELS` | `all` | Mask label values to inpaint, or `all`. |
 | `INPAINT_BINARIZE` | `0` | Collapse selected labels to one value before inpaint. |
-| `INPAINT_MIN_OUTSIDE_CORR` | `0.995` | QC: correlation outside lesion. |
-| `INPAINT_MAX_CORR_DROP` | `0.01` | QC: max drop vs resampling-only control. |
-| `INPAINT_FAIL_ON_QC` | `0` | If `1`, fail when inpaint QC reports `ok=false`. |
+| `INPAINT_MIN_OUTSIDE_CORR` | `0.995` | Optional local default for inspection / `INPAINT_FAIL_ON_QC`. Not a published cutoff. |
+| `INPAINT_MAX_CORR_DROP` | `0.01` | Optional local default for inspection / `INPAINT_FAIL_ON_QC`. Not a published cutoff. |
+| `INPAINT_FAIL_ON_QC` | `0` | If `1`, abort when *r* or drop miss those optional defaults. Default: print IQMs only. FAIL remains for missing volume / wrong grid / NaN / empty mask. |
 | `INPAINT_SKIP_IF_EXISTS` | `1` | Skip if `inpainting.json` already exists (`0` = force rerun). |
 
 ### Connectome extras

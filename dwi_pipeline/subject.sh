@@ -149,9 +149,9 @@
 #   INPAINT_BATCH_SIZE     slices per GPU batch (default 8; lower for less VRAM)
 #   INPAINT_LABELS         lesion-mask label values to inpaint, comma list or "all" (default)
 #   INPAINT_BINARIZE=1     collapse selected labels to one value before inpainting (default 0)
-#   INPAINT_MIN_OUTSIDE_CORR   QC threshold, correlation outside the lesion (default 0.995)
-#   INPAINT_MAX_CORR_DROP  QC threshold, drop vs. resampling-only control (default 0.01)
-#   INPAINT_FAIL_ON_QC=1   fail instead of warn when check_inpainting.py reports ok=false
+#   INPAINT_MIN_OUTSIDE_CORR   optional local default for inspection / INPAINT_FAIL_ON_QC (0.995; not a published cutoff)
+#   INPAINT_MAX_CORR_DROP  optional local default for inspection / INPAINT_FAIL_ON_QC (0.01; not a published cutoff)
+#   INPAINT_FAIL_ON_QC=1   treat those optional defaults as a hard fail (default 0: report r / control / drop only)
 #   INPAINT_SKIP_IF_EXISTS=0  force a rerun even if inpainting.json already exists (default 1: skip)
 #   RUN_RECON=0|1          Step 2 in mode=all (default 1)
 #   RECON_TOOL             freesurfer (default) or fastsurfer
@@ -898,11 +898,16 @@ run_inpaint() {
     "Inspect ${outdir} for tool output."
 
   local qc_json="${outdir}/inpainting_qc.json"
+  local qc_thresh=()
+  if [[ "${INPAINT_FAIL_ON_QC}" == "1" ]]; then
+    qc_thresh+=(--fail-on-thresholds)
+  fi
   python3 "${CHECK_INPAINTING}" \
     --original "${t1w}" --inpainted "${result}" --mask "${mask_prepared}" \
     --json "${qc_json}" \
     --min-outside-corr "${INPAINT_MIN_OUTSIDE_CORR}" \
-    --max-corr-drop "${INPAINT_MAX_CORR_DROP}"
+    --max-corr-drop "${INPAINT_MAX_CORR_DROP}" \
+    "${qc_thresh[@]}"
 
   local qc_ok
   qc_ok="$(python3 -c "import json; print(json.load(open('${qc_json}'))['ok'])")"

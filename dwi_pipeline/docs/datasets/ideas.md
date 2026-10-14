@@ -89,6 +89,7 @@ BibTeX and acknowledgment templates: [Citation](../citation.md#sample-tutorial-d
 
 ## See also
 
+- [Sample results](../sample_results.md) (QSIPrep / QSIRecon reportlets)
 - [sample_data/ideas/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/ideas/README.md)
 - [sample_data/ideas/RESULTS.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/ideas/RESULTS.md)
 - [Validation](../validation.md)
