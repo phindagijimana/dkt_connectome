@@ -15,7 +15,7 @@ Use this page as a **pre-flight checklist** before tagging. Step-by-step runbook
    ```bash
    sphinx-build -W --keep-going -b html dwi_pipeline/docs dwi_pipeline/docs/_build/html
    ```
-4. Create tag and GitHub Release for the current `app.json` `PipelineVersion` (v0.3.1) — **[§10 GitHub Release](maintainer_tasks.md#10-github-release-v020)**. Do not retag v0.3.0.
+4. Create tag and GitHub Release for the current `app.json` `PipelineVersion` (v0.3.1) — **[§10 GitHub Release](maintainer_tasks.md#10-github-release-v031)**. Do not retag v0.3.0.
 
 ---
 

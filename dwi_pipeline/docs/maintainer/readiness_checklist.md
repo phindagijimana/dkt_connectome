@@ -4,7 +4,7 @@ Prioritized remaining work to reach a **listed, production-ready BIDS App** and 
 
 **Summary:** [remaining.md](remaining.md) (v0.3.1). Legacy root Snakefile removed.
 
-**Current baseline:** v0.2.0 — `./run`, participant + group levels, Snakemake engine, MkDocs site, CI dry-runs, orchestrator Docker image.
+**Current baseline:** v0.3.1 — `./run` flag parity, participant + group levels, Snakemake engine, Read the Docs, CI dry-runs, orchestrator Docker image `dkt-connectome:0.3.1`. Step SIFs remain **0.3.0**.
 
 **Architectural note:** This pipeline is a **multi-container orchestrator** (QSIPrep, FreeSurfer, QSIRecon, connectome, LIT, nodestrength). It will not match QSIPrep’s single-image UX unless you publish a monolithic or compose-all-pins stack (optional, P2).
 
@@ -21,14 +21,14 @@ Credential-based steps for GitHub Release, Docker Hub, docs hosting, and workflo
 | # | Task | Status | Notes / path |
 |---|------|--------|--------------|
 | P0.1 | **Submit BIDS Apps registry entry** | Optional | Skip unless listing on bids-apps.neuroimaging.io — [bids_apps_registry.md](bids_apps_registry.md). |
-| P0.2 | **Create GitHub Release for v0.2.0** | **Done** | https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.2.0 |
-| P0.3 | **Verify Docker Hub image is pullable** | **Done** | `phindagijimana321/dkt-connectome:0.2.0` on Docker Hub |
+| P0.2 | **Create GitHub Release for v0.3.1** | **Done** | https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.1 (v0.3.0 and v0.2.0 remain) |
+| P0.3 | **Verify Docker Hub image is pullable** | **Done** | `phindagijimana321/dkt-connectome:0.3.1` on Docker Hub |
 | P0.4 | **Fix RTD auto-rebuild** | **Done** | Site live; CI `readthedocs.yml` triggers rebuilds (optional: `READTHEDOCS_TOKEN`) |
 | P0.5 | **Link Dockstore to GitHub** | Open | [Maintainer tasks §15](maintainer_tasks.md#15-dockstore-github-link) |
 | P0.6 | **Upload WorkflowHub RO-Crate** | Open | [Maintainer tasks §16](maintainer_tasks.md#16-workflowhub-ro-crate-upload) |
 | P0.7 | **Commit legacy doc trim** | **Done** | Bash fallback / dual-container in [`workflow/LEGACY.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/LEGACY.md); RTD uses `run_subject.sh` only. |
 
-**Exit criterion:** GitHub Release published, `docker pull phindagijimana321/dkt-connectome:0.2.0` works, RTD build green, Dockstore linked (WorkflowHub optional). BIDS Apps registry optional.
+**Exit criterion:** GitHub Release published, `docker pull phindagijimana321/dkt-connectome:0.3.1` works, RTD build green, Dockstore linked (WorkflowHub optional). BIDS Apps registry optional.
 
 ---
 
@@ -57,7 +57,7 @@ Most user-facing docs are done (~49 pages). Remaining cleanup is consistency and
 
 | # | Task | Notes / path |
 |---|------|--------------|
-| P2.1 | **Align version story (0.2.0 vs 1.0)** | App is 0.2.0; paper plan targets v1.0. Decide when to bump — [paper_plan.md §11](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md). |
+| P2.1 | **Align version story (0.3.1 vs 1.0)** | App is 0.3.1; paper plan targets v1.0. Decide when to bump — [paper_plan.md §11](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_software_paper/paper_plan.md). |
 | P2.2 | **Zenodo archive + DOI** | Runbook [Maintainer §17](maintainer_tasks.md#17-zenodo-archive-doi); `CITATION.cff` has `version` + DOI placeholder. |
 | P2.3 | **Formal BIDS Derivatives output spec page** | Internal layout is custom; export is optional — make policy obvious in [derivatives.md](../derivatives.md) + [outputs.md](../outputs.md). |
 | P2.4 | **Refresh root vs `dwi_pipeline/` doc split** | **Done** | Single public tree: `dwi_pipeline/` + root README. |
@@ -127,7 +127,7 @@ Only if cloud-only / BIDS Apps reviewers demand single-image UX.
 | CI dry-run + unit tests | `.github/workflows/dwi_pipeline_ci.yml`, `tests/test_bids_app.py` |
 | Minimal public test BIDS | `tests/fixtures/bids_minimal/` |
 | Docker orchestrator + compose | `Dockerfile`, `docker-compose.yml`, GHCR CI |
-| Git tag v0.2.0 | Remote |
+| Git tag v0.3.1 | Remote (v0.3.0 kept) |
 | Release notes draft | [`RELEASE_NOTES.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/RELEASE_NOTES.md) |
 | bids-validator in CI | `.github/workflows/dwi_pipeline_ci.yml` |
 | BIDS fixture validator-clean | `tests/fixtures/bids_minimal/` (`ses-baseline`, regenerate via `generate_bids_fixture.py`) |

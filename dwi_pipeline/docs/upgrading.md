@@ -50,9 +50,10 @@ Step images (QSIPrep, FreeSurfer, QSIRecon, connectome, …) are **not** inside 
 
 ```bash
 docker pull phindagijimana321/dkt-connectome:0.3.1
+# expect: docker run --rm phindagijimana321/dkt-connectome:0.3.1 --version  →  0.3.1
 ```
 
-Do **not** retag `0.3.0`.
+Published GHCR digest is pinned in [`release_manifest.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/release_manifest.json). Do **not** retag `0.3.0`.
 
 ---
 

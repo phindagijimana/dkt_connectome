@@ -100,6 +100,7 @@ Each step uses its own pinned `.sif` image. That is intentional — see [Contain
 |-----------|---------|
 | One subject (tutorial / workstation) | `./dkt run …` from `dwi_pipeline/` |
 | Slurm cohort | `bash dwi_pipeline/submit.sh` (FastSurfer by default) |
+| Docker / cloud orchestrator | `docker pull phindagijimana321/dkt-connectome:0.3.1` |
 
 `./dkt run` is the BIDS App (`./run`). Do not call `subject.sh` for new work.
 
