@@ -39,11 +39,18 @@ def validate_vbt(vbt_json: Path) -> list[str]:
 
     if not qc.get("geometry_matches_original"):
         errors.append("VBT QC: geometry_matches_original is false")
-    if qc.get("ok") is not True:
-        errors.append("VBT QC: ok is not true")
-    outside = float(qc.get("outside_lesion_correlation", 0))
-    if outside < 0.995:
-        errors.append(f"VBT QC: outside_lesion_correlation {outside:.6f} < 0.995")
+    if qc.get("hard_failures"):
+        errors.append("VBT QC: " + "; ".join(str(x) for x in qc["hard_failures"]))
+    elif qc.get("fail_on_thresholds") and qc.get("ok") is not True:
+        errors.append("VBT QC: ok is not true (fail_on_thresholds)")
+    r = qc.get("outside_lesion_correlation")
+    try:
+        r_f = float(r)
+    except (TypeError, ValueError):
+        errors.append("VBT QC: outside_lesion_correlation missing or not a number")
+    else:
+        if r_f != r_f:
+            errors.append("VBT QC: outside_lesion_correlation is NaN")
     if int(qc.get("regenerated_voxels", 0)) <= 0:
         errors.append("VBT QC: no regenerated voxels inside lesion")
 

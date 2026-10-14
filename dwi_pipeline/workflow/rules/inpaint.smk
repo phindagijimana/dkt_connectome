@@ -195,7 +195,8 @@ rule inpaint:
           --original "{input.t1w}" --inpainted "{output.result}" --mask "{output.mask_prepared}" \
           --json "{params.qc_json}" \
           --min-outside-corr {INPAINT_MIN_OUTSIDE_CORR} \
-          --max-corr-drop {INPAINT_MAX_CORR_DROP}
+          --max-corr-drop {INPAINT_MAX_CORR_DROP} \
+          { "--fail-on-thresholds" if INPAINT_FAIL_ON_QC else "" }
 
         qc_ok="$({PIPELINE_PYTHON} -c "import json; print(json.load(open('{params.qc_json}'))['ok'])")"
         if [[ "${{qc_ok}}" != "True" ]]; then

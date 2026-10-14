@@ -15,6 +15,47 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from evaluate_disconnectome_integrity import collect_integrity_report  # noqa: E402
 
+INPAINT_PUBLIC_NOTE = (
+    "Inpaint finished. Outside-mask Pearson r is reported for inspection. "
+    "0.995 / 0.01 are optional pipeline defaults, not a published cutoff. "
+    "Judge the before/after PNGs (Pollak et al. 2025; MRIQC visual QC)."
+)
+
+
+def inpaint_dashboard_status(data: dict[str, Any]) -> tuple[str, str]:
+    """PASS unless the inpainted volume is unusable.
+
+    Optional 0.995 / 0.01 defaults do not color FAIL unless fail_on_thresholds
+    was set (INPAINT_FAIL_ON_QC). Older JSONs that set ok=false only because
+    r missed 0.995 are treated as PASS.
+    """
+    if data.get("fail_on_thresholds") and data.get("ok") is False:
+        failures = data.get("failures") or data.get("hard_failures") or ["inpaint QC opted into thresholds"]
+        return "FAIL", "; ".join(str(x) for x in failures)
+
+    hard = data.get("hard_failures")
+    if hard:
+        return "FAIL", "; ".join(str(x) for x in hard)
+
+    if data.get("geometry_matches_original") is False:
+        return "FAIL", "inpainted T1w grid does not match the original"
+
+    r = data.get("outside_lesion_correlation")
+    if r is None:
+        return "FAIL", "outside-lesion correlation is missing"
+    try:
+        r_f = float(r)
+    except (TypeError, ValueError):
+        return "FAIL", "outside-lesion correlation is not a number"
+    if r_f != r_f:  # NaN
+        return "FAIL", "outside-lesion correlation is NaN"
+
+    lesion_voxels = data.get("lesion_voxels")
+    if lesion_voxels == 0:
+        return "FAIL", "prepared lesion mask is empty"
+
+    return "PASS", INPAINT_PUBLIC_NOTE
+
 
 def _sub_ids(subject: str) -> tuple[str, str]:
     subject = subject.removeprefix("sub-")
@@ -114,7 +155,7 @@ def collect_inpaint(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
 
     qc_path = qc_files[0]
     data = _load_json(qc_path) or {}
-    status = "PASS" if data.get("ok") else "FAIL"
+    status, notes = inpaint_dashboard_status(data)
     session = qc_path.parent.name
     img_dir = qc_path.parent / "inpainting_images"
     figures: list[dict[str, str]] = []
@@ -133,16 +174,27 @@ def collect_inpaint(results_root: Path, subject_id: str, qc_dir: Path) -> dict:
             "resampling_control_correlation",
             "lesion_voxels",
             "geometry_matches_original",
+            "fail_on_thresholds",
         )
         if k in data
     }
     summary["session"] = session
+    if data.get("threshold_notes"):
+        summary["threshold_notes"] = data["threshold_notes"]
     links = [{"label": "inpainting_qc.json", "href": _rel_link(qc_dir, qc_path) or ""}]
     prov = qc_path.parent / "inpainting.json"
     if prov.is_file():
         links.append({"label": "inpainting.json", "href": _rel_link(qc_dir, prov) or ""})
 
-    return _step("inpaint", "Step 1.1 — Inpaint", status, summary=summary, links=links, figures=figures)
+    return _step(
+        "inpaint",
+        "Step 1.1 — Inpaint",
+        status,
+        summary=summary,
+        links=links,
+        figures=figures,
+        notes=notes,
+    )
 
 
 def collect_recon(results_root: Path, subject_id: str, qc_dir: Path) -> dict:

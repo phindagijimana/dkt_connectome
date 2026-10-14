@@ -16,6 +16,7 @@ Contents
    tutorial
    datasets/ideas
    datasets/btc_glioma
+   sample_results
    upgrading
 
 .. toctree::

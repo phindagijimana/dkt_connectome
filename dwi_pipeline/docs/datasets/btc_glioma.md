@@ -106,6 +106,7 @@ BibTeX: [Citation](../citation.md#public-glioma-lesion-demo-not-tbi).
 
 ## See also
 
+- [Sample results](../sample_results.md) (QSIPrep / QSIRecon reportlets; glioma, not TBI)
 - [sample_data/btc_glioma/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/btc_glioma/README.md)
 - [sample_data/btc_glioma/RESULTS.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/sample_data/btc_glioma/RESULTS.md)
 - [IDEAS II sample](ideas.md) (epilepsy DWI smoke test — also not TBI)

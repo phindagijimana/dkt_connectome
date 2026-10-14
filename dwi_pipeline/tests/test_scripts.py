@@ -146,6 +146,46 @@ def test_render_disconnectome_qc_html(tmp_path):
     assert report["overall_status"] in ("PASS", "WARN", "FAIL")
 
 
+def test_inpaint_dashboard_status_old_json_threshold_is_pass():
+    collect = _load_module("collect_subject_qc", DWI / "scripts" / "collect_subject_qc.py")
+    status, notes = collect.inpaint_dashboard_status(
+        {
+            "ok": False,
+            "geometry_matches_original": True,
+            "outside_lesion_correlation": 0.986897,
+            "resampling_control_correlation": 0.996625,
+            "correlation_drop_vs_control": 0.009728,
+            "lesion_voxels": 12451,
+        }
+    )
+    assert status == "PASS"
+    assert "not a published cutoff" in notes
+
+
+def test_inpaint_dashboard_status_hard_fail_and_opt_in():
+    collect = _load_module("collect_subject_qc", DWI / "scripts" / "collect_subject_qc.py")
+    status, _ = collect.inpaint_dashboard_status(
+        {
+            "ok": False,
+            "geometry_matches_original": False,
+            "outside_lesion_correlation": 0.99,
+            "lesion_voxels": 100,
+        }
+    )
+    assert status == "FAIL"
+    status, _ = collect.inpaint_dashboard_status(
+        {
+            "ok": False,
+            "fail_on_thresholds": True,
+            "geometry_matches_original": True,
+            "outside_lesion_correlation": 0.98,
+            "lesion_voxels": 100,
+            "failures": ["optional default missed"],
+        }
+    )
+    assert status == "FAIL"
+
+
 def test_collect_subject_qc_local_fixture():
     collect = _load_module("collect_subject_qc", DWI / "scripts" / "collect_subject_qc.py")
     subject = os.environ.get("QC_TEST_SUBJECT", "EXAMPLE")

@@ -80,9 +80,9 @@ inpaint:
   batch_size: 4            # 8 OOMs on gpu:l40s.6g MIG slices; use 12g/24g or lower this
   labels: all
   binarize: false
-  min_outside_corr: 0.995
-  max_corr_drop: 0.01
-  fail_on_qc: false
+  min_outside_corr: 0.995  # optional local default; not a published cutoff
+  max_corr_drop: 0.01      # optional local default; not a published cutoff
+  fail_on_qc: false        # true: abort if those optional defaults are missed
   vbt:
     smoothing_factor: 2.0  # Gaussian sigma in voxels, matching LeAPP code
 
