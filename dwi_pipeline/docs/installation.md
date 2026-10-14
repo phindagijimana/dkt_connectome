@@ -43,6 +43,7 @@ cd dwi_pipeline
 |-----------------|---------|---------|
 | `DKT_CONTAINER_CACHE` | `~/.cache/dkt-connectome/containers` | Where `.sif` files are stored |
 | `APPTAINER_TMPDIR` | `<cache>/../apptainer_tmp` | Temp dir for `apptainer pull` (see HPC note below) |
+| `PROOT_TMP_DIR` | same as `APPTAINER_TMPDIR` | Required when `/tmp` is `noexec` (OCI→SIF / proot) |
 | `--mode qsiprep` | all steps | Pull only what a mode needs |
 | `--missing-only` | off | Skip images already in cache |
 
@@ -53,11 +54,14 @@ Many clusters mount **`/tmp` with `noexec`**, which breaks `apptainer pull`. Bef
 ```bash
 export DKT_CONTAINER_CACHE=$HOME/.cache/dkt-connectome/containers
 export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp
+export PROOT_TMP_DIR=$APPTAINER_TMPDIR
 mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 ./dkt install
 ```
 
-`install.sh` sets `APPTAINER_TMPDIR` from the cache parent when unset. First-time `docker://` OCI→SIF conversion of QSIPrep / QSIRecon / FreeSurfer can take 30–90 minutes — keep `DKT_CONTAINER_CACHE` and `APPTAINER_TMPDIR` on local (non-NFS) disks.
+`install.sh` also sets **`PROOT_TMP_DIR`** and `SINGULARITY_TMPDIR` to the same path. OCI→SIF conversion uses proot, which ignores `APPTAINER_TMPDIR` and fails with `current temporary directory (/tmp) is mounted with no execution permission` unless `PROOT_TMP_DIR` is set. First-time `docker://` conversion of QSIPrep / QSIRecon / FreeSurfer can take 30–90 minutes — keep cache and temp on local (non-NFS) disks when you can.
+
+Rootless **podman** on some HPC logins fails with `lchown /etc/gshadow: invalid argument`. Use **Apptainer** (or Docker with sufficient UIDs), not podman, to pull the orchestrator.
 
 Verify before your first run:
 
@@ -212,6 +216,15 @@ docker compose build
 docker compose run --rm dkt-connectome \
   /data/bids /data/out participant \
   --participant-label 1 --session-filter ses-1 --fastsurfer --syn --dry-run
+```
+
+**Apptainer of the published orchestrator** (HPC, after `PROOT_TMP_DIR` is set):
+
+```bash
+SIF=$DKT_CONTAINER_CACHE/dkt_connectome_orchestrator_0.3.1.sif
+apptainer pull "$SIF" docker://phindagijimana321/dkt-connectome:0.3.1
+# 0.3.1+ uses an absolute entrypoint — no --pwd required
+apptainer run --cleanenv --no-home "$SIF" --version
 ```
 
 Publish orchestrator to Docker Hub (maintainers):

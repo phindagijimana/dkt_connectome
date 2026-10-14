@@ -30,6 +30,24 @@ def resolved_local_config() -> Path:
     if env:
         return Path(os.path.expandvars(env)).expanduser()
     return DEFAULT_LOCAL_CONFIG
+
+
+def export_apptainer_tmpdir(cache: Path) -> Path:
+    """Point Apptainer/proot scratch at a writable, executable directory.
+
+    ``APPTAINER_TMPDIR`` alone is not enough: OCI→SIF conversion uses proot,
+    which honors ``PROOT_TMP_DIR`` and fails when ``/tmp`` is mounted ``noexec``.
+    """
+    tmp = Path(
+        os.environ.get("APPTAINER_TMPDIR") or (Path(cache).expanduser().resolve().parent / "apptainer_tmp")
+    )
+    tmp.mkdir(parents=True, exist_ok=True)
+    os.environ["APPTAINER_TMPDIR"] = str(tmp)
+    os.environ.setdefault("SINGULARITY_TMPDIR", str(tmp))
+    os.environ.setdefault("PROOT_TMP_DIR", str(tmp))
+    return tmp
+
+
 RELEASE_MANIFEST = DWI_PIPELINE_DIR / "release_manifest.json"
 APP_JSON = DWI_PIPELINE_DIR / "app.json"
 CONNECTOME_BUILD = DWI_PIPELINE_DIR / "containers" / "connectome" / "build_connectome.sh"
@@ -631,11 +649,7 @@ def pull_all(
     quiet: bool,
 ) -> None:
     _pull_bin()  # raises if missing
-    os.environ.setdefault(
-        "APPTAINER_TMPDIR",
-        str(Path(os.environ.get("APPTAINER_TMPDIR", cache.parent / "apptainer_tmp"))),
-    )
-    Path(os.environ["APPTAINER_TMPDIR"]).mkdir(parents=True, exist_ok=True)
+    export_apptainer_tmpdir(cache)
 
     for key in keys:
         pin_rows = list_plan(cache, (key,))

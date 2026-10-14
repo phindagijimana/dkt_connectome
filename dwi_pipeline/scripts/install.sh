@@ -49,6 +49,7 @@ After install:
 Environment:
   DKT_CONTAINER_CACHE   Same as --cache
   APPTAINER_TMPDIR      Temp dir for apptainer pull (default: <cache>/../apptainer_tmp)
+  PROOT_TMP_DIR         Also set to APPTAINER_TMPDIR — required when /tmp is noexec
 EOF
 }
 
@@ -78,6 +79,9 @@ if ! mkdir -p "${APPTAINER_TMPDIR}" 2>/dev/null; then
   mkdir -p "${APPTAINER_TMPDIR}"
 fi
 export APPTAINER_TMPDIR
+# proot (used during OCI→SIF) ignores APPTAINER_TMPDIR and fails on noexec /tmp
+export SINGULARITY_TMPDIR="${SINGULARITY_TMPDIR:-${APPTAINER_TMPDIR}}"
+export PROOT_TMP_DIR="${PROOT_TMP_DIR:-${APPTAINER_TMPDIR}}"
 
 PY="${SCRIPT_DIR}/container_install.py"
 args=(--cache "${CACHE}" --config "${CONFIG_OUT}")
