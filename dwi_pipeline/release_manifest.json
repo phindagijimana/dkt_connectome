@@ -1,10 +1,10 @@
 {
   "pipeline_version": "0.3.1",
-  "notes": "Pin this file with git tag v0.3.1. Orchestrator 0.3.1 is a wrapper rebuild (new ./run flags). Step SIFs stay at 0.3.0. After install, run ./dkt check --strict. The orchestrator sha256 is null until that rebuild is recorded.",
+  "notes": "Pin this file with git tag v0.3.1. Orchestrator 0.3.1 is a wrapper rebuild (new ./run flags). Step SIFs stay at 0.3.0. After install, run ./dkt check --strict. Orchestrator sha256 is the GHCR manifest digest for :0.3.1.",
   "orchestrator": {
     "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.1",
     "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.1",
-    "sha256": null
+    "sha256": "76f71c222efc361a87da53e3ec59fb4d96acea7cbae0c064387ac83a1550f018"
   },
   "steps": {
     "qsiprep": {
