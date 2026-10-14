@@ -11,6 +11,7 @@ Contents
    :maxdepth: 2
    :caption: Getting started
 
+   what_it_does
    installation
    tutorial
    datasets/ideas

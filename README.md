@@ -7,7 +7,9 @@ QSIPrep → optional inpainting → recon → QSIRecon ACT tractography → DKT 
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.3.1-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
 
-**New here?** Use the **[documentation site](https://dkt-connectome.readthedocs.io/en/latest/)** or the commands below.
+**New here?** Short introduction — [What DKT Connectome does](https://dkt-connectome.readthedocs.io/en/latest/what_it_does.html) — or the commands below.
+
+The app builds a **structural connectome** (default: DKT, 78 nodes) from BIDS DWI + T1w. With a lesion mask it can inpaint anatomy before reconstruction and optionally estimate a **disconnectome** (`--disconnection`). Other atlases (DK, Lausanne-60, QSIRecon 4S156) are extra matrices from the same streamlines.
 
 The only pipeline in this repository is **`dwi_pipeline/`**. BIDS App contract: **`./run`** at the repo root (or `dwi_pipeline/run`). Day-to-day commands: `cd dwi_pipeline` and use **`./dkt`**.
 

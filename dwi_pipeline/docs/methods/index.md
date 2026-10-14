@@ -4,6 +4,7 @@ Per-step **theory, biology, and citations** for the DKT Connectome.
 
 | Audience | Start here |
 |----------|------------|
+| **Short intro** (one paragraph per step, other atlases) | **[What DKT Connectome does](../what_it_does.md)** |
 | **Why** the pipeline exists (lesions, SDC, disconnectome) | **[Science overview](../science_overview.md)** |
 | **How to run** each step (paths, flags, outputs) | **[Pipeline steps](../pipeline_steps.md)** |
 | **Citations** (BibTeX tables) | **[References by step](../references.md)** |
