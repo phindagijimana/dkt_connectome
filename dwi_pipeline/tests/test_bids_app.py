@@ -160,6 +160,39 @@ def test_smoke_preflight_quick(ci_env):
     assert "quick checks OK" in proc.stdout
 
 
+def test_preflight_skips_gpu_warn_without_lesion(ci_env):
+    proc = subprocess.run(
+        ["bash", "workflow/preflight.sh", "--mode", "all", "--subject", "EXAMPLE", "--quick"],
+        cwd=DWI,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    combined = (proc.stdout or "") + (proc.stderr or "")
+    assert "needs a GPU slice" not in combined
+
+
+def test_preflight_gpu_warn_with_lesion(ci_env):
+    anat = FIXTURE / "sub-EXAMPLE" / "ses-baseline" / "anat"
+    anat.mkdir(parents=True, exist_ok=True)
+    mask = anat / "sub-EXAMPLE_ses-baseline_T1w_label-lesion_roi.nii.gz"
+    mask.write_bytes(b"stub")
+    try:
+        proc = subprocess.run(
+            ["bash", "workflow/preflight.sh", "--mode", "all", "--subject", "EXAMPLE", "--quick"],
+            cwd=DWI,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        assert proc.returncode == 0, proc.stderr or proc.stdout
+        combined = (proc.stdout or "") + (proc.stderr or "")
+        assert "needs a GPU slice" in combined
+    finally:
+        mask.unlink(missing_ok=True)
+
+
 def test_smoke_run_subject_dry_run(ci_env):
     proc = subprocess.run(
         [

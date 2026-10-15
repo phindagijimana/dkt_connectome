@@ -42,7 +42,7 @@ IDEAS DWI shells are 0, 300, 700, and **2500** s/mm² — pass `--dwi-select con
   --dwi-select config/dwi_select_ideas_b2500.json --dry-run
 ```
 
-Review Snakemake rule list: `qsiprep` → `inpaint` (if mask) → `recon` → `qsirecon` → `connectome` → `nodestrength`.
+Review the Snakemake plan (default `tractography.model: both`): `qsiprep` → `recon` → `qsirecon` → `connectome` → `sdstream_tractography` / `sdstream_connectome` → `nodestrength` → `subject_qc` (9 jobs). Inpaint is added only when a `*_T1w_label-lesion_roi.nii.gz` mask exists — IDEAS `sub-1` has none.
 
 ---
 

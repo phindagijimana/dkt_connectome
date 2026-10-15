@@ -7,11 +7,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 ## [Unreleased]
 
 ### Added
-- **One-pull Docker path** — [Installation § One-pull](installation.md#one-pull-docker--cloud): published GHCR/Hub orchestrator + `DKT_AUTO_INSTALL=1`. CI pulls `ghcr.io/phindagijimana/dkt-connectome` and checks `--version` (weekly QSIPrep install on schedule).
+- **One-pull Docker path** — [Installation § One-pull](installation.md#one-pull-docker--cloud): published GHCR/Hub orchestrator + `DKT_AUTO_INSTALL=1`. CI pulls `ghcr.io/phindagijimana/dkt-connectome` and checks `--version` (weekly QSIPrep install on schedule). Docker auto-install smoke installs `nibabel` before regenerating the BIDS fixture.
 - **[Sample results](sample_results.md)** — QSIPrep / QSIRecon-style reportlets and a QC table for public IDEAS II `sub-1` / `sub-6` and BTC glioma PAT20. Full derivatives stay local.
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
 
 ### Changed
+- **Host Python** — README and Installation require **Python 3.11+** (Snakemake 8+). Matches `environment.yml`. Default `python3` on some HPCS is 3.9 and cannot `pip install snakemake>=8`.
+- **Preflight GPU warning** — print the inpaint GPU GRES hint only when a `*_T1w_label-lesion_roi.nii.gz` exists. Tutorial IDEAS (`sub-1`, no mask) no longer warns.
+- **Tutorial / validation DAG** — default plan is 9 jobs including SD_STREAM (`tractography.model: both`). Inpaint is listed only when a lesion mask is present.
 - **First-hour docs** — home is a short path (tutorial / sample results / methods). Tutorial no longer repeats install. Installation keeps license + one-pull; Compose, local image builds, and host Python sit under Advanced. Usage points first-run users to the tutorial. Methods and sample results are unchanged.
 - **Docs footer and license page** use one copyright line (Philbert Ndagijimana and contributors) under Apache-2.0. Removed “All rights reserved,” which conflicts with the grant.
 - **Public docs nav** is the default path only (getting started, science, methods, usage, QC, citation). Factorial arms, Deep Atropos, decision tables, pipeline-steps, disconnectome CLI, and cloud pages stay built and linked as advanced.
