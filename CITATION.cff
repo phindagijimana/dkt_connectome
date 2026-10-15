@@ -1,15 +1,28 @@
 cff-version: 1.2.0
 message: >-
-  If you use this software in published work, please cite the upstream tools
-  that do the heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs);
-  this pipeline only orchestrates them. See README.md for citation guidance.
-title: "DKT Connectome — lesion-aware structural connectomics BIDS App"
+  If you use this software, please cite it using the metadata below, and also
+  cite the upstream tools it orchestrates (QSIPrep, QSIRecon, FreeSurfer,
+  MRtrix3, ANTs). See dwi_pipeline/docs/citation.md.
+title: "DKT Connectome: a lesion-aware structural connectomics BIDS App"
 authors:
   - family-names: Ndagijimana
     given-names: Philbert
+    affiliation: University of Rochester
+  - family-names: Sinha
+    given-names: Nishant
+    affiliation: University of Pennsylvania
+  - family-names: Brennan
+    given-names: Daniel
+    affiliation: University of Pennsylvania
+    orcid: "https://orcid.org/0000-0002-3880-3146"
+  - family-names: Gugger
+    given-names: James J.
+    affiliation: University of Rochester
 type: software
 version: 0.3.1
+date-released: "2026-10-14"
 repository-code: "https://github.com/phindagijimana/dkt_connectome"
+url: "https://dkt-connectome.readthedocs.io/en/latest/"
 license: Apache-2.0
 # After Zenodo GitHub integration + Release, set:
 # doi: 10.5281/zenodo.xxxxx
@@ -22,3 +35,4 @@ keywords:
   - freesurfer
   - mrtrix3
   - bids-app
+  - traumatic-brain-injury

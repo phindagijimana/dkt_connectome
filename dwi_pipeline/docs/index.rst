@@ -8,45 +8,57 @@ Contents
 ########
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Getting started
 
    what_it_does
    installation
    tutorial
-   datasets/ideas
-   datasets/btc_glioma
    sample_results
-   upgrading
+   outputs
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Learn more
-
-   science_overview
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Using the pipeline
 
    usage
-   bids_app
-   architecture
-   containers
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Your data
-
    preparing_data
-   bids_metadata
-   lesion_segmentation
+   qc
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Methods
 
    methods/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference
+
+   faq
+   troubleshooting
+   citation
+   changelog
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer
+
+   contributing
+
+.. toctree::
+   :hidden:
+   :caption: More
+
+   science_overview
+   datasets/ideas
+   datasets/btc_glioma
+   upgrading
+   bids_app
+   architecture
+   containers
+   bids_metadata
+   lesion_segmentation
    methods/step1_qsiprep
    methods/step1_1_inpaint
    methods/step2_recon
@@ -55,40 +67,13 @@ Contents
    methods/step4_connectome
    methods/step4_1_disconnectome
    methods/step5_node_strength
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Outputs & QC
-
-   qc
-   outputs
    derivatives
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Reference
-
    configuration
    validation
-   faq
-   troubleshooting
    comparisons
    references
-   citation
    license
-   changelog
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Developer
-
-   contributing
    snakemake_workflow
-
-.. toctree::
-   :hidden:
-   :caption: Advanced
-
    cloud_deployment
    decision_tables
    TBI_Experimental_Arms

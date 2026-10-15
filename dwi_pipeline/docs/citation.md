@@ -1,6 +1,30 @@
 # Citation
 
-How to acknowledge the DKT Connectome and the upstream tools it orchestrates. Structure follows the [QSIPrep citing page](https://qsiprep.readthedocs.io/en/0.22.1/citing.html).
+How to cite the DKT Connectome and the upstream tools it orchestrates. Structure follows the [QSIPrep citing page](https://qsiprep.readthedocs.io/en/0.22.1/citing.html).
+
+There is not yet a journal article or Zenodo DOI. The preferred citation is this **software record** (also in [`CITATION.cff`](https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff)). GitHub will offer it under *Cite this repository*.
+
+---
+
+## Preferred citation
+
+Ndagijimana, P., Sinha, N., Brennan, D., & Gugger, J. J. (2026). *DKT Connectome: A lesion-aware structural connectomics BIDS App* (Version 0.3.1) [Computer software]. https://github.com/phindagijimana/dkt_connectome
+
+In-text: **Ndagijimana, Sinha, Brennan, and Gugger (2026)** or **Ndagijimana et al. (2026)**.
+
+```bibtex
+@software{Ndagijimana2026DKTConnectome,
+  author    = {Ndagijimana, Philbert and Sinha, Nishant and
+               Brennan, Daniel and Gugger, James J.},
+  title     = {{DKT Connectome}: A lesion-aware structural connectomics {BIDS App}},
+  year      = {2026},
+  version   = {0.3.1},
+  url       = {https://github.com/phindagijimana/dkt_connectome},
+  note      = {University of Rochester and University of Pennsylvania}
+}
+```
+
+After the first Zenodo archive, add `doi = {10.5281/zenodo.xxxxx}` here and in `CITATION.cff`.
 
 ---
 
@@ -8,13 +32,13 @@ How to acknowledge the DKT Connectome and the upstream tools it orchestrates. St
 
 The DKT Connectome is a **BIDS App orchestrator** — it does not replace QSIPrep, QSIRecon, FreeSurfer, MRtrix3, or neuroLIT. In publications:
 
-1. **Cite every upstream tool** whose methods you report (see [References by step](references.md)).
-2. **Name the pipeline** and point readers to this documentation site and the GitHub repository.
+1. **Cite this software** (Ndagijimana, Sinha, Brennan, and Gugger 2026, above).
+2. **Cite every upstream tool** whose methods you report (see [References by step](references.md)).
 3. **Acknowledge cohort-specific data use** (IRB, TrackTBI, institutional agreements) separately.
 
-Suggested prose (Methods or Acknowledgements):
+Suggested prose (Methods):
 
-> Structural connectomes were derived with the DKT Connectome (BIDS App v0.3.1; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
+> Structural connectomes were derived with the DKT Connectome (Ndagijimana, Sinha, Brennan, and Gugger 2026; BIDS App v0.3.1; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
 
 Replace superscripts with numbered references from [References by step](references.md).
 
@@ -133,9 +157,8 @@ Additional BibTeX for every step: [references.md](references.md).
 From [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/app.json):
 
 ```text
-HowToAcknowledge: Cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon,
-FastSurfer/FreeSurfer, MRtrix3, Pollak et al. 2025 for neuroLIT inpainting,
-and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
+HowToAcknowledge: Cite Ndagijimana, Sinha, Brennan, and Gugger (2026),
+DKT Connectome v0.3.1, plus the upstream tools (see citation page).
 ```
 
 ---
@@ -150,20 +173,7 @@ and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
 | Zenodo archive | *(enable GitHub integration — see [Maintainer §17 on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md#17-zenodo-archive-doi))* |
 | CITATION.cff | https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff |
 
-After the first Zenodo release, add the software DOI here and in `CITATION.cff`:
-
-```bibtex
-@software{Ndagijimana2026DKTConnectome,
-  author    = {Ndagijimana, Philbert},
-  title     = {{DKT Connectome} — lesion-aware structural connectomics {BIDS App}}},
-  year      = {2026},
-  version   = {0.3.1},
-  url       = {https://github.com/phindagijimana/dkt_connectome},
-  doi       = {10.5281/zenodo.xxxxx}
-}
-```
-
-Replace `10.5281/zenodo.xxxxx` with the DOI from your Zenodo record.
+The preferred `@software` entry is at the top of this page. After the first Zenodo release, add the DOI there and in `CITATION.cff`.
 
 ---
 
@@ -254,6 +264,18 @@ If you use these volumes, cite:
 ```
 
 Guide: [datasets/btc_glioma.md](datasets/btc_glioma.md).
+
+---
+
+## Acknowledgements
+
+<a id="acknowledgements"></a>
+
+Thank you to these colleagues for their contributions and mentorship on this project:
+
+- [James J. Gugger, M.D., Pharm.D.](https://www.urmc.rochester.edu/people/112364796-james-j-gugger), University of Rochester
+- [Nishant Sinha, Ph.D.](https://www.med.upenn.edu/apps/faculty/index.php/g275/p9416340), University of Pennsylvania
+- [Daniel Brennan, Ph.D.](https://scholar.google.com/citations?user=7mdNPngAAAAJ&hl=en), University of Pennsylvania
 
 ---
 

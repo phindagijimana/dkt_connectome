@@ -1,5 +1,7 @@
 # BIDS phase-encoding metadata (DWI / fmap sidecars)
 
+Use this page **if QSIPrep rejects a DWI or fmap JSON** (missing `PhaseEncodingDirection` or `TotalReadoutTime`). For the usual input checklist, see [Preparing your data](preparing_data.md).
+
 This note documents **phase-encoding (PE) readout fields** and **fieldmap linking** in BIDS JSON sidecars: what BIDS requires, what QSIPrep needs, and how to repair sparse Siemens exports.
 
 Part of the [DKT Connectome documentation](home.md).
