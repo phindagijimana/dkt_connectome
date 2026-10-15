@@ -265,7 +265,7 @@ Thank you to these colleagues for their contributions and mentorship on this pro
 
 - [James J. Gugger, M.D., Pharm.D.](https://www.urmc.rochester.edu/people/112364796-james-j-gugger), University of Rochester
 - [Nishant Sinha, Ph.D.](https://www.med.upenn.edu/apps/faculty/index.php/g275/p9416340), University of Pennsylvania
-- [Daniel J. Brennan, Ph.D.](https://orcid.org/0000-0002-3880-3146), University of Pennsylvania
+- [Daniel Brennan, Ph.D.](https://scholar.google.com/citations?user=7mdNPngAAAAJ&hl=en), University of Pennsylvania
 
 ---
 

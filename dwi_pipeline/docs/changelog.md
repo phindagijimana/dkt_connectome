@@ -10,9 +10,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **One-pull Docker path** — [Installation § One-pull](installation.md#one-pull-docker--cloud): published GHCR/Hub orchestrator + `DKT_AUTO_INSTALL=1`. CI pulls `ghcr.io/phindagijimana/dkt-connectome` and checks `--version` (weekly QSIPrep install on schedule). Docker auto-install smoke installs `nibabel` before regenerating the BIDS fixture.
 - **[Sample results](sample_results.md)** — QSIPrep / QSIRecon-style reportlets and a QC table for public IDEAS II `sub-1` / `sub-6` and BTC glioma PAT20. Full derivatives stay local.
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
-- **Acknowledgements** on the [Citation](citation.md#acknowledgements) page for James J. Gugger, Nishant Sinha, and Daniel J. Brennan (contributions and mentorship).
+- **Acknowledgements** on the [Citation](citation.md#acknowledgements) page for James J. Gugger, Nishant Sinha, and Daniel Brennan (contributions and mentorship).
 
 ### Changed
+- **Daniel Brennan acknowledgement** points to Google Scholar (public research profile). Gugger and Sinha already use faculty pages.
 - **Docs first hour** — sidebar is home → what it does → install → tutorial → outputs (plus usage, preparing data, QC, methods index). Environment variables live on Installation only. `bids_metadata` is a QSIPrep-sidecar reference, not a getting-started page. Tutorial no longer mentions a local `dwi_test_TBI` folder.
 - **IDEAS dwi-select** — `contains_target` now keeps a DWI if any nonzero shell is near the target (IDEAS 0/300/700/2500). Dropped `dwi_acquisition: ideas_b2500`; sample files have no `acq-` entity.
 - **Host Python** — README and Installation require **Python 3.11+** (Snakemake 8+). Matches `environment.yml`. Default `python3` on some HPCS is 3.9 and cannot `pip install snakemake>=8`.
