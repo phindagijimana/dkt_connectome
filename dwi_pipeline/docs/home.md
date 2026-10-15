@@ -12,17 +12,7 @@ Public software checks: [IDEAS II](datasets/ideas.md) and [BTC glioma](datasets/
 
 ![DKT Connectome pipeline workflow](img/pipeline_overview.svg)
 
-**Next:** [Tutorial](tutorial.md) · [Sample results](sample_results.md) · [Methods](methods/index.md) · [References](references.md)
-
-| Also | Page |
-|------|------|
-| Install / license / Docker | [Installation](installation.md) |
-| Flags | [Usage](usage.md) |
-| Why the steps exist | [Science overview](science_overview.md) |
-| Your BIDS | [Preparing your data](preparing_data.md) |
-| Problems | [FAQ](faq.md) · [Troubleshooting](troubleshooting.md) |
-
-Advanced (not in the sidebar): [decision tables](decision_tables.md) · [factorial arms](TBI_Experimental_Arms.md) · [pipeline steps](pipeline_steps.md) · [Deep Atropos](deep_atropos_5tt.md) · [lesion-aware ACT](lesion_aware.md) · [disconnectome CLI](disconnectome.md) · [cloud](cloud_deployment.md).
+**Next:** [Installation](installation.md) · [Tutorial](tutorial.md) · [Outputs](outputs.md)
 
 This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIRecon](https://qsirecon.readthedocs.io/), FreeSurfer/FastSurfer, MRtrix3, and neuroLIT. Cite those papers — [References by step](references.md).
 
@@ -30,21 +20,9 @@ This pipeline **orchestrates** [QSIPrep](https://qsiprep.readthedocs.io/), [QSIR
 
 ## Quick start
 
-Work from `dwi_pipeline/` after clone. Full walkthrough: [Tutorial](tutorial.md).
+License, cache paths, and `./dkt install` are on [Installation](installation.md). Then the [Tutorial](tutorial.md) (public IDEAS sample + dry-run).
 
-```bash
-git clone https://github.com/phindagijimana/dkt_connectome.git
-cd dkt_connectome/dwi_pipeline
-chmod +x dkt run install
-export FS_LICENSE=/path/to/your/license.txt
-export DKT_CONTAINER_CACHE=$HOME/.cache/dkt-connectome/containers
-export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp
-export PROOT_TMP_DIR=$APPTAINER_TMPDIR
-mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
-./dkt install && ./dkt check --strict
-```
-
-Then [Tutorial](tutorial.md) (IDEAS download + dry-run). Own BIDS: `./dkt run /path/to/BIDS /path/to/out participant --participant-label 01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn`. HPC: `bash dwi_pipeline/submit.sh` from the repo root.
+Own BIDS: `./dkt run /path/to/BIDS /path/to/out participant --participant-label 01 --session-filter ses-1 --n-cpus 8 --fastsurfer --syn`. HPC: `bash dwi_pipeline/submit.sh` from the repo root. Flags: [Usage](usage.md). Sidecar errors: [BIDS metadata](bids_metadata.md).
 
 ---
 

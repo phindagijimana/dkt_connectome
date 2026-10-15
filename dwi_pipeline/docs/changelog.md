@@ -12,6 +12,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
 
 ### Changed
+- **Docs first hour** — sidebar is home → what it does → install → tutorial → outputs (plus usage, preparing data, QC, methods index). Environment variables live on Installation only. `bids_metadata` is a QSIPrep-sidecar reference, not a getting-started page. Tutorial no longer mentions a local `dwi_test_TBI` folder.
 - **IDEAS dwi-select** — `contains_target` now keeps a DWI if any nonzero shell is near the target (IDEAS 0/300/700/2500). Dropped `dwi_acquisition: ideas_b2500`; sample files have no `acq-` entity.
 - **Host Python** — README and Installation require **Python 3.11+** (Snakemake 8+). Matches `environment.yml`. Default `python3` on some HPCS is 3.9 and cannot `pip install snakemake>=8`.
 - **Preflight GPU warning** — print the inpaint GPU GRES hint only when a `*_T1w_label-lesion_roi.nii.gz` exists. Tutorial IDEAS (`sub-1`, no mask) no longer warns.

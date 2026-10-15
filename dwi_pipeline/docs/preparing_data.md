@@ -27,6 +27,8 @@ Test fixture (synthetic, public): `tests/fixtures/bids_minimal/`.
 
 ## BIDS sidecar repair (Siemens)
 
+If QSIPrep errors on missing `PhaseEncodingDirection` or `TotalReadoutTime`, use [BIDS metadata](bids_metadata.md). That page is the full sidecar reference; this section is the short path.
+
 QSIPrep requires phase-encoding metadata on DWI and fmap JSON sidecars:
 
 - `PhaseEncodingDirection`

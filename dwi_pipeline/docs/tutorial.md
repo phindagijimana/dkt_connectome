@@ -18,15 +18,7 @@ bash scripts/download_ideas_sample.sh
 
 Two subjects (`sub-1`, `sub-6`) from [OpenNeuro ds007401](https://openneuro.org/datasets/ds007401). See [IDEAS sample data](datasets/ideas.md). After download, BIDS is at `$(pwd)/sample_data/ideas/bids`.
 
-**Your own BIDS:** skip the download and pass your dataset path to `./dkt run` after this first subject.
-
-A typical `RESULTS_ROOT` layout:
-
-```text
-sub-<SUBJECT>_<recon>[_inpaint]/
-```
-
-Example: `sub-1_fastsurfer` = FastSurfer, no inpaint. You may keep local test data under any folder name (for example `dwi_test_TBI`); that folder is not shipped with the repository.
+**Your own BIDS:** skip the download and pass your dataset path as the first argument to `./dkt run`. Write outputs to any empty folder.
 
 ---
 
