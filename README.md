@@ -120,6 +120,12 @@ Each step uses its own pinned `.sif` image. That is intentional — see [Contain
 
 ---
 
+## Citation
+
+Ndagijimana, P., Sinha, N., Brennan, D., & Gugger, J. J. (2026). *DKT Connectome: A lesion-aware structural connectomics BIDS App* (Version 0.3.1) [Computer software]. https://github.com/phindagijimana/dkt_connectome
+
+Also cite the upstream tools. Details: [Citation](https://dkt-connectome.readthedocs.io/en/latest/citation.html).
+
 ## Acknowledgements
 
 Thank you to [James J. Gugger](https://www.urmc.rochester.edu/people/112364796-james-j-gugger), [Nishant Sinha](https://www.med.upenn.edu/apps/faculty/index.php/g275/p9416340), and [Daniel Brennan](https://scholar.google.com/citations?user=7mdNPngAAAAJ&hl=en) for their contributions and mentorship.
