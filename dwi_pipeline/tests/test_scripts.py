@@ -222,3 +222,29 @@ def test_export_bids_derivatives_symlinks(tmp_path):
     assert (export_root / "qsiprep" / "sub-test").is_symlink()
     assert (export_root / "dkt-connectome" / "sub-test" / "dkt_connectome.csv").exists()
     assert payload["mode"] == "symlink"
+
+
+def test_shell_matches_contains_target_ideas_multishell():
+    """IDEAS 0/300/700/2500 must match target 2500 (any shell near target)."""
+    bf = _load_module("build_bids_filter", DWI / "scripts" / "build_bids_filter.py")
+    ideas = [300, 700, 2500]
+    assert bf.shell_matches(ideas, 2500, 150, True, "contains_target") is True
+    assert bf.shell_matches(ideas, 1000, 150, True, "contains_target") is False
+    assert bf.shell_matches(ideas, 2500, 150, False, "contains_target") is False
+    assert bf.shell_matches([1000], 1000, 100, False, "contains_target") is True
+    assert bf.shell_matches([300, 700], 2500, 150, True, "contains_target") is False
+
+
+def test_ideas_dwi_select_keeps_no_acq_multishell(tmp_path):
+    """Shipped IDEAS filter must keep sub-*_ses-*_dwi (no acq-) with 0/300/700/2500."""
+    bf = _load_module("build_bids_filter", DWI / "scripts" / "build_bids_filter.py")
+    dwi_dir = tmp_path / "sub-1" / "ses-1" / "dwi"
+    dwi_dir.mkdir(parents=True)
+    (dwi_dir / "sub-1_ses-1_dwi.bval").write_text("0 300 700 2500\n")
+    (dwi_dir / "sub-1_ses-1_dwi.nii.gz").write_bytes(b"\x1f\x8b")
+    cfg = json.loads((DWI / "config" / "dwi_select_ideas_b2500.json").read_text())
+    assert "dwi_acquisition" not in cfg
+    out = bf.build_from_select(tmp_path, "1", cfg)
+    assert out["dwi"]["suffix"] == "dwi"
+    assert out["dwi"]["session"] == "1"
+    assert "acquisition" not in out["dwi"]

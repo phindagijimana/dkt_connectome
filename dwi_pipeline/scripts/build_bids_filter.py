@@ -59,6 +59,8 @@ def shell_matches(
         return abs(max(nonzero) - target) <= tolerance
     if not allow_multi_shell and len(nonzero) > 1:
         return False
+    if match_mode == "contains_target":
+        return any(abs(s - target) <= tolerance for s in nonzero)
     if match_mode == "exact_shell_set":
         shells = [s for s in nonzero if abs(s - target) <= tolerance]
         extras = [s for s in nonzero if abs(s - target) > tolerance]
