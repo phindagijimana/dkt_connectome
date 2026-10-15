@@ -71,7 +71,9 @@ jobs:
           echo "image=ghcr.io/phindagijimana/dkt-connectome:${version}" >> "$GITHUB_OUTPUT"
 
       - name: Regenerate minimal BIDS fixture
-        run: python3 dwi_pipeline/tests/fixtures/generate_bids_fixture.py
+        run: |
+          python3 -m pip install --user nibabel numpy
+          python3 dwi_pipeline/tests/fixtures/generate_bids_fixture.py
 
       - name: Pull published orchestrator (GHCR)
         run: docker pull "${{ steps.img.outputs.image }}"

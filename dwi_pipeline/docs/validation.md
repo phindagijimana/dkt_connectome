@@ -54,7 +54,7 @@ QSIPrep / QSIRecon-style reportlets and the QC table: **[Sample results](sample_
 | OpenNeuro | [ds007401](https://openneuro.org/datasets/ds007401) |
 | Docs | [Sample data (IDEAS II)](datasets/ideas.md) |
 
-**Golden run command:** see [IDEAS sample page](datasets/ideas.md#example-run). Snakemake dry-run with `config/dwi_select_ideas_b2500.json` validates the full DAG (QSIPrep → FastSurfer → QSIRecon → connectome → nodestrength → QC).
+**Golden run command:** see [IDEAS sample page](datasets/ideas.md#example-run). Snakemake dry-run with `config/dwi_select_ideas_b2500.json` validates the default DAG (QSIPrep → FastSurfer → QSIRecon → connectome → SD_STREAM → nodestrength → QC; 9 jobs). Inpaint is not in that plan unless a lesion mask is present.
 
 **Cite when using these data:** Taylor PN, et al. *Epilepsia* 2026. [10.1002/epi.70186](https://doi.org/10.1002/epi.70186) and OpenNeuro dataset [10.18112/openneuro.ds007401.v1.0.0](https://doi.org/10.18112/openneuro.ds007401.v1.0.0).
 

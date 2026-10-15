@@ -8,6 +8,5 @@
   "exclude_fmap_acquisitions": ["rs"],
   "include_sessions": null,
   "exclude_acquisitions": [],
-  "on_no_match": "error",
-  "dwi_acquisition": "ideas_b2500"
+  "on_no_match": "error"
 }

@@ -32,7 +32,7 @@ The only pipeline in this repository is **`dwi_pipeline/`**. BIDS App contract: 
 |-----------|--------|
 | Linux | HPC or workstation |
 | [Apptainer](https://apptainer.org/) | Step containers (`.sif`) |
-| Python 3.9+ · [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration (`environment.yml`) |
+| Python 3.11+ · [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration (`environment.yml`). Default `python3` on some HPCS is 3.9 and cannot install Snakemake 8. |
 | **FreeSurfer license** | [Free registration](https://surfer.nmr.mgh.harvard.edu/registration.html) — `export FS_LICENSE=/path/to/license.txt` |
 
 Optional: Slurm for cohort arrays. Docker is optional for the orchestrator only — step `.sif` images are still required.

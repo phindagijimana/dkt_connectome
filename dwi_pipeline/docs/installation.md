@@ -8,7 +8,7 @@
 |-----------|-------|
 | Linux | Workstation or HPC |
 | [Apptainer](https://apptainer.org/) | On `PATH` |
-| Python 3.9+ and [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration |
+| Python 3.11+ and [Snakemake](https://snakemake.readthedocs.io/) ≥ 8 | Orchestration (`environment.yml`). Snakemake 8+ does not install on Python 3.9. |
 | FreeSurfer license | [Free registration](https://surfer.nmr.mgh.harvard.edu/registration.html) — you obtain this |
 | Git | Clone [dkt_connectome](https://github.com/phindagijimana/dkt_connectome) |
 

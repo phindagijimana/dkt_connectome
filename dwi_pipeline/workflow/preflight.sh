@@ -252,9 +252,22 @@ if ((need_qsiprep)) && [[ "${QSIPREP_FMAP_RETRY}" != "1" && "${QSIPREP_USE_SYN_S
   fi
 fi
 
-# GPU recommendation for inpaint / FastSurfer cuda.
+# GPU recommendation only when inpaint will actually run (a lesion mask exists).
+# mode=all sets need_inpaint=1, but Step 1.1 is a no-op without
+# *_T1w_label-lesion_roi.nii.gz — do not warn on the IDEAS tutorial subject.
+_bids_has_lesion_mask() {
+  local root="${BIDS_DIR}"
+  if [[ -n "${SUBJECT:-}" ]]; then
+    root="${BIDS_DIR}/sub-${SUBJECT}"
+  fi
+  [[ -d "${root}" ]] || return 1
+  local found
+  found="$(find "${root}" -name '*_T1w_label-lesion_roi.nii.gz' -print -quit 2>/dev/null || true)"
+  [[ -n "${found}" ]]
+}
+
 if ((need_inpaint)) && [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
-  if [[ -z "${SBATCH_GRES:-}" && -z "${SLURM_JOB_ID:-}" ]]; then
+  if [[ -z "${SBATCH_GRES:-}" && -z "${SLURM_JOB_ID:-}" ]] && _bids_has_lesion_mask; then
     warn "Step 1.1 (inpaint) needs a GPU slice (gpu:l40s.12g or gpu:l40s.24g). Set SBATCH_GRES before submit."
   fi
 fi

@@ -238,6 +238,9 @@ export STOP_ON_FIRST_CRASH="${STOP_ON_FIRST_CRASH}"
 [[ -n "${RANDOM_SEED}" ]] && echo "[run] random-seed: ${RANDOM_SEED}"
 
 PREFLIGHT=(bash "${SCRIPT_DIR}/workflow/preflight.sh" --mode "${MODE}" --quick)
+if [[ ${#PARTICIPANTS[@]} -eq 1 ]]; then
+  PREFLIGHT+=(--subject "${PARTICIPANTS[0]}")
+fi
 ((BIDS_VALIDATE)) && PREFLIGHT+=(--bids-validation)
 ((BIDS_IGNORE_WARNINGS)) && PREFLIGHT+=(--ignore-warnings)
 export BIDS_VALIDATE
