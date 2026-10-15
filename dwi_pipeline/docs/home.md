@@ -32,4 +32,4 @@ Own BIDS: `./dkt run /path/to/BIDS /path/to/out participant --participant-label 
 
 - **GitHub:** [github.com/phindagijimana/dkt_connectome](https://github.com/phindagijimana/dkt_connectome) · [open an issue](https://github.com/phindagijimana/dkt_connectome/issues)
 - **Email:** [phindagiji@gmail.com](mailto:phindagiji@gmail.com)
-- [FAQ](faq.md) · [Troubleshooting](troubleshooting.md) · [NeuroStars](https://neurostars.org/)
+- [Acknowledgements](citation.md#acknowledgements) · [FAQ](faq.md) · [Troubleshooting](troubleshooting.md) · [NeuroStars](https://neurostars.org/)

@@ -120,6 +120,10 @@ Each step uses its own pinned `.sif` image. That is intentional — see [Contain
 
 ---
 
+## Acknowledgements
+
+Thank you to [James J. Gugger](https://www.urmc.rochester.edu/people/112364796-james-j-gugger), [Nishant Sinha](https://www.med.upenn.edu/apps/faculty/index.php/g275/p9416340), and [Daniel J. Brennan](https://orcid.org/0000-0002-3880-3146) for their contributions and mentorship.
+
 ## License
 
 [Apache License 2.0](LICENSE)

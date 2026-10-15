@@ -257,6 +257,18 @@ Guide: [datasets/btc_glioma.md](datasets/btc_glioma.md).
 
 ---
 
+## Acknowledgements
+
+<a id="acknowledgements"></a>
+
+Thank you to these colleagues for their contributions and mentorship on this project:
+
+- [James J. Gugger, M.D., Pharm.D.](https://www.urmc.rochester.edu/people/112364796-james-j-gugger), University of Rochester
+- [Nishant Sinha, Ph.D.](https://www.med.upenn.edu/apps/faculty/index.php/g275/p9416340), University of Pennsylvania
+- [Daniel J. Brennan, Ph.D.](https://orcid.org/0000-0002-3880-3146), University of Pennsylvania
+
+---
+
 ## Contact
 
 Questions about citing or software metadata: [phindagiji@gmail.com](mailto:phindagiji@gmail.com) · [GitHub Issues](https://github.com/phindagijimana/dkt_connectome/issues)
