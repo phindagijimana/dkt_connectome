@@ -10,7 +10,7 @@
   "License": "Apache-2.0",
   "Source": "https://github.com/phindagijimana/dkt_connectome",
   "Documentation": "https://dkt-connectome.readthedocs.io/en/latest/",
-  "HowToAcknowledge": "Cite Ndagijimana, Sinha, Brennan, and Gugger (2026), DKT Connectome v0.3.1, https://github.com/phindagijimana/dkt_connectome. Also cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon (Cieslak et al., bioRxiv 2024), FreeSurfer/FastSurfer, MRtrix3, Pollak et al. 2025 (neuroLIT) when inpainting, Griffis et al. 2019 for disconnectome, and Gorgolewski et al. 2016 (BIDS). https://dkt-connectome.readthedocs.io/en/latest/citation.html",
+  "HowToAcknowledge": "Cite Ndagijimana, Sinha, Brennan, and Gugger (2026), DKT Connectome v0.3.1, https://doi.org/10.5281/zenodo.23354391. Also cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon (Cieslak et al., bioRxiv 2024), FreeSurfer/FastSurfer, MRtrix3, Pollak et al. 2025 (neuroLIT) when inpainting, Griffis et al. 2019 for disconnectome, and Gorgolewski et al. 2016 (BIDS). https://dkt-connectome.readthedocs.io/en/latest/citation.html",
   "ContainerType": "docker-or-apptainer-orchestrator",
   "DockerHub": "phindagijimana321/dkt-connectome",
   "TestDataset": "dwi_pipeline/tests/fixtures/bids_minimal",

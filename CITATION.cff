@@ -24,8 +24,11 @@ date-released: "2026-10-14"
 repository-code: "https://github.com/phindagijimana/dkt_connectome"
 url: "https://dkt-connectome.readthedocs.io/en/latest/"
 license: Apache-2.0
-# After Zenodo GitHub integration + Release, set:
-# doi: 10.5281/zenodo.xxxxx
+doi: 10.5281/zenodo.23354391
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23354391
+    description: Version 0.3.1
 keywords:
   - diffusion-mri
   - connectome
