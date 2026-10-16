@@ -11,7 +11,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **[Sample results](sample_results.md)** — QSIPrep / QSIRecon-style reportlets and a QC table for public IDEAS II `sub-1` / `sub-6` and BTC glioma PAT20. Full derivatives stay local.
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
 - **Acknowledgements** on the [Citation](citation.md#acknowledgements) page for James J. Gugger, Nishant Sinha, and Daniel Brennan (contributions and mentorship).
-- **Preferred software citation** — Ndagijimana, Sinha, Brennan, and Gugger (2026) in `CITATION.cff` and [Citation](citation.md). No journal article or Zenodo DOI yet.
+- **Preferred software citation** — Ndagijimana, Sinha, Brennan, and Gugger (2026) in `CITATION.cff` and [Citation](citation.md). Zenodo DOI [10.5281/zenodo.23354391](https://doi.org/10.5281/zenodo.23354391).
 
 ### Changed
 - **Daniel Brennan acknowledgement** points to Google Scholar (public research profile). Gugger and Sinha already use faculty pages.

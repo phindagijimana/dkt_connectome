@@ -6,6 +6,7 @@ QSIPrep → optional inpainting → recon → QSIRecon ACT tractography → DKT 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Documentation](https://readthedocs.org/projects/dkt-connectome/badge/?version=latest)](https://dkt-connectome.readthedocs.io/en/latest/)
 [![BIDS App](https://img.shields.io/badge/BIDS--App-v0.3.1-blue.svg)](https://dkt-connectome.readthedocs.io/en/latest/bids_app/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23354391.svg)](https://doi.org/10.5281/zenodo.23354391)
 
 **New here?** Short introduction — [What DKT Connectome does](https://dkt-connectome.readthedocs.io/en/latest/what_it_does.html) — or the commands below.
 
@@ -122,7 +123,7 @@ Each step uses its own pinned `.sif` image. That is intentional — see [Contain
 
 ## Citation
 
-Ndagijimana, P., Sinha, N., Brennan, D., & Gugger, J. J. (2026). *DKT Connectome: A lesion-aware structural connectomics BIDS App* (Version 0.3.1) [Computer software]. https://github.com/phindagijimana/dkt_connectome
+Ndagijimana, P., Sinha, N., Brennan, D., & Gugger, J. J. (2026). *DKT Connectome: A lesion-aware structural connectomics BIDS App* (Version 0.3.1) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23354391
 
 Also cite the upstream tools. Details: [Citation](https://dkt-connectome.readthedocs.io/en/latest/citation.html).
 

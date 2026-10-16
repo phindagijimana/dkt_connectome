@@ -2,13 +2,13 @@
 
 How to cite the DKT Connectome and the upstream tools it orchestrates. Structure follows the [QSIPrep citing page](https://qsiprep.readthedocs.io/en/0.22.1/citing.html).
 
-There is not yet a journal article or Zenodo DOI. The preferred citation is this **software record** (also in [`CITATION.cff`](https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff)). GitHub will offer it under *Cite this repository*.
+There is not yet a journal article. The preferred citation is this **software record** (Zenodo [10.5281/zenodo.23354391](https://doi.org/10.5281/zenodo.23354391); also in [`CITATION.cff`](https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff)). GitHub will offer it under *Cite this repository*.
 
 ---
 
 ## Preferred citation
 
-Ndagijimana, P., Sinha, N., Brennan, D., & Gugger, J. J. (2026). *DKT Connectome: A lesion-aware structural connectomics BIDS App* (Version 0.3.1) [Computer software]. https://github.com/phindagijimana/dkt_connectome
+Ndagijimana, P., Sinha, N., Brennan, D., & Gugger, J. J. (2026). *DKT Connectome: A lesion-aware structural connectomics BIDS App* (Version 0.3.1) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23354391
 
 In-text: **Ndagijimana, Sinha, Brennan, and Gugger (2026)** or **Ndagijimana et al. (2026)**.
 
@@ -19,12 +19,12 @@ In-text: **Ndagijimana, Sinha, Brennan, and Gugger (2026)** or **Ndagijimana et 
   title     = {{DKT Connectome}: A lesion-aware structural connectomics {BIDS App}},
   year      = {2026},
   version   = {0.3.1},
-  url       = {https://github.com/phindagijimana/dkt_connectome},
+  doi       = {10.5281/zenodo.23354391},
+  url       = {https://doi.org/10.5281/zenodo.23354391},
+  publisher = {Zenodo},
   note      = {University of Rochester and University of Pennsylvania}
 }
 ```
-
-After the first Zenodo archive, add `doi = {10.5281/zenodo.xxxxx}` here and in `CITATION.cff`.
 
 ---
 
@@ -38,7 +38,7 @@ The DKT Connectome is a **BIDS App orchestrator** — it does not replace QSIPre
 
 Suggested prose (Methods):
 
-> Structural connectomes were derived with the DKT Connectome (Ndagijimana, Sinha, Brennan, and Gugger 2026; BIDS App v0.3.1; https://dkt-connectome.readthedocs.io/), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
+> Structural connectomes were derived with the DKT Connectome (Ndagijimana, Sinha, Brennan, and Gugger 2026; BIDS App v0.3.1; https://doi.org/10.5281/zenodo.23354391), which orchestrates QSIPrep¹, optional neuroLIT lesion inpainting², FreeSurfer or FastSurfer³, QSIRecon ACT-HSVS tractography⁴, DKT parcellation-based connectome construction⁵, and optional structural disconnectome mapping⁶.
 
 Replace superscripts with numbered references from [References by step](references.md).
 
@@ -158,7 +158,8 @@ From [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi
 
 ```text
 HowToAcknowledge: Cite Ndagijimana, Sinha, Brennan, and Gugger (2026),
-DKT Connectome v0.3.1, plus the upstream tools (see citation page).
+DKT Connectome v0.3.1, https://doi.org/10.5281/zenodo.23354391,
+plus the upstream tools (see citation page).
 ```
 
 ---
@@ -170,10 +171,10 @@ DKT Connectome v0.3.1, plus the upstream tools (see citation page).
 | Documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Source code | https://github.com/phindagijimana/dkt_connectome |
 | GitHub Releases | https://github.com/phindagijimana/dkt_connectome/releases |
-| Zenodo archive | *(enable GitHub integration — see [Maintainer §17 on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md#17-zenodo-archive-doi))* |
+| Zenodo archive (v0.3.1) | https://doi.org/10.5281/zenodo.23354391 |
 | CITATION.cff | https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff |
 
-The preferred `@software` entry is at the top of this page. After the first Zenodo release, add the DOI there and in `CITATION.cff`.
+The preferred `@software` entry is at the top of this page.
 
 ---
 
