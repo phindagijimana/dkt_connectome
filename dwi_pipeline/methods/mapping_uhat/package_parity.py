@@ -14,9 +14,9 @@ HERE = Path(__file__).resolve().parent
 PKG = Path.home() / "Documents" / "edgeuq" / "src"
 sys.path.insert(0, str(PKG))
 
-from edgeuq.c2 import run_c2  # noqa: E402
+from edgeuq.jitter import run_jitter  # noqa: E402
 from edgeuq.io import extract_endpoints  # noqa: E402
-from edgeuq.u import compute_u  # noqa: E402
+from edgeuq.shift import compute_u  # noqa: E402
 
 SID = "ideas-sub-1-ses-1"
 A6 = HERE / "work" / "a6" / SID
@@ -64,7 +64,7 @@ def main() -> int:
         rec["u_summary"] = res["summary"]
     else:
         s = json.loads((C2 / "session.json").read_text())
-        res = run_c2(ends_ref, nodes, aff, 78, float(s["sigma_mm"]), int(s["S"]), int(s["seed"]))
+        res = run_jitter(ends_ref, nodes, aff, 78, float(s["sigma_mm"]), int(s["S"]), int(s["seed"]))
         rec["F_maxabs_vs_C2"] = maxabs(res["F"], np.load(C2 / "F.npy"))
         rec["Esoft_maxabs_vs_C2"] = maxabs(res["Esoft"], np.load(C2 / "Esoft.npy"))
     OUT.write_text(json.dumps(rec, indent=2) + "\n")

@@ -8,6 +8,8 @@ plan: COMBINED_PAPER.md
 
 > Local TrackTBI-Sub. Do not push to public `dkt_connectome`. Before submission, replace confirmation-session study IDs with anonymised labels; this draft already uses Confirmation 1–3 (= TBI011011, TBI011021, TBI011204 in local records).
 >
+> **Names.** Shift sensitivity = U (lock files: U, experiment C); jitter propagation = C2 in lock files and `work/C2/`; rescan validation = retest exam / G in lock files.
+>
 > **Naming rule.** Calibrated \(U\) is a probability for the planted 1 mm event. It may be described as calibrated for real rescan change only if the locked transport exam (G) passes. Do not name \(\hat U\) or proxy-\(\hat U\) in this draft.
 
 | Pending item | Source | State |
@@ -24,9 +26,9 @@ plan: COMBINED_PAPER.md
 
 Streamline-count structural connectomes are built by assigning each streamline's two endpoints to cortical or subcortical nodes. Endpoints concentrate near tissue and parcel boundaries, so millimetre-scale residual registration or segmentation error can move streamlines between neighbouring nodes and change edge counts for reasons unrelated to anatomy. Group test–retest studies report average edge reliability, but no method estimates, from a single session, which edges of *that* connectome are fragile.
 
-We present three linked tools. **U** re-assigns a session's own endpoints under twelve planted sub-millimetre translations and scores each edge by its worst relative count change; a frozen isotonic map converts U into a probability that the edge moves by more than 25% under a 1 mm shift. **C2** replaces the rigid shift with independent Gaussian jitter of every endpoint, sized from measured residual misregistration, and reports per-edge leakage, a soft connectome and the probability that each edge clears the count threshold. A **scan–rescan exam** asks whether scores computed from run 1 alone predict which edges change in an independently processed run 2.
+We present three linked tools. **Shift sensitivity (U)** re-assigns a session's own endpoints under twelve planted sub-millimetre translations and scores each edge by its worst relative count change; a frozen isotonic map converts U into a probability that the edge moves by more than 25% under a 1 mm shift. **Jitter propagation** replaces the rigid shift with independent Gaussian jitter of every endpoint, sized from measured residual misregistration, and reports per-edge leakage, a soft connectome and the probability that each edge clears the count threshold. **Rescan validation** asks whether scores computed from run 1 alone predict which edges change in an independently processed run 2.
 
-On three public development and three held-out clinical sessions (iFOD2, 10 million streamlines, 78-node DKT), U ranked edges that move under held-out ±1 mm shifts with AUROC 0.91–0.95 (Spearman 0.86–0.90), against 0.77–0.78 for edge count alone and ≈0.5 for endpoint-geometry baselines, and was stable across threshold choices (AUROC ≥ 0.85 everywhere). Calibrated U reached held-out ECE 0.009 (raw U 0.121). C2 leakage, built without any planted shift, ranked the same movers with AUROC 0.89–0.93; its distinct output is threshold uncertainty: 0.8–1.6% of eligible edges per session sit on the count-10 threshold. On real scan–rescan pairs, ⟨pending: AUROC of U, calibrated U and F; low-count baseline; calibration; tracking-only control⟩.
+On three public development and three held-out clinical sessions (iFOD2, 10 million streamlines, 78-node DKT), U ranked edges that move under held-out ±1 mm shifts with AUROC 0.91–0.95 (Spearman 0.86–0.90), against 0.77–0.78 for edge count alone and ≈0.5 for endpoint-geometry baselines, and was stable across threshold choices (AUROC ≥ 0.85 everywhere). Calibrated U reached held-out ECE 0.009 (raw U 0.121). Jitter leakage F, built without any planted shift, ranked the same movers with AUROC 0.89–0.93; its distinct output is threshold uncertainty: 0.8–1.6% of eligible edges per session sit on the count-10 threshold. On real scan–rescan pairs, ⟨pending: AUROC of U, calibrated U and F; low-count baseline; calibration; tracking-only control⟩.
 
 Software reproducing all analyses from a tractogram and node image is provided as a container (`edgeuq`).
 
@@ -38,7 +40,7 @@ Diffusion tractography connectomes count streamlines between parcels. The count 
 
 What is missing is a per-edge, per-session answer: *in this connectome, which edges would change if the endpoints had landed slightly differently, and how likely is each to change on a rescan?* Edge reliability is otherwise available only from group test–retest data, as one average per edge that does not transfer to a new subject, pipeline or lesioned brain.
 
-We contribute (i) U, a frozen ranking of edge fragility from a single session, with a calibration to a planted 1 mm event; (ii) C2, a per-endpoint stochastic assignment model that adds threshold uncertainty; (iii) a pre-specified scan–rescan exam, with a tracking-only control, that tests whether either predicts real change; and (iv) a container that reproduces all of it.
+We contribute (i) U, a frozen ranking of edge fragility from a single session, with a calibration to a planted 1 mm event; (ii) jitter propagation, a per-endpoint stochastic assignment model that adds threshold uncertainty; (iii) pre-specified rescan validation, with a tracking-only control, that tests whether either predicts real change; and (iv) a container that reproduces all of it.
 
 ---
 
@@ -60,7 +62,7 @@ QSIPrep (Cieslak 2021) preprocessing; QSIRecon MRtrix3 single-shell SS3T CSD wit
 
 Each endpoint takes the label of its voxel; if unlabelled, the nearest labelled voxel within 4 mm (MRtrix radial search); otherwise it is unassigned. \(C^0_{ij}\) counts streamlines whose endpoints are assigned to \(i\) and \(j\), \(i \ne j\). Edge change between matrices \(A, B\): \(\mathrm{rel}(A,B) = |A-B| / \max(A,B)\). *Moved*: \(\mathrm{rel} > 0.25\) and \(\max(A,B) \ge 10\).
 
-### 2.3 U: planted-shift fragility
+### 2.3 Shift sensitivity (U)
 
 All endpoints are translated by \(t\) along one scanner axis and re-assigned. Fit shifts: \(t \in \{\pm0.25, \pm0.5\}\) mm on x, y, z (12 maps). Test shifts: \(\pm1\) mm on x, y, z (6 maps).
 
@@ -76,7 +78,7 @@ Review rule: ordinary QC (session PASS, no empty nodes) has no per-edge output; 
 
 Isotonic regression (Zadrozny & Elkan 2002) of \(y\) on \(U\), fit once on the 8112 eligible development edges (1 mm move rate 0.153), then frozen. Test: pooled confirmation edges. Win: ECE (Naeini 2015; 10 equal-width bins) below that of raw U, and the fit-frozen high bin evaluable (\(n \ge 20\)) with \(|\bar y - \bar p| \le 0.15\).
 
-### 2.5 C2: per-endpoint soft assignment
+### 2.5 Jitter propagation (F)
 
 Each endpoint is jittered independently, \(\delta \sim N(0, \sigma^2 I_3)\), and re-assigned with the same rule, \(S = 32\) times with fixed seeds. For streamline \(k\) hard-assigned to edge \(ij\), \(p_k\) is the fraction of samples on which it keeps the same node pair.
 
@@ -88,11 +90,11 @@ Each endpoint is jittered independently, \(\delta \sim N(0, \sigma^2 I_3)\), and
 
 Planted development exam: as for U, with \(F\) in place of \(U\). Soft-connectome rule (retest): \(E[C]\) must move less than \(C^0\) on every pair while inventing (\(E[C] \ge 10\) where \(C^0 < 10\)) at most 0.1% of scored edges.
 
-### 2.6 Scan–rescan exam
+### 2.6 Rescan validation
 
-U, calibrated U and C2 are computed on run 1 only. Run 1 and run 2 are processed independently by the same pipeline. Event: moved between \(C^{\text{run1}}\) and \(C^{\text{run2}}\) among edges with \(\max \ge 10\).
+U, calibrated U and the jitter outputs are computed on run 1 only. Run 1 and run 2 are processed independently by the same pipeline. Event: moved between \(C^{\text{run1}}\) and \(C^{\text{run2}}\) among edges with \(\max \ge 10\).
 
-Primary: AUROC of U, calibrated U and F for real movers; baseline: low count (\(-C^{\text{run1}}\)). Secondary: threshold-crossing rate between runs; share of crossings on C2 threshold-uncertain edges; soft-connectome rule. Calibration (G): ECE of calibrated U on real movers and occupied-bin check (every bin with \(n \ge 20\) within ±0.15). The exam runs only with at least two pairs and after the transport rule is locked by the investigator.
+Primary: AUROC of U, calibrated U and F for real movers; baseline: low count (\(-C^{\text{run1}}\)). Secondary: threshold-crossing rate between runs; share of crossings on jitter threshold-uncertain edges; soft-connectome rule. Calibration (G): ECE of calibrated U on real movers and occupied-bin check (every bin with \(n \ge 20\) within ±0.15). Validation runs only with at least two pairs and after the transport rule is locked by the investigator.
 
 ### 2.7 Tracking-only control
 
@@ -100,11 +102,11 @@ Run 1's tractography is regenerated with the identical tckgen command and inputs
 
 ### 2.8 Pre-specification
 
-Lock files (JSON, version-controlled) fixed the shift sets, cuts, splits, isotonic map, C2 model and seeds, σ, the retest event, the soft-connectome rule and the tracking control before the corresponding numbers were computed. Amendments were dated and written before new numbers. The thresholds (relchange 0.25, count 10, radius 4 mm, win cut-offs) were never retuned; sensitivity to them is reported separately (Section 3.4).
+Lock files (JSON, version-controlled) fixed the shift sets, cuts, splits, isotonic map, jitter model and seeds, σ, the retest event, the soft-connectome rule and the tracking control before the corresponding numbers were computed. Amendments were dated and written before new numbers. The thresholds (relchange 0.25, count 10, radius 4 mm, win cut-offs) were never retuned; sensitivity to them is reported separately (Section 3.4).
 
 ### 2.9 Software
 
-`edgeuq` (Python, NumPy, NiBabel; Docker/Apptainer) implements `edgeuq u`, `edgeuq c2` and `edgeuq retest` from a `.tck` and a node image. On a development session it reproduces the analysis code exactly: identical endpoints and \(C^0\), U within 5×10⁻⁹, F within 1.5×10⁻⁸, \(E[C]\) identical.
+`edgeuq` (Python, NumPy, NiBabel; Docker/Apptainer) implements `edgeuq shift`, `edgeuq jitter` and `edgeuq rescan` from a `.tck` and a node image. On a development session it reproduces the analysis code exactly: identical endpoints and \(C^0\), U within 5×10⁻⁹, F within 1.5×10⁻⁸, \(E[C]\) identical.
 
 ---
 
@@ -134,7 +136,7 @@ Mean over three sessions (same edges, same event):
 | Score | Dev Spearman | Dev AUROC | Confirm Spearman | Confirm AUROC |
 |---|---:|---:|---:|---:|
 | U | 0.870 | 0.914 | 0.891 | 0.934 |
-| C2 leakage F | 0.768 | 0.898 | 0.782 | 0.923 |
+| Jitter leakage F | 0.768 | 0.898 | 0.782 | 0.923 |
 | Low count \(-C^0\) | 0.566 | 0.783 | 0.540 | 0.769 |
 | Near label boundary | 0.216 | 0.567 | 0.027 | 0.491 |
 | Endpoints needing radial search | 0.160 | 0.561 | −0.028 | 0.550 |
@@ -146,7 +148,7 @@ Edge count alone carries part of the signal; endpoint-geometry summaries are nea
 
 Recomputing U, the event and the mask over relchange {0.15, 0.25, 0.35} × count floor {5, 10, 20}: AUROC 0.85–0.96 and Spearman 0.86–0.91 at every grid point (move rate 0.06–0.37). The ranking does not depend on the locked cuts.
 
-### 3.5 C2 leakage ranks the same movers without a planted shift
+### 3.5 Jitter leakage ranks the same movers without a planted shift
 
 | Session | σ (mm) | Spearman\((F,e)\) | AUROC F | AUROC U | Spearman\((F,U)\) |
 |---|---:|---:|---:|---:|---:|
@@ -157,7 +159,7 @@ Recomputing U, the event and the mask over relchange {0.15, 0.25, 0.35} × count
 | Confirmation 2 | 0.48 | 0.773 | 0.927 | 0.935 | 0.731 |
 | Confirmation 3 | 0.41 | 0.787 | 0.931 | 0.945 | 0.754 |
 
-C2 passed its development rule on 3/3 + 3/3. U remained slightly better on every session; F and U are related (ρ 0.71–0.76) but not identical. Mean streamline stay probability was 0.95–0.96; 11–16% of endpoints had stay probability below 1.
+Jitter propagation passed its development rule on 3/3 + 3/3. U remained slightly better on every session; F and U are related (ρ 0.71–0.76) but not identical. Mean streamline stay probability was 0.95–0.96; 11–16% of endpoints had stay probability below 1.
 
 ### 3.6 Threshold uncertainty; the soft connectome is a diagnostic
 
@@ -186,7 +188,7 @@ Re-registering already-aligned T1 to the DWI reference (25-member SyN ensemble) 
 
 Ordinary connectome QC is a session gate: it accepts or rejects a session. U adds a per-edge layer the gate cannot see. In every session QC accepted, U identified edges whose counts change under shifts well within residual misregistration, and ranked them far better than edge size or endpoint geometry. Calibrated U states that ranking as a probability for a defined 1 mm event.
 
-C2 reaches almost the same ranking from a different error model, independent per-endpoint jitter of measured size, which supports the conclusion that the ranking reflects boundary geometry rather than an artefact of rigid shifts. Its distinct contribution is the threshold view: about 1% of eligible edges per session can appear or disappear at the common count-10 cut for reasons unrelated to anatomy. Its soft connectome invents edges at that cut and should not replace the hard connectome.
+Jitter propagation reaches almost the same ranking from a different error model, independent per-endpoint jitter of measured size, which supports the conclusion that the ranking reflects boundary geometry rather than an artefact of rigid shifts. Its distinct contribution is the threshold view: about 1% of eligible edges per session can appear or disappear at the common count-10 cut for reasons unrelated to anatomy. Its soft connectome invents edges at that cut and should not replace the hard connectome.
 
 ⟨pending: interpretation of the scan–rescan result. If U/F beat the low-count baseline on real change after the tracking control, the scores are validated per-edge reliability measures. If not, the planted and jitter models capture boundary fragility that real rescan change, dominated by ⟨tracking/other⟩ variation, does not reflect, and the paper reports that boundary.⟩
 
@@ -198,7 +200,7 @@ C2 reaches almost the same ranking from a different error model, independent per
 
 - One error source: endpoint placement relative to parcel boundaries. Not anatomical validity (a false-positive tract can be perfectly reliable) and not tractography randomness, which the reseed control measures but no method here corrects.
 - The 1 mm event is planted. Calibrated U is a probability for that event unless the transport exam passes on real change.
-- C2 assumes isotropic, spatially constant, independent jitter; real deformation is smooth and spatially varying.
+- Jitter propagation assumes isotropic, spatially constant, independent jitter; real deformation is smooth and spatially varying.
 - Development and confirmation: six sessions; confirmation from one clinical site. Scan–rescan: two pairs in this draft (⟨scaling pending⟩).
 - One atlas (DKT-78), streamline counts only (SIFT2 not evaluated), one tracking algorithm (iFOD2).
 - Isotonic calibration is fit on three public sessions and is not guaranteed to transfer to other reconstructions.

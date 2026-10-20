@@ -1,5 +1,5 @@
 ---
-title: One paper from U, C2 and the retest exam — plan, contribution, limits
+title: One paper from shift sensitivity, jitter propagation and rescan validation — plan, contribution, limits
 date: 20 October 2026
 ---
 
@@ -13,21 +13,21 @@ All three address one problem: a streamline-count edge is fragile because endpoi
 
 | Piece | Question | Error model | Product |
 |---|---|---|---|
-| **U** (`manuscript.md`) | Which edges are fragile? | every endpoint moved together by a planted shift (±0.25/±0.5 fit, ±1 mm test) | per-edge score from one scan; calibrated U for the planted 1 mm event |
-| **C2** (`PAPER3_C2_SOFT_ASSIGN.md`) | Same, under realistic error? | independent Gaussian jitter per endpoint, σ from measured leftover | leakage F; soft connectome E[C]; P(count ≥ 10) |
-| **Retest exam** (`PAPER2_LEFTOVER_UQ.md`) | Do run-1 scores predict real scan–rescan change? | none (real data) | validation of U, calibrated U and F |
+| **Shift sensitivity, U** (`manuscript.md`) | Which edges are fragile? | every endpoint moved together by a planted shift (±0.25/±0.5 fit, ±1 mm test) | per-edge score from one scan; calibrated U for the planted 1 mm event |
+| **Jitter propagation, F** (lock name C2; `PAPER3_C2_SOFT_ASSIGN.md`) | Same, under realistic error? | independent Gaussian jitter per endpoint, σ from measured leftover | leakage F; soft connectome E[C]; P(count ≥ 10) |
+| **Rescan validation** (lock name retest exam / G; `PAPER2_LEFTOVER_UQ.md`) | Do run-1 scores predict real scan–rescan change? | none (real data) | validation of U, calibrated U and F |
 
 Two methods and one test of both.
 
-Overlap: F ranks like U on planted 1 mm. Dev results: Spearman(F, U) 0.71–0.76, AUROC F 0.89–0.93 vs U 0.91–0.95. C2's distinct contribution is threshold uncertainty, not ranking. Its soft connectome invents edges (2–12 per session ≥ 10), so it is reported as a diagnostic, never as a corrected connectome.
+Overlap: F ranks like U on planted 1 mm. Dev results: Spearman(F, U) 0.71–0.76, AUROC F 0.89–0.93 vs U 0.91–0.95. Jitter propagation's distinct contribution is threshold uncertainty, not ranking. Its soft connectome invents edges (2–12 per session ≥ 10), so it is reported as a diagnostic, never as a corrected connectome.
 
 ## Decision
 
 Write **one combined paper**:
 
 - U as the method;
-- C2 as the realistic-noise extension and threshold diagnostic;
-- the retest exam as the main validation.
+- jitter propagation as the realistic-noise extension and threshold diagnostic;
+- rescan validation as the main validation.
 
 The three separate documents stay as working records. Draft: `COMBINED_MANUSCRIPT.md` (planted-shift results final; retest and tracking-control sections marked ⟨pending⟩).
 
@@ -56,8 +56,8 @@ Error bars on connectome edges from a single scan.
 
 1. **U**: a per-edge reliability score from the subject's own tractogram and parcellation, with no rescan. Today edge reliability comes only from group test–retest studies, as one average per edge that does not transfer to a new subject, pipeline or lesioned brain.
 2. **Calibrated U**: if retest calibration holds, a per-edge probability of a > 25% change on rescan.
-3. **C2**: which edges exist only because of where the count-of-10 cut falls, i.e. which edges can appear or vanish between scans for non-biological reasons.
-4. **Retest exam**: a reusable protocol and container for validating any edge-uncertainty measure on real scan–rescan data.
+3. **Jitter propagation**: which edges exist only because of where the count-of-10 cut falls, i.e. which edges can appear or vanish between scans for non-biological reasons.
+4. **Rescan validation**: a reusable protocol and container for validating any edge-uncertainty measure on real scan–rescan data.
 
 ## How that helps
 
@@ -76,11 +76,11 @@ Error bars on connectome edges from a single scan.
 
 ## Software
 
-Packaged as `edgeuq` (`edgeuq u`, `edgeuq c2`, `edgeuq retest`, `edgeuq demo`), one container, a docs page per method.
+Packaged as `edgeuq` (`edgeuq shift`, `edgeuq jitter`, `edgeuq rescan`, `edgeuq demo`; old names `u`, `c2`, `retest` kept as aliases), one container, a docs page per method.
 
 - Private repo: <https://github.com/phindagijimana/edgeuq>. Make it public with a Zenodo DOI at preprint (`docs/release.md` there).
 - No TRACK-TBI data, IDs or paths. The frozen isotonic map was fit on public IDEAS and BTC demo sessions only.
 - Tests pass on Python 3.9 and 3.12 (GitHub Actions).
 - Docker image built, smoke-tested on synthetic data, published privately at `ghcr.io/phindagijimana/edgeuq:main`.
-- Parity against frozen outputs on public dev session `ideas-sub-1-ses-1` **passed** (Slurm 189604, `work/package_parity.json`): endpoints identical, C0 exact, U within 4.9e-9 (CSV rounding), C2 F within 1.5e-8 (float32), E[C] exact.
+- Parity against frozen outputs on public dev session `ideas-sub-1-ses-1` **passed** (Slurm 189604, `work/package_parity.json`): endpoints identical, C0 exact, U within 4.9e-9 (CSV rounding), jitter F within 1.5e-8 (float32), E[C] exact.
 - Local Apptainer `.sif` build deferred until running jobs finish. `/tmp` is noexec here, so set `APPTAINER_TMPDIR`, `PROOT_TMP_DIR` and `TMPDIR` to a home directory.
