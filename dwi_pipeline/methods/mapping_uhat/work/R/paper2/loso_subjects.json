@@ -1,0 +1,12 @@
+[
+  {
+    "key": "kirby21/KKI849",
+    "count_run1": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/paper2/matrices/kirby21_KKI849/C0.csv",
+    "count_run2": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/paper2/matrices/kirby21_KKI849/C1.csv"
+  },
+  {
+    "key": "boekel_dwi_retest/pp01",
+    "count_run1": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/paper2/matrices/boekel_dwi_retest_pp01/C0.csv",
+    "count_run2": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/paper2/matrices/boekel_dwi_retest_pp01/C1.csv"
+  }
+]

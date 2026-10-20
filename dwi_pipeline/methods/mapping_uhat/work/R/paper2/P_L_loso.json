@@ -1,0 +1,59 @@
+{
+  "protocol": "LOSO_by_subject",
+  "primary_score": "L=-log1p(C0)",
+  "calibrated_symbol": "P_L",
+  "not_hatU": true,
+  "not_plant_y": true,
+  "folds": [
+    {
+      "train_keys": [
+        "boekel_dwi_retest/pp01"
+      ],
+      "test": "kirby21/KKI849",
+      "n": 2264,
+      "y_rate": 0.5384275618374559,
+      "mean_P_L": 0.36506326334453965,
+      "auroc_L": 0.6987208120233465,
+      "auroc_P_L": 0.6983043596013675,
+      "ECE_P_L": 0.17966066412923998,
+      "Brier_P_L": 0.2518043940073369,
+      "symbol": "P_L",
+      "not_hatU": true
+    },
+    {
+      "train_keys": [
+        "kirby21/KKI849"
+      ],
+      "test": "boekel_dwi_retest/pp01",
+      "n": 2628,
+      "y_rate": 0.3588280060882801,
+      "mean_P_L": 0.5387012832343289,
+      "auroc_L": 0.7042150344094075,
+      "auroc_P_L": 0.7042150344094075,
+      "ECE_P_L": 0.1803575721508917,
+      "Brier_P_L": 0.2348692934520964,
+      "symbol": "P_L",
+      "not_hatU": true
+    }
+  ],
+  "note": "n=2 is protocol demo only; scale required for calibration claims",
+  "baselines_within_subject": {
+    "kirby21/KKI849": {
+      "auroc_L": 0.6987208120233465,
+      "auroc_U_shift_baseline_only": 0.5781760875452857,
+      "auroc_F_jitter_baseline_only": 0.5980205753402075,
+      "n": 2264,
+      "y_rate": 0.5384275618374559
+    },
+    "boekel_dwi_retest/pp01": {
+      "auroc_L": 0.7042150344094075,
+      "auroc_U_shift_baseline_only": 0.6048201490916987,
+      "auroc_F_jitter_baseline_only": 0.5923311232854298,
+      "n": 2628,
+      "y_rate": 0.3588280060882801
+    }
+  },
+  "paper": 2,
+  "status": "pilot_protocol_demo",
+  "claim": "LOSO P_L on n=2 pilots is a design check: ranking of L transfers across sites, but ECE remains poor under base-rate shift. Not hat{U}. Scale required for calibration claims."
+}

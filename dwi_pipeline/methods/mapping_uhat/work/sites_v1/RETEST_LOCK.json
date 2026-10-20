@@ -228,5 +228,14 @@
     "awaiting": "scale descriptive panels only",
     "paper2": "PAPER2_PREDICTION_CALIBRATION.md",
     "not_hatU": true
+  },
+  "paper2_design_2026-10-20": {
+    "status": "DESIGN_LOCKED_PILOT_DEMO",
+    "path": "docs/papers/mapping_uhat/PAPER2_*",
+    "symbols": ["L", "P_L", "y_leftover", "R"],
+    "edgeuq": "calibrate-leftover",
+    "pilot_loso": "work/R/paper2/P_L_loso.json",
+    "forbidden": ["hatU", "plant_y_for_PL", "invent_retune"],
+    "gate_for_calibration_claims": "scale descriptive"
   }
 }
