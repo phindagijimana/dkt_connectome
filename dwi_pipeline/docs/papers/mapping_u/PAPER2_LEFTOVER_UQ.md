@@ -21,7 +21,7 @@ not: hat{U} unless G wins; 2WK vs 6MO; planted mm called leftover
 | Pair | Source | State (20 Oct 00:30) | Jobs |
 |---|---|---|---|
 | Kirby21 KKI849 ses-1/ses-2 | Same-day scan–rescan | QSIPrep done; FastSurfer done; tractography + DKT count ses-1 running, ses-2 next | 189574 (interactive), fallback 189589 (`general`) |
-| Boekel pp01 ses-1/ses-2 | Same-day A/B, 4 runs each | Two data repairs: TRT from published bandwidth; Philips trace volume (b=1000, zero bvec) dropped from all 212 runs — it crashed eddy. QSIPrep rerunning, past eddy. | 189586 → FastSurfer 189587 → tractography 189588 (`general`) |
+| Boekel pp01 ses-1/ses-2 | Same-day A/B, 4 runs each | Two data repairs: TRT from published bandwidth; Philips trace volume (b=1000, zero bvec) dropped from all 212 runs — it crashed eddy. **QSIPrep done (20 Oct 02:00), dwiref both sessions.** FastSurfer running. | 189586 ✓ → FastSurfer 189587 (interactive) → tractography 189588 (`general`) |
 | Other-site 2WK (7) | Different site | FastSurfer array running; one DWI per subject, so not a leftover pair. For a later C transport check. | 189575 |
 
 `work/sites_v1/LIST.json` stays `n = 0` until both sessions of a pair have `dkt_connectome_count.csv` with `empty_nodes = 0`.

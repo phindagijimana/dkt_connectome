@@ -21,10 +21,27 @@ not: Exp2 matrix mean; hat{U}; leftover calibration from planted y
 
 | Exam | \(y\) | Win rule (written first) | State |
 |---|---|---|---|
-| Development | Planted 1 mm (same as \(U\)) | Spearman\((F,e) > 0.5\) and AUROC \(> 0.7\) on ≥2/3 dev and ≥2/3 confirm | Running: **189577** (6 sessions, ~01:30), exam **189578** |
+| Development | Planted 1 mm (same as \(U\)) | Spearman\((F,e) > 0.5\) and AUROC \(> 0.7\) on ≥2/3 dev and ≥2/3 confirm | **Win, 3/3 + 3/3** (189577/189578). See below. |
 | Leftover | Run-1 vs run-2 (Kirby, Boekel) | Primary: AUROC of \(F\) vs \(U\) vs calibrated \(U\). Soft connectome wins if its moved fraction is below hard on both pairs with invent_frac ≤ 0.001 | Gated on Paper 2 data; packs queued (189592, 189593) |
 
 Fail on either → keep hard `radial_4` (Yeh 2019) and say so. A development pass is planted \(y\) only and is not leftover calibration.
+
+### Development result (20 Oct 2026, planted \(y\) only)
+
+| Session | Split | \(\sigma\) (mm) | Spearman\((F,e)\) | AUROC \(F\) | AUROC \(U\) | Spearman\((F,U)\) | Invented count≥10 edges in \(E[C]\) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| IDEAS sub-1 | dev | 0.63 | 0.759 | 0.904 | 0.906 | 0.706 | 3 |
+| IDEAS sub-6 | dev | 0.46 | 0.767 | 0.892 | 0.923 | 0.741 | 7 |
+| BTC PAT20 | dev | 0.59 | 0.777 | 0.897 | 0.912 | 0.757 | 12 |
+| TBI011011 | confirm | 0.52 | 0.787 | 0.910 | 0.923 | 0.746 | 6 |
+| TBI011021 | confirm | 0.48 | 0.773 | 0.927 | 0.935 | 0.731 | 2 |
+| TBI011204 | confirm | 0.41 | 0.787 | 0.931 | 0.945 | 0.754 | 5 |
+
+- Leakage \(F\), built only from measured leftover \(\sigma\) and no planted shift, ranks the 1 mm movers almost as well as \(U\) (AUROC 0.89–0.93 vs 0.91–0.95). \(U\) remains slightly better on every session.
+- \(F\) and \(U\) correlate 0.71–0.76, so they are related but not the same score.
+- Mean streamline stay probability 0.95–0.96; 11–16% of endpoints have stay probability below 1.
+- Recomputed hard \(C^0\) equals the frozen identity count exactly on all six sessions.
+- The soft connectome \(E[C]\) crosses count 10 on 2–12 edges that are below 10 in \(C^0\) (up to 0.45% of eligible edges). That is above the 0.001 invent_frac used for the leftover soft-connectome rule, so the soft-connectome claim is at risk; the \(F\) ranking claim is not.
 
 ## Files
 

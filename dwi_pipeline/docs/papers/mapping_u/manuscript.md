@@ -10,8 +10,8 @@ not: hat{U}; leftover probability; GOSE; new D
 >
 > | Still needed for submission | State |
 > |---|---|
-> | Cheap baselines on the same edges (low count, boundary distance, unlabeled-end fraction, short edge, C2 leakage) | Locked `work/P1/LOCK.json`; Slurm **189590** (after C2). Fills §3.7. |
-> | Cut sensitivity (relchange 0.15/0.25/0.35 × count floor 5/10/20) | Same job. Fills §3.8. 0.25/10 stays primary. |
+> | Cheap baselines on the same edges (low count, boundary distance, unlabeled-end fraction, short edge, C2 leakage) | **Done** (189590). §3.7: \(U\) beats all; count alone AUROC ~0.78; geometry ~chance. |
+> | Cut sensitivity (relchange 0.15/0.25/0.35 × count floor 5/10/20) | **Done** (189590). §3.8: AUROC ≥0.85 at every grid point. |
 > | U algebra reproducibility | Done: recomputed \(U\) from stored maps matches shipped \(U\) to \(5\times10^{-9}\) (generator source was lost; rule recovered from bytecode). |
 > | SIFT2 event | Not possible from stored maps (count only). Needs weighted re-assignment. Limitation unless rerun. |
 > | Second atlas | Not started. Limitation. |
@@ -154,13 +154,33 @@ This is Hub / Kybic registration uncertainty on \(\phi\). It is not Simpson, not
 
 ![Leftover millimetres vs the 1 mm plant](figures/fig3_leftover_mm.png)
 
-### 3.7 Cheap baselines (pending, P1)
+### 3.7 Cheap baselines (P1, 20 Oct)
 
-Same six sessions, same eligible mask, same 1 mm event. Scores (higher = predicted mover): \(-C^0\); minus mean endpoint distance to a DKT label boundary; fraction of endpoints that needed the radial search; minus mean endpoint–endpoint distance; C2 leakage \(F\) (planted \(y\) only). Spearman and AUROC beside \(U\). Descriptive; nothing retunes \(U\). Output: `methods/mapping_uhat/work/P1/p1_summary.json`.
+Same six sessions, same eligible mask, same 1 mm event. Scores (higher = predicted mover). Descriptive; nothing retunes \(U\). Mean over three sessions [range]:
 
-### 3.8 Cut sensitivity (pending, P1)
+| Score | Dev Spearman | Dev AUROC | Confirm Spearman | Confirm AUROC |
+|---|---:|---:|---:|---:|
+| \(U\) | 0.870 [0.86, 0.88] | 0.914 [0.91, 0.92] | 0.891 [0.89, 0.90] | 0.934 [0.92, 0.94] |
+| C2 leakage \(F\) (no plant; measured-leftover \(\sigma\)) | 0.768 | 0.898 | 0.782 | 0.923 |
+| Low count \(-C^0\) | 0.566 | 0.783 | 0.540 | 0.769 |
+| Near label boundary | 0.216 | 0.567 | 0.027 | 0.491 |
+| Endpoints needing radial search | 0.160 | 0.561 | −0.028 | 0.550 |
+| Short edge | 0.021 | 0.535 | 0.003 | 0.533 |
 
-\(U\), \(e\), mask and moved recomputed from the stored 18 planted maps at relchange \(\{0.15, 0.25, 0.35\}\) × count floor \(\{5, 10, 20\}\). 0.25 / 10 is the locked primary; the grid is a robustness table, not a re-choice.
+\(U\) beats every cheap baseline. Edge count alone carries part of the signal (AUROC ~0.78); endpoint geometry baselines are near chance. C2 leakage comes close to \(U\) without any plant (see Paper 3). Output: `methods/mapping_uhat/work/P1/p1_summary.json`.
+
+### 3.8 Cut sensitivity (P1, 20 Oct)
+
+\(U\), \(e\), mask and moved recomputed from the stored 18 planted maps. 0.25 / 10 is the locked primary; the grid is a robustness table, not a re-choice. Range over six sessions:
+
+| relchange cut | count floor | AUROC | Spearman | moved rate |
+|---:|---:|---|---|---:|
+| 0.15 | 5 / 10 / 20 | 0.918–0.949 | 0.857–0.914 | 0.32–0.37 |
+| **0.25** | **10** | **0.906–0.945** | **0.861–0.899** | **0.16** |
+| 0.25 | 5 / 20 | 0.906–0.958 | 0.857–0.914 | 0.14–0.18 |
+| 0.35 | 5 / 10 / 20 | 0.854–0.959 | 0.857–0.914 | 0.06–0.09 |
+
+AUROC stays ≥0.85 and Spearman ≥0.85 at every grid point; the U ranking does not depend on the locked cuts.
 
 ---
 
