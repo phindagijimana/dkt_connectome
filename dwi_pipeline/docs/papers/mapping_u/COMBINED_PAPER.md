@@ -29,7 +29,7 @@ Write **one combined paper**:
 - C2 as the realistic-noise extension and threshold diagnostic;
 - the retest exam as the main validation.
 
-The three separate documents stay as working records.
+The three separate documents stay as working records. Draft: `COMBINED_MANUSCRIPT.md` (planted-shift results final; retest and tracking-control sections marked ⟨pending⟩).
 
 ## Tier
 
