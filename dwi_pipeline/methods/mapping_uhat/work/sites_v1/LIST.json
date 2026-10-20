@@ -1,9 +1,22 @@
 {
   "name": "sites_v1",
   "status": "source_on_home_not_leftover_y",
-  "n": 0,
+  "n": 1,
   "source": "same_day_run2",
-  "sessions": [],
+  "sessions": [
+    "kirby21/KKI849"
+  ],
   "leftover_y_ready": false,
-  "note": "Kirby KKI849 dwiref both sessions exist (189460_1). Boekel 189572 still QSIPrep. 2WK has dwiref but one DWI each. FastSurfer/iFOD2 started; do not write leftover paths until both-session count CSVs have empty_nodes=0. No GOLD ECE until n>=2 and user writes GOLD locked."
+  "note": "Kirby KKI849: both-session counts empty_nodes=0; pack 189618 COMPLETED (U/Ucal/F). Reseed 189619 running. Boekel pack still pending. No GOLD ECE until n>=2 and user writes GOLD locked.",
+  "kirby_KKI849": {
+    "counts_both_sessions": true,
+    "empty_nodes": 0,
+    "pack_ses-1": "work/R/kirby21_KKI849_ses-1/pack.json",
+    "pack_job": 189618,
+    "C0_vs_shipped_pearson": 0.9999999999893454,
+    "reseed_job": 189619,
+    "leftover_exam": "blocked: need Boekel pack (n>=2) AND user writes GOLD locked"
+  },
+  "not_gold": true,
+  "not_leftover_y": true
 }

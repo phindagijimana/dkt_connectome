@@ -122,5 +122,23 @@
     "pilot_fastsurfer_job": 189624,
     "pilot_ifod2_job": 189625,
     "pilot_status": "adapt COMPLETED; FastSurfer+iFOD2 queued (afterok)"
+  },
+  "kirby_pack_189618": {
+    "state": "COMPLETED",
+    "elapsed": "02:01:06",
+    "pack": "work/R/kirby21_KKI849_ses-1",
+    "n_streamlines": 10000000,
+    "C0_vs_shipped_count_pearson": 0.9999999999893454,
+    "sigma_mm": 0.4981,
+    "S": 32,
+    "outputs": [
+      "U.csv",
+      "Ucal.csv",
+      "F.npy",
+      "Esoft.npy",
+      "C0.npy"
+    ],
+    "not_gold": true,
+    "not_leftover_y": true
   }
 }
