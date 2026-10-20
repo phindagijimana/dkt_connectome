@@ -82,5 +82,28 @@
     "scaling_decision": "processing waits until KKI849 and pp01 pass end to end (user decision 2026-10-20)",
     "not_gold": true,
     "not_leftover_y": true
+  },
+  "hcp_retest_added_2026-10-20": {
+    "dataset": "HCP-YA S1200 Test-Retest (HCP_1200 = ses-1, HCP_Retest = ses-2), s3://hcp-openaccess, HCP Open Access DUT accepted by user",
+    "inventory": "sample_data/_download_logs/hcp_retest_inventory.json",
+    "n_retest_subjects": 45,
+    "n_pairs": 44,
+    "excluded": {
+      "662551": "no ses-1 diffusion"
+    },
+    "partial_diffusion_stratum": [
+      "135528",
+      "137128",
+      "151526",
+      "169343",
+      "192439",
+      "601127",
+      "660951"
+    ],
+    "package": "HCP minimally preprocessed T1w/Diffusion + T1w_acpc_dc_restore (user choice): HCP skips QSIPrep; report as a processing difference",
+    "download_job": 189621,
+    "redistribution": "none; sample_data/hcp_retest gitignored; never in edgeuq repo or container",
+    "not_gold": true,
+    "not_leftover_y": true
   }
 }
