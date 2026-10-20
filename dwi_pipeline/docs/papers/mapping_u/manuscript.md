@@ -2,7 +2,7 @@
 title: Residual T1–DWI mapping error still moves DKT edges after ordinary QC
 subtitle: Experiment 1 — locked ranker U and calibrated U for planted 1 mm
 date: 20 October 2026
-status: manuscript draft (Paper 1 of 3); numbers from locked confirmation and experiment C; baselines/sensitivity running (P1)
+status: SUPERSEDED as standalone Paper 1 narrative — plant numbers retained as Claim A source; full Paper 1 is docs/papers/mapping_uhat/PAPER1_manuscript.md (2026-10-20 finalize_pre_scale)
 not: hat{U}; leftover probability; GOSE; new D
 ---
 
