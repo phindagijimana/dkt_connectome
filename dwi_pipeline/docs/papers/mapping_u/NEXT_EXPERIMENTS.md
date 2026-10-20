@@ -20,6 +20,8 @@ A8 used the only naming exam for the ANTs edge-frequency file. It failed. We kee
 
 Paper documents: Paper 1 `manuscript.md`; Paper 2 `PAPER2_LEFTOVER_UQ.md`; Paper 3 `PAPER3_C2_SOFT_ASSIGN.md`.
 
+**Decision (20 Oct 2026):** write one combined paper (U as the method, C2 as extension and threshold diagnostic, the retest exam as validation). Plan, contribution, limits and the packaged software: `COMBINED_PAPER.md`.
+
 ## Registration noise models we can still run
 
 1. **V1 (now)** — voxel-wise leftover from the A5 SyN ensemble we already paid for. Hub / Kybic. Maps, not probabilities.

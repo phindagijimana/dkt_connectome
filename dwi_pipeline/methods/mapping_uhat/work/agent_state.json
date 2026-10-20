@@ -67,6 +67,13 @@
   "V2_posterior_n_ok": 6,
   "V2_posterior_use_probs": false,
   "V2_posterior_weights": "synthmorph_brains_use_probs_false",
-  "kills_triggered": ["A8_fail_keep_U"],
-  "notes": "A8 fail. C win: calibrated U is a 1 mm probability only. L no-op. L2 fail. V1 win: voxel leftover-mm maps, not hat{U}. G rules locked, run blocked on LIST.json. Not proxy-hat{U}. Not hat{U}."
+  "kills_triggered": [
+    "A8_fail_keep_U"
+  ],
+  "notes": "A8 fail. C win: calibrated U is a 1 mm probability only. L no-op. L2 fail. V1 win: voxel leftover-mm maps, not hat{U}. G rules locked, run blocked on LIST.json. Not proxy-hat{U}. Not hat{U}.",
+  "jobs": {
+    "package_parity": 189604
+  },
+  "combined_paper_decision": "2026-10-20: one paper (U method, C2 extension/threshold diagnostic, retest validation). docs/papers/mapping_u/COMBINED_PAPER.md",
+  "package_repo": "private github.com/phindagijimana/connectome-edge-uq (no TRACK-TBI data)"
 }
