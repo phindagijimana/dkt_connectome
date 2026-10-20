@@ -1,0 +1,137 @@
+{
+  "experiment": "retest leftover exam (C2 primary AUROC + soft connectome; G calibration if GOLD locked)",
+  "pairs": [
+    {
+      "pair": "kirby21/KKI849",
+      "n": 2264,
+      "y_rate": 0.5384275618374559,
+      "auroc_U": 0.5781760875452857,
+      "auroc_Ucal": 0.5890674370316873,
+      "auroc_F": 0.5980205753402075,
+      "moved_frac_hard": 0.5384275618374559,
+      "moved_frac_soft": 0.5336283185840708,
+      "invented_count_ge10": 14,
+      "invent_frac": 0.006183745583038869,
+      "hard_crossing_rate": 0.0715547703180212,
+      "threshold_uncertain_frac": 0.027385159010600707,
+      "crossings_on_flagged_edges": 0.25925925925925924
+    },
+    {
+      "pair": "boekel_dwi_retest/pp01",
+      "n": 2628,
+      "y_rate": 0.3588280060882801,
+      "auroc_U": 0.6048201490916987,
+      "auroc_Ucal": 0.5994228911454383,
+      "auroc_F": 0.5923311232854298,
+      "moved_frac_hard": 0.3588280060882801,
+      "moved_frac_soft": 0.3530308806709874,
+      "invented_count_ge10": 7,
+      "invent_frac": 0.002663622526636225,
+      "hard_crossing_rate": 0.05289193302891933,
+      "threshold_uncertain_frac": 0.01598173515981735,
+      "crossings_on_flagged_edges": 0.22302158273381295
+    }
+  ],
+  "c2_soft_connectome_win": false,
+  "G": {
+    "n": 4892,
+    "y_rate": 0.4419460343417825,
+    "ECE_calibrated_U": 0.31782960868602833,
+    "occupied_bins_ok": false,
+    "bins": [
+      {
+        "bin": 1,
+        "lo": 0.0,
+        "hi": 0.1,
+        "n": 3263,
+        "mean_p": 0.023796825542738532,
+        "mean_y": 0.3870671161507815
+      },
+      {
+        "bin": 2,
+        "lo": 0.1,
+        "hi": 0.2,
+        "n": 327,
+        "mean_p": 0.14780190524970174,
+        "mean_y": 0.5137614678899083
+      },
+      {
+        "bin": 3,
+        "lo": 0.2,
+        "hi": 0.30000000000000004,
+        "n": 144,
+        "mean_p": 0.21863868009749277,
+        "mean_y": 0.4583333333333333
+      },
+      {
+        "bin": 4,
+        "lo": 0.30000000000000004,
+        "hi": 0.4,
+        "n": 132,
+        "mean_p": 0.3395726033260206,
+        "mean_y": 0.5378787878787878
+      },
+      {
+        "bin": 5,
+        "lo": 0.4,
+        "hi": 0.5,
+        "n": 167,
+        "mean_p": 0.47028661124353266,
+        "mean_y": 0.5449101796407185
+      },
+      {
+        "bin": 6,
+        "lo": 0.5,
+        "hi": 0.6000000000000001,
+        "n": 235,
+        "mean_p": 0.5651217180558006,
+        "mean_y": 0.5276595744680851
+      },
+      {
+        "bin": 7,
+        "lo": 0.6000000000000001,
+        "hi": 0.7000000000000001,
+        "n": 109,
+        "mean_p": 0.6573426573426573,
+        "mean_y": 0.5779816513761468
+      },
+      {
+        "bin": 8,
+        "lo": 0.7000000000000001,
+        "hi": 0.8,
+        "n": 0,
+        "mean_p": null,
+        "mean_y": null
+      },
+      {
+        "bin": 9,
+        "lo": 0.8,
+        "hi": 0.9,
+        "n": 210,
+        "mean_p": 0.8418978409034975,
+        "mean_y": 0.5857142857142857
+      },
+      {
+        "bin": 10,
+        "lo": 0.9,
+        "hi": 1.0,
+        "n": 305,
+        "mean_p": 0.9783463217121487,
+        "mean_y": 0.6327868852459017
+      }
+    ],
+    "win": false,
+    "relchange_cut": 0.25,
+    "count_floor": 10,
+    "not_proxy_hatU": true,
+    "claim": "G fail or blocked. Keep calibrated U as a 1 mm probability. Not hat{U}."
+  },
+  "tracking_only_control": {
+    "seed": 20261020,
+    "n_edges_scored": 2184,
+    "tracking_only_move_rate": 0.09523809523809523,
+    "run1_radial4_vs_shipped_count_pearson": 0.9999999999893454,
+    "note": "descriptive (RETEST_LOCK tracking_only_control); AUROC vs U/Ucal/F computed in the retest exam"
+  },
+  "not_hatU_unless_G_win": true
+}

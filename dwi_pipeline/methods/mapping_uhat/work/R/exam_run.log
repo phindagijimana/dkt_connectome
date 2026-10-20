@@ -1,0 +1,35 @@
+{
+  "pairs": [
+    {
+      "pair": "kirby21/KKI849",
+      "n": 2264,
+      "y_rate": 0.5384275618374559,
+      "auroc_U": 0.5781760875452857,
+      "auroc_Ucal": 0.5890674370316873,
+      "auroc_F": 0.5980205753402075,
+      "moved_frac_hard": 0.5384275618374559,
+      "moved_frac_soft": 0.5336283185840708,
+      "invented_count_ge10": 14,
+      "invent_frac": 0.006183745583038869,
+      "hard_crossing_rate": 0.0715547703180212,
+      "threshold_uncertain_frac": 0.027385159010600707,
+      "crossings_on_flagged_edges": 0.25925925925925924
+    },
+    {
+      "pair": "boekel_dwi_retest/pp01",
+      "n": 2628,
+      "y_rate": 0.3588280060882801,
+      "auroc_U": 0.6048201490916987,
+      "auroc_Ucal": 0.5994228911454383,
+      "auroc_F": 0.5923311232854298,
+      "moved_frac_hard": 0.3588280060882801,
+      "moved_frac_soft": 0.3530308806709874,
+      "invented_count_ge10": 7,
+      "invent_frac": 0.002663622526636225,
+      "hard_crossing_rate": 0.05289193302891933,
+      "threshold_uncertain_frac": 0.01598173515981735,
+      "crossings_on_flagged_edges": 0.22302158273381295
+    }
+  ],
+  "c2_soft_connectome_win": false
+}

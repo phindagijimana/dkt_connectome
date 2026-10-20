@@ -26,7 +26,7 @@
   "V1_result": "win",
   "G_rules_locked": true,
   "G_run_locked": false,
-  "G_exam_status": "blocked_empty_list",
+  "G_exam_status": "completed_fail",
   "V2_locked_date": "2026-10-19",
   "V2_probe": "model_importable_not_run",
   "V2_cpu_smoke": "local_ok_slurm_189448",
@@ -81,5 +81,8 @@
   },
   "combined_paper_decision": "2026-10-20: one paper (U method, C2 extension/threshold diagnostic, retest validation). docs/papers/mapping_u/COMBINED_PAPER.md",
   "package_repo": "private github.com/phindagijimana/edgeuq (renamed from connectome-edge-uq 2026-10-20; no TRACK-TBI data)",
-  "scaling_decision": "2026-10-20: wait until both pairs pass end to end"
+  "scaling_decision": "held: exam soft/G fail; user review before queue",
+  "retest_exam": "work/R/retest_exam.json",
+  "c2_soft_connectome_win": false,
+  "hcp_jobs": "189624/189625 released"
 }

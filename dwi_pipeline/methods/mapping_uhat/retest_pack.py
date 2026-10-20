@@ -181,6 +181,13 @@ def pair_scores(ds: str, sid: str) -> dict:
     }
 
 
+
+def _reseed_control() -> dict | str:
+    p = SD / "kirby21/freeze/sub-KKI849/reseed/ses-1_seed20261020/reseed_control.json"
+    if not p.is_file():
+        return "not run yet (reseeded run-1 tractography)"
+    return json.loads(p.read_text())
+
 def exam() -> dict:
     lst = json.loads((HERE / "work" / "sites_v1" / "LIST.json").read_text())
     if int(lst.get("n") or 0) < 2:
@@ -196,7 +203,7 @@ def exam() -> dict:
         "pairs": clean,
         "c2_soft_connectome_win": soft_win,
         "G": g,
-        "tracking_only_control": "not run yet (reseeded run-1 tractography)",
+        "tracking_only_control": _reseed_control(),
         "not_hatU_unless_G_win": True,
     }
     (OUT / "retest_exam.json").write_text(json.dumps(rec, indent=2, default=float) + "\n")

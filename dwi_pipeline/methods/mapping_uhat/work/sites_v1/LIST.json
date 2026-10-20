@@ -1,14 +1,14 @@
 {
   "name": "sites_v1",
-  "status": "source_on_home_not_leftover_y",
+  "status": "gold_locked_n2",
   "n": 2,
   "source": "same_day_run2",
   "sessions": [
     "kirby21/KKI849",
     "boekel_dwi_retest/pp01"
   ],
-  "leftover_y_ready": false,
-  "note": "Both pilots: counts empty_nodes=0 and packs COMPLETED. LIST n=2. Leftover/rescan exam blocked until user writes GOLD locked. HCP FS/iFOD still held.",
+  "leftover_y_ready": true,
+  "note": "GOLD locked; retest exam COMPLETED: soft invent_frac FAIL, G calibration FAIL. Keep radial_4. No mass scale pending review.",
   "kirby_KKI849": {
     "counts_both_sessions": true,
     "empty_nodes": 0,
@@ -18,7 +18,7 @@
     "reseed_job": 189619,
     "leftover_exam": "blocked: need Boekel pack (n>=2) AND user writes GOLD locked"
   },
-  "not_gold": true,
+  "not_gold": false,
   "not_leftover_y": true,
   "boekel_pp01": {
     "counts_both_sessions": true,
@@ -26,5 +26,8 @@
     "pack_ses-1": "work/R/boekel_dwi_retest_pp01_ses-1/pack.json",
     "pack_job": 189608,
     "C0_vs_shipped_pearson": 0.9999999999999998
-  }
+  },
+  "exam_complete": true,
+  "c2_soft_connectome_win": false,
+  "G_win": false
 }
