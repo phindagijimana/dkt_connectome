@@ -43,6 +43,16 @@ Fail on either → keep hard `radial_4` (Yeh 2019) and say so. A development pas
 - Recomputed hard \(C^0\) equals the frozen identity count exactly on all six sessions.
 - The soft connectome \(E[C]\) crosses count 10 on 2–12 edges that are below 10 in \(C^0\) (up to 0.45% of eligible edges). That is above the 0.001 invent_frac used for the leftover soft-connectome rule, so the soft-connectome claim is at risk; the \(F\) ranking claim is not.
 
+### Handling the invented edges (lock amendment 2026-10-20b, before any retest number)
+
+The 0.001 rule is **not relaxed**. Three secondary, descriptive outputs were added:
+
+1. **Invented-edge profile (development, done).** 33 of 35 invented edges were already at hard count 6–9 (mostly 9), so the soft average only nudged them over the count-10 threshold. Two were not: IDEAS sub-6, hard 0 → soft 35.5; PAT20, hard 2 → soft 14.8. Averaging also dropped 6–17 edges per session below 10, more than it added. `work/C2/invented_profile.json`.
+2. **Hard crossing rate (retest).** Fraction of eligible edges that are ≥10 in one hard run and <10 in the other: what re-scanning alone does to the threshold. Context beside invent_frac; cannot overturn it.
+3. **Threshold uncertainty.** Per edge \(P(\text{count} \ge 10)\) over the 32 jittered samples; \(0.1 < P < 0.9\) = threshold-uncertain. An uncertainty flag, not a replacement connectome. On retest: share of hard run-1 vs run-2 crossings that land on flagged edges. Development per-sample matrices are being rebuilt with the same seeds (Slurm 189597, leakage must match exactly), then the profile reruns (189598). Retest packs now save them directly.
+
+Recommended use if the soft-connectome rule fails: report the hard connectome, flag threshold-uncertain edges, and use \(F\) as the per-edge fragility score.
+
 ## Files
 
 `c2_soft.py`, `tests/test_c2_math.py`, `slurm/c2_array.sbatch`, `slurm/c2_exam.sbatch`, `retest_pack.py`, outputs in `work/C2/` and `work/R/`.

@@ -57,11 +57,13 @@ def leakage(asg0: np.ndarray, stay: np.ndarray, n_samples: int, n_nodes: int = N
     return np.clip(f, 0.0, 1.0), c0
 
 
-def run_session(sid: str, n_samples: int) -> dict:
+def run_session(sid: str, n_samples: int, resample: bool = False) -> dict:
     out = OUT / sid
     out.mkdir(parents=True, exist_ok=True)
-    if (out / "F.npy").is_file() and (out / "session.json").is_file():
+    done = (out / "F.npy").is_file() and (out / "session.json").is_file()
+    if done and not (resample and not (out / "Cs.npy").is_file()):
         return json.loads((out / "session.json").read_text())
+    f_prev = np.load(out / "F.npy") if done else None
     v1 = json.loads((V1 / sid / "session.json").read_text())
     med = float(v1["median_of_voxel_medians_mm"])
     sigma = sigma_from_v1(med)
@@ -74,7 +76,7 @@ def run_session(sid: str, n_samples: int) -> dict:
     a0, b0 = asg0[:, 0], asg0[:, 1]
     stay = np.zeros(ends.shape[0], dtype=np.uint16)
     end_stay = np.zeros((ends.shape[0], 2), dtype=np.uint16)
-    esum = np.zeros((N_NODES, N_NODES), dtype=np.float64)
+    cs = np.zeros((n_samples, N_NODES, N_NODES), dtype=np.float32)
     rng = np.random.default_rng(SEED0 + SESSIONS.index(sid))
     for s in range(n_samples):
         jit = ends + rng.normal(0.0, sigma, size=ends.shape).astype(np.float32)
@@ -82,10 +84,13 @@ def run_session(sid: str, n_samples: int) -> dict:
         del jit
         stay += same_edge(a0, b0, asg[:, 0], asg[:, 1]).astype(np.uint16)
         end_stay += (asg == asg0).astype(np.uint16)
-        esum += connectome_from_assignments(asg)
+        cs[s] = connectome_from_assignments(asg)
         print(f"[C2] {sid} sample {s + 1}/{n_samples}", flush=True)
     f, c0 = leakage(asg0, stay, n_samples)
-    esoft = esum / float(n_samples)
+    if f_prev is not None and float(np.max(np.abs(f.astype(np.float32) - f_prev))) > 0:
+        raise SystemExit(f"{sid}: resampled F differs from saved F (seed/assigner drift)")
+    np.save(out / "Cs.npy", cs)
+    esoft = cs.astype(np.float64).mean(axis=0)
     np.save(out / "F.npy", f.astype(np.float32))
     np.save(out / "C0.npy", c0.astype(np.float32))
     np.save(out / "Esoft.npy", esoft.astype(np.float32))
@@ -187,6 +192,7 @@ def main() -> int:
     ap.add_argument("--session-id")
     ap.add_argument("--samples", type=int, default=32)
     ap.add_argument("--exam", action="store_true")
+    ap.add_argument("--resample", action="store_true", help="rebuild per-sample counts Cs.npy with the same seed; F must match")
     args = ap.parse_args()
     lock = json.loads((OUT / "LOCK.json").read_text())
     if args.samples != int(lock["model"]["S"]):
@@ -196,7 +202,7 @@ def main() -> int:
         return 0
     if args.session_id not in SESSIONS:
         raise SystemExit(f"unknown session {args.session_id}")
-    print(json.dumps(run_session(args.session_id, args.samples), indent=2))
+    print(json.dumps(run_session(args.session_id, args.samples, resample=args.resample), indent=2))
     return 0
 
 

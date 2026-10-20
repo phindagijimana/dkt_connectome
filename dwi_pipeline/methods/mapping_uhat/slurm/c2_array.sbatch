@@ -23,5 +23,5 @@ SID="${SESSIONS[$((SLURM_ARRAY_TASK_ID - 1))]}"
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 mkdir -p "${UHAT}/work/C2/logs"
 echo "[C2] task=${SLURM_ARRAY_TASK_ID} session=${SID} $(date -Is)"
-python3 -u "${UHAT}/c2_soft.py" --session-id "${SID}"
+python3 -u "${UHAT}/c2_soft.py" --session-id "${SID}" ${C2_EXTRA:-}
 echo "[C2] done ${SID} $(date -Is)"

@@ -48,6 +48,16 @@
       "secondary_if_A5_rerun": "per-session V1 sigma on run-1; reported beside the primary, never replacing it",
       "runner": "retest_pack.py (pack on ses-1 / run-1 only; y from the two hard count CSVs)"
     },
+    "amendment_2026-10-20b": {
+      "written_before_any_retest_number": true,
+      "trigger": "development E[C] invented 2-12 count>=10 edges per session (up to 0.45% of eligible), above the locked 0.001",
+      "primary_rule_unchanged": "soft-connectome win still requires invent_frac <= 0.001 on both pairs; not relaxed",
+      "secondary_descriptive": {
+        "invented_edge_profile": "development only: for each invented edge, hard C0, E[C], and whether C0 in [5,10) (near-threshold) vs < 5; reported, not used to rescue the rule",
+        "hard_crossing_rate": "on each retest pair: fraction of eligible edges that are >=10 in one hard run and <10 in the other (what re-scanning alone does); context beside invent_frac, cannot overturn the rule",
+        "threshold_uncertainty": "per edge P(count>=10) over the S jittered samples; edges with 0.1 < P < 0.9 are flagged 'threshold-uncertain'. Reported as an uncertainty output, not a replacement connectome. On retest: fraction of hard run-1 vs run-2 threshold crossings that fall on flagged edges"
+      }
+    },
     "y": "moved between run-1 and run-2 hard connectomes (relchange > 0.25, max count >= 10)",
     "inputs": "F, Esoft, U, Ucal computed on run-1 only",
     "primary": "AUROC of F vs U vs Ucal on leftover y (pre-specified ranking comparison)",

@@ -112,18 +112,19 @@ def pack(ds: str, sid: str, ses: int = 1) -> dict:
     if not (out / "F.npy").is_file():
         a0, b0 = asg0[:, 0], asg0[:, 1]
         stay = np.zeros(ends.shape[0], dtype=np.uint16)
-        esum = np.zeros((N_NODES, N_NODES), dtype=np.float64)
+        cs = np.zeros((n_samples, N_NODES, N_NODES), dtype=np.float32)
         rng = np.random.default_rng(SEED0 + 100 + PAIRS.index((ds, sid)))
         for s in range(n_samples):
             jit = ends + rng.normal(0.0, sigma, size=ends.shape).astype(np.float32)
             asg = assign_endpoints(jit, nodes, aff, kind="radial", radius_mm=RADIAL_MM)
             del jit
             stay += same_edge(a0, b0, asg[:, 0], asg[:, 1]).astype(np.uint16)
-            esum += connectome_from_assignments(asg)
+            cs[s] = connectome_from_assignments(asg)
             print(f"[R] C2 sample {s + 1}/{n_samples}", flush=True)
         f_mat, _ = leakage(asg0, stay, n_samples)
         np.save(out / "F.npy", f_mat.astype(np.float32))
-        np.save(out / "Esoft.npy", (esum / n_samples).astype(np.float32))
+        np.save(out / "Cs.npy", cs)
+        np.save(out / "Esoft.npy", cs.astype(np.float64).mean(axis=0).astype(np.float32))
     rec = {
         "dataset": ds,
         "subject": sid,
@@ -157,6 +158,9 @@ def pair_scores(ds: str, sid: str) -> dict:
     m_soft = np.maximum(es, cb)[iu] >= COUNT_FLOOR
     soft_rel = relchange(es, cb)[iu][m_soft]
     invented = int(((es[iu] >= COUNT_FLOOR) & (ca[iu] < COUNT_FLOOR)).sum())
+    cross = (ca[iu][m] >= COUNT_FLOOR) != (cb[iu][m] >= COUNT_FLOOR)
+    p10 = (np.load(pk / "Cs.npy") >= COUNT_FLOOR).mean(axis=0)[iu][m]
+    flag = (p10 > 0.1) & (p10 < 0.9)
     return {
         "pair": f"{ds}/{sid}",
         "n": int(m.sum()),
@@ -168,6 +172,9 @@ def pair_scores(ds: str, sid: str) -> dict:
         "moved_frac_soft": float((soft_rel > RELCHANGE_CUT).mean()),
         "invented_count_ge10": invented,
         "invent_frac": invented / float(max(int(m.sum()), 1)),
+        "hard_crossing_rate": float(cross.mean()),
+        "threshold_uncertain_frac": float(flag.mean()),
+        "crossings_on_flagged_edges": float(flag[cross].mean()) if cross.any() else None,
         "_Ca": ca,
         "_Cb": cb,
         "_Uful": u,
