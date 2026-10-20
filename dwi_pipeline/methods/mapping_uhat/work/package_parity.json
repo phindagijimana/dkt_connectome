@@ -1,0 +1,16 @@
+{
+  "session": "ideas-sub-1-ses-1",
+  "endpoints_equal": true,
+  "C0_maxabs_vs_identity": 0.0,
+  "U_maxabs_vs_shipped": 4.912280721081075e-09,
+  "u_summary": {
+    "n_streamlines": 10000000,
+    "n_nodes": 78,
+    "radius_mm": 4.0,
+    "n_edges_scored": 2742,
+    "planted_1mm_move_rate": 0.14186725018234866,
+    "planted_1mm_auroc_U": 0.9056638301266119
+  },
+  "F_maxabs_vs_C2": 1.4597707709285146e-08,
+  "Esoft_maxabs_vs_C2": 0.0
+}

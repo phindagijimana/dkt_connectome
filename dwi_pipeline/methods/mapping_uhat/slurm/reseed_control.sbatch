@@ -26,7 +26,11 @@ mkdir -p "${OUT}" "${APPTAINER_TMPDIR}"
 FTT="$(find "${WF}/recon_anatomical_wf_0/apply_header_to_5tt" -name '*_5tt_hdrxform.nii.gz' | head -1)"
 FOD="$(find "${WF}" -path '*ses_1*intensity_norm*' -name '*wm_mtnorm.mif' | head -1)"
 TCK0="$(find -L "${QOUT}" -type f -path "*sub-${SID}*ses-1*" \( -name '*model-ifod2_streamlines.tck' -o -name '*model-ifod2_streamlines.tck.gz' \) | head -1)"
-test -f "${FTT}" && test -f "${FOD}" && test -f "${TCK0}" && test -f "${COUT}/dkt_nodes.mif"
+NODES="${COUT}/dkt_nodes.mif"
+[[ -f "${NODES}" ]] || NODES="${COUT}/nodes.mif"
+for f in "${FTT}" "${FOD}" "${TCK0}" "${NODES}"; do
+  [[ -f "${f}" ]] || { echo "[RESEED] missing input: ${f:-<empty>}" >&2; exit 1; }
+done
 echo "[RESEED] ${DS}/${SID} seed=${SEED} host=$(hostname) $(date -Is)"
 if [[ ! -f "${OUT}/tracked.tck" ]]; then
   apptainer exec --cleanenv --env "MRTRIX_RNG_SEED=${SEED}" -B "${FREEZE}":"${FREEZE}" "${QSIRECON}" \
@@ -36,7 +40,7 @@ if [[ ! -f "${OUT}/tracked.tck" ]]; then
   mv "${OUT}/tracked.tmp.tck" "${OUT}/tracked.tck"
 fi
 echo "[RESEED] tckgen done $(date -Is)"
-apptainer exec --cleanenv -B "${FREEZE}":"${FREEZE}" "${QSIRECON}" mrconvert -quiet -force "${COUT}/dkt_nodes.mif" "${OUT}/nodes.nii.gz"
+apptainer exec --cleanenv -B "${FREEZE}":"${FREEZE}" "${QSIRECON}" mrconvert -quiet -force "${NODES}" "${OUT}/nodes.nii.gz"
 PYTHONPATH="${PKG}" python3 - "${TCK0}" "${OUT}" "${COUT}/dkt_connectome_count.csv" "${SEED}" <<'PY'
 import json, sys
 from pathlib import Path

@@ -54,7 +54,7 @@ def session_paths(ds: str, sid: str, ses: int) -> dict[str, Path]:
         "tck": tcks[0] if tcks else qout / "MISSING.tck",
         "count": cout / "dkt_connectome_count.csv",
         "parc": cout / "parcellation.json",
-        "nodes_mif": cout / "dkt_nodes.mif",
+        "nodes_mif": next((cout / n for n in ("dkt_nodes.mif", "nodes.mif") if (cout / n).is_file()), cout / "dkt_nodes.mif"),
     }
 
 

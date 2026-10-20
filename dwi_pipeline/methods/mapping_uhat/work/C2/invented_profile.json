@@ -1,0 +1,302 @@
+{
+  "experiment": "C2 secondary (amendment 2026-10-20b)",
+  "descriptive_only": true,
+  "does_not_rescue_invent_rule": true,
+  "sessions": [
+    {
+      "session_id": "ideas-sub-1-ses-1",
+      "split": "dev",
+      "n_invented": 3,
+      "n_lost": 10,
+      "invented_near_threshold": 3,
+      "invented_C0_lt_5": 0,
+      "invented_C0_eq_0": 0,
+      "edges": [
+        {
+          "i": 14,
+          "j": 68,
+          "C0": 9.0,
+          "Esoft": 11.15625
+        },
+        {
+          "i": 39,
+          "j": 53,
+          "C0": 6.0,
+          "Esoft": 10.0
+        },
+        {
+          "i": 55,
+          "j": 61,
+          "C0": 9.0,
+          "Esoft": 10.09375
+        }
+      ],
+      "threshold_uncertain_edges": 71,
+      "threshold_uncertain_frac_of_eligible": 0.01154562383612663,
+      "invented_flagged": 3
+    },
+    {
+      "session_id": "ideas-sub-6-ses-1",
+      "split": "dev",
+      "n_invented": 7,
+      "n_lost": 9,
+      "invented_near_threshold": 6,
+      "invented_C0_lt_5": 1,
+      "invented_C0_eq_0": 1,
+      "edges": [
+        {
+          "i": 4,
+          "j": 32,
+          "C0": 9.0,
+          "Esoft": 12.0625
+        },
+        {
+          "i": 4,
+          "j": 78,
+          "C0": 0.0,
+          "Esoft": 35.46875
+        },
+        {
+          "i": 9,
+          "j": 62,
+          "C0": 9.0,
+          "Esoft": 10.5
+        },
+        {
+          "i": 14,
+          "j": 34,
+          "C0": 9.0,
+          "Esoft": 11.21875
+        },
+        {
+          "i": 22,
+          "j": 39,
+          "C0": 8.0,
+          "Esoft": 10.09375
+        },
+        {
+          "i": 39,
+          "j": 60,
+          "C0": 7.0,
+          "Esoft": 10.9375
+        },
+        {
+          "i": 44,
+          "j": 76,
+          "C0": 8.0,
+          "Esoft": 10.78125
+        }
+      ],
+      "threshold_uncertain_edges": 59,
+      "threshold_uncertain_frac_of_eligible": 0.011689291101055807,
+      "invented_flagged": 5
+    },
+    {
+      "session_id": "btc-sub-PAT20-ses-preop",
+      "split": "dev",
+      "n_invented": 12,
+      "n_lost": 6,
+      "invented_near_threshold": 11,
+      "invented_C0_lt_5": 1,
+      "invented_C0_eq_0": 0,
+      "edges": [
+        {
+          "i": 11,
+          "j": 63,
+          "C0": 9.0,
+          "Esoft": 10.21875
+        },
+        {
+          "i": 12,
+          "j": 53,
+          "C0": 9.0,
+          "Esoft": 10.46875
+        },
+        {
+          "i": 12,
+          "j": 61,
+          "C0": 9.0,
+          "Esoft": 10.78125
+        },
+        {
+          "i": 15,
+          "j": 45,
+          "C0": 6.0,
+          "Esoft": 14.9375
+        },
+        {
+          "i": 20,
+          "j": 45,
+          "C0": 7.0,
+          "Esoft": 10.1875
+        },
+        {
+          "i": 21,
+          "j": 54,
+          "C0": 9.0,
+          "Esoft": 10.125
+        },
+        {
+          "i": 22,
+          "j": 38,
+          "C0": 9.0,
+          "Esoft": 15.0
+        },
+        {
+          "i": 22,
+          "j": 45,
+          "C0": 2.0,
+          "Esoft": 14.75
+        },
+        {
+          "i": 31,
+          "j": 39,
+          "C0": 9.0,
+          "Esoft": 11.3125
+        },
+        {
+          "i": 34,
+          "j": 55,
+          "C0": 8.0,
+          "Esoft": 10.15625
+        },
+        {
+          "i": 35,
+          "j": 50,
+          "C0": 9.0,
+          "Esoft": 11.34375
+        },
+        {
+          "i": 63,
+          "j": 78,
+          "C0": 9.0,
+          "Esoft": 11.0
+        }
+      ],
+      "threshold_uncertain_edges": 62,
+      "threshold_uncertain_frac_of_eligible": 0.00996168582375479,
+      "invented_flagged": 9
+    },
+    {
+      "session_id": "tbi-011011-neurolit-lesion",
+      "split": "confirm",
+      "n_invented": 6,
+      "n_lost": 17,
+      "invented_near_threshold": 6,
+      "invented_C0_lt_5": 0,
+      "invented_C0_eq_0": 0,
+      "edges": [
+        {
+          "i": 3,
+          "j": 24,
+          "C0": 9.0,
+          "Esoft": 10.0
+        },
+        {
+          "i": 3,
+          "j": 70,
+          "C0": 9.0,
+          "Esoft": 10.0
+        },
+        {
+          "i": 12,
+          "j": 78,
+          "C0": 9.0,
+          "Esoft": 10.375
+        },
+        {
+          "i": 19,
+          "j": 46,
+          "C0": 9.0,
+          "Esoft": 10.34375
+        },
+        {
+          "i": 48,
+          "j": 60,
+          "C0": 9.0,
+          "Esoft": 10.21875
+        },
+        {
+          "i": 58,
+          "j": 78,
+          "C0": 9.0,
+          "Esoft": 11.03125
+        }
+      ],
+      "threshold_uncertain_edges": 74,
+      "threshold_uncertain_frac_of_eligible": 0.01611635220125786,
+      "invented_flagged": 6
+    },
+    {
+      "session_id": "tbi-011021-neurolit-lesion",
+      "split": "confirm",
+      "n_invented": 2,
+      "n_lost": 12,
+      "invented_near_threshold": 2,
+      "invented_C0_lt_5": 0,
+      "invented_C0_eq_0": 0,
+      "edges": [
+        {
+          "i": 20,
+          "j": 45,
+          "C0": 9.0,
+          "Esoft": 10.3125
+        },
+        {
+          "i": 32,
+          "j": 63,
+          "C0": 9.0,
+          "Esoft": 10.25
+        }
+      ],
+      "threshold_uncertain_edges": 46,
+      "threshold_uncertain_frac_of_eligible": 0.008372770294867127,
+      "invented_flagged": 2
+    },
+    {
+      "session_id": "tbi-011204-neurolit-lesion",
+      "split": "confirm",
+      "n_invented": 5,
+      "n_lost": 7,
+      "invented_near_threshold": 5,
+      "invented_C0_lt_5": 0,
+      "invented_C0_eq_0": 0,
+      "edges": [
+        {
+          "i": 15,
+          "j": 38,
+          "C0": 9.0,
+          "Esoft": 14.8125
+        },
+        {
+          "i": 15,
+          "j": 57,
+          "C0": 9.0,
+          "Esoft": 10.03125
+        },
+        {
+          "i": 17,
+          "j": 52,
+          "C0": 9.0,
+          "Esoft": 11.4375
+        },
+        {
+          "i": 19,
+          "j": 46,
+          "C0": 9.0,
+          "Esoft": 10.53125
+        },
+        {
+          "i": 57,
+          "j": 61,
+          "C0": 9.0,
+          "Esoft": 10.5
+        }
+      ],
+      "threshold_uncertain_edges": 48,
+      "threshold_uncertain_frac_of_eligible": 0.008583690987124463,
+      "invented_flagged": 3
+    }
+  ],
+  "not_hatU": true
+}
