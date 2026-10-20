@@ -1,0 +1,21 @@
+{
+  "strengthen": 6,
+  "status": "locked",
+  "frozen": {
+    "radial_mm": 4.0,
+    "relchange_cut": 0.25,
+    "count_floor": 10,
+    "invent_cap": 0.001,
+    "ece_band": 0.15,
+    "ece_min_bin_n": 20
+  },
+  "forbidden_rescues": [
+    "raise_invent_cap",
+    "posthoc_drop_near_threshold_invents",
+    "refit_isotonic_on_leftover_as_hatU",
+    "retune_relchange_or_floor_for_AUROC",
+    "cherry_pick_subjects",
+    "omit_fail_from_paper",
+    "rename_L_as_U"
+  ]
+}

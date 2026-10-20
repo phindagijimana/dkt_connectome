@@ -1,0 +1,37 @@
+{
+  "strengthen": 2,
+  "status": "adopted",
+  "contributions": [
+    {
+      "id": "D1",
+      "name": "threshold_uncertain_enrichment",
+      "dirs": [2, 7],
+      "headline": "1-3% uncertain edges; 9-14x crossing enrichment"
+    },
+    {
+      "id": "D2",
+      "name": "reseed_floor_vs_leftover",
+      "dirs": [3],
+      "headline": "reseed ~9.5% vs leftover 36-54%; ~82% excess"
+    },
+    {
+      "id": "D3",
+      "name": "soft_as_threshold_blur",
+      "dirs": [4],
+      "headline": "soft helps moved-frac; invent = near-threshold"
+    },
+    {
+      "id": "D4",
+      "name": "edge_report_schema",
+      "dirs": [7],
+      "headline": "count + Esoft + F + U + P10 + flag"
+    },
+    {
+      "id": "D5",
+      "name": "strength_stratified_moves",
+      "dirs": [6],
+      "headline": "y-rate falls with floor; U/F still ~0.58-0.61"
+    }
+  ],
+  "not": ["leftover_auroc_win_for_UF", "hatU"]
+}

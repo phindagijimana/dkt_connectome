@@ -213,5 +213,12 @@
     "dir8": "awaiting phrase: scale descriptive",
     "not_hatU": true,
     "no_threshold_retune": true
+  },
+  "strengthen_2026-10-20": {
+    "path": "work/R/strengthen/",
+    "claim_spine": ["A_plant_fragility", "B_retest_boundary", "C_leftover_L"],
+    "anti_retune": true,
+    "scale_gate": "scale descriptive",
+    "new_directions": "N1-N21 proposal only"
   }
 }

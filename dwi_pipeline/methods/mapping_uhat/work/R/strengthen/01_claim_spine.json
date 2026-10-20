@@ -1,0 +1,34 @@
+{
+  "strengthen": 1,
+  "status": "locked",
+  "date": "2026-10-20",
+  "title_promise": "edge-level UQ under controlled endpoint perturbation + honest retest boundary",
+  "claims": {
+    "A_plant_fragility": {
+      "keep": true,
+      "polarity": "positive",
+      "auroc_U_planted": [0.91, 0.94],
+      "auroc_F_planted": [0.89, 0.93]
+    },
+    "B_retest_boundary": {
+      "keep": true,
+      "polarity": "negative_boundary",
+      "auroc_U_F_leftover": [0.58, 0.60],
+      "G_ECE": 0.32,
+      "soft_invent_win": false
+    },
+    "C_leftover_L": {
+      "keep": true,
+      "polarity": "secondary_method",
+      "formula": "L=-log1p(C0)",
+      "auroc_pilots": [0.699, 0.704],
+      "not_hatU": true
+    }
+  },
+  "non_claims": [
+    "hatU_from_leftover",
+    "U_F_calibrate_real_change",
+    "soft_invent_win",
+    "rescue_B_by_retune"
+  ]
+}

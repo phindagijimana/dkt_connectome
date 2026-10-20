@@ -1,0 +1,12 @@
+{
+  "strengthen": 3,
+  "status": "code_and_claim_locked",
+  "symbol": "L",
+  "formula": "L=-log1p(C0)",
+  "edgeuq": "instability",
+  "not_names": ["hatU", "proxy-hatU", "calibrated leftover U", "updated U"],
+  "pilot_auroc": {
+    "kirby21/KKI849": {"L": 0.6987, "U": 0.5782, "F": 0.5980},
+    "boekel_dwi_retest/pp01": {"L": 0.7042, "U": 0.6048, "F": 0.5923}
+  }
+}

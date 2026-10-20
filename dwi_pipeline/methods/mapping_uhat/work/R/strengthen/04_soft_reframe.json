@@ -1,0 +1,8 @@
+{
+  "strengthen": 4,
+  "status": "reporting_locked",
+  "invent_cap": 0.001,
+  "invent_win": false,
+  "report": ["moved_frac_soft_vs_hard", "invent_frac", "invent_strata_near_vs_far", "Esoft_band"],
+  "do_not": ["relax_invent_cap", "posthoc_drop_near_threshold_to_pass", "call_soft_a_win"]
+}

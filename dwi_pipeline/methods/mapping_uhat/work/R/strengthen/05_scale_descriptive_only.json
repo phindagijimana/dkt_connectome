@@ -1,0 +1,20 @@
+{
+  "strengthen": 5,
+  "status": "held_until_scale_descriptive",
+  "gate_phrase": "scale descriptive",
+  "allowed": [
+    "move_rate",
+    "move_rate_by_floor",
+    "threshold_uncertain_enrichment",
+    "reseed_floor_subset",
+    "invent_strata_report",
+    "L_auroc_distribution",
+    "strong_edge_ICC"
+  ],
+  "forbidden": [
+    "optimize_invent_or_ECE_to_win",
+    "refit_isotonic_name_hatU",
+    "retune_cuts_after_scale",
+    "hide_pilot_fail"
+  ]
+}
