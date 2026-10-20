@@ -59,3 +59,4 @@
 | 2026-10-20 | HCP | Pilot 103818 adapt **189623 COMPLETED** (ses-2 mrregister rigid→ses-1; 288 vols both sessions). FastSurfer **189624** → iFOD2 multi-shell **189625** (afterok). | Not leftover y. Not gold. |
 | 2026-10-20 | Disk | Safe cleanup freed **67 GB** (home 84%, 338 GB free): HCP `grad_dev`×88, Boekel `trace_backup`, Kirby/Boekel QSIPrep `.work` + QSIRecon `.work_qsirecon_*`. Kept DWI/T1, bids, derivatives, tcks, connectomes. Running jobs untouched. Fetch script no longer downloads `grad_dev`. | Not leftover y. |
 | 2026-10-20 | Pack | Kirby KKI849 pack **189618 COMPLETED** (2h): C0 vs shipped r≈1.0; U/Ucal/F written. LIST n=1. Leftover/rescan exam still blocked (need Boekel + GOLD locked). Reseed 189619 still running. | Not leftover y. Not gold. |
+| 2026-10-20 | Queue | Moved Boekel 189593/189606/189608 from general→**interactive** TimeLimit=12:00:00 (user). All uhat jobs now on interactive. | — |
