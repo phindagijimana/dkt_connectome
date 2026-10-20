@@ -28,7 +28,7 @@ We present three linked tools. **U** re-assigns a session's own endpoints under 
 
 On three public development and three held-out clinical sessions (iFOD2, 10 million streamlines, 78-node DKT), U ranked edges that move under held-out ±1 mm shifts with AUROC 0.91–0.95 (Spearman 0.86–0.90), against 0.77–0.78 for edge count alone and ≈0.5 for endpoint-geometry baselines, and was stable across threshold choices (AUROC ≥ 0.85 everywhere). Calibrated U reached held-out ECE 0.009 (raw U 0.121). C2 leakage, built without any planted shift, ranked the same movers with AUROC 0.89–0.93; its distinct output is threshold uncertainty: 0.8–1.6% of eligible edges per session sit on the count-10 threshold. On real scan–rescan pairs, ⟨pending: AUROC of U, calibrated U and F; low-count baseline; calibration; tracking-only control⟩.
 
-Software reproducing all analyses from a tractogram and node image is provided as a container (`connectome-edge-uq`).
+Software reproducing all analyses from a tractogram and node image is provided as a container (`edgeuq`).
 
 ---
 
@@ -104,7 +104,7 @@ Lock files (JSON, version-controlled) fixed the shift sets, cuts, splits, isoton
 
 ### 2.9 Software
 
-`connectome-edge-uq` (Python, NumPy, NiBabel; Docker/Apptainer) implements `edgeuq u`, `edgeuq c2` and `edgeuq retest` from a `.tck` and a node image. On a development session it reproduces the analysis code exactly: identical endpoints and \(C^0\), U within 5×10⁻⁹, F within 1.5×10⁻⁸, \(E[C]\) identical.
+`edgeuq` (Python, NumPy, NiBabel; Docker/Apptainer) implements `edgeuq u`, `edgeuq c2` and `edgeuq retest` from a `.tck` and a node image. On a development session it reproduces the analysis code exactly: identical endpoints and \(C^0\), U within 5×10⁻⁹, F within 1.5×10⁻⁸, \(E[C]\) identical.
 
 ---
 
@@ -207,7 +207,7 @@ C2 reaches almost the same ranking from a different error model, independent per
 
 ## 6. Data and code availability
 
-Development and scan–rescan data are public (IDEAS; OpenNeuro ds001226; Kirby21; Boekel test–retest ⟨accessions to fill⟩). Clinical confirmation data are available from TRACK-TBI under its data-use agreement. Code and container: `connectome-edge-uq` (GitHub; Zenodo DOI ⟨at preprint⟩). Lock files and analysis code are archived with the release.
+Development and scan–rescan data are public (IDEAS; OpenNeuro ds001226; Kirby21; Boekel test–retest ⟨accessions to fill⟩). Clinical confirmation data are available from TRACK-TBI under its data-use agreement. Code and container: `edgeuq` (GitHub; Zenodo DOI ⟨at preprint⟩). Lock files and analysis code are archived with the release.
 
 ---
 

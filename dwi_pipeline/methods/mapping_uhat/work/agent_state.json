@@ -80,6 +80,6 @@
     "reseed_control_KKI849": 189610
   },
   "combined_paper_decision": "2026-10-20: one paper (U method, C2 extension/threshold diagnostic, retest validation). docs/papers/mapping_u/COMBINED_PAPER.md",
-  "package_repo": "private github.com/phindagijimana/connectome-edge-uq (no TRACK-TBI data)",
+  "package_repo": "private github.com/phindagijimana/edgeuq (renamed from connectome-edge-uq 2026-10-20; no TRACK-TBI data)",
   "scaling_decision": "2026-10-20: wait until both pairs pass end to end"
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the standalone connectome-edge-uq package reproduces frozen U and C2 outputs on a public dev session."""
+"""Check the standalone edgeuq package reproduces frozen U and C2 outputs on a public dev session."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import nibabel as nib
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-PKG = Path.home() / "Documents" / "connectome-edge-uq" / "src"
+PKG = Path.home() / "Documents" / "edgeuq" / "src"
 sys.path.insert(0, str(PKG))
 
 from edgeuq.c2 import run_c2  # noqa: E402

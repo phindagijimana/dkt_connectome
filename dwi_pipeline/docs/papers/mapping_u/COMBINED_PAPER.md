@@ -76,11 +76,11 @@ Error bars on connectome edges from a single scan.
 
 ## Software
 
-Packaged as `connectome-edge-uq` (`edgeuq u`, `edgeuq c2`, `edgeuq retest`, `edgeuq demo`), one container, a docs page per method.
+Packaged as `edgeuq` (`edgeuq u`, `edgeuq c2`, `edgeuq retest`, `edgeuq demo`), one container, a docs page per method.
 
-- Private repo: <https://github.com/phindagijimana/connectome-edge-uq>. Make it public with a Zenodo DOI at preprint (`docs/release.md` there).
+- Private repo: <https://github.com/phindagijimana/edgeuq>. Make it public with a Zenodo DOI at preprint (`docs/release.md` there).
 - No TRACK-TBI data, IDs or paths. The frozen isotonic map was fit on public IDEAS and BTC demo sessions only.
 - Tests pass on Python 3.9 and 3.12 (GitHub Actions).
-- Docker image built, smoke-tested on synthetic data, published privately at `ghcr.io/phindagijimana/connectome-edge-uq:main`.
+- Docker image built, smoke-tested on synthetic data, published privately at `ghcr.io/phindagijimana/edgeuq:main`.
 - Parity against frozen outputs on public dev session `ideas-sub-1-ses-1` **passed** (Slurm 189604, `work/package_parity.json`): endpoints identical, C0 exact, U within 4.9e-9 (CSV rounding), C2 F within 1.5e-8 (float32), E[C] exact.
 - Local Apptainer `.sif` build deferred until running jobs finish. `/tmp` is noexec here, so set `APPTAINER_TMPDIR`, `PROOT_TMP_DIR` and `TMPDIR` to a home directory.

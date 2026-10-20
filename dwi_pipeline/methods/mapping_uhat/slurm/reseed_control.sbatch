@@ -12,7 +12,7 @@ set -euo pipefail
 UHAT=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat
 SD=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data
 QSIRECON=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/qsirecon.sif
-PKG=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/connectome-edge-uq/src
+PKG=/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/edgeuq/src
 DS="${RETEST_DATASET:-kirby21}"
 SID="${RETEST_SID:-KKI849}"
 SEED="${RESEED_SEED:-20261020}"
