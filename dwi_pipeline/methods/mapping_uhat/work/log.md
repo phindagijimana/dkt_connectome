@@ -55,3 +55,5 @@
 | 2026-10-20 | Boekel | QSIPrep **189586 COMPLETED** (dwiref both sessions, after trace fix). FastSurfer 189587 moved to interactive (was queued behind other users on general). | Not leftover y yet. |
 | 2026-10-20 | Docs | Paper 1 `manuscript.md` status + §3.7/3.8 placeholders; new `PAPER2_LEFTOVER_UQ.md`, `PAPER3_C2_SOFT_ASSIGN.md`; `NEXT_EXPERIMENTS.md`, `BUILD_PHASES.md` updated. | — |
 | 2026-10-19 | C2 | `work/C2/LOCK.json` before numbers. Per-endpoint soft radial_4, sigma = V1 median / 1.5382, S=32. Array **189577**, exam **189578** (afterok). | Planted 1 mm y only. Leftover exam waits for Kirby/Boekel counts. Not Exp2. Not \(\hat U\). |
+| 2026-10-20 | HCP | Adapter `hcp_to_qsiprep.py` + `hcp_adapt.sbatch`: ses-2 rigid→ses-1 T1, QSIPrep-like layout, multi-shell iFOD2 recon. Pilot 103818 job 189622. Scaling still waits on Kirby/Boekel pairs. | Not leftover y. Not gold. |
+| 2026-10-20 | HCP | Pilot 103818 adapt **189623 COMPLETED** (ses-2 mrregister rigid→ses-1; 288 vols both sessions). FastSurfer **189624** → iFOD2 multi-shell **189625** (afterok). | Not leftover y. Not gold. |

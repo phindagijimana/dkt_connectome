@@ -21,6 +21,12 @@ TF="${DWI}/templateflow"
 DS="${RETEST_DATASET:-kirby21}"
 SID="${RETEST_SID:-KKI849}"
 SES="${SLURM_ARRAY_TASK_ID}"
+# HCP is multi-shell (b=0/1k/2k/3k); Kirby/Boekel stay singleshell ss3t.
+if [[ "${DS}" == "hcp_retest" ]]; then
+  RECON_SPEC=mrtrix_multishell_msmt_ACT-hsvs
+else
+  RECON_SPEC=mrtrix_singleshell_ss3t_ACT-hsvs
+fi
 QSIPREP="${SD}/${DS}/results/sub-${SID}"
 FREEZE="${SD}/${DS}/freeze/sub-${SID}"
 FS="${FREEZE}/freesurfer"
@@ -59,7 +65,7 @@ if [[ ! -f "${COUNT}" ]]; then
       "${QSIRECON}" \
       /qsiprep_input /output participant \
         --input-type qsiprep \
-        --recon-spec mrtrix_singleshell_ss3t_ACT-hsvs \
+        --recon-spec "${RECON_SPEC}" \
         --participant-label "${SID}" \
         --fs-subjects-dir /freesurfer \
         --fs-license-file /opt/freesurfer/license.txt \

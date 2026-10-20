@@ -105,5 +105,22 @@
     "redistribution": "none; sample_data/hcp_retest gitignored; never in edgeuq repo or container",
     "not_gold": true,
     "not_leftover_y": true
+  },
+  "hcp_adapter_2026-10-20": {
+    "what": "hcp_to_qsiprep.py: HCP preprocessed Diffusion+T1 \u2192 QSIPrep-like derivatives under sample_data/hcp_retest/",
+    "ses1_template": "ses-1 T1w_acpc_dc_restore is subject template; FastSurfer on that T1",
+    "ses2": "mrregister rigid ses-2 T1\u2192ses-1 T1; mrtransform DWI + bvecs into ses-1 space",
+    "recon_spec": "mrtrix_multishell_msmt_ACT-hsvs (HCP multi-shell; Kirby/Boekel remain singleshell ss3t)",
+    "skips_qsiprep": true,
+    "pilot_subject": "103818",
+    "pilot_adapt_job": 189623,
+    "subjects_list": "work/sites_v1/subjects_hcp.txt (44; full 288 first, partial stratum last)",
+    "slurm": "slurm/hcp_adapt.sbatch",
+    "not_gold": true,
+    "not_leftover_y": true,
+    "pilot_adapt_job_failed_ants_mat": 189622,
+    "pilot_fastsurfer_job": 189624,
+    "pilot_ifod2_job": 189625,
+    "pilot_status": "adapt COMPLETED; FastSurfer+iFOD2 queued (afterok)"
   }
 }
