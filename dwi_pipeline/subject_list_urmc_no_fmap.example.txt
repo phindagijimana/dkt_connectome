@@ -1,4 +1,0 @@
-# Example URMC clinical cohort list — GE / no-fieldmap sessions.
-# Copy to subject_list_urmc_no_fmap.txt locally (gitignored).
-002
-010
