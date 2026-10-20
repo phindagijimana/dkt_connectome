@@ -140,5 +140,19 @@
     ],
     "not_gold": true,
     "not_leftover_y": true
+  },
+  "boekel_pack_189608": {
+    "state": "COMPLETED",
+    "elapsed": "02:06:37",
+    "pack": "work/R/boekel_dwi_retest_pp01_ses-1",
+    "C0_vs_shipped_count_pearson": 0.9999999999999998,
+    "not_gold": true,
+    "not_leftover_y": true
+  },
+  "essential_outputs_complete": {
+    "kirby_KKI849": true,
+    "boekel_pp01": true,
+    "reseed_control": true,
+    "rescan_exam": "blocked until GOLD locked"
   }
 }

@@ -1,13 +1,14 @@
 {
   "name": "sites_v1",
   "status": "source_on_home_not_leftover_y",
-  "n": 1,
+  "n": 2,
   "source": "same_day_run2",
   "sessions": [
-    "kirby21/KKI849"
+    "kirby21/KKI849",
+    "boekel_dwi_retest/pp01"
   ],
   "leftover_y_ready": false,
-  "note": "Kirby KKI849: both-session counts empty_nodes=0; pack 189618 COMPLETED (U/Ucal/F). Reseed 189619 running. Boekel pack still pending. No GOLD ECE until n>=2 and user writes GOLD locked.",
+  "note": "Both pilots: counts empty_nodes=0 and packs COMPLETED. LIST n=2. Leftover/rescan exam blocked until user writes GOLD locked. HCP FS/iFOD still held.",
   "kirby_KKI849": {
     "counts_both_sessions": true,
     "empty_nodes": 0,
@@ -18,5 +19,12 @@
     "leftover_exam": "blocked: need Boekel pack (n>=2) AND user writes GOLD locked"
   },
   "not_gold": true,
-  "not_leftover_y": true
+  "not_leftover_y": true,
+  "boekel_pp01": {
+    "counts_both_sessions": true,
+    "empty_nodes": 0,
+    "pack_ses-1": "work/R/boekel_dwi_retest_pp01_ses-1/pack.json",
+    "pack_job": 189608,
+    "C0_vs_shipped_pearson": 0.9999999999999998
+  }
 }

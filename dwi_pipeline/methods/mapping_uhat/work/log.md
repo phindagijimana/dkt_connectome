@@ -61,3 +61,4 @@
 | 2026-10-20 | Pack | Kirby KKI849 pack **189618 COMPLETED** (2h): C0 vs shipped r≈1.0; U/Ucal/F written. LIST n=1. Leftover/rescan exam still blocked (need Boekel + GOLD locked). Reseed 189619 still running. | Not leftover y. Not gold. |
 | 2026-10-20 | Queue | Moved Boekel 189593/189606/189608 from general→**interactive** TimeLimit=12:00:00 (user). All uhat jobs now on interactive. | — |
 | 2026-10-20 | Queue | Essential priority: HCP FS **189624** requeueheld + HCP iFOD2 **189625** held. Boekel ifod **189606_1** keeps running; pack **189608** afterok. Reseed **189619** left running (already 1.5h). Nice/top denied on this cluster. Release HCP later: `scontrol release 189624 189625`. | — |
+| 2026-10-20 | Check | Essential outputs **complete** for both pilots (counts empty_nodes=0; packs U/Ucal/F; reseed JSON). LIST **n=2**. Rescan exam still blocked until GOLD locked. | Not leftover y. Not gold. |
