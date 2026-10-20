@@ -3,7 +3,7 @@
   "not_leftover_y": true,
   "kirby_ok": 42,
   "kirby_n": 42,
-  "boekel_ok": 53,
+  "boekel_ok": 68,
   "boekel_n": 68,
   "kirby": [
     {
@@ -534,181 +534,211 @@
       "sub": "sub-pp20",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp20",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp21",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp21",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp22",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp22",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp23",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp23",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp24",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp24",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp25",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp25",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp26",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp26",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp27",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp27",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp28",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp28",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp29",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp29",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp30",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp30",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp31",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp31",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp32",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp32",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp33",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp33",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     },
     {
       "sub": "sub-pp34",
       "ses": "ses-1",
       "ok": true,
-      "n_dwi": 4
+      "n_dwi": 4,
+      "anat": "own"
     },
     {
       "sub": "sub-pp34",
       "ses": "ses-2",
-      "ok": false,
-      "reason": "missing A/B"
+      "ok": true,
+      "n_dwi": 4,
+      "anat": "ses-1 T1 only"
     }
   ]
 }

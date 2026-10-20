@@ -183,15 +183,16 @@ def convert_boekel() -> list[dict]:
             ses = f"ses-{sesn}"
             t1s = list(base.glob(f"{pp}_t1_{letter}/{pp}_t1_{letter}*.nii*"))
             dwis = sorted(base.glob(f"{pp}_dwi_run*_{letter}/{pp}_dwi_run*_{letter}.nii.gz"))
-            if not t1s or not dwis:
+            if not dwis or (not t1s and letter == "A"):
                 rows.append({"sub": sub, "ses": ses, "ok": False, "reason": "missing A/B"})
                 continue
-            anat = BBIDS / sub / ses / "anat" / f"{sub}_{ses}_T1w.nii.gz"
-            save_nii(t1s[0], anat)
-            write_json(
-                anat.with_suffix("").with_suffix(".json"),
-                {"Modality": "MR", "Manufacturer": "Philips"},
-            )
+            if t1s:
+                anat = BBIDS / sub / ses / "anat" / f"{sub}_{ses}_T1w.nii.gz"
+                save_nii(t1s[0], anat)
+                write_json(
+                    anat.with_suffix("").with_suffix(".json"),
+                    {"Modality": "MR", "Manufacturer": "Philips"},
+                )
             for dwi_src in dwis:
                 run = "run-1"
                 for tok in dwi_src.name.split("_"):
@@ -227,7 +228,9 @@ def convert_boekel() -> list[dict]:
                         ),
                     },
                 )
-            rows.append({"sub": sub, "ses": ses, "ok": True, "n_dwi": len(dwis)})
+            rows.append(
+                {"sub": sub, "ses": ses, "ok": True, "n_dwi": len(dwis), "anat": "own" if t1s else "ses-1 T1 only"}
+            )
     return rows
 
 
@@ -238,6 +241,11 @@ def main() -> int:
         ONLY.update(sys.argv[1:])
     kirby = convert_kirby()
     boekel = convert_boekel()
+    if ONLY and OUTJ.is_file():
+        old = json.loads(OUTJ.read_text())
+        for key, new in (("kirby", kirby), ("boekel", boekel)):
+            done = {(r["sub"], r["ses"]) for r in new}
+            new[:0] = [r for r in old.get(key, []) if (r["sub"], r["ses"]) not in done]
     rec = {
         "not_gold": True,
         "not_leftover_y": True,

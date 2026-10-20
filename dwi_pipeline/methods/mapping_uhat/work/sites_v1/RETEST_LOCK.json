@@ -69,5 +69,18 @@
     "decision_rule": "descriptive only; no win/fail. Separates tracking randomness from endpoint placement in the retest exam.",
     "not_hatU": true,
     "not_gold": true
+  },
+  "boekel_ses2_conversion_2026-10-20": {
+    "what": "pp20-pp34 session B DWI converted to BIDS ses-2 (4 runs each, trace volume removed, TRT JSON as other runs)",
+    "why": "raw tars contain dwi run01-04 for A and B but T1 only for A; converter previously required a T1 per session and skipped ses-2",
+    "anatomy": "pp20-pp34 ses-2 has no own T1; QSIPrep builds one subject T1 template (from 1 T1 instead of 2) and FastSurfer uses the ses-1 T1, as for all pairs. Report pp01-pp19 vs pp20-pp34 as a stratum.",
+    "available_pairs": {
+      "kirby21": 21,
+      "boekel": 34,
+      "total": 55
+    },
+    "scaling_decision": "processing waits until KKI849 and pp01 pass end to end (user decision 2026-10-20)",
+    "not_gold": true,
+    "not_leftover_y": true
   }
 }
