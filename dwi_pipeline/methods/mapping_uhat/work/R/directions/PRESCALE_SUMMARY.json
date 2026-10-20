@@ -1,0 +1,23 @@
+{
+  "prescale": true,
+  "scaled": false,
+  "dir8": "awaiting user phrase: scale descriptive",
+  "directions_recomputed": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "dir5_code": "edgeuq instability + leftover_instability.py",
+  "boekel_reseed": null,
+  "claims": {
+    "d2": "Uncertain edges (0.1<P10<0.9) are highly enriched for threshold crossings vs the eligible base rate; report as a small actionable flag set.",
+    "d3": "On Kirby, tracking-only explains ~9.5% move rate vs ~54% leftover; ~82% of leftover move rate is excess above tracking. Most leftover movers are both-present count changes, not threshold crossings. Boekel reseed pending (work-dir 5tt rebuilt via fallback).",
+    "d4": "Soft expectation slightly reduces moved-frac on both pilots but fails invent<=0.001. Almost all invents are near-threshold (C0 in [5,10)). Report soft as denoising-with-threshold-blur, not as a win under the locked invent rule.",
+    "d5": "Ses-1-only low-count (-log1p C0) AUROC ~0.70 beats U/F (~0.58\u20130.60) for leftover y on both pilots. Implemented as edgeuq instability (L).",
+    "d6": "Move rate falls as min-count floor rises, but U/F AUROC stays ~0.57\u20130.61. Leftover ranking remains a weak-edge / count phenomenon; L still beats U/F inside strong strata.",
+    "d7": "Report each edge as count with a soft band (Esoft), assignment leakage F, shift sensitivity U, and P(count>=10). On pilots, only ~1\u20133% of reported edges are threshold-uncertain \u2014 a small, actionable flag set."
+  }
+}

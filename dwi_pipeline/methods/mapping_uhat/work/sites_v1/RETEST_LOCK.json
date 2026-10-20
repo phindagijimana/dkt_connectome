@@ -204,5 +204,14 @@
       "run1_radial4_vs_shipped_count_pearson": 0.9999999999893454,
       "note": "descriptive (RETEST_LOCK tracking_only_control); AUROC vs U/Ucal/F computed in the retest exam"
     }
+  },
+  "prescale_2026-10-20": {
+    "dir5_code": "edgeuq instability (L=-log1p(C0)); leftover_instability.py",
+    "runner": "run_prescale_directions.py",
+    "directions_recomputed": [2, 3, 4, 5, 6, 7],
+    "boekel_reseed_job": 189985,
+    "dir8": "awaiting phrase: scale descriptive",
+    "not_hatU": true,
+    "no_threshold_retune": true
   }
 }

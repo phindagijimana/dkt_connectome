@@ -1,5 +1,6 @@
 #!/bin/bash
 # Tracking-only control (RETEST_LOCK tracking_only_control): same tckgen, new MRTRIX_RNG_SEED, ses-1 nodes fixed, radial_4 counts. Descriptive. Not leftover ECE. Not gold.
+# If qsirecon work-dir was cleaned, rebuild 5tt (HSVS→mrregister to FOD) and use derivative WM FOD.
 #SBATCH --job-name=uhat_reseed
 #SBATCH --partition=interactive
 #SBATCH --time=12:00:00
@@ -21,17 +22,55 @@ WF="${FREEZE}/.work_qsirecon_ses-1/qsirecon_1_2_wf/sub-${SID}_mrtrix_singleshell
 QOUT="${FREEZE}/qsirecon_single_run_output"
 COUT="${FREEZE}/connectomes/sub-${SID}/ses-1"
 OUT="${FREEZE}/reseed/ses-1_seed${SEED}"
+FS_SUB="${FREEZE}/freesurfer/sub-${SID}"
 export APPTAINER_TMPDIR="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/.cache/dkt-connectome/apptainer_tmp"
 mkdir -p "${OUT}" "${APPTAINER_TMPDIR}"
-FTT="$(find "${WF}/recon_anatomical_wf_0/apply_header_to_5tt" -name '*_5tt_hdrxform.nii.gz' | head -1)"
-FOD="$(find "${WF}" -path '*ses_1*intensity_norm*' -name '*wm_mtnorm.mif' | head -1)"
+
+FTT=""
+FOD=""
+if [[ -d "${WF}" ]]; then
+  FTT="$(find "${WF}/recon_anatomical_wf_0/apply_header_to_5tt" -name '*_5tt_hdrxform.nii.gz' 2>/dev/null | head -1 || true)"
+  FOD="$(find "${WF}" -path '*ses_1*intensity_norm*' -name '*wm_mtnorm.mif' 2>/dev/null | head -1 || true)"
+fi
+
+# Fallback when work-dir cleaned: derivative WM FOD + rebuild ACT 5tt into FOD space
+if [[ -z "${FOD}" || ! -f "${FOD}" ]]; then
+  FOD_GZ="$(find -L "${QOUT}" -type f -path "*sub-${SID}*ses-1*" -name '*param-fod_label-WM_dwimap.mif.gz' | head -1 || true)"
+  [[ -n "${FOD_GZ}" && -f "${FOD_GZ}" ]] || { echo "[RESEED] missing WM FOD" >&2; exit 1; }
+  FOD="${OUT}/wm_fod.mif"
+  if [[ ! -f "${FOD}" ]]; then
+    apptainer exec --cleanenv -B "${FREEZE}":"${FREEZE}" "${QSIRECON}" \
+      mrconvert -quiet -force "${FOD_GZ}" "${FOD}"
+  fi
+  echo "[RESEED] using derivative FOD fallback: ${FOD_GZ}"
+fi
+
+if [[ -z "${FTT}" || ! -f "${FTT}" ]]; then
+  FTT="${OUT}/5tt_in_fod.mif"
+  if [[ ! -f "${FTT}" ]]; then
+    [[ -d "${FS_SUB}/mri" ]] || { echo "[RESEED] missing FreeSurfer ${FS_SUB}" >&2; exit 1; }
+    T1="${COUT}/T1.nii.gz"
+    [[ -f "${T1}" ]] || T1="$(find "${COUT}" -name 'T1.nii.gz' | head -1)"
+    [[ -f "${T1}" ]] || { echo "[RESEED] missing T1 for 5tt register" >&2; exit 1; }
+    echo "[RESEED] rebuilding 5tt via 5ttgen hsvs + mrregister (work-dir missing)"
+    apptainer exec --cleanenv -B "${FREEZE}":"${FREEZE}" "${QSIRECON}" \
+      bash -lc "set -euo pipefail
+        export SUBJECTS_DIR=${FREEZE}/freesurfer
+        5ttgen hsvs ${FS_SUB} ${OUT}/5tt_fs.mif -force -nthreads 8
+        mrconvert ${FS_SUB}/mri/brain.mgz ${OUT}/fs_brain.nii.gz -force -quiet
+        mrregister ${OUT}/fs_brain.nii.gz ${T1} -type rigid -rigid ${OUT}/fs_to_t1.txt -force
+        mrtransform ${OUT}/5tt_fs.mif -linear ${OUT}/fs_to_t1.txt -template ${FOD} -interp nearest ${FTT} -force
+      "
+  fi
+fi
+
 TCK0="$(find -L "${QOUT}" -type f -path "*sub-${SID}*ses-1*" \( -name '*model-ifod2_streamlines.tck' -o -name '*model-ifod2_streamlines.tck.gz' \) | head -1)"
 NODES="${COUT}/dkt_nodes.mif"
 [[ -f "${NODES}" ]] || NODES="${COUT}/nodes.mif"
 for f in "${FTT}" "${FOD}" "${TCK0}" "${NODES}"; do
   [[ -f "${f}" ]] || { echo "[RESEED] missing input: ${f:-<empty>}" >&2; exit 1; }
 done
-echo "[RESEED] ${DS}/${SID} seed=${SEED} host=$(hostname) $(date -Is)"
+echo "[RESEED] ${DS}/${SID} seed=${SEED} FTT=${FTT} FOD=${FOD} host=$(hostname) $(date -Is)"
 if [[ ! -f "${OUT}/tracked.tck" ]]; then
   apptainer exec --cleanenv --env "MRTRIX_RNG_SEED=${SEED}" -B "${FREEZE}":"${FREEZE}" "${QSIRECON}" \
     tckgen -act "${FTT}" -algorithm iFOD2 -backtrack -crop_at_gmwmi -maxlength 250.000000 -minlength 30.000000 \
@@ -64,6 +103,7 @@ rec = {
     "tracking_only_move_rate": float(moved_mask(c["run1"], c["reseed"])[iu][m].mean()),
     "run1_radial4_vs_shipped_count_pearson": float(np.corrcoef(c["run1"][iu], ship[iu])[0, 1]),
     "note": "descriptive (RETEST_LOCK tracking_only_control); AUROC vs U/Ucal/F computed in the retest exam",
+    "inputs_fallback_5tt_rebuild": True,
 }
 (out / "reseed_control.json").write_text(json.dumps(rec, indent=2) + "\n")
 print(json.dumps(rec, indent=2))

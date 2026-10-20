@@ -1,0 +1,26 @@
+{
+  "edgeuq_version": "0.1.0",
+  "count_run1": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/directions/instability/kirby21_KKI849/C0.csv",
+  "primary": "L_neg_log1p_C0",
+  "not_hatU": true,
+  "distinct_from_shift_jitter": true,
+  "formula": "L = -log1p(C0)",
+  "p10": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/directions/instability/kirby21_KKI849/P_ge_floor.csv",
+  "evaluation": {
+    "n_eligible": 2264,
+    "y_rate": 0.5384275618374559,
+    "count_floor": 10,
+    "relchange_cut": 0.25,
+    "auroc": {
+      "L_neg_log1p_C0": 0.6987208120233465,
+      "L_one_minus_P10": 0.5527528643369929,
+      "L_hybrid_C0_P10": 0.6986984389903089,
+      "U_shift": 0.5781760875452857,
+      "F_jitter": 0.5980205753402075
+    },
+    "primary": "L_neg_log1p_C0",
+    "not_hatU": true,
+    "distinct_from_shift_jitter": true
+  },
+  "count_run2": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/kirby21/freeze/sub-KKI849/connectomes/sub-KKI849/ses-2/dkt_connectome_count.csv"
+}

@@ -1,0 +1,26 @@
+{
+  "edgeuq_version": "0.1.0",
+  "count_run1": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/directions/instability/boekel_dwi_retest_pp01/C0.csv",
+  "primary": "L_neg_log1p_C0",
+  "not_hatU": true,
+  "distinct_from_shift_jitter": true,
+  "formula": "L = -log1p(C0)",
+  "p10": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/directions/instability/boekel_dwi_retest_pp01/P_ge_floor.csv",
+  "evaluation": {
+    "n_eligible": 2628,
+    "y_rate": 0.3588280060882801,
+    "count_floor": 10,
+    "relchange_cut": 0.25,
+    "auroc": {
+      "L_neg_log1p_C0": 0.7042150344094075,
+      "L_one_minus_P10": 0.5375614790853108,
+      "L_hybrid_C0_P10": 0.7041807351372443,
+      "U_shift": 0.6048201490916987,
+      "F_jitter": 0.5923311232854298
+    },
+    "primary": "L_neg_log1p_C0",
+    "not_hatU": true,
+    "distinct_from_shift_jitter": true
+  },
+  "count_run2": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/freeze/sub-pp01/connectomes/sub-pp01/ses-2/dkt_connectome_count.csv"
+}

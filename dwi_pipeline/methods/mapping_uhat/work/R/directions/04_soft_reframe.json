@@ -6,9 +6,9 @@
     {
       "pair": "kirby21/KKI849",
       "moved_frac_hard": 0.5384275618374559,
-      "moved_frac_soft": 0.5336283185840708,
+      "moved_frac_soft": 0.5309187279151943,
       "soft_lower_than_hard": true,
-      "delta_moved": 0.004799243253385099,
+      "delta_moved": 0.0075088339222615375,
       "invent_n": 14,
       "invent_frac": 0.006183745583038869,
       "locked_invent_cap": 0.001,
@@ -20,9 +20,9 @@
     {
       "pair": "boekel_dwi_retest/pp01",
       "moved_frac_hard": 0.3588280060882801,
-      "moved_frac_soft": 0.3530308806709874,
+      "moved_frac_soft": 0.3515981735159817,
       "soft_lower_than_hard": true,
-      "delta_moved": 0.005797125417292659,
+      "delta_moved": 0.007229832572298367,
       "invent_n": 7,
       "invent_frac": 0.002663622526636225,
       "locked_invent_cap": 0.001,

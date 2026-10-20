@@ -67,5 +67,5 @@
       "auroc_one_minus_P10_vs_y": 0.5375614790853108
     }
   },
-  "claim": "Threshold-uncertain edges (0.1<P(count>=10)<0.9) are enriched for hard run1\u2194run2 threshold crossings; this is a usable uncertainty product without claiming U ranks leftover y."
+  "claim": "Uncertain edges (0.1<P10<0.9) are highly enriched for threshold crossings vs the eligible base rate; report as a small actionable flag set."
 }

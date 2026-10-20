@@ -8,7 +8,7 @@
     "boekel_dwi_retest/pp01"
   ],
   "leftover_y_ready": true,
-  "note": "GOLD locked; retest exam COMPLETED: soft invent_frac FAIL, G calibration FAIL. Keep radial_4. No mass scale pending review.",
+  "note": "GOLD locked; retest exam FAIL (invent+G). Pre-scale Dirs 2–7 recomputed; Dir 5 = edgeuq instability (L). Boekel reseed 189985 queued. Mass scale held until 'scale descriptive'.",
   "kirby_KKI849": {
     "counts_both_sessions": true,
     "empty_nodes": 0,

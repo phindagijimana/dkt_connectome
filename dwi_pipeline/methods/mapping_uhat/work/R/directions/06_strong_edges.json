@@ -88,5 +88,5 @@
       }
     ]
   },
-  "claim": "Leftover move rate falls sharply as the min-count floor rises (weak-edge phenomenon). U/F AUROC stays ~0.5\u20130.6 even on stronger edges; count-based score also weakens. Strong-edge clinical reporting is more stable by base rate, but U/F still are not leftover rankers there."
+  "claim": "Move rate falls as min-count floor rises, but U/F AUROC stays ~0.57\u20130.61. Leftover ranking remains a weak-edge / count phenomenon; L still beats U/F inside strong strata."
 }

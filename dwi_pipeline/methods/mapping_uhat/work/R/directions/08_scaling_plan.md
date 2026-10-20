@@ -1,6 +1,6 @@
 # Direction 8 — Scale for descriptive reliability (not leftover-AUROC confirmation)
 
-Status: **plan only**. Do not mass-queue until you approve after reading Dirs 1–7.
+Status: **plan only**. Pre-scale (Dirs 1–7 + Dir 5 code) done 2026-10-20. Do not mass-queue until you say **scale descriptive**.
 Frozen U/F thresholds unchanged. Goal is **population descriptive stats**, not “prove U ranks leftover.”
 
 ## Why scale now (reframed)

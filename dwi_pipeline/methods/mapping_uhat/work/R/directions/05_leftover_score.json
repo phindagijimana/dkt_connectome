@@ -1,39 +1,69 @@
 {
   "direction": 5,
+  "implemented_as_code": true,
+  "edgeuq_subcommand": "instability",
+  "primary": "L_neg_log1p_C0",
+  "not_hatU": true,
   "question": "Can a leftover-instability score (\u2260U) rank scan-rescan movers?",
-  "note": "U/F frozen. New scores are separate. Oracle scores use both runs and are upper bounds only.",
   "auroc_by_pair": {
     "kirby21/KKI849": {
       "U": 0.5781760875452857,
       "F": 0.5980205753402075,
-      "neg_log1p_C0": 0.6987208120233465,
-      "neg_min_C0_C1": 0.7156532729392278,
       "neg_log1p_C0_only": 0.6987208120233465,
       "one_minus_P10": 0.5527528643369929,
       "hybrid_C0_P10": 0.6986984389903089,
-      "abs_dcount_oracle": 0.5152650811905594,
       "n": 2264,
       "y_rate": 0.5384275618374559
     },
     "boekel_dwi_retest/pp01": {
       "U": 0.6048201490916987,
       "F": 0.5923311232854298,
-      "neg_log1p_C0": 0.7042150344094075,
-      "neg_min_C0_C1": 0.7348568713399688,
       "neg_log1p_C0_only": 0.7042150344094075,
       "one_minus_P10": 0.5375614790853108,
       "hybrid_C0_P10": 0.7041807351372443,
-      "abs_dcount_oracle": 0.5043538048591685,
       "n": 2628,
       "y_rate": 0.3588280060882801
     }
   },
-  "ses1_only_candidates": [
-    "neg_log1p_C0_only",
-    "one_minus_P10",
-    "hybrid_C0_P10",
-    "F",
-    "U"
-  ],
-  "claim": "Ses-1-only low-count (-log1p C0) AUROC ~0.71\u20130.73 beats U/F (~0.58\u20130.60) for leftover y on both pilots. P10 adds little alone. A dedicated leftover-instability score should be count-aware and kept separate from plant-sensitivity U."
+  "claim": "Ses-1-only low-count (-log1p C0) AUROC ~0.70 beats U/F (~0.58\u20130.60) for leftover y on both pilots. Implemented as edgeuq instability (L).",
+  "runs": [
+    {
+      "key": "kirby21/KKI849",
+      "pack_L": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/kirby21_KKI849_ses-1/L.csv",
+      "edgeuq_out": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/directions/instability/kirby21_KKI849",
+      "n_eligible": 2264,
+      "y_rate": 0.5384275618374559,
+      "count_floor": 10,
+      "relchange_cut": 0.25,
+      "auroc": {
+        "L_neg_log1p_C0": 0.6987208120233465,
+        "L_one_minus_P10": 0.5527528643369929,
+        "L_hybrid_C0_P10": 0.6986984389903089,
+        "U_shift": 0.5781760875452857,
+        "F_jitter": 0.5980205753402075
+      },
+      "primary": "L_neg_log1p_C0",
+      "not_hatU": true,
+      "distinct_from_shift_jitter": true
+    },
+    {
+      "key": "boekel_dwi_retest/pp01",
+      "pack_L": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/boekel_dwi_retest_pp01_ses-1/L.csv",
+      "edgeuq_out": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/directions/instability/boekel_dwi_retest_pp01",
+      "n_eligible": 2628,
+      "y_rate": 0.3588280060882801,
+      "count_floor": 10,
+      "relchange_cut": 0.25,
+      "auroc": {
+        "L_neg_log1p_C0": 0.7042150344094075,
+        "L_one_minus_P10": 0.5375614790853108,
+        "L_hybrid_C0_P10": 0.7041807351372443,
+        "U_shift": 0.6048201490916987,
+        "F_jitter": 0.5923311232854298
+      },
+      "primary": "L_neg_log1p_C0",
+      "not_hatU": true,
+      "distinct_from_shift_jitter": true
+    }
+  ]
 }
