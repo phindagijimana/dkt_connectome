@@ -1,0 +1,71 @@
+{
+  "direction": 2,
+  "question": "Which edges are unstable under the count>=10 reporting rule?",
+  "pairs": {
+    "kirby21/KKI849": {
+      "n_elig": 2264,
+      "frac_uncertain": 0.027385159010600707,
+      "frac_sure_pos": 0.9350706713780919,
+      "frac_sure_neg": 0.037544169611307424,
+      "strata": {
+        "P10>=0.9": {
+          "n": 2117,
+          "y_rate": 0.514407179971658,
+          "cross_rate": 0.01653282947567312
+        },
+        "0.1<P10<0.9": {
+          "n": 62,
+          "y_rate": 0.7580645161290323,
+          "cross_rate": 0.6774193548387096
+        },
+        "P10<=0.1": {
+          "n": 85,
+          "y_rate": 0.9764705882352941,
+          "cross_rate": 1.0
+        }
+      },
+      "crossings": {
+        "n": 162,
+        "frac_on_uncertain": 0.25925925925925924,
+        "enrichment": 9.467144563918756
+      },
+      "auroc_uncert_score_vs_cross": 0.7006628020345115,
+      "auroc_uncert_score_vs_y": 0.5237644786887047,
+      "auroc_P10_vs_y": 0.4472471356630072,
+      "auroc_one_minus_P10_vs_y": 0.5527528643369929
+    },
+    "boekel_dwi_retest/pp01": {
+      "n_elig": 2628,
+      "frac_uncertain": 0.01598173515981735,
+      "frac_sure_pos": 0.9680365296803652,
+      "frac_sure_neg": 0.01598173515981735,
+      "strata": {
+        "P10>=0.9": {
+          "n": 2544,
+          "y_rate": 0.342374213836478,
+          "cross_rate": 0.025943396226415096
+        },
+        "0.1<P10<0.9": {
+          "n": 42,
+          "y_rate": 0.7142857142857143,
+          "cross_rate": 0.7380952380952381
+        },
+        "P10<=0.1": {
+          "n": 42,
+          "y_rate": 1.0,
+          "cross_rate": 1.0
+        }
+      },
+      "crossings": {
+        "n": 139,
+        "frac_on_uncertain": 0.22302158273381295,
+        "enrichment": 13.954779033915726
+      },
+      "auroc_uncert_score_vs_cross": 0.6737674544976313,
+      "auroc_uncert_score_vs_y": 0.5206648394699661,
+      "auroc_P10_vs_y": 0.46243852091468923,
+      "auroc_one_minus_P10_vs_y": 0.5375614790853108
+    }
+  },
+  "claim": "Threshold-uncertain edges (0.1<P(count>=10)<0.9) are enriched for hard run1\u2194run2 threshold crossings; this is a usable uncertainty product without claiming U ranks leftover y."
+}

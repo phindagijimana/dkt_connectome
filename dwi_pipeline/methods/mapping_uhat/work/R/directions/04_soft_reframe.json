@@ -1,0 +1,44 @@
+{
+  "direction": 4,
+  "question": "How should soft expectation be reported after invent fail?",
+  "locked_rule_unchanged": "invent_frac<=0.001 still FAIL; do not relax",
+  "pairs": [
+    {
+      "pair": "kirby21/KKI849",
+      "moved_frac_hard": 0.5384275618374559,
+      "moved_frac_soft": 0.5336283185840708,
+      "soft_lower_than_hard": true,
+      "delta_moved": 0.004799243253385099,
+      "invent_n": 14,
+      "invent_frac": 0.006183745583038869,
+      "locked_invent_cap": 0.001,
+      "invent_fails_lock": true,
+      "invent_from_C0_5_10": 12,
+      "invent_from_C0_lt5": 2,
+      "invent_frac_if_exclude_near_threshold": 0.0008833922261484099
+    },
+    {
+      "pair": "boekel_dwi_retest/pp01",
+      "moved_frac_hard": 0.3588280060882801,
+      "moved_frac_soft": 0.3530308806709874,
+      "soft_lower_than_hard": true,
+      "delta_moved": 0.005797125417292659,
+      "invent_n": 7,
+      "invent_frac": 0.002663622526636225,
+      "locked_invent_cap": 0.001,
+      "invent_fails_lock": true,
+      "invent_from_C0_5_10": 7,
+      "invent_from_C0_lt5": 0,
+      "invent_frac_if_exclude_near_threshold": 0.0
+    }
+  ],
+  "reporting_schema": {
+    "primary_stability": "moved_frac_soft vs moved_frac_hard (descriptive)",
+    "invent_total": "invent_frac vs locked 0.001 (binary fail as recorded)",
+    "invent_strata": [
+      "C0 in [5,10) near-threshold blur",
+      "C0 < 5 far invents"
+    ]
+  },
+  "claim": "Soft expectation slightly reduces moved-frac on both pilots but fails invent<=0.001. Almost all invents are near-threshold (C0 in [5,10)). Report soft as denoising-with-threshold-blur, not as a win under the locked invent rule."
+}

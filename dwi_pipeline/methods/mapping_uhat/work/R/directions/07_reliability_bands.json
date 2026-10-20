@@ -1,0 +1,36 @@
+{
+  "direction": 7,
+  "question": "What should a connectome table show users beyond a point count?",
+  "schema": [
+    "count",
+    "Esoft",
+    "band_low/high",
+    "F_leakage",
+    "U_shift",
+    "P_count_ge10",
+    "threshold_uncertain"
+  ],
+  "pairs": [
+    {
+      "pair": "kirby21/KKI849",
+      "n_reported_edges_count_ge10": 2149,
+      "n_threshold_uncertain_among_reported": 33,
+      "frac_uncertain": 0.015355979525360632,
+      "median_F": 0.08239976316690445,
+      "median_abs_soft_minus_hard": 4.21875
+    },
+    {
+      "pair": "boekel_dwi_retest/pp01",
+      "n_reported_edges_count_ge10": 2572,
+      "n_threshold_uncertain_among_reported": 28,
+      "frac_uncertain": 0.01088646967340591,
+      "median_F": 0.06439971178770065,
+      "median_abs_soft_minus_hard": 3.25
+    }
+  ],
+  "outputs": [
+    "07_edge_bands_*_top30.csv",
+    "07_edge_bands_*_uncertain.csv"
+  ],
+  "claim": "Report each edge as count with a soft band (Esoft), assignment leakage F, shift sensitivity U, and P(count>=10). On pilots, only ~1\u20133% of reported edges are threshold-uncertain \u2014 a small, actionable flag set."
+}

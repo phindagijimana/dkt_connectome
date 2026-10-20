@@ -1,0 +1,92 @@
+{
+  "direction": 6,
+  "question": "On strong edges only, do U/F rank leftover movers \u2014 or is leftover still a weak-edge phenomenon?",
+  "definition": "strong = min(C_run1,C_run2) >= floor",
+  "pairs": {
+    "kirby21/KKI849": [
+      {
+        "min_count_floor": 10,
+        "n": 2102,
+        "y_rate": 0.5080875356803045,
+        "auroc_U": 0.6103288744485255,
+        "auroc_F": 0.5852784358043741,
+        "auroc_neg_log1p_C0": 0.6647224697368135
+      },
+      {
+        "min_count_floor": 20,
+        "n": 1909,
+        "y_rate": 0.49135673127291773,
+        "auroc_U": 0.6037952432921461,
+        "auroc_F": 0.582911359049976,
+        "auroc_neg_log1p_C0": 0.6657354320057796
+      },
+      {
+        "min_count_floor": 30,
+        "n": 1783,
+        "y_rate": 0.47728547392035897,
+        "auroc_U": 0.59609371453932,
+        "auroc_F": 0.5787901635541121,
+        "auroc_neg_log1p_C0": 0.6620102328490087
+      },
+      {
+        "min_count_floor": 50,
+        "n": 1634,
+        "y_rate": 0.45716034271725825,
+        "auroc_U": 0.590353899627069,
+        "auroc_F": 0.570973861624627,
+        "auroc_neg_log1p_C0": 0.6508589789447153
+      },
+      {
+        "min_count_floor": 100,
+        "n": 1458,
+        "y_rate": 0.4334705075445816,
+        "auroc_U": 0.5868739847365678,
+        "auroc_F": 0.5699842155270175,
+        "auroc_neg_log1p_C0": 0.6401571168051
+      }
+    ],
+    "boekel_dwi_retest/pp01": [
+      {
+        "min_count_floor": 10,
+        "n": 2489,
+        "y_rate": 0.32703897147448774,
+        "auroc_U": 0.6147581502805384,
+        "auroc_F": 0.585889838277898,
+        "auroc_neg_log1p_C0": 0.6646895742418131
+      },
+      {
+        "min_count_floor": 20,
+        "n": 2290,
+        "y_rate": 0.30611353711790396,
+        "auroc_U": 0.6009229824515728,
+        "auroc_F": 0.5837677721927409,
+        "auroc_neg_log1p_C0": 0.6527014810272838
+      },
+      {
+        "min_count_floor": 30,
+        "n": 2145,
+        "y_rate": 0.2853146853146853,
+        "auroc_U": 0.5849470686295827,
+        "auroc_F": 0.5724933809140095,
+        "auroc_neg_log1p_C0": 0.6321584189231247
+      },
+      {
+        "min_count_floor": 50,
+        "n": 1952,
+        "y_rate": 0.26793032786885246,
+        "auroc_U": 0.584109279644405,
+        "auroc_F": 0.5783771560692405,
+        "auroc_neg_log1p_C0": 0.6264586207311803
+      },
+      {
+        "min_count_floor": 100,
+        "n": 1689,
+        "y_rate": 0.246299585553582,
+        "auroc_U": 0.5846831757205874,
+        "auroc_F": 0.5800397682639434,
+        "auroc_neg_log1p_C0": 0.625510793703547
+      }
+    ]
+  },
+  "claim": "Leftover move rate falls sharply as the min-count floor rises (weak-edge phenomenon). U/F AUROC stays ~0.5\u20130.6 even on stronger edges; count-based score also weakens. Strong-edge clinical reporting is more stable by base rate, but U/F still are not leftover rankers there."
+}

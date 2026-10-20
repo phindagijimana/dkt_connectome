@@ -1,0 +1,56 @@
+{
+  "direction": 3,
+  "question": "How much of scan-rescan edge change is tracking RNG vs threshold crossing vs count change?",
+  "kirby_tracking_only_reseed": {
+    "n_elig": 2184,
+    "move_rate": 0.09523809523809523,
+    "frac_cross": 0.035256410256410256,
+    "frac_both": 0.9647435897435898,
+    "move_rate_both": 0.06976744186046512,
+    "move_rate_cross": 0.7922077922077922,
+    "mean_rel_movers_both": 0.33934767715586683,
+    "n_movers": 208,
+    "n_cross_movers": 61,
+    "n_both_movers": 147,
+    "lock_move_rate": 0.09523809523809523
+  },
+  "kirby_leftover_ses1_vs_ses2": {
+    "n_elig": 2264,
+    "move_rate": 0.5384275618374559,
+    "frac_cross": 0.0715547703180212,
+    "frac_both": 0.9284452296819788,
+    "move_rate_both": 0.5080875356803045,
+    "move_rate_cross": 0.9320987654320988,
+    "mean_rel_movers_both": 0.44004955118677375,
+    "n_movers": 1219,
+    "n_cross_movers": 151,
+    "n_both_movers": 1068
+  },
+  "boekel_leftover_ses1_vs_ses2": {
+    "n_elig": 2628,
+    "move_rate": 0.3588280060882801,
+    "frac_cross": 0.05289193302891933,
+    "frac_both": 0.9471080669710806,
+    "move_rate_both": 0.32703897147448774,
+    "move_rate_cross": 0.9280575539568345,
+    "mean_rel_movers_both": 0.38738497022272117,
+    "n_movers": 943,
+    "n_cross_movers": 129,
+    "n_both_movers": 814
+  },
+  "kirby_decomposition": {
+    "leftover_move_rate": 0.5384275618374559,
+    "tracking_move_rate": 0.09523809523809523,
+    "excess_above_tracking": 0.44318946659936065,
+    "excess_fraction_of_leftover": 0.8231180905504122,
+    "among_leftover_eligible_edges": {
+      "both_leftover_and_reseed_move": 0.05609540636042403,
+      "leftover_only": 0.4823321554770318,
+      "reseed_only": 0.02959363957597173,
+      "stable_both": 0.43197879858657245
+    },
+    "cross_share_of_leftover_movers": 0.12387202625102543,
+    "both_present_share_of_leftover_movers": 0.8761279737489746
+  },
+  "claim": "On Kirby, tracking-only explains ~9.5% move rate vs ~54% leftover; ~82% of leftover move rate is excess above tracking. Most leftover movers are both-present count changes, not threshold crossings."
+}
