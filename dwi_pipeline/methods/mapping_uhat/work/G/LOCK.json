@@ -1,0 +1,54 @@
+{
+  "experiment": "G",
+  "title": "Gold hat{U} attempt: frozen calibrated U vs independent leftover y",
+  "rules_locked": true,
+  "run_locked": false,
+  "locked_date": "2026-10-19",
+  "blocked_on": "work/sites_v1/LIST.json with >=2 exact leftover paths",
+  "not_A4": true,
+  "not_proxy_hatU": true,
+  "not_A8_rescue": true,
+  "question": "Does frozen calibrated U stay a probability when y is moved between two independent leftover connectomes (same e>0.25, count>=10)?",
+  "P": {
+    "method": "frozen experiment C isotonic map of locked U",
+    "path": "work/C/",
+    "refit": false,
+    "not_A8_frequency": true
+  },
+  "y": {
+    "event": "relchange(C_a, C_b) > 0.25 and max(C_a, C_b) >= 10",
+    "C_a_C_b": "two independent leftover connectomes of the same freeze (radial_4, count, QC-PASS, empty_nodes=0)",
+    "not": [
+      "planted 1 mm",
+      "A5/A6 ANTs ensemble reused as leftover",
+      "Extra A 2WK vs 6MO",
+      "TBI021030 QC-FAIL"
+    ]
+  },
+  "leftover_source": {
+    "allowed_one_of": ["other_site_site_ne_01", "same_day_run2", "rater_landmarks"],
+    "chosen": null,
+    "list": "work/sites_v1/LIST.json",
+    "list_status": "empty"
+  },
+  "split": {
+    "if_P_is_frozen_C": "no refit; all leftover sessions are test",
+    "held_out": "the leftover list; never the A5/A6/A7/A8 six-session frequency"
+  },
+  "ECE": {"M": 10, "empty_bins_drop": true},
+  "occupied_bin": {
+    "rule": "every equal-width bin with n>=20 on the leftover test pool is scored",
+    "band": 0.15,
+    "do_not_require_B9": true,
+    "why": "A8 required B9 and it was empty; requiring it again is the failed name, not this exam"
+  },
+  "win": "ECE(calibrated U) is computed on leftover y AND every occupied bin (n>=20) has |mean_y - mean_P| <= 0.15. Then and only then the 78x78 number may be named hat{U}.",
+  "fail": "any miss or list still empty. Keep calibrated U as a 1 mm probability. Do not name hat{U}. Do not name proxy-hat{U}.",
+  "forbidden": [
+    "start ECE before LIST.json has >=2 paths",
+    "Gugger walk to fill the list",
+    "change band or cuts after seeing leftover ECE",
+    "revive A8 frequency as P unless a later lock writes a new win rule that does not need B9",
+    "call processing other-site subjects automatic gold"
+  ]
+}

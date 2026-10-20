@@ -1,0 +1,30 @@
+{
+  "experiment": "SITES_2WK_FREEZE",
+  "title": "Other-site 2WK QSIPrep only. Not leftover y. Not gold. Not Extra A.",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "not_hatU": true,
+  "not_gold": true,
+  "not_extra_A": true,
+  "session": "ses-2WK only",
+  "forbidden_y": ["ses-6MO vs 2WK", "planted 1 mm", "A5/A6 six-session reuse"],
+  "subjects": [
+    "TBI041082",
+    "TBI041087",
+    "TBI071002",
+    "TBI071058",
+    "TBI071079",
+    "TBI071128",
+    "TBI071184"
+  ],
+  "product": "QSIPrep 2 mm outputs (T1w preproc + dwiref) on home. Opens V2/leftover-mm later. Does not grant hat{U}.",
+  "win": ">=1 subject writes space-T1w_dwiref.nii.gz",
+  "fail": "QSIPrep crash. Keep raw BIDS. Still not gold.",
+  "pe_repair": {
+    "date": "2026-10-19",
+    "subjects": ["TBI041082", "TBI041087"],
+    "action": "PhaseEncodingDirection copied from PhaseEncodingAxis=j. Polarity not invented.",
+    "not_copied_from": "site-07 Siemens j-",
+    "resubmit_array": "189454"
+  }
+}

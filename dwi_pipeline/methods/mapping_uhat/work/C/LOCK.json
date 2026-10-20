@@ -1,0 +1,34 @@
+{
+  "experiment": "C",
+  "title": "Calibrated U on the locked 1 mm moved event",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "sister": "mapping_u",
+  "not_A4": true,
+  "not_hatU": true,
+  "not_proxy_hatU": true,
+  "question": "Can locked U be read as a probability for the same 1 mm moved event it ranks?",
+  "P": {
+    "method": "isotonic",
+    "citation": "Zadrozny & Elkan 2002; sklearn IsotonicRegression increasing=True out_of_bounds=clip",
+    "fit_on": ["ideas-sub-1-ses-1", "ideas-sub-6-ses-1", "btc-sub-PAT20-ses-preop"],
+    "input": "locked U (no refit of U)",
+    "not_platt": true
+  },
+  "y": {
+    "event": "max relchange on {±1} mm six-axis counts > 0.25 and max(C0, C_1mm) >= 10",
+    "mask": "triu max(C0 and all 18 planted maps) >= 10",
+    "test": ["tbi-011011-neurolit-lesion", "tbi-011021-neurolit-lesion", "tbi-011204-neurolit-lesion"],
+    "demo_root": "experiments/mapping_screen/work/followup",
+    "test_root": "experiments/mapping_screen/work/confirmation_uq"
+  },
+  "ECE": {"M": 10, "empty_bins_drop": true},
+  "high_bin": {
+    "rule": "highest equal-width bin m in 1..10 with n>=20 of calibrated P on the fit set; freeze that m before test ECE",
+    "band": 0.15,
+    "test_n_min": 20
+  },
+  "win": "ECE(calibrated U) < ECE(raw U) on held-out TBI AND the frozen high bin is evaluable (n>=20) and |mean_y - mean_P| <= 0.15",
+  "fail": "any miss. Keep U as a ranker. Do not print U as a percent. Not hat{U}.",
+  "forbidden": ["retune U cuts", "Platt after seeing TBI ECE", "name hat{U}", "inherit A8 win"]
+}

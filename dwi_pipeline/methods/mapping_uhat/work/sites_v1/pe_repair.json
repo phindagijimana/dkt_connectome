@@ -1,0 +1,55 @@
+{
+  "n": 7,
+  "rows": [
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI041082/ses-2WK/dwi/sub-TBI041082_ses-2WK_dwi.json",
+      "before": null,
+      "axis": "j",
+      "after": "j",
+      "action": "set_from_axis_no_polarity"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI041087/ses-2WK/dwi/sub-TBI041087_ses-2WK_dwi.json",
+      "before": null,
+      "axis": "j",
+      "after": "j",
+      "action": "set_from_axis_no_polarity"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI071002/ses-2WK/dwi/sub-TBI071002_ses-2WK_run-1_dwi.json",
+      "before": "j-",
+      "axis": null,
+      "after": "j-",
+      "action": "keep"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI071058/ses-2WK/dwi/sub-TBI071058_ses-2WK_run-1_dwi.json",
+      "before": "j-",
+      "axis": null,
+      "after": "j-",
+      "action": "keep"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI071079/ses-2WK/dwi/sub-TBI071079_ses-2WK_run-1_dwi.json",
+      "before": "j-",
+      "axis": null,
+      "after": "j-",
+      "action": "keep"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI071128/ses-2WK/dwi/sub-TBI071128_ses-2WK_run-1_dwi.json",
+      "before": "j-",
+      "axis": null,
+      "after": "j-",
+      "action": "keep"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/tracktbi_othersite/bids/sub-TBI071184/ses-2WK/dwi/sub-TBI071184_ses-2WK_run-1_dwi.json",
+      "before": "j-",
+      "axis": null,
+      "after": "j-",
+      "action": "keep"
+    }
+  ],
+  "not_gold": true
+}

@@ -1,0 +1,29 @@
+{
+  "experiment": "P1",
+  "title": "Paper 1 additions: cheap baselines and cut sensitivity for locked U (planted 1 mm)",
+  "locked": true,
+  "locked_date": "2026-10-20",
+  "not_a_new_exam": true,
+  "U_frozen": "locked U and its win are unchanged; nothing here can retune U, e>0.25, count>=10, radial_4, or the C isotonic map",
+  "sessions": "same six (3 development, 3 confirmation); same eligible mask and 1 mm event as the U paper",
+  "baselines": {
+    "direction": "higher score = predicted mover; AUROC reported as computed (no flipping)",
+    "B_lowcount": "-C0_ij (low-count edges move more in relative terms)",
+    "B_boundary": "-mean over the edge's streamlines of min(end-a, end-b) distance in mm from endpoint voxel centre to nearest DKT label boundary (6-neighbour label change, incl. background)",
+    "B_unlabeled": "fraction of the edge's endpoints whose nearest voxel is label 0 (needed the 4 mm radial search)",
+    "B_short": "-mean endpoint-to-endpoint Euclidean distance (mm) of the edge's streamlines",
+    "C2_F": "C2 leakage F if work/C2 finished (planted y only)"
+  },
+  "metrics": ["Spearman(score, e)", "AUROC(score vs moved)", "same for U on the same mask"],
+  "sensitivity_grid": {
+    "relchange_cut": [0.15, 0.25, 0.35],
+    "count_floor": [5, 10, 20],
+    "what": "recompute U, e, moved, mask from the stored 18 planted maps at each grid point; report Spearman/AUROC; 0.25/10 is the locked primary",
+    "not_retuning": true
+  },
+  "not_possible_here": {
+    "SIFT2_event": "planted maps are count-only; a SIFT2 version needs re-assignment with per-streamline weights (not stored in A6)",
+    "second_atlas": "needs a second parcellation in DWI space"
+  },
+  "not_hatU": true
+}

@@ -1,0 +1,32 @@
+{
+  "experiment": "L2",
+  "title": "Leftover-sized calibration; endpoint translation (L label plant was a no-op)",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "supersedes": "L",
+  "why_new_lock": "L nearest-neighbor label shift on 2 mm voxels rounded leftover 0.56–0.90 mm to 0. Written before any L2 y.",
+  "not_A4": true,
+  "not_hatU": true,
+  "not_proxy_hatU": true,
+  "question": "Is frozen proxyUhat a probability for leftover-sized assignment change, using the same (t, ehat) as L?",
+  "P": {
+    "file": "work/a7/*/dkt_connectome_proxyUhat.csv",
+    "frozen": true,
+    "no_retune": ["e>0.25", "count>=10", "K=50", "SyN"]
+  },
+  "y": {
+    "event": "translate frozen endpoints by t*ehat mm; labels L0 unchanged; radial_4",
+    "t_ehat": "reuse work/L/<sid>/plant.json exactly (same leftover vector; do not redraw)",
+    "mask": "triu max(C0, C_plant) >= 10"
+  },
+  "ECE": {"M": 10, "empty_bins_drop": true},
+  "coverage_bin": {
+    "rule": "highest equal-width bin of proxyUhat with n>=20 on the leftover-y pool",
+    "band": 0.15,
+    "not_B9_required": true
+  },
+  "baseline": "U-as-P = locked U (already [0,1])",
+  "win": "ECE(proxyUhat) < ECE(U-as-P) on leftover y AND the highest occupied bin (n>=20) has |mean_y - mean_P| <= 0.15. Also require C_plant != C0 (plant must not be a no-op).",
+  "fail": "any miss or no-op plant. Keep U. Not proxy-hat{U}. Not hat{U}.",
+  "forbidden": ["reuse A6 C_k as y", "retune P after ECE", "require B9", "name from A8", "6MO leftover", "change t or ehat after seeing L2 y"]
+}

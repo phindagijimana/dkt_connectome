@@ -1,0 +1,5 @@
+{
+  "t1w": {"datatype": "anat", "suffix": "T1w", "session": "2WK"},
+  "dwi": {"datatype": "dwi", "session": "2WK"},
+  "fmap": {"datatype": "fmap", "session": "2WK"}
+}

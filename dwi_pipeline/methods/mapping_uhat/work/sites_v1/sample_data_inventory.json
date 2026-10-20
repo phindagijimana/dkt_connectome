@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-19",
+  "walk": "sample_data only. No Gugger.",
+  "leftover_ready": false,
+  "n_leftover_pairs": 0,
+  "tracktbi_othersite_bids": "empty (no .nii.gz)",
+  "run2_names_found": 0,
+  "TBI_subjects_in_sample_data": 0,
+  "present_and_already_used": [
+    "ideas/results/sub-1_public_demo (C fit)",
+    "ideas/results/sub-6_public_demo (C fit)",
+    "btc_glioma/results/sub-PAT20_public_demo (C fit)"
+  ],
+  "present_not_leftover": [
+    "btc_glioma/bids extra PAT* (AP/PA TOPUP pair, not run-2; not TRACK-TBI other-site leftover y)"
+  ],
+  "forbidden": ["TBI021030", "TBI011011", "TBI011021", "TBI011204", "planted 1 mm", "A5/A6 reuse"],
+  "packages": {
+    "voxelmorph": "0.3.4 in work/V2/venv",
+    "neurite": "0.3.4",
+    "torch": "2.8.0+cu128 (CPU on this node)"
+  },
+  "note": "Downloading ideas/btc into sample_data does not open G. G needs leftover C_a,C_b on home."
+}

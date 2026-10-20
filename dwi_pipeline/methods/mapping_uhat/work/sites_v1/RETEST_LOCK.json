@@ -1,0 +1,47 @@
+{
+  "experiment": "SITES_RETEST_FREEZE",
+  "title": "Same-day Kirby21 + Boekel A/B QSIPrep. Not leftover y. Not gold.",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "not_hatU": true,
+  "not_gold": true,
+  "source": "same_day_run2",
+  "first_pairs": ["sub-KKI849 ses-1/ses-2", "sub-pp01 ses-1/ses-2"],
+  "kirby_qsiprep": {
+    "job": "189460_1",
+    "state": "COMPLETED",
+    "dwiref_ses-1": "sample_data/kirby21/results/sub-KKI849/sub-KKI849/ses-1/dwi/sub-KKI849_ses-1_space-T1w_dwiref.nii.gz",
+    "dwiref_ses-2": "sample_data/kirby21/results/sub-KKI849/sub-KKI849/ses-2/dwi/sub-KKI849_ses-2_space-T1w_dwiref.nii.gz",
+    "win": true,
+    "not_leftover_y": true
+  },
+  "forbidden_y": ["2-week follow-up", "Boekel run01 vs run02 inside one session", "planted 1 mm", "A5/A6 reuse"],
+  "product": "QSIPrep 2 mm T1w + dwiref per session. Opens leftover mm / C_a,C_b later. Does not grant hat{U}.",
+  "win": ">=1 subject writes space-T1w_dwiref.nii.gz for BOTH ses-1 and ses-2",
+  "fail": "QSIPrep crash. Keep raw BIDS. Still not gold.",
+  "boekel_trace_repair": {
+    "date": "2026-10-19",
+    "failed_job": "189572 (eddy NewSphericalKMatrix::GetHyperParGuess, both sessions; cancelled)",
+    "cause": "last volume of every run is the Philips trace image: b=1000 with zero bvec, signal = geometric mean of DWIs",
+    "fix": "drop that volume (34 -> 33 vols: 1 b0 + 32 dirs); originals in sample_data/boekel_dwi_retest/trace_backup",
+    "n_runs": 212,
+    "script": "work/sites_v1/boekel_trace_repair.py (also called by convert_retest_bids.py)",
+    "record": "work/sites_v1/boekel_trace_repair.json",
+    "resubmit_job": "189586",
+    "not_leftover_y": true
+  },
+  "boekel_trt_repair": {
+    "date": "2026-10-19",
+    "n_sidecars": 212,
+    "citation": "Boekel, Forstmann, Keuken 2017 Psychophysiology 54:24-33",
+    "BandwidthPerPixelPhaseEncode": 32.1,
+    "ReconMatrixPE": 112,
+    "EffectiveEchoSpacing": 0.00027814864263462394,
+    "TotalReadoutTime": 0.030874499332443257,
+    "formula": "TRT = (ReconMatrixPE-1) / (BW_pe * ReconMatrixPE)",
+    "not_invented_005": true,
+    "script": "work/sites_v1/boekel_trt_repair.py",
+    "log": "work/sites_v1/boekel_trt_repair.json",
+    "why": "189460_2 failed: gather_inputs TotalReadoutTime was None. No PAR in NITRC V2 tars."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "zip": "dwi_pipeline/sample_data/tracktbi_othersite/pennsieve-data.zip",
+  "extracted_to": "dwi_pipeline/sample_data/tracktbi_othersite/bids/",
+  "date": "2026-10-19",
+  "n_subjects": 7,
+  "sites": ["04", "07"],
+  "site_ne_01": true,
+  "run2": false,
+  "connectomes": false,
+  "tck": false,
+  "leftover_y_ready": false,
+  "not_extra_A": "ses-6MO is present; 2WK vs 6MO is Extra A, not leftover y",
+  "subjects": [
+    {"id": "sub-TBI041082", "site": "04", "ses": ["2WK", "6MO"], "lesion_2wk": true},
+    {"id": "sub-TBI041087", "site": "04", "ses": ["2WK", "6MO"], "lesion_2wk": true},
+    {"id": "sub-TBI071002", "site": "07", "ses": ["2WK", "6MO"], "lesion_2wk": false},
+    {"id": "sub-TBI071058", "site": "07", "ses": ["2WK", "6MO"], "lesion_2wk": true},
+    {"id": "sub-TBI071079", "site": "07", "ses": ["2WK", "6MO"], "lesion_2wk": true},
+    {"id": "sub-TBI071128", "site": "07", "ses": ["2WK", "6MO"], "lesion_2wk": true},
+    {"id": "sub-TBI071184", "site": "07", "ses": ["2WK", "6MO"], "lesion_2wk": false}
+  ],
+  "opens": "other-site BIDS on home. Process 2WK freeze (radial_4, QC-PASS) for >=2 subjects. Then still need C_a,C_b (new leftover on that person, or landmarks). Not automatic gold.",
+  "not": ["GOLD ECE", "hat{U}", "2WK vs 6MO leftover", "A5/A6 reuse"]
+}

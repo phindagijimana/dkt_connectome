@@ -1,0 +1,33 @@
+{
+  "experiment": "RETEST_IFOD2_FREEZE",
+  "title": "Kirby KKI849 FastSurfer + QSIRecon iFOD2 + DKT-78 count. Not leftover y. Not gold.",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "not_hatU": true,
+  "not_gold": true,
+  "not_proxy_hatU": true,
+  "source": "same_day_run2",
+  "subject": "KKI849",
+  "sessions": ["ses-1", "ses-2"],
+  "gate": "both ses-1 and ses-2 space-T1w_dwiref.nii.gz exist (189460_1 COMPLETED)",
+  "kirby_fastsurfer_job": "189573",
+  "kirby_ifod2_array": "189574",
+  "sites_2wk_fastsurfer_array": "189575",
+  "recon": "fastsurfer CPU on ses-1 T1; one FS tree for both DWI sessions",
+  "qsirecon_spec": "mrtrix_singleshell_ss3t_ACT-hsvs",
+  "act_mode": "standard",
+  "parcellation": "dkt",
+  "nodes": 78,
+  "assigner": "radial_4",
+  "primary_measure": "count",
+  "not_subject_sh": true,
+  "product": "dkt_connectome_count.csv per session after QC empty_nodes=0. Opens C_a,C_b later. Does not write LIST leftover paths. Does not run G ECE.",
+  "win": "both sessions write dkt_connectome_count.csv with empty_nodes=0",
+  "fail": "recon or QSIRecon crash. Keep QSIPrep. Still not gold.",
+  "forbidden": [
+    "leftover ECE before LIST n>=2 and GOLD locked",
+    "name hat{U} or proxy-hat{U}",
+    "2WK vs 6MO as leftover",
+    "hook subject.sh"
+  ]
+}

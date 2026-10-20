@@ -1,0 +1,40 @@
+{
+  "experiment": "V2",
+  "title": "p(phi | T1, dwiref) — Simpson / VoxelMorph. Not U-hat.",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "locked_before_any_model_number": true,
+  "phase": 4,
+  "not_hatU": true,
+  "not_proxy_hatU": true,
+  "not_gold": true,
+  "not_V1": true,
+  "question": "Can we estimate a warp posterior p(phi | I_T1, I_dwiref) on the six inventory sessions?",
+  "product": "uncertainty on phi (mm or samples of the warp). Not a 78x78 probability.",
+  "P": {"none": true},
+  "y": {"none": true, "reason": "Do not push phi through assignment under this lock."},
+  "sessions": [
+    "ideas-sub-1-ses-1",
+    "ideas-sub-6-ses-1",
+    "btc-sub-PAT20-ses-preop",
+    "tbi-011011-neurolit-lesion",
+    "tbi-011021-neurolit-lesion",
+    "tbi-011204-neurolit-lesion"
+  ],
+  "allowed_models": ["VoxelMorph probabilistic (Dalca 2019)", "Simpson 2012 variational"],
+  "not_allowed": [
+    "A5 Hub ensemble reused as a posterior",
+    "A8 frequency",
+    "name hat{U}",
+    "ECE"
+  ],
+  "phase4_probe_win": "Inventory of T1+dwiref for all six sessions is written. Report whether VoxelMorph / Simpson code is importable. If not importable, status=blocked_on_model. That is a win for the probe, not a warp posterior.",
+  "full_v2_win": "A written posterior or sample warps exist AND are not assigned to edges under this lock.",
+  "fail": "Missing T1/dwiref. Do not invent a posterior. Still not hat{U}.",
+  "forbidden": [
+    "start VoxelMorph training without this lock",
+    "call the probe a Simpson posterior",
+    "push samples through radial_4",
+    "revive A8"
+  ]
+}

@@ -1,0 +1,714 @@
+{
+  "not_gold": true,
+  "not_leftover_y": true,
+  "kirby_ok": 42,
+  "kirby_n": 42,
+  "boekel_ok": 53,
+  "boekel_n": 68,
+  "kirby": [
+    {
+      "sub": "sub-KKI113",
+      "ses": "ses-1",
+      "kki": "KKI2009-30",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI113",
+      "ses": "ses-2",
+      "kki": "KKI2009-33",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI127",
+      "ses": "ses-1",
+      "kki": "KKI2009-07",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI127",
+      "ses": "ses-2",
+      "kki": "KKI2009-34",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI142",
+      "ses": "ses-1",
+      "kki": "KKI2009-06",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI142",
+      "ses": "ses-2",
+      "kki": "KKI2009-20",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI239",
+      "ses": "ses-1",
+      "kki": "KKI2009-12",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI239",
+      "ses": "ses-2",
+      "kki": "KKI2009-19",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI346",
+      "ses": "ses-1",
+      "kki": "KKI2009-39",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI346",
+      "ses": "ses-2",
+      "kki": "KKI2009-41",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI422",
+      "ses": "ses-1",
+      "kki": "KKI2009-09",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI422",
+      "ses": "ses-2",
+      "kki": "KKI2009-42",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI492",
+      "ses": "ses-1",
+      "kki": "KKI2009-18",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI492",
+      "ses": "ses-2",
+      "kki": "KKI2009-38",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI502",
+      "ses": "ses-1",
+      "kki": "KKI2009-32",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI502",
+      "ses": "ses-2",
+      "kki": "KKI2009-36",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI505",
+      "ses": "ses-1",
+      "kki": "KKI2009-16",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI505",
+      "ses": "ses-2",
+      "kki": "KKI2009-35",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI656",
+      "ses": "ses-1",
+      "kki": "KKI2009-28",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI656",
+      "ses": "ses-2",
+      "kki": "KKI2009-40",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI679",
+      "ses": "ses-1",
+      "kki": "KKI2009-03",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI679",
+      "ses": "ses-2",
+      "kki": "KKI2009-22",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI742",
+      "ses": "ses-1",
+      "kki": "KKI2009-08",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI742",
+      "ses": "ses-2",
+      "kki": "KKI2009-29",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI800",
+      "ses": "ses-1",
+      "kki": "KKI2009-23",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI800",
+      "ses": "ses-2",
+      "kki": "KKI2009-27",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI814",
+      "ses": "ses-1",
+      "kki": "KKI2009-15",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI814",
+      "ses": "ses-2",
+      "kki": "KKI2009-26",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI815",
+      "ses": "ses-1",
+      "kki": "KKI2009-10",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI815",
+      "ses": "ses-2",
+      "kki": "KKI2009-21",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI849",
+      "ses": "ses-1",
+      "kki": "KKI2009-01",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI849",
+      "ses": "ses-2",
+      "kki": "KKI2009-25",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI906",
+      "ses": "ses-1",
+      "kki": "KKI2009-04",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI906",
+      "ses": "ses-2",
+      "kki": "KKI2009-11",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI913",
+      "ses": "ses-1",
+      "kki": "KKI2009-05",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI913",
+      "ses": "ses-2",
+      "kki": "KKI2009-31",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI916",
+      "ses": "ses-1",
+      "kki": "KKI2009-13",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI916",
+      "ses": "ses-2",
+      "kki": "KKI2009-24",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI934",
+      "ses": "ses-1",
+      "kki": "KKI2009-02",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI934",
+      "ses": "ses-2",
+      "kki": "KKI2009-37",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI959",
+      "ses": "ses-1",
+      "kki": "KKI2009-14",
+      "ok": true,
+      "nvol": 34
+    },
+    {
+      "sub": "sub-KKI959",
+      "ses": "ses-2",
+      "kki": "KKI2009-17",
+      "ok": true,
+      "nvol": 34
+    }
+  ],
+  "boekel": [
+    {
+      "sub": "sub-pp01",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp01",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp02",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp02",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp03",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp03",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp04",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp04",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp05",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp05",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp06",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp06",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp07",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp07",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp08",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp08",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp09",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp09",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp10",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp10",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp11",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp11",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp12",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp12",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp13",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp13",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp14",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp14",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp15",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp15",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp16",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp16",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp17",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp17",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp18",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp18",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp19",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp19",
+      "ses": "ses-2",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp20",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp20",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp21",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp21",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp22",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp22",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp23",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp23",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp24",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp24",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp25",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp25",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp26",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp26",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp27",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp27",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp28",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp28",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp29",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp29",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp30",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp30",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp31",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp31",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp32",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp32",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp33",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp33",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    },
+    {
+      "sub": "sub-pp34",
+      "ses": "ses-1",
+      "ok": true,
+      "n_dwi": 4
+    },
+    {
+      "sub": "sub-pp34",
+      "ses": "ses-2",
+      "ok": false,
+      "reason": "missing A/B"
+    }
+  ]
+}

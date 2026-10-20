@@ -1,0 +1,1709 @@
+{
+  "n_runs": 212,
+  "n_dropped": 85,
+  "n_already_repaired": 127,
+  "n_untouched": 0,
+  "reason": "Philips trace image (b>0, zero bvec, = geometric mean of DWIs) breaks eddy GP",
+  "backup": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/trace_backup",
+  "not_gold": true,
+  "not_leftover_y": true,
+  "rows": [
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 33,
+      "trace_idx": [],
+      "action": "already_repaired"
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9524183955634512,
+      "trace_over_geomean": 1.0646361112594604,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.985192343153325,
+      "trace_over_geomean": 0.9979175329208374,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9867463978676518,
+      "trace_over_geomean": 0.9969194531440735,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9878970878152162,
+      "trace_over_geomean": 0.9998085498809814,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9857410309314816,
+      "trace_over_geomean": 0.999528169631958,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.975795033626467,
+      "trace_over_geomean": 1.0071654319763184,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9803166424222641,
+      "trace_over_geomean": 1.0011945962905884,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9903577043644587,
+      "trace_over_geomean": 1.002888798713684,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9732437341006835,
+      "trace_over_geomean": 1.001834511756897,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9868179797720401,
+      "trace_over_geomean": 0.9986878633499146,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9897138820523016,
+      "trace_over_geomean": 0.9996125102043152,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9909838876439793,
+      "trace_over_geomean": 0.9993443489074707,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9909615201742793,
+      "trace_over_geomean": 0.999550998210907,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9867674829996426,
+      "trace_over_geomean": 0.9993305206298828,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9921498913556095,
+      "trace_over_geomean": 1.0003888607025146,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9928606455432439,
+      "trace_over_geomean": 1.0001388788223267,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9854402846783166,
+      "trace_over_geomean": 1.0006356239318848,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9912050970974183,
+      "trace_over_geomean": 1.001829743385315,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9932642526154987,
+      "trace_over_geomean": 1.0009722709655762,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9920866177436439,
+      "trace_over_geomean": 0.9992059469223022,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9922889150814219,
+      "trace_over_geomean": 1.0010162591934204,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9917763575545114,
+      "trace_over_geomean": 1.001206874847412,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9916892265616155,
+      "trace_over_geomean": 1.0002539157867432,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9925959064422102,
+      "trace_over_geomean": 1.0011954307556152,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9913158731186781,
+      "trace_over_geomean": 1.0008169412612915,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9949608652901545,
+      "trace_over_geomean": 1.002664566040039,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9932380977036613,
+      "trace_over_geomean": 1.0015052556991577,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9954742026610821,
+      "trace_over_geomean": 1.001315712928772,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9960871481110922,
+      "trace_over_geomean": 1.003068208694458,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9824020730231464,
+      "trace_over_geomean": 1.0045502185821533,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.994112843097442,
+      "trace_over_geomean": 1.001660704612732,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9811948440407561,
+      "trace_over_geomean": 1.0062527656555176,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9923629364564807,
+      "trace_over_geomean": 1.0024012327194214,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9823384095147305,
+      "trace_over_geomean": 0.9997276067733765,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.990926955357949,
+      "trace_over_geomean": 0.9996415972709656,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9881706024066212,
+      "trace_over_geomean": 1.0000591278076172,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9904157152481959,
+      "trace_over_geomean": 1.0013725757598877,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9938938971053811,
+      "trace_over_geomean": 1.0024902820587158,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9936368071970592,
+      "trace_over_geomean": 1.0015063285827637,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9922072753801333,
+      "trace_over_geomean": 1.001755952835083,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9943649503184796,
+      "trace_over_geomean": 1.0021151304244995,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9933218842244682,
+      "trace_over_geomean": 0.9983477592468262,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9936486248661172,
+      "trace_over_geomean": 1.0006825923919678,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9943175740819489,
+      "trace_over_geomean": 1.0024170875549316,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9935593171722147,
+      "trace_over_geomean": 1.0012460947036743,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9887537564255983,
+      "trace_over_geomean": 1.0052129030227661,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9925773541270244,
+      "trace_over_geomean": 1.0004090070724487,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9953031777966698,
+      "trace_over_geomean": 1.003258228302002,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9944366095565854,
+      "trace_over_geomean": 1.0028331279754639,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9897081767676988,
+      "trace_over_geomean": 1.0037084817886353,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9928768985046378,
+      "trace_over_geomean": 0.9991968274116516,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9909730160353332,
+      "trace_over_geomean": 1.001293420791626,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9908117984747726,
+      "trace_over_geomean": 1.0014857053756714,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9903575347728166,
+      "trace_over_geomean": 1.0021620988845825,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9867514405772674,
+      "trace_over_geomean": 1.000808835029602,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9896979281622789,
+      "trace_over_geomean": 1.0003347396850586,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9785441997427877,
+      "trace_over_geomean": 1.0008172988891602,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9615527885198828,
+      "trace_over_geomean": 1.0083580017089844,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9875143225650475,
+      "trace_over_geomean": 1.0009658336639404,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.981271774175307,
+      "trace_over_geomean": 1.0036345720291138,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9845787124975254,
+      "trace_over_geomean": 1.0010976791381836,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.994329130927956,
+      "trace_over_geomean": 1.0014894008636475,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9936616370459213,
+      "trace_over_geomean": 1.0010533332824707,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.995290760376965,
+      "trace_over_geomean": 1.0036832094192505,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9946653534592308,
+      "trace_over_geomean": 1.0023658275604248,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9912444681300141,
+      "trace_over_geomean": 1.0002707242965698,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9886582898510381,
+      "trace_over_geomean": 0.9989430904388428,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9896783782698607,
+      "trace_over_geomean": 1.0012257099151611,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9877293273075085,
+      "trace_over_geomean": 1.0033262968063354,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9913553144068805,
+      "trace_over_geomean": 1.0060702562332153,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9951918691343506,
+      "trace_over_geomean": 0.9983820915222168,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9948601319941697,
+      "trace_over_geomean": 1.0003107786178589,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9947907283397186,
+      "trace_over_geomean": 1.0014408826828003,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9782191026871062,
+      "trace_over_geomean": 1.0032432079315186,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9793636557480279,
+      "trace_over_geomean": 1.011454463005066,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9909102308369142,
+      "trace_over_geomean": 1.0053030252456665,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9697807418830963,
+      "trace_over_geomean": 1.0143704414367676,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9606061284731302,
+      "trace_over_geomean": 1.0057213306427002,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.983470851212284,
+      "trace_over_geomean": 0.9967943429946899,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9735360446593838,
+      "trace_over_geomean": 1.010053277015686,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9899308734065111,
+      "trace_over_geomean": 1.0104392766952515,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-1_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9940377222153961,
+      "trace_over_geomean": 1.0030933618545532,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-2_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9929767366795323,
+      "trace_over_geomean": 1.0018151998519897,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-3_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.990871618816066,
+      "trace_over_geomean": 1.0016345977783203,
+      "nvol_after": 33
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-4_dwi.nii.gz",
+      "nvol_before": 34,
+      "trace_idx": [
+        33
+      ],
+      "action": "dropped_last",
+      "trace_corr_geomean": 0.9924835113661005,
+      "trace_over_geomean": 1.001920461654663,
+      "nvol_after": 33
+    }
+  ]
+}

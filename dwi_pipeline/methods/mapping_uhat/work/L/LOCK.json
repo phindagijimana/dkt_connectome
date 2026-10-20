@@ -1,0 +1,39 @@
+{
+  "experiment": "L",
+  "title": "Leftover-sized calibration of frozen proxyUhat",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "not_A4": true,
+  "not_hatU": true,
+  "not_proxy_hatU": true,
+  "question": "Is frozen proxyUhat a probability for leftover-sized label translation (A5 m_k), not for planted 1 mm?",
+  "P": {
+    "file": "work/a7/*/dkt_connectome_proxyUhat.csv",
+    "frozen": true,
+    "no_retune": ["e>0.25", "count>=10", "K=50", "SyN"]
+  },
+  "y": {
+    "event": "one NEW leftover-sized label translation; endpoints frozen; radial_4",
+    "t": "one draw from that session A5 {m_k}, K=50",
+    "direction": "uniform on the sphere: normalize rng.normal(size=3)",
+    "rng_order": "first integers choice of t index, then 3 normals",
+    "seed": "2601 + subject_index (A4 Exam B seed; Exam B was never run so no leftover y has been seen)",
+    "subject_index": {
+      "tbi-011011-neurolit-lesion": 0,
+      "tbi-011021-neurolit-lesion": 1,
+      "tbi-011204-neurolit-lesion": 2
+    },
+    "labels": "scipy.ndimage.shift order=0; shift_vox = inv(affine[:3,:3]) @ (t * ehat)",
+    "mask": "triu max(C0, C_plant) >= 10"
+  },
+  "ECE": {"M": 10, "empty_bins_drop": true},
+  "coverage_bin": {
+    "rule": "highest equal-width bin of proxyUhat with n>=20 on the leftover-y pool",
+    "band": 0.15,
+    "not_B9_required": true
+  },
+  "baseline": "U-as-P = locked U (already [0,1]); min-max on fit demos is identity",
+  "win": "ECE(proxyUhat) < ECE(U-as-P) on leftover y AND the highest occupied bin (n>=20) has |mean_y - mean_P| <= 0.15",
+  "fail": "any miss. Keep U. Ensemble leftover mm remain measurements. Not proxy-hat{U}. Not hat{U}.",
+  "forbidden": ["reuse A6 C_k as y", "retune P after ECE", "require B9", "name from A8", "6MO leftover"]
+}

@@ -1,0 +1,67 @@
+{
+  "experiment": "C2",
+  "title": "Per-endpoint soft radial_4 assignment under measured leftover sigma (Yeh-style), not the Exp2 matrix mean",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "why_new": "Exp2 averaged six planted count matrices (+0.4 to +1.4 points stability, keep radial_4). That is a matrix smoother, not P(node | endpoint). C2 builds the per-endpoint object.",
+  "not_hatU": true,
+  "not_exp2": true,
+  "freeze": {
+    "endpoints": "work/a6/<sid>/ends_identity.npy (10M iFOD2, frozen)",
+    "labels": "work/a6/<sid>/L0_dkt.nii.gz",
+    "assigner": "radial_4 (assign_frozen.assign_endpoints kind=radial radius_mm=4.0)",
+    "no_retrack": true
+  },
+  "model": {
+    "endpoint_jitter": "delta ~ N(0, sigma_s^2 I3), independent per endpoint and per sample",
+    "sigma_s": "V1 median_of_voxel_medians_mm for that session / 1.5382 (median of a 3D Maxwell |delta| = 1.5382 sigma)",
+    "sigma_source": "work/V/<sid>/session.json (measured leftover, not planted)",
+    "S": 32,
+    "seed": "20261019 + session index",
+    "assumptions": [
+      "isotropic, spatially constant sigma per session (V1 voxel maps are flat labeled-voxel vectors without a stored grid; spatial sigma is v2)",
+      "the two ends of a streamline jitter independently (real phi is smooth; coherent shift is the U plant)"
+    ]
+  },
+  "outputs_per_session": {
+    "C0": "hard radial_4 count (must match identity_count; Spearman >= 0.999)",
+    "Esoft": "expected count E[C] under jitter (soft connectome)",
+    "F": "edge leakage = 1 - sum_{streamlines hard on ij} P(stay on ij) / C0_ij; 0 if C0_ij = 0",
+    "end_stay": "histogram of per-endpoint P(stay on hard node)"
+  },
+  "dev_exam_planted_y": {
+    "status": "runnable now",
+    "what_it_is": "Does a plant-free, per-endpoint score built only from measured leftover sigma rank the same 1 mm movers U ranks?",
+    "y": "same locked 1 mm event as U and C (relchange > 0.25, count >= 10, max over +-1 mm six axes)",
+    "mask": "same as C: triu, max(C0 and all 18 planted maps) >= 10",
+    "metrics": ["Spearman(F, e)", "AUROC(F vs moved)", "AUROC(U) on the same mask (descriptive)", "invented count>=10 edges in Esoft vs C0"],
+    "win": "Spearman > 0.5 AND AUROC > 0.7 on >= 2 of 3 development sessions AND >= 2 of 3 confirmation sessions (U thresholds, not retuned)",
+    "fail": "keep U as the ranker; C2 soft assigner stays a description",
+    "not_a_claim": "planted y; this is not leftover calibration"
+  },
+  "leftover_exam": {
+    "status": "blocked until Kirby KKI849 and Boekel pp01 both sessions have dkt_connectome_count.csv with empty_nodes = 0",
+    "amendment_2026-10-20": {
+      "written_before_any_retest_number": true,
+      "retest_sigma_mm": 0.4981,
+      "retest_sigma_rule": "Kirby/Boekel have no A5 SyN ensemble (driver not on disk). Primary sigma = median of the six V1 session medians (0.7663 mm) / 1.5382 = 0.4981 mm, same for every retest session.",
+      "secondary_if_A5_rerun": "per-session V1 sigma on run-1; reported beside the primary, never replacing it",
+      "runner": "retest_pack.py (pack on ses-1 / run-1 only; y from the two hard count CSVs)"
+    },
+    "y": "moved between run-1 and run-2 hard connectomes (relchange > 0.25, max count >= 10)",
+    "inputs": "F, Esoft, U, Ucal computed on run-1 only",
+    "primary": "AUROC of F vs U vs Ucal on leftover y (pre-specified ranking comparison)",
+    "secondary": [
+      "ECE of a monotone map of F fit on development planted y only, tested on leftover y",
+      "moved-fraction relchange(Esoft_run1, C_run2) vs relchange(C0_run1, C_run2) with invent_frac <= 0.001"
+    ],
+    "control": "tracking-only noise: re-run tckgen with a new seed on run-1 to estimate the floor of run-1 vs run-2 moves not due to registration",
+    "win_soft_connectome": "Esoft moved-fraction lower than hard C0 on both subjects with invent_frac <= 0.001",
+    "fail": "report; keep radial_4 (Yeh 2019) and say so"
+  },
+  "forbidden": [
+    "tune sigma, S, or cuts after seeing any AUROC or ECE",
+    "call planted-y results leftover calibration",
+    "2WK vs 6MO as leftover y"
+  ]
+}

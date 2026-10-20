@@ -1,0 +1,49 @@
+{
+  "experiment": "V",
+  "title": "Voxel leftover displacement uncertainty on phi, not U-hat",
+  "locked": true,
+  "locked_date": "2026-10-19",
+  "locked_before_any_new_map": true,
+  "not_A4": true,
+  "not_hatU": true,
+  "not_proxy_hatU": true,
+  "not_gold": true,
+  "question": "After usual T1-dwiref alignment, what is the voxel-wise leftover displacement magnitude and its Hub/Kybic ensemble spread on labeled voxels?",
+  "product": "maps of voxel-wise median and SD of ||u_k(x)|| in millimetres. Uncertainty on the warp phi. Not a 78x78 probability.",
+  "P": {
+    "none": true,
+    "reason": "This lock has no edge probability and no ECE."
+  },
+  "y": {
+    "none": true,
+    "reason": "No moved event. Do not push phi through assignment under this lock."
+  },
+  "source": {
+    "files": "work/a5/<sid>/k*.json + k*_norms.npy",
+    "members": "transform == syn only",
+    "not_rigid": true,
+    "sessions": [
+      "ideas-sub-1-ses-1",
+      "ideas-sub-6-ses-1",
+      "btc-sub-PAT20-ses-preop",
+      "tbi-011011-neurolit-lesion",
+      "tbi-011021-neurolit-lesion",
+      "tbi-011204-neurolit-lesion"
+    ],
+    "citation": "Hub & Kessler 2009; Kybic 2010. Not Simpson 2012. Not Dalca 2019."
+  },
+  "sanity": {
+    "rule": "session median of voxel-wise medians within 0.05 mm of leftover.json splits.transform.syn.M_s",
+    "why": "same ensemble, spatial summary; consistency not a new leftover claim"
+  },
+  "win": "All six sessions write phi_median.npy and phi_sd.npy; sanity holds. May claim voxel leftover-mm maps.",
+  "fail": "missing SyN norms or sanity miss. Keep A5 session M_s. Still not hat{U}.",
+  "forbidden": [
+    "name hat{U} or proxy-hat{U}",
+    "ECE / assignment of these maps",
+    "revive A8",
+    "call this Simpson or VoxelMorph",
+    "use as gold leftover y"
+  ],
+  "later_not_this_lock": "V2 VoxelMorph / Simpson p(phi|images) needs its own lock and a model. G (gold) needs independent leftover files."
+}

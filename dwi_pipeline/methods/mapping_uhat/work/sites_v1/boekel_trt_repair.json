@@ -1,0 +1,1074 @@
+{
+  "n": 212,
+  "BandwidthPerPixelPhaseEncode": 32.1,
+  "ReconMatrixPE": 112,
+  "EffectiveEchoSpacing": 0.00027814864263462394,
+  "TotalReadoutTime": 0.030874499332443257,
+  "citation": "Boekel, Forstmann, Keuken 2017 Psychophysiology 54:24-33",
+  "formula": "TRT = (ReconMatrixPE-1) / (BW_pe * ReconMatrixPE)",
+  "not_invented_005": true,
+  "not_gold": true,
+  "not_leftover_y": true,
+  "rows": [
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-1/dwi/sub-pp01_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp01/ses-2/dwi/sub-pp01_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-1/dwi/sub-pp02_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp02/ses-2/dwi/sub-pp02_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-1/dwi/sub-pp03_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp03/ses-2/dwi/sub-pp03_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-1/dwi/sub-pp04_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp04/ses-2/dwi/sub-pp04_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-1/dwi/sub-pp05_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp05/ses-2/dwi/sub-pp05_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-1/dwi/sub-pp06_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp06/ses-2/dwi/sub-pp06_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-1/dwi/sub-pp07_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp07/ses-2/dwi/sub-pp07_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-1/dwi/sub-pp08_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp08/ses-2/dwi/sub-pp08_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-1/dwi/sub-pp09_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp09/ses-2/dwi/sub-pp09_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-1/dwi/sub-pp10_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp10/ses-2/dwi/sub-pp10_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-1/dwi/sub-pp11_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp11/ses-2/dwi/sub-pp11_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-1/dwi/sub-pp12_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp12/ses-2/dwi/sub-pp12_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-1/dwi/sub-pp13_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp13/ses-2/dwi/sub-pp13_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-1/dwi/sub-pp14_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp14/ses-2/dwi/sub-pp14_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-1/dwi/sub-pp15_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp15/ses-2/dwi/sub-pp15_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-1/dwi/sub-pp16_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp16/ses-2/dwi/sub-pp16_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-1/dwi/sub-pp17_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp17/ses-2/dwi/sub-pp17_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-1/dwi/sub-pp18_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp18/ses-2/dwi/sub-pp18_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-1/dwi/sub-pp19_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp19/ses-2/dwi/sub-pp19_ses-2_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp20/ses-1/dwi/sub-pp20_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp21/ses-1/dwi/sub-pp21_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp22/ses-1/dwi/sub-pp22_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp23/ses-1/dwi/sub-pp23_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp24/ses-1/dwi/sub-pp24_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp25/ses-1/dwi/sub-pp25_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp26/ses-1/dwi/sub-pp26_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp27/ses-1/dwi/sub-pp27_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp28/ses-1/dwi/sub-pp28_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp29/ses-1/dwi/sub-pp29_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp30/ses-1/dwi/sub-pp30_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp31/ses-1/dwi/sub-pp31_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp32/ses-1/dwi/sub-pp32_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp33/ses-1/dwi/sub-pp33_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-1_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-2_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-3_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    },
+    {
+      "file": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/sample_data/boekel_dwi_retest/bids/sub-pp34/ses-1/dwi/sub-pp34_ses-1_run-4_dwi.json",
+      "before": null,
+      "after": 0.030874499332443257
+    }
+  ]
+}

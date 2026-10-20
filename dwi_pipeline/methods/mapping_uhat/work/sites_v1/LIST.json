@@ -1,0 +1,9 @@
+{
+  "name": "sites_v1",
+  "status": "source_on_home_not_leftover_y",
+  "n": 0,
+  "source": "same_day_run2",
+  "sessions": [],
+  "leftover_y_ready": false,
+  "note": "Kirby KKI849 dwiref both sessions exist (189460_1). Boekel 189572 still QSIPrep. 2WK has dwiref but one DWI each. FastSurfer/iFOD2 started; do not write leftover paths until both-session count CSVs have empty_nodes=0. No GOLD ECE until n>=2 and user writes GOLD locked."
+}
