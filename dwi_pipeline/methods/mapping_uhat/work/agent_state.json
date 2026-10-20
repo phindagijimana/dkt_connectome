@@ -72,8 +72,14 @@
   ],
   "notes": "A8 fail. C win: calibrated U is a 1 mm probability only. L no-op. L2 fail. V1 win: voxel leftover-mm maps, not hat{U}. G rules locked, run blocked on LIST.json. Not proxy-hat{U}. Not hat{U}.",
   "jobs": {
-    "package_parity": 189604
+    "package_parity": 189604,
+    "boekel_ifod2": 189588,
+    "boekel_ifod2_fallback": 189606,
+    "kirby_pack_fallback": 189607,
+    "boekel_pack_fallback": 189608,
+    "reseed_control_KKI849": 189610
   },
   "combined_paper_decision": "2026-10-20: one paper (U method, C2 extension/threshold diagnostic, retest validation). docs/papers/mapping_u/COMBINED_PAPER.md",
-  "package_repo": "private github.com/phindagijimana/connectome-edge-uq (no TRACK-TBI data)"
+  "package_repo": "private github.com/phindagijimana/connectome-edge-uq (no TRACK-TBI data)",
+  "scaling_decision": "2026-10-20: wait until both pairs pass end to end"
 }

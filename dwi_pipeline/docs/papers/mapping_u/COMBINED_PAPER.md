@@ -41,7 +41,9 @@ The three separate documents stay as working records.
 ## What would make it strong (in priority order)
 
 1. **Scale the retest** to all Kirby21 (21) and Boekel (34) subjects, about 50 pairs. Queue only after the 2 current pairs pass end to end.
-2. **Tracking-only control**: reseed run-1 tractography so tracking randomness is separated from endpoint placement.
+2. **Tracking-only control**: reseed run-1 tractography so tracking randomness is separated from endpoint placement. *Locked (`RETEST_LOCK.json` `tracking_only_control`) and queued for KKI849, Slurm 189610: same tckgen, new seed, ses-1 nodes fixed.*
+
+Scaling (item 1) waits until both current pairs pass end to end (decision 20 Oct 2026). All 21 Kirby21 and 34 Boekel subjects are already local in BIDS.
 3. **Beat the low-count baseline on real change**, not only on planted shifts. This is the main scientific risk.
 4. **One downstream payoff**, e.g. masking or down-weighting fragile edges improves test–retest reliability of graph measures.
 5. **Generality**: a second atlas and SIFT2 weighting.

@@ -42,7 +42,7 @@ Jobs: Kirby **189592** (after 189574_1), Boekel **189593** (after 189588_1).
 
 ## Still to build
 
-- **Tracking-only control.** Reseed run-1 tractography; the run-1 vs reseed move rate is the floor of \(y\) not due to registration. Needed to interpret \(y\). Not queued.
+- **Tracking-only control.** Reseed run-1 tractography; the run-1 vs reseed move rate is the floor of \(y\) not due to registration. Needed to interpret \(y\). Locked in `RETEST_LOCK.json` (`tracking_only_control`): identical tckgen with `MRTRIX_RNG_SEED=20261020`, ses-1 nodes fixed, radial_4 counts; descriptive only. Queued for KKI849 (Slurm 189610, after the Kirby iFOD2 job). Output `freeze/sub-KKI849/reseed/ses-1_seed20261020/reseed_control.json`.
 - **Per-session \(\sigma\).** A5/V1 on Kirby/Boekel run-1 needs the A5 driver rewritten (source lost). Secondary only.
 - **More pairs.** Two pairs is the minimum for the gate. More Kirby21 subjects are the cheapest way to add power.
 

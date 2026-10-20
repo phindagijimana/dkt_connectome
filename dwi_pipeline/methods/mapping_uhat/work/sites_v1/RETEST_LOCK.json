@@ -6,7 +6,10 @@
   "not_hatU": true,
   "not_gold": true,
   "source": "same_day_run2",
-  "first_pairs": ["sub-KKI849 ses-1/ses-2", "sub-pp01 ses-1/ses-2"],
+  "first_pairs": [
+    "sub-KKI849 ses-1/ses-2",
+    "sub-pp01 ses-1/ses-2"
+  ],
   "kirby_qsiprep": {
     "job": "189460_1",
     "state": "COMPLETED",
@@ -15,7 +18,12 @@
     "win": true,
     "not_leftover_y": true
   },
-  "forbidden_y": ["2-week follow-up", "Boekel run01 vs run02 inside one session", "planted 1 mm", "A5/A6 reuse"],
+  "forbidden_y": [
+    "2-week follow-up",
+    "Boekel run01 vs run02 inside one session",
+    "planted 1 mm",
+    "A5/A6 reuse"
+  ],
   "product": "QSIPrep 2 mm T1w + dwiref per session. Opens leftover mm / C_a,C_b later. Does not grant hat{U}.",
   "win": ">=1 subject writes space-T1w_dwiref.nii.gz for BOTH ses-1 and ses-2",
   "fail": "QSIPrep crash. Keep raw BIDS. Still not gold.",
@@ -43,5 +51,23 @@
     "script": "work/sites_v1/boekel_trt_repair.py",
     "log": "work/sites_v1/boekel_trt_repair.json",
     "why": "189460_2 failed: gather_inputs TotalReadoutTime was None. No PAR in NITRC V2 tars."
+  },
+  "tracking_only_control": {
+    "locked_date": "2026-10-20",
+    "written_before_numbers": true,
+    "pair": "kirby21/KKI849 ses-1 (extend to other pairs only by amendment)",
+    "reseed": "identical QSIRecon tckgen command (iFOD2, ACT, -backtrack -crop_at_gmwmi, -seed_dynamic, -select 10000000, same 5TT and WM FOD from the ses-1 work cache); only MRTRIX_RNG_SEED=20261020 differs",
+    "nodes_fixed": "ses-1 dkt_nodes.mif for both tractograms (no re-registration)",
+    "counts": "both tractograms through the same radial_4 assigner (edgeuq / assign_frozen rule), 78 nodes",
+    "y_track": "moved(C_run1, C_reseed): relchange > 0.25 and max >= 10",
+    "report": [
+      "tracking-only move rate",
+      "AUROC of U, Ucal, F vs y_track",
+      "fraction of retest movers (run1 vs run2) that also move under reseed",
+      "retest move rate minus tracking-only move rate"
+    ],
+    "decision_rule": "descriptive only; no win/fail. Separates tracking randomness from endpoint placement in the retest exam.",
+    "not_hatU": true,
+    "not_gold": true
   }
 }
