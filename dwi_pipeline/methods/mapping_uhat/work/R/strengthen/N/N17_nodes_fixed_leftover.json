@@ -1,0 +1,12 @@
+{
+  "direction": "N17",
+  "status": "pilot_subsample",
+  "kirby": {
+    "n_streamlines_used": 500000,
+    "note": "subsample 500k of ses-2 tck assigned to ses-1 nodes; counts scaled to ses-2 shipped mass",
+    "leftover_move_rate_shipped_nodes_per_ses": 0.5384275618374559,
+    "nodes_fixed_move_rate_scaled_subsample": 0.5971731448763251,
+    "pearson_c2fixed_vs_shipped": 0.9988904907721022
+  },
+  "claim": "Nodes-fixed subsample assigns ses-2 tracks to ses-1 nodes; scaled counts correlate with shipped ses-2, but full 10M job needed for a definitive move-rate floor. Protocol ready."
+}

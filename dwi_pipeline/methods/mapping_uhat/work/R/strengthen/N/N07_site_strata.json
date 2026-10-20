@@ -1,0 +1,26 @@
+{
+  "direction": "N7",
+  "rows": [
+    {
+      "pair": "kirby21/KKI849",
+      "site": "kirby21",
+      "move_rate": 0.5384275618374559,
+      "uncertain_frac": 0.027385159010600707,
+      "crossing_enrichment": 9.467144563918756,
+      "auroc_L": 0.6987208120233465,
+      "auroc_U": 0.5781760875452857,
+      "auroc_F": 0.5980205753402075
+    },
+    {
+      "pair": "boekel_dwi_retest/pp01",
+      "site": "boekel_dwi_retest",
+      "move_rate": 0.3588280060882801,
+      "uncertain_frac": 0.01598173515981735,
+      "crossing_enrichment": 13.954779033915726,
+      "auroc_L": 0.7042150344094075,
+      "auroc_U": 0.6048201490916987,
+      "auroc_F": 0.5923311232854298
+    }
+  ],
+  "claim": "Kirby vs Boekel: move rates differ (0.54 vs 0.36) but L>U/F and uncertain-edge enrichment replicate. Descriptive Claim-C / D1 patterns are not single-site flukes on these two public pilots."
+}

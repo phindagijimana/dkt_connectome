@@ -11,5 +11,6 @@ Worked **one at a time** on 2026-10-20. Salvages impact via claim design + produ
 | 5 | Scale descriptive only | **held** for phrase `scale descriptive` | `05_scale_descriptive_only.*` |
 | 6 | Anti-retune lock | **locked** | `06_anti_retune.*` |
 | 7 | New directions N1–N21 | **proposal catalog** | `07_new_directions.md` |
+| N | N1–N21 executed (pilots / protocol) | **done 2026-10-20** | [`N/README.md`](N/README.md) |
 
 Related prior work: `../directions/` (Dirs 1–8), `../RETEST_EXAM_REPORT.md`, `../EXAM_FAIL_POSTMORTEM.md`.

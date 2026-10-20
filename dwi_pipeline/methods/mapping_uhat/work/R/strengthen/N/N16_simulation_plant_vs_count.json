@@ -1,0 +1,30 @@
+{
+  "direction": "N16",
+  "pairs": {
+    "kirby21/KKI849": {
+      "synth_count_churn": {
+        "y_rate": 0.01675197766402978,
+        "auroc_L": 0.9502418888363043,
+        "auroc_U": 0.8098411947205132
+      },
+      "synth_plant_1mm_ty": {
+        "y_rate": 0.03536528617961843,
+        "auroc_L": 0.779578287252139,
+        "auroc_U": 0.9208368243329017
+      }
+    },
+    "boekel_dwi_retest/pp01": {
+      "synth_count_churn": {
+        "y_rate": 0.01088646967340591,
+        "auroc_L": 0.945635388589398,
+        "auroc_U": 0.8167677448337824
+      },
+      "synth_plant_1mm_ty": {
+        "y_rate": 0.03188180404354588,
+        "auroc_L": 0.7670315407973357,
+        "auroc_U": 0.9397957684396122
+      }
+    }
+  },
+  "claim": "Simulation: under Poisson count churn, L \u226b U; under a real 1 mm plant map, U \u226b L. Causal support for the claim split (two phenomena, two scores)."
+}

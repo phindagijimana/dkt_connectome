@@ -1,0 +1,14 @@
+{
+  "direction": "N4",
+  "status": "protocol_only",
+  "blocked_reason": "no midpoint cache; full tck midpoint pass is a separate job",
+  "protocol": {
+    "F_end": "current edgeuq jitter",
+    "F_mid": "jitter midpoint XYZ, reassign via nearest node within radial_4 (or track-density proxy)",
+    "compare": [
+      "planted_1mm_auroc",
+      "leftover_auroc"
+    ]
+  },
+  "claim": "Mid-streamline jitter ablation not computed here: packs store endpoints only (`ends.npy`). Protocol: sample midpoints from tck, jitter mid vs ends, compare F_mid vs F on plant + leftover."
+}

@@ -1,0 +1,20 @@
+{
+  "direction": "N13",
+  "pairs": {
+    "kirby21/KKI849": {
+      "n_c0_lt10": 854,
+      "n_appear_run2": 115,
+      "auroc_one_minus_P10": 0.3356004000706007,
+      "auroc_Esoft": 0.877496028710949,
+      "auroc_uncert_peak": 0.6652468082602813
+    },
+    "boekel_dwi_retest/pp01": {
+      "n_c0_lt10": 431,
+      "n_appear_run2": 56,
+      "auroc_one_minus_P10": 0.33226190476190476,
+      "auroc_Esoft": 0.8256666666666667,
+      "auroc_uncert_peak": 0.6656904761904763
+    }
+  },
+  "claim": "Continuous invent risk: among C0<10 edges, Esoft / (1-P10) have signal for run-2 appearance. Useful as a risk score alongside the binary invent lock (which stays FAIL)."
+}

@@ -1,0 +1,53 @@
+{
+  "direction": "N15",
+  "status": "length_tercile_proxy",
+  "pairs": {
+    "kirby21/KKI849": {
+      "short": {
+        "n": 717,
+        "move_rate": 0.4198047419804742,
+        "mean_U": 0.09089778730822874,
+        "mean_L": -7.819427890738008,
+        "mean_F": 0.10458176222472676
+      },
+      "mid": {
+        "n": 716,
+        "move_rate": 0.5363128491620112,
+        "mean_U": 0.10397221215083798,
+        "mean_L": -6.050037094506189,
+        "mean_F": 0.0995058914016953
+      },
+      "long": {
+        "n": 716,
+        "move_rate": 0.5921787709497207,
+        "mean_U": 0.10555930138268155,
+        "mean_L": -4.398670710503934,
+        "mean_F": 0.087078314353894
+      }
+    },
+    "boekel_dwi_retest/pp01": {
+      "short": {
+        "n": 858,
+        "move_rate": 0.24358974358974358,
+        "mean_U": 0.07239289754079255,
+        "mean_L": -7.416023463895399,
+        "mean_F": 0.08126278781703303
+      },
+      "mid": {
+        "n": 857,
+        "move_rate": 0.37456242707117854,
+        "mean_U": 0.08777633290548424,
+        "mean_L": -5.743642229425003,
+        "mean_F": 0.07938636214007236
+      },
+      "long": {
+        "n": 857,
+        "move_rate": 0.4177362893815636,
+        "mean_U": 0.09020379303383896,
+        "mean_L": -4.610157468641478,
+        "mean_F": 0.07287105009687332
+      }
+    }
+  },
+  "claim": "Without a bundle atlas, length-tercile pseudo-bundles show move rate and mean L/U/F by length class. True bundle ICC needs AF/CST/CC labels (future job)."
+}

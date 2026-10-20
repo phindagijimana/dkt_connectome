@@ -1,0 +1,22 @@
+{
+  "direction": "N19",
+  "title": "Pre-registered analysis plan (post GOLD FAIL)",
+  "frozen_cuts": {
+    "radial_mm": 4,
+    "relchange": 0.25,
+    "count_floor": 10,
+    "invent": 0.001
+  },
+  "primary_confirmatory_on_scale": [
+    "distribution of leftover move rate",
+    "uncertain-edge crossing enrichment",
+    "L AUROC vs leftover (Claim C replication)",
+    "U/F leftover AUROC remains weak (Claim B replication)"
+  ],
+  "explicit_non_goals": [
+    "optimize invent or ECE to win",
+    "name hatU",
+    "retune cuts after seeing scaled data"
+  ],
+  "claim": "Pre-reg text ready for OSF/Zenodo before scale descriptive; strengthens credibility of negative boundary."
+}

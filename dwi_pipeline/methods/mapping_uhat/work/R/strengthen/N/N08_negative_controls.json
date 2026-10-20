@@ -1,0 +1,28 @@
+{
+  "direction": "N8",
+  "auroc_by_pair": {
+    "kirby21/KKI849": {
+      "random": 0.48660247830404557,
+      "neg_degree": 0.5881811509159206,
+      "neg_log1p_C0_L": 0.6987208120233465,
+      "U": 0.5781760875452857,
+      "F": 0.5980205753402075,
+      "one_minus_P10": 0.5527528643369929,
+      "neg_FA": 0.5159810182477598,
+      "length": 0.587514277527662,
+      "neg_length": 0.4124857224723379
+    },
+    "boekel_dwi_retest/pp01": {
+      "random": 0.5058966427620669,
+      "neg_degree": 0.6113036555471993,
+      "neg_log1p_C0_L": 0.7042150344094075,
+      "U": 0.6048201490916987,
+      "F": 0.5923311232854298,
+      "one_minus_P10": 0.5375614790853108,
+      "neg_FA": 0.48211466026413585,
+      "length": 0.6126586341337547,
+      "neg_length": 0.38734136586624546
+    }
+  },
+  "claim": "Negative-control battery: random ~0.5; L beats U/F; degree/FA/length are weak-to-moderate. L is not unique among count-aware scores but outperforms plant scores and naive microstructural proxies."
+}

@@ -1,0 +1,130 @@
+{
+  "direction": "N14",
+  "curves": {
+    "kirby21/KKI849": [
+      {
+        "hide_if_uncert_ge": 0.1,
+        "frac_edges_kept": 0.9767333643555142,
+        "moved_frac_among_kept": 0.5126250595521677,
+        "n_kept": 2099
+      },
+      {
+        "hide_if_uncert_ge": 0.2,
+        "frac_edges_kept": 0.9846440204746394,
+        "moved_frac_among_kept": 0.5141776937618148,
+        "n_kept": 2116
+      },
+      {
+        "hide_if_uncert_ge": 0.30000000000000004,
+        "frac_edges_kept": 0.9865053513261982,
+        "moved_frac_among_kept": 0.5146226415094339,
+        "n_kept": 2120
+      },
+      {
+        "hide_if_uncert_ge": 0.4,
+        "frac_edges_kept": 0.9897626803164262,
+        "moved_frac_among_kept": 0.5143394452280207,
+        "n_kept": 2127
+      },
+      {
+        "hide_if_uncert_ge": 0.5,
+        "frac_edges_kept": 0.9920893438808748,
+        "moved_frac_among_kept": 0.5145403377110694,
+        "n_kept": 2132
+      },
+      {
+        "hide_if_uncert_ge": 0.6000000000000001,
+        "frac_edges_kept": 0.993485342019544,
+        "moved_frac_among_kept": 0.5147540983606558,
+        "n_kept": 2135
+      },
+      {
+        "hide_if_uncert_ge": 0.7000000000000001,
+        "frac_edges_kept": 0.9958120055839925,
+        "moved_frac_among_kept": 0.5144859813084112,
+        "n_kept": 2140
+      },
+      {
+        "hide_if_uncert_ge": 0.8,
+        "frac_edges_kept": 0.9972080037226617,
+        "moved_frac_among_kept": 0.5151656556229585,
+        "n_kept": 2143
+      },
+      {
+        "hide_if_uncert_ge": 0.9,
+        "frac_edges_kept": 0.9995346672871103,
+        "moved_frac_among_kept": 0.515828677839851,
+        "n_kept": 2148
+      },
+      {
+        "hide_if_uncert_ge": 1.0,
+        "frac_edges_kept": 0.9995346672871103,
+        "moved_frac_among_kept": 0.515828677839851,
+        "n_kept": 2148
+      }
+    ],
+    "boekel_dwi_retest/pp01": [
+      {
+        "hide_if_uncert_ge": 0.1,
+        "frac_edges_kept": 0.9832814930015552,
+        "moved_frac_among_kept": 0.3416370106761566,
+        "n_kept": 2529
+      },
+      {
+        "hide_if_uncert_ge": 0.2,
+        "frac_edges_kept": 0.9891135303265941,
+        "moved_frac_among_kept": 0.342374213836478,
+        "n_kept": 2544
+      },
+      {
+        "hide_if_uncert_ge": 0.30000000000000004,
+        "frac_edges_kept": 0.9906687402799378,
+        "moved_frac_among_kept": 0.3426216640502355,
+        "n_kept": 2548
+      },
+      {
+        "hide_if_uncert_ge": 0.4,
+        "frac_edges_kept": 0.9926127527216174,
+        "moved_frac_among_kept": 0.34234234234234234,
+        "n_kept": 2553
+      },
+      {
+        "hide_if_uncert_ge": 0.5,
+        "frac_edges_kept": 0.994556765163297,
+        "moved_frac_among_kept": 0.34284597341673184,
+        "n_kept": 2558
+      },
+      {
+        "hide_if_uncert_ge": 0.6000000000000001,
+        "frac_edges_kept": 0.9961119751166407,
+        "moved_frac_among_kept": 0.3434816549570648,
+        "n_kept": 2562
+      },
+      {
+        "hide_if_uncert_ge": 0.7000000000000001,
+        "frac_edges_kept": 0.9980559875583204,
+        "moved_frac_among_kept": 0.34476042072458124,
+        "n_kept": 2567
+      },
+      {
+        "hide_if_uncert_ge": 0.8,
+        "frac_edges_kept": 0.9984447900466563,
+        "moved_frac_among_kept": 0.34501557632398755,
+        "n_kept": 2568
+      },
+      {
+        "hide_if_uncert_ge": 0.9,
+        "frac_edges_kept": 0.9992223950233281,
+        "moved_frac_among_kept": 0.345136186770428,
+        "n_kept": 2570
+      },
+      {
+        "hide_if_uncert_ge": 1.0,
+        "frac_edges_kept": 0.999611197511664,
+        "moved_frac_among_kept": 0.3453908984830805,
+        "n_kept": 2571
+      }
+    ]
+  },
+  "claim": "Decision utility: hiding high threshold-uncertainty edges trades coverage for lower moved-frac among kept edges. Gives users a reporting knob without retuning invent lock."
+}

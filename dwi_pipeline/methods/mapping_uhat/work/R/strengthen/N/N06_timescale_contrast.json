@@ -1,0 +1,20 @@
+{
+  "direction": "N6",
+  "same_day_pilots": {
+    "kirby21/KKI849": {
+      "move_rate": 0.5384275618374559,
+      "interval": "same-day / short retest (Kirby, Boekel)"
+    },
+    "boekel_dwi_retest/pp01": {
+      "move_rate": 0.3588280060882801,
+      "interval": "same-day / short retest (Kirby, Boekel)"
+    }
+  },
+  "hcp_status": {
+    "bids_present": true,
+    "packs_ready_for_leftover_exam": false,
+    "note": "HCP adapt/FS/iFOD in progress earlier; no GOLD leftover pack pair yet for interval contrast"
+  },
+  "claim": "Same-day pilots show high leftover move rates (36\u201354%). Longer-interval HCP contrast is blocked until HCP packs exist; protocol: same metrics stratified by cohort interval.",
+  "status": "partial"
+}

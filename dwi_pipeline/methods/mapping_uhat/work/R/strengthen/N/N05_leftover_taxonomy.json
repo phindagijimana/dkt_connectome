@@ -1,0 +1,26 @@
+{
+  "direction": "N5",
+  "pairs": {
+    "kirby21/KKI849": {
+      "n_elig": 2264,
+      "n_movers": 1219,
+      "frac_movers_threshold_cross": 0.12387202625102543,
+      "frac_movers_both_present_large_dC": 0.8761279737489746,
+      "frac_movers_appear": 0.09023789991796555,
+      "frac_movers_disappear": 0.033634126333059886,
+      "note": "appear/disappear are subsets of threshold crosses",
+      "frac_movers_also_reseed_move": 0.10418375717801477,
+      "frac_movers_leftover_only": 0.8958162428219852
+    },
+    "boekel_dwi_retest/pp01": {
+      "n_elig": 2628,
+      "n_movers": 943,
+      "frac_movers_threshold_cross": 0.13679745493107104,
+      "frac_movers_both_present_large_dC": 0.8632025450689289,
+      "frac_movers_appear": 0.05832449628844114,
+      "frac_movers_disappear": 0.0784729586426299,
+      "note": "appear/disappear are subsets of threshold crosses"
+    }
+  },
+  "claim": "Leftover movers are dominated by both-present large count changes, not threshold flicker; on Kirby only a minority also move under tracking reseed. Claim B failure is about real count churn."
+}

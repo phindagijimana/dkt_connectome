@@ -1,0 +1,30 @@
+{
+  "direction": "N9",
+  "status": "pilot_loo_demo",
+  "folds": [
+    {
+      "train": "kirby21/KKI849",
+      "test": "boekel_dwi_retest/pp01",
+      "auroc_L_raw": 0.7042150344094075,
+      "auroc_PL": 0.7042150344094075,
+      "ECE_PL": 0.1803575721508917,
+      "mean_p": 0.5387012832343289,
+      "mean_y": 0.3588280060882801,
+      "symbol": "P_L",
+      "not_hatU": true
+    },
+    {
+      "train": "boekel_dwi_retest/pp01",
+      "test": "kirby21/KKI849",
+      "auroc_L_raw": 0.6987208120233465,
+      "auroc_PL": 0.6983043596013675,
+      "ECE_PL": 0.17966066412923998,
+      "mean_p": 0.36506326334453965,
+      "mean_y": 0.5384275618374559,
+      "symbol": "P_L",
+      "not_hatU": true
+    }
+  ],
+  "claim": "Pilot leave-one-out isotonic of L\u2192leftover y yields P_L (not hat{U}). ECE still poor with n=2; protocol locked for held-out calibration after scale descriptive. Do not rename as hat{U}.",
+  "not_hatU": true
+}

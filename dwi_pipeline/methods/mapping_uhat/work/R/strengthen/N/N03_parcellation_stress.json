@@ -1,0 +1,11 @@
+{
+  "direction": "N3",
+  "status": "protocol_only",
+  "blocked_reason": "no alternate parcellation nodes on disk for pilots",
+  "protocol": {
+    "inputs": "ses-1 tck + Schaefer-100 or Lausanne nodes in same space",
+    "exam": "edgeuq shift plant AUROC only",
+    "not": "leftover retune"
+  },
+  "claim": "Parcellation stress (Schaefer/Lausanne vs DKT) not run: only DKT-78 nodes shipped on pilots. Protocol locked for a future job: same tck, new nodes, plant exam only (Claim A)."
+}

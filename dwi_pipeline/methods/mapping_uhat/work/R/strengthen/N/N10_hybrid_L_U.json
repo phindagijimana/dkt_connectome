@@ -1,0 +1,34 @@
+{
+  "direction": "N10",
+  "alphas": [
+    0.0,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "pairs": {
+    "kirby21/KKI849": {
+      "alpha_0.0": 0.6987208120233465,
+      "alpha_0.25": 0.6992715026435504,
+      "alpha_0.5": 0.6952129559486754,
+      "alpha_1.0": 0.6830341757892381,
+      "alpha_2.0": 0.6617640940295403,
+      "alpha_4.0": 0.6352288918283479,
+      "L_only": 0.6987208120233465,
+      "U_only": 0.5781760875452857
+    },
+    "boekel_dwi_retest/pp01": {
+      "alpha_0.0": 0.7042150344094075,
+      "alpha_0.25": 0.7015233282251543,
+      "alpha_0.5": 0.6976635587540239,
+      "alpha_1.0": 0.6884518441365552,
+      "alpha_2.0": 0.6730052141187132,
+      "alpha_4.0": 0.6531840108750719,
+      "L_only": 0.7042150344094075,
+      "U_only": 0.6048201490916987
+    }
+  },
+  "claim": "Hybrid Lz + \u03b1 Uz does not clearly beat L alone on leftover y for these pilots; plant score adds little once count instability is in the model. Keep L as primary Claim C."
+}

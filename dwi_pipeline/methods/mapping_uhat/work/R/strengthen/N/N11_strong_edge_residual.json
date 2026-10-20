@@ -1,0 +1,58 @@
+{
+  "direction": "N11",
+  "pairs": {
+    "kirby21/KKI849": [
+      {
+        "min_count": 50,
+        "n": 1634,
+        "y_rate": 0.45716034271725825,
+        "auroc": {
+          "L": 0.6508589789447153,
+          "U": 0.590353899627069,
+          "F": 0.570973861624627,
+          "neg_FA": 0.5077853692107778,
+          "length": 0.5604167892917027
+        }
+      },
+      {
+        "min_count": 100,
+        "n": 1458,
+        "y_rate": 0.4334705075445816,
+        "auroc": {
+          "L": 0.6401571168051,
+          "U": 0.5868739847365678,
+          "F": 0.5699842155270175,
+          "neg_FA": 0.5051893370521348,
+          "length": 0.5515581420296074
+        }
+      }
+    ],
+    "boekel_dwi_retest/pp01": [
+      {
+        "min_count": 50,
+        "n": 1952,
+        "y_rate": 0.26793032786885246,
+        "auroc": {
+          "L": 0.6264586207311803,
+          "U": 0.584109279644405,
+          "F": 0.5783771560692405,
+          "neg_FA": 0.4958601329734923,
+          "length": 0.5616838848918938
+        }
+      },
+      {
+        "min_count": 100,
+        "n": 1689,
+        "y_rate": 0.246299585553582,
+        "auroc": {
+          "L": 0.625510793703547,
+          "U": 0.5846831757205874,
+          "F": 0.5800397682639434,
+          "neg_FA": 0.4954330699740166,
+          "length": 0.5592973895703668
+        }
+      }
+    ]
+  },
+  "claim": "On strong edges (min count \u226550/100), leftover y-rate falls and all AUROCs shrink toward chance; residual predictability is limited. Strong-edge leftover remains an open hard problem (not solved by U or L)."
+}

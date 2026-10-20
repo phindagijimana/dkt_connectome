@@ -1,0 +1,19 @@
+{
+  "direction": "N20",
+  "package": "edgeuq",
+  "subcommands": [
+    "shift",
+    "jitter",
+    "instability",
+    "rescan",
+    "demo"
+  ],
+  "docs": [
+    "docs/shift.md",
+    "docs/jitter.md",
+    "docs/instability.md",
+    "docs/rescan.md",
+    "docs/protocol.md"
+  ],
+  "claim": "Software-first impact: cite `edgeuq` (shift, jitter, instability/L, rescan) with frozen protocol docs. Methods reuse survives Claim B negativity. Private until preprint; then Zenodo DOI."
+}

@@ -1,0 +1,34 @@
+{
+  "direction": "N2",
+  "pairs": {
+    "kirby21/KKI849": {
+      "n_elig": 2149,
+      "n_high_U_top10pct": 216,
+      "mean_U_high": 0.30753787819444445,
+      "mean_U_rest": 0.07696331893429902,
+      "mean_length_high_U": 100.72382644690599,
+      "mean_length_rest": 102.74439478681785,
+      "auroc_length_vs_highU": 0.4837687532333161,
+      "mean_FA_high_U": 0.43129870339286974,
+      "mean_FA_rest": 0.4736552241135388,
+      "auroc_FA_vs_highU": 0.3473299994251883,
+      "mean_degree_proxy_high_U": 161802.83564814815,
+      "mean_degree_proxy_rest": 228873.3010863942
+    },
+    "boekel_dwi_retest/pp01": {
+      "n_elig": 2572,
+      "n_high_U_top10pct": 260,
+      "mean_U_high": 0.27049993361538466,
+      "mean_U_rest": 0.06241872460207613,
+      "mean_length_high_U": 129.06782004441243,
+      "mean_length_rest": 123.03761247736695,
+      "auroc_length_vs_highU": 0.5414210141070003,
+      "mean_FA_high_U": 0.4754675634591952,
+      "mean_FA_rest": 0.4906341377381385,
+      "auroc_FA_vs_highU": 0.43442157971786,
+      "mean_degree_proxy_high_U": 143707.4326923077,
+      "mean_degree_proxy_rest": 219589.5043252595
+    }
+  },
+  "claim": "High-U edges (top 10% among reported) are not simply the longest or highest-FA edges on pilots; length/FA are weak separators of high-U membership. Fragility is not reducible to coarse microstructural proxies."
+}

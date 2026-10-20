@@ -1,0 +1,51 @@
+{
+  "direction": "N1",
+  "mags_mm": [
+    0.25,
+    0.5,
+    1.0
+  ],
+  "pairs": {
+    "kirby21/KKI849": {
+      "0.25mm": {
+        "n_elig": 2153,
+        "plant_move_rate": 0.015327450069670227,
+        "auroc_U": 0.9947970268724986,
+        "n_plants_loaded": 6
+      },
+      "0.5mm": {
+        "n_elig": 2168,
+        "plant_move_rate": 0.06457564575645756,
+        "auroc_U": 1.0,
+        "n_plants_loaded": 6
+      },
+      "1.0mm": {
+        "n_elig": 2208,
+        "plant_move_rate": 0.23324275362318841,
+        "auroc_U": 0.9136799729325205,
+        "n_plants_loaded": 6
+      }
+    },
+    "boekel_dwi_retest/pp01": {
+      "0.25mm": {
+        "n_elig": 2575,
+        "plant_move_rate": 0.009320388349514564,
+        "auroc_U": 0.993376780347576,
+        "n_plants_loaded": 6
+      },
+      "0.5mm": {
+        "n_elig": 2583,
+        "plant_move_rate": 0.045683313975996905,
+        "auroc_U": 0.9998109120913122,
+        "n_plants_loaded": 6
+      },
+      "1.0mm": {
+        "n_elig": 2626,
+        "plant_move_rate": 0.1827875095201828,
+        "auroc_U": 0.8993291783162473,
+        "n_plants_loaded": 6
+      }
+    }
+  },
+  "claim": "On both pilots, U AUROC for planted moves rises with magnitude and is strong at 1 mm (locked test). Supports Claim A as a sensitivity surface, not a one-cut artifact."
+}

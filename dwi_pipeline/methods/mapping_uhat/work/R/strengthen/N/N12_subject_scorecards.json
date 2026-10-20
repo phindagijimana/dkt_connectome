@@ -1,0 +1,25 @@
+{
+  "direction": "N12",
+  "rows": [
+    {
+      "pair": "kirby21/KKI849",
+      "mean_L_reported": -6.090183613795439,
+      "mean_U_reported": 0.10013879813401583,
+      "mean_F_reported": 0.09705882495864636,
+      "uncertain_frac_reported": 0.01098901098901099,
+      "leftover_move_rate": 0.5384275618374559,
+      "invent_frac": 0.006183745583038869
+    },
+    {
+      "pair": "boekel_dwi_retest/pp01",
+      "mean_L_reported": -5.9238547718760595,
+      "mean_U_reported": 0.08345337248055987,
+      "mean_F_reported": 0.07784139744715271,
+      "uncertain_frac_reported": 0.009324009324009324,
+      "leftover_move_rate": 0.3588280060882801,
+      "invent_frac": 0.002663622526636225
+    }
+  ],
+  "csv": "/mnt/nfs/home/URMC-SH/pndagiji/Documents/TrackTBI-Sub/dwi_pipeline/methods/mapping_uhat/work/R/strengthen/N/N12_subject_scorecards.csv",
+  "claim": "Subject scorecards (mean L/U/F, uncertain frac, move rate, invent frac) defined for pilots; association with external QC flags needs a larger cohort (scale descriptive)."
+}

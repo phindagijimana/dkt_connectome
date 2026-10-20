@@ -1,0 +1,18 @@
+{
+  "direction": "N21",
+  "case": "tbi-011011-neurolit-lesion",
+  "n": 1,
+  "illustrative_only": true,
+  "n_reported_edges": 2538,
+  "median_F_reported": 0.06480301171541214,
+  "mean_F_reported": 0.081780806183815,
+  "calibrated_edges_rows": 2604,
+  "cal_columns": [
+    "U",
+    "P_cal",
+    "y"
+  ],
+  "lesion_mask_candidates": [],
+  "status": "vignette_partial",
+  "claim": "TBI vignette (n=1): C2/F and calibrated-U edge tables exist for tbi-011011. Formal lesion-adjacent enrichment needs a registered lesion mask overlap job; keep clearly marked n=1."
+}
