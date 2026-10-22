@@ -29,7 +29,7 @@ container_pins:
   qsiprep: pennlinc/qsiprep:1.0.0
   qsirecon: pennlinc/qsirecon:1.2.1
   freesurfer: freesurfer/freesurfer:7.4.1
-  fastsurfer: deepmi/fastsurfer:latest
+  fastsurfer: deepmi/fastsurfer:cu126-v2.6.0   # ≥2.5 required for inpaint.mode=integrated (--lesion_mask)
   connectome: ghcr.io/phindagijimana/dk-connectome:0.3.0
   vbt: ghcr.io/phindagijimana/dkt-vbt:0.3.0
   lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.3.0
@@ -43,7 +43,8 @@ container_pins:
 containers:
   qsiprep: /path/to/others/containers/qsiprep.sif
   qsirecon: /path/to/others/containers/qsirecon.sif
-  fastsurfer: /path/to/others/containers/fastsurfer_latest.sif
+  # Prefer a build with --lesion_mask (FastSurfer ≥2.5), e.g. fastsurfer_cu126_v2.6.0.sif
+  fastsurfer: /path/to/others/containers/fastsurfer_cu126_v2.6.0.sif
   freesurfer: /path/to/others/containers/freesurfer_7.4.1.sif
   connectome: /path/to/others/containers/dkt_connectome.sif
   vbt: /path/to/others/containers/dkt_vbt.sif
@@ -73,10 +74,13 @@ dwi_select:
 # --- Step 1.1: Anatomical lesion mitigation ---
 inpaint:
   enabled: true            # auto-on; no-op per subject unless a lesion mask is found
-  backend: neurolit        # none | neurolit | vbt
+  # integrated (DEFAULT): prepare mask only → FastSurfer --lesion_mask in Step 2 (FS ≥2.5)
+  # standalone: lit-inpainting/VBT fill → recon on filled T1 (no --lesion_mask)
+  mode: integrated         # integrated | standalone  (--lit-standalone)
+  backend: neurolit        # none | neurolit | vbt — fill backend for *standalone* only
   require_mask: false
   dilate: 2
-  device: auto             # auto | cpu | cuda
+  device: auto             # auto | cpu | cuda (standalone lit-inpainting)
   batch_size: 4            # 8 OOMs on gpu:l40s.6g MIG slices; use 12g/24g or lower this
   labels: all
   binarize: false
@@ -89,10 +93,11 @@ inpaint:
 # --- Step 2: Recon (recon-all / FastSurfer) ---
 recon:
   enabled: true
-  tool: freesurfer         # freesurfer | fastsurfer
+  tool: freesurfer         # freesurfer | fastsurfer (auto→fastsurfer when integrated+mask)
   fsaparc: false           # --fast-fs sets tool=fastsurfer + fsaparc=true
   fastsurfer_device: cpu
   session: null            # override auto-resolved session (RECON_SESSION; bare label, e.g. 2WK)
+  # containers.fastsurfer must be ≥2.5 with --lesion_mask for inpaint.mode=integrated
 
 # --- Step 3: QSIRecon ---
 qsirecon:

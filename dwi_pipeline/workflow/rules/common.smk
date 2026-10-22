@@ -191,6 +191,12 @@ if ANATOMY_MITIGATION_BACKEND not in ("none", "neurolit", "vbt"):
         "invalid inpaint.backend="
         f"{ANATOMY_MITIGATION_BACKEND} (use none, neurolit, or vbt)"
     )
+# integrated (default): FastSurfer --lesion_mask in recon. standalone: lit/VBT fill first.
+LIT_MODE = str(INPAINT_CFG.get("mode", "integrated")).lower()
+if LIT_MODE not in ("integrated", "standalone"):
+    raise WorkflowError(f"invalid inpaint.mode={LIT_MODE} (use integrated or standalone)")
+if ANATOMY_MITIGATION_BACKEND == "vbt":
+    LIT_MODE = "standalone"
 ANATOMY_MITIGATION_OUT = (
     f"{RESULTS_ROOT}/vbt"
     if ANATOMY_MITIGATION_BACKEND == "vbt"

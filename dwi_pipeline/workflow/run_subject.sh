@@ -95,6 +95,7 @@ _apply_env recon_out                  "${RECON_OUT:-}"
 _apply_env fs_subjects_dir            "${FS_SUBJECTS_DIR:-}"
 _apply_env nodestrength_out           "${NODESTRENGTH_OUT:-}"
 _apply_env inpaint.enabled            "$([[ "${RUN_INPAINT:-1}" == "1" ]] && echo true || echo false)"
+_apply_env inpaint.mode               "${LIT_MODE:-}"
 _apply_env inpaint.backend            "${ANAT_MITIGATION:-}"
 _apply_env inpaint.require_mask       "$([[ "${INPAINT_REQUIRE_MASK:-0}" == "1" ]] && echo true || echo false)"
 _apply_env inpaint.dilate             "${INPAINT_DILATE:-}"
@@ -162,14 +163,21 @@ while [[ $# -gt 0 ]]; do
     --fast-fs)             OVERRIDES[recon.tool]=fastsurfer; OVERRIDES[recon.fsaparc]=true ;;
     --no-recon)            OVERRIDES[recon.enabled]=false ;;
     --no-connectome|--no-dk) OVERRIDES[connectome.enabled]=false ;;
-    --inpaint)             OVERRIDES[inpaint.enabled]=true; OVERRIDES[inpaint.backend]=neurolit ;;
+    --inpaint)             OVERRIDES[inpaint.enabled]=true ;;
     --no-inpaint)          OVERRIDES[inpaint.enabled]=false; OVERRIDES[inpaint.backend]=none ;;
+    --lit-integrated)      OVERRIDES[inpaint.mode]=integrated; OVERRIDES[inpaint.enabled]=true ;;
+    --lit-standalone|--standalone-inpaint)
+      OVERRIDES[inpaint.mode]=standalone
+      OVERRIDES[inpaint.enabled]=true
+      OVERRIDES[inpaint.backend]="${OVERRIDES[inpaint.backend]:-neurolit}"
+      ;;
     --anat-mitigation)
       OVERRIDES[inpaint.backend]="${2:?Need none, neurolit, or vbt}"
       if [[ "${2}" == "none" ]]; then
         OVERRIDES[inpaint.enabled]=false
       else
         OVERRIDES[inpaint.enabled]=true
+        OVERRIDES[inpaint.mode]=standalone
       fi
       shift
       ;;
@@ -231,6 +239,10 @@ if [[ -n "${EXPERIMENT_ARM_EFFECTIVE}" ]]; then
   OVERRIDES[experiment.arm]="${EXPERIMENT_ARM_EFFECTIVE}"
   OVERRIDES[inpaint.backend]="${_arm_backend}"
   OVERRIDES[inpaint.enabled]="$([[ "${_arm_backend}" == "none" ]] && echo false || echo true)"
+  # Factorial neurolit/vbt arms use standalone fill (not FastSurfer --lesion_mask).
+  if [[ "${_arm_backend}" == "neurolit" || "${_arm_backend}" == "vbt" ]]; then
+    OVERRIDES[inpaint.mode]=standalone
+  fi
   OVERRIDES[act.mode]="${_arm_act}"
   if [[ -n "${RESULTS_ROOT}" && "${EXPERIMENT_ISOLATE_OUTPUTS:-1}" == "1" ]]; then
     case "${RESULTS_ROOT}" in

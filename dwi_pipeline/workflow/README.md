@@ -127,6 +127,8 @@ cd dwi_pipeline
 bash workflow/run_subject.sh all 014                    # full pipeline
 bash workflow/run_subject.sh all 014 --fastsurfer
 bash workflow/run_subject.sh all 014 --fast-fs           # FastSurfer + --fsaparc
+bash workflow/run_subject.sh all 014 --lit-integrated    # DEFAULT lesion path: FS --lesion_mask (FS ≥2.5)
+bash workflow/run_subject.sh all 014 --lit-standalone    # separate lit-inpainting then recon on filled T1
 bash workflow/run_subject.sh all 014 --no-recon
 bash workflow/run_subject.sh all 014 --no-connectome     # (Step 5 with it)
 bash workflow/run_subject.sh all 014 --no-inpaint
@@ -172,7 +174,7 @@ exactly) or a custom `--configfile`/`--config`.
 | `RESULTS_ROOT`, `BIDS_DIR` | `results_root`, `bids_dir` |
 | `RECON_OUT`, `FS_SUBJECTS_DIR`, `NODESTRENGTH_OUT` | `recon_out`, `fs_subjects_dir`, `nodestrength_out` |
 | `QSIPREP_USE_SYN_SDC`, `QSIPREP_FMAP_RETRY`, `QSIPREP_BIDS_FILTER` | `qsiprep.use_syn_sdc`, `qsiprep.fmap_retry`, `qsiprep.bids_filter` |
-| `RUN_INPAINT`, `INPAINT_REQUIRE_MASK`, `INPAINT_DILATE`, ... | `inpaint.enabled`, `inpaint.require_mask`, `inpaint.dilate`, ... |
+| `RUN_INPAINT`, `LIT_MODE`, `INPAINT_REQUIRE_MASK`, `INPAINT_DILATE`, ... | `inpaint.enabled`, `inpaint.mode` (`integrated`\|`standalone`), `inpaint.require_mask`, `inpaint.dilate`, ... |
 | `RUN_RECON`, `RECON_TOOL`, `RECON_FSAPARC`, `RECON_FASTSURFER_DEVICE`, `RECON_SESSION` | `recon.enabled`, `recon.tool`, `recon.fsaparc`, `recon.fastsurfer_device`, `recon.session` |
 | `QSIRECON_SPEC`, `QSIRECON_ATLASES` | `qsirecon.spec`, `qsirecon.atlases` |
 | `ACT_MODE`, `ACT_FIVE_TT_SOURCE`, `DEEP_ATROPOS_SEG`, `DEEP_ATROPOS_SEG_MODE`, `DEEP_ATROPOS_ANTSXNET_CACHE` | `act.mode`, `act.five_tt_source`, `act.deep_atropos.*` |

@@ -1,15 +1,19 @@
-# `lit_<version>.sif` — neuroLIT (FastSurfer-LIT) lesion inpainting container
+# `lit_<version>.sif` — neuroLIT lesion inpainting container (standalone path)
 
 Wraps [deepmi/lit](https://hub.docker.com/r/deepmi/lit) — the diffusion-model
 lesion inpainting tool from Pollak et al., *FastSurfer-LIT: Lesion Inpainting
 Tool for Whole Brain MRI Segmentation with Tumors, Cavities and Abnormalities*,
 Imaging Neuroscience 2025 ([doi.org/10.1162/imag_a_00446](https://doi.org/10.1162/imag_a_00446)).
 
-Used by `subject.sh`'s Step 1.1 (see the pipeline header and
-`pipeline_science.md`) to fill in manually-traced lesion regions on the T1w
-*before* FreeSurfer/FastSurfer sees it, so recon-all's atlas-based skull-strip,
-Talairach registration, and cortical parcellation are not thrown off by
-lesion-driven intensity/geometry outliers.
+## Two pipeline modes (see `pipeline_science.md` §1.1)
+
+| Mode | Flag / config | What runs | Where fill lives |
+|------|---------------|-----------|------------------|
+| **integrated (DEFAULT)** | `--lit-integrated` / `LIT_MODE=integrated` / `inpaint.mode: integrated` | `prepare_lesion_mask` → FastSurfer ≥2.5 `--lesion_mask` on **raw** T1 | FreeSurfer `mri/` + `stats/` (LIT reports) |
+| **standalone** | `--lit-standalone` / `LIT_MODE=standalone` / `inpaint.mode: standalone` | `prepare_lesion_mask` → **this** `lit-inpainting` (or VBT) → recon on filled T1 | `inpainted/…/inpainting_result.nii.gz`; FS tree has normal recon only |
+
+This SIF is used only for the **standalone** fill step. Integrated mode needs a
+FastSurfer container with `--lesion_mask` (e.g. `deepmi/fastsurfer:cu126-v2.6.0`).
 
 ## Build
 

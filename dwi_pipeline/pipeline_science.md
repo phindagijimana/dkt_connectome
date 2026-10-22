@@ -5,8 +5,8 @@
 This document explains the scientific concepts behind the workflow implemented in `subject.sh`:
 
 1. **QSIPrep** — diffusion MRI preprocessing  
-1.1. **neuroLIT inpainting** — DDPM lesion-filling on the T1w, **only** for subjects with a manually-traced lesion mask (skipped otherwise)  
-2. **FreeSurfer / FastSurfer** — anatomical reconstruction and parcellation (on the inpainted T1w when Step 1.1 ran)  
+1.1. **Lesion / FastSurfer-LIT** — **default integrated**: prepare mask → FastSurfer ≥2.5 `--lesion_mask` on raw T1 (fill + LIT stats in FreeSurfer dir); **optional standalone** (`--lit-standalone`): lit-inpainting/VBT fill → recon on filled T1. Skipped when no lesion mask.  
+2. **FreeSurfer / FastSurfer** — anatomical reconstruction and parcellation (integrated LIT fills inside FastSurfer; standalone uses pre-filled T1)  
 3. **QSIRecon** (`mrtrix_singleshell_ss3t_ACT-hsvs`) — constrained tractography  
 4. **Connectome** — Desikan–Killiany–Tourville (DKT, 78 nodes, default, either recon tool) or Desikan–Killiany (DK, 84 nodes, `recon-all` only) region-to-region connectivity from FreeSurfer labels  
 5. **Node strength / ENIGMA report** — node strength, interhemispheric asymmetry index, volume AI, and a clinician-facing PDF from the Step 4 connectome (standalone `nodestrength` container, auto-on whenever a connectome exists)  
@@ -18,7 +18,7 @@ Default recon spec: **`mrtrix_singleshell_ss3t_ACT-hsvs`**. Alternative without 
 ## Table of contents
 
 1. [End-to-end data flow](#1-end-to-end-data-flow)  
-1.1. [Lesion inpainting (Step 1.1): neuroLIT and denoising diffusion](#11-lesion-inpainting-step-11-neurolit-and-denoising-diffusion)  
+1.1. [Lesion handling / FastSurfer-LIT (integrated vs standalone)](#11-lesion-handling--fastsurfer-lit-integrated-vs-standalone)  
 2. [Biology: brain tissues and parcellations](#2-biology-brain-tissues-and-parcellations)  
 3. [Physics: diffusion MRI](#3-physics-diffusion-mri)  
 4. [Mathematics: models, transforms, and connectivity](#4-mathematics-models-transforms-and-connectivity)  
@@ -45,16 +45,18 @@ BIDS (T1w + DWI [+ fieldmaps])
         │
         ├──────────────────────────────┐
         ▼                              ▼
-   QSIPrep (Step 1)              neuroLIT inpaint (Step 1.1)
-   • denoise, SDC, eddy          • ONLY if *_T1w_label-lesion_roi.nii.gz exists
-   • DWI → T1w registration      • DDPM fills the lesion, --keepgeom preserves grid
-   • desc-preproc_T1w, dwiref    • no-op (raw T1w passes through) otherwise
+   QSIPrep (Step 1)              Lesion handling (if *_T1w_label-lesion_roi.nii.gz)
+   • denoise, SDC, eddy          DEFAULT integrated:
+   • DWI → T1w registration        prepare_lesion_mask → FastSurfer --lesion_mask (Step 2)
+   • desc-preproc_T1w, dwiref      fill + LIT reports in FreeSurfer mri/stats/
+        │                          Optional standalone (--lit-standalone):
+        │                            lit-inpainting/VBT → filled T1 under inpainted/
+        │                            → Step 2 recon on filled T1 (no --lesion_mask)
         │                              │
         │                              ▼
         │                       FreeSurfer / FastSurfer (Step 2)
-        │                       • cortical surfaces + aseg (on inpainted T1w if Step 1.1 ran)
-        │                       • aparc+aseg.mgz, rawavg.mgz
-        │                       • white/pial surfaces (HSVS input)
+        │                       • aparc+aseg.mgz, surfaces (HSVS input)
+        │                       • + LIT vols/stats when integrated
         │                              │
         └──────────────┬───────────────┘
                        ▼
@@ -76,11 +78,31 @@ BIDS (T1w + DWI [+ fieldmaps])
               • report.pdf (clinician-facing)
 ```
 
-**Key principle:** Tractography and connectome counting happen on a **common 3D grid** (`dwiref`, ~2 mm in QSIPrep T1w space). Anatomical labels from FreeSurfer start in a **different space** (conformed 256³); Step 4 resamples them onto the tractography grid before counting streamlines. Step 1.1, when it runs, changes only the **T1w that feeds Steps 2 and 4's registration** — it never touches the DWI, so the diffusion data Step 1/3 process is completely unaffected by inpainting. Step 5 reads only Step 4's *output* matrix (plus, optionally, the FreeSurfer subjects dir for per-node volumes); it never re-touches imaging data.
+**Key principle:** Tractography and connectome counting happen on a **common 3D grid** (`dwiref`, ~2 mm in QSIPrep T1w space). Anatomical labels from FreeSurfer start in a **different space** (conformed 256³); Step 4 resamples them onto the tractography grid before counting streamlines. Lesion handling never touches the DWI. Step 5 reads only Step 4's *output* matrix (plus, optionally, the FreeSurfer subjects dir for per-node volumes).
 
 ---
 
-## 1.1. Lesion inpainting (Step 1.1): neuroLIT and denoising diffusion
+## 1.1. Lesion handling / FastSurfer-LIT (integrated vs standalone)
+
+### Modes (pipeline default = integrated)
+
+| | **Integrated (DEFAULT)** | **Standalone (`--lit-standalone`)** |
+|--|--------------------------|-------------------------------------|
+| CLI / env | `--lit-integrated` / `LIT_MODE=integrated` | `--lit-standalone` / `LIT_MODE=standalone` |
+| Config | `inpaint.mode: integrated` | `inpaint.mode: standalone` |
+| Flow | prepare mask → FastSurfer ≥2.5 `--lesion_mask` on **raw** T1 | prepare → `lit-inpainting` or VBT → recon on **filled** T1 |
+| Fill location | Inside FreeSurfer subjects dir (`mri/*lit*`, lesion `stats/`) | `inpainted/…/inpainting_result.nii.gz` |
+| FS tree | LIT-integrated recon + reports | Normal recon only (no LIT reports) |
+| Container | FastSurfer with `--lesion_mask` (e.g. cu126-v2.6.0) | `lit_0.6.0.sif` and/or VBT; any FastSurfer/FreeSurfer for Step 2 |
+| When | Default whenever a lesion mask exists | Opt-in; also forced by `--anat-mitigation neurolit\|vbt` and neurolit/vbt experiment arms |
+
+Examples:
+
+```bash
+bash subject.sh all 014 --fastsurfer          # integrated LIT if mask exists (needs FS ≥2.5)
+bash subject.sh all 014 --lit-standalone      # separate lit-inpainting then recon
+bash subject.sh all 014 --no-inpaint          # ignore lesion mask entirely
+```
 
 ### 1.1.1 The problem it solves
 

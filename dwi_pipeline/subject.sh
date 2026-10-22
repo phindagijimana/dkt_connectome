@@ -11,43 +11,34 @@
 #   license inside the container for anatomical steps (not a separate recon-all
 #   job on the host).
 #
-# Step 1.1 — Inpaint (container, default auto-on; skipped when no lesion mask):
-#   Runs neuroLIT (deepmi/lit, a DDPM lesion-inpainting model with VINN layers)
-#   on the subject's T1w *before* Step 2, filling in the manually-traced lesion
-#   region so a lesion doesn't throw off recon-all/FastSurfer's atlas-based
-#   skull-strip, Talairach registration, or cortical parcellation.
+# Step 1.1 / lesion handling (default auto-on; skipped when no lesion mask):
 #   Only runs when a sibling BIDS file matching *_T1w_label-lesion_roi.nii.gz
-#   exists next to the T1w for the target session (see find_lesion_mask); for
-#   every other subject it is a silent no-op and Step 2 uses the raw BIDS T1w
-#   exactly as before. Set --no-inpaint / RUN_INPAINT=0 to force-skip even when
-#   a mask is present, or INPAINT_REQUIRE_MASK=1 to fail loudly instead of
-#   skipping when no mask is found (useful for demo runs where you want to be
-#   sure inpainting actually happened).
-#   Pipeline: dwi_pipeline/scripts/prepare_lesion_mask.py (resample/select
-#   labels/binarize + provenance) -> lit-inpainting inside CONTAINER_LIT
-#   (--keepgeom, so the result stays on the T1w's native grid) ->
-#   dwi_pipeline/scripts/check_inpainting.py (correlation-based QC comparing
-#   against a resampling-only control). Writes INPAINT_OUT/sub-XXX/ses-YYY/
-#   {lesion_mask_prepared.nii.gz, inpainting_volumes/inpainting_result.nii.gz,
-#   inpainting.json}. Steps 2 and 4 use inpainting_result.nii.gz in place of
-#   the raw BIDS T1w whenever this stage ran for that subject/session.
-#   Build the container: bash dwi_pipeline/containers/lit/build_lit.sh
+#   exists next to the T1w (see find_lesion_mask). Otherwise a silent no-op.
+#   Set --no-inpaint / RUN_INPAINT=0 to force-skip; INPAINT_REQUIRE_MASK=1 to
+#   fail when no mask is found.
+#
+#   LIT_MODE=integrated (DEFAULT) — FastSurfer-LIT inside Step 2:
+#     prepare_lesion_mask.py only (no separate lit-inpainting). Step 2 must use
+#     FastSurfer ≥2.5 with --lesion_mask on the *raw* T1w. Fill + lesion/LIT
+#     stats land in FreeSurfer mri/ and stats/ (inpainted.lit.nii.gz, etc.).
+#     Requires CONTAINER_FASTSURFER that supports --lesion_mask (e.g. deepmi
+#     fastsurfer cu126-v2.6.0+). Auto-selects RECON_TOOL=fastsurfer when a
+#     mask is present unless --no-inpaint.
+#
+#   LIT_MODE=standalone (--lit-standalone / --standalone-inpaint):
+#     Classic path: prepare_lesion_mask → lit-inpainting (CONTAINER_LIT) or VBT
+#     → inpainted T1 under INPAINT_OUT → Step 2 recon on that filled T1
+#     (no --lesion_mask). FreeSurfer tree has normal recon only (no LIT reports).
+#     Build LIT: bash dwi_pipeline/containers/lit/build_lit.sh
+#     --anat-mitigation vbt implies standalone.
 #
 # Step 2 — Recon (container, default ON; tools: recon-all OR FastSurfer):
-#   Runs anatomical surface reconstruction on the subject's T1w (the Step 1.1
-#   inpainted T1w when that ran, else the raw BIDS T1w) to produce a
-#   FreeSurfer-style subjects directory (aparc+aseg.mgz, surfaces, labels,
-#   etc.) at RECON_OUT/sub-XXX/.
-#     RECON_TOOL=freesurfer (default): runs recon-all -all (~6-10 h CPU)
-#       inside CONTAINER_FREESURFER. Requires the dedicated full FreeSurfer
-#       7.4.1 SIF at ../others/containers/freesurfer_7.4.1.sif (pulled via
-#       containers/pull_freesurfer_sif.sbatch). Pipeline fails if missing.
-#     RECON_TOOL=fastsurfer (CLI flag --fastsurfer): runs FastSurfer inside
-#       CONTAINER_FASTSURFER (~1-2 h CPU, ~20 min GPU). Produces aparc+aseg.mgz
-#       via recon-surf. --fast-fs additionally sets RECON_FSAPARC=1, which
-#       passes FastSurfer --fsaparc so it also writes the classic aparc/DK-68
-#       segmentation and ribbon alongside its native DKT one — the only way to
-#       get a DK atlas without a full recon-all run (adds ~10-20 min CPU).
+#   FreeSurfer-style subjects dir at RECON_OUT/sub-XXX/.
+#     RECON_TOOL=freesurfer (default when no lesion / standalone without
+#       --fastsurfer): recon-all -all inside CONTAINER_FREESURFER.
+#     RECON_TOOL=fastsurfer (--fastsurfer / --fast-fs, or auto under
+#       LIT_MODE=integrated with a lesion mask): run_fastsurfer.sh. With
+#       integrated + mask, passes --lesion_mask. --fast-fs adds --fsaparc (DK-68).
 #   Skips Step 2 only when RECON_SKIP_IF_EXISTS=1 and aparc+aseg.mgz exists;
 #   otherwise fails if aparc already present (strict rerun policy).
 #
@@ -102,11 +93,14 @@
 #   bash subject.sh all 014 --fast-fs        # FastSurfer + --fsaparc (adds DK-68)
 #   bash subject.sh all 014 --no-recon       # skip Step 2 (set ACT-fast or FS dir)
 #   bash subject.sh all 014 --no-connectome  # skip Step 4 (and Step 5 with it)
-#   bash subject.sh all 014 --no-inpaint     # force-skip Step 1.1 even if a mask exists
+#   bash subject.sh all 014 --no-inpaint     # force-skip lesion handling even if a mask exists
+#   bash subject.sh all 014 --lit-integrated # DEFAULT: FastSurfer --lesion_mask (needs FS ≥2.5)
+#   bash subject.sh all 014 --lit-standalone # separate lit-inpainting then recon on filled T1
+#   bash subject.sh all 014 --standalone-inpaint  # alias of --lit-standalone
 #   bash subject.sh all 014 --no-node-strength  # skip Step 5 only
 #   bash subject.sh qsiprep 014              # preprocessing only
-#   bash subject.sh inpaint 014              # Step 1.1 only (needs a lesion mask)
-#   bash subject.sh recon 014                # Step 2 only (recon-all by default)
+#   bash subject.sh inpaint 014              # lesion prep (+ standalone fill if --lit-standalone)
+#   bash subject.sh recon 014                # Step 2 only (recon-all default; FS+LIT if mask+integrated)
 #   bash subject.sh recon 014 --fastsurfer   # Step 2 only via FastSurfer
 #   bash subject.sh qsirecon 014             # Step 3 only (QSIPrep must exist)
 #   bash subject.sh connectome 014           # Step 4 only (needs FS dir + .tck)
@@ -132,21 +126,24 @@
 #   RESULTS_ROOT, BIDS_DIR, NTHREADS, OMP_NTHREADS, OUTPUT_RES
 #   CONTAINER_QSIPREP, CONTAINER_QSIRECON, CONTAINER_CONNECTOME, CONTAINER_FASTSURFER, CONTAINER_FREESURFER, CONTAINER_LIT, CONTAINER_NODESTRENGTH
 #   FS_LICENSE, TEMPLATEFLOW_HOME
-#   RUN_INPAINT=0|1        Step 1.1 in mode=all/recon (default 1: auto-runs only if a
-#                          lesion mask is found; --no-inpaint or 0 forces a skip)
+#   RUN_INPAINT=0|1        Lesion handling in mode=all/recon (default 1: auto if mask found)
+#   LIT_MODE               integrated (default) | standalone
+#                          integrated = FastSurfer --lesion_mask on raw T1 (FS ≥2.5)
+#                          standalone = lit-inpainting/VBT then recon on filled T1
+#   ANAT_MITIGATION        none | neurolit | vbt — fill backend for *standalone* only
+#                          (vbt forces standalone). integrated ignores neurolit/vbt fill.
 #   INPAINT_REQUIRE_MASK=1 fail instead of silently skipping when no lesion mask is found
-#   INPAINT_OUT            inpainted-T1w output dir (default: RESULTS_ROOT/inpainted)
-#   INPAINT_DILATE         voxels to dilate the lesion mask before inpainting (default 2)
-#   INPAINT_DEVICE         auto (default) | cpu | cuda -- passed to lit-inpainting
-#   INPAINT_BATCH_SIZE     slices per GPU batch (default 8; lower for less VRAM)
-#   INPAINT_LABELS         lesion-mask label values to inpaint, comma list or "all" (default)
-#   INPAINT_BINARIZE=1     collapse selected labels to one value before inpainting (default 0)
-#   INPAINT_MIN_OUTSIDE_CORR   QC threshold, correlation outside the lesion (default 0.995)
-#   INPAINT_MAX_CORR_DROP  QC threshold, drop vs. resampling-only control (default 0.01)
-#   INPAINT_FAIL_ON_QC=1   fail instead of warn when check_inpainting.py reports ok=false
-#   INPAINT_SKIP_IF_EXISTS=0  force a rerun even if inpainting.json already exists (default 1: skip)
+#   INPAINT_OUT            standalone inpainted-T1w dir (default: RESULTS_ROOT/inpainted)
+#   INPAINT_DILATE         mask dilate (standalone lit-inpainting; default 2)
+#   INPAINT_DEVICE         auto | cpu | cuda (standalone lit-inpainting)
+#   INPAINT_BATCH_SIZE     slices per GPU batch (standalone; default 8)
+#   INPAINT_LABELS         lesion-mask labels to keep (default all)
+#   INPAINT_BINARIZE=1     collapse labels before use (default 0)
+#   INPAINT_MIN_OUTSIDE_CORR / INPAINT_MAX_CORR_DROP / INPAINT_FAIL_ON_QC
+#                          standalone QC gates (see check_inpainting.py)
+#   INPAINT_SKIP_IF_EXISTS=0  force rerun (default 1: skip if outputs exist)
 #   RUN_RECON=0|1          Step 2 in mode=all (default 1)
-#   RECON_TOOL             freesurfer (default) or fastsurfer
+#   RECON_TOOL             freesurfer (default) or fastsurfer (auto under integrated+mask)
 #   RECON_FSAPARC=1        FastSurfer --fsaparc (adds classic DK-68 aparc/ribbon); same as --fast-fs
 #   RECON_OUT              FreeSurfer subjects dir (default: RESULTS_ROOT/freesurfer)
 #   FS_SUBJECTS_DIR        same as RECON_OUT unless overridden (used by Steps 3 + 4)
@@ -264,15 +261,28 @@ while [[ $# -gt 0 ]]; do
       ;;
     --inpaint)
       RUN_INPAINT=1
-      ANAT_MITIGATION=neurolit
       ;;
     --no-inpaint)
       RUN_INPAINT=0
       ANAT_MITIGATION=none
+      LIT_MODE=integrated
+      ;;
+    --lit-integrated)
+      LIT_MODE=integrated
+      RUN_INPAINT=1
+      ;;
+    --lit-standalone|--standalone-inpaint)
+      LIT_MODE=standalone
+      RUN_INPAINT=1
+      ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
       ;;
     --anat-mitigation)
       ANAT_MITIGATION="${2:?Need none, neurolit, or vbt after --anat-mitigation}"
       [[ "${ANAT_MITIGATION}" == "none" ]] && RUN_INPAINT=0 || RUN_INPAINT=1
+      # neurolit/vbt are standalone fill backends (not FastSurfer --lesion_mask).
+      if [[ "${ANAT_MITIGATION}" == "neurolit" || "${ANAT_MITIGATION}" == "vbt" ]]; then
+        LIT_MODE=standalone
+      fi
       shift
       ;;
     --node-strength)
@@ -361,7 +371,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --disconnection, --no-disconnectome, --disconnectome-core-only, --node-strength, --no-node-strength, --strength-only, --no-report)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --inpaint, --no-inpaint, --lit-integrated, --lit-standalone, --anat-mitigation, --disconnection, --no-disconnectome, --disconnectome-core-only, --node-strength, --no-node-strength, --strength-only, --no-report)"
       exit 1
       ;;
   esac
@@ -407,14 +417,20 @@ FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
 # with the host-side FS install (next to the license).
 FS_LUT="${FS_LUT:-${FS_LICENSE%/*}/FreeSurferColorLUT.txt}"
 
-# --- Inpaint (Step 1.1) defaults ---
-# Auto-on: only actually runs when find_lesion_mask() finds a mask for this
-# subject/session (see run_inpaint). Most subjects have none, so this is a
-# no-op for them and the pipeline behaves exactly as it did before Step 1.1
-# existed. --no-inpaint / RUN_INPAINT=0 forces a skip even when a mask exists.
+# --- Lesion / LIT defaults ---
+# Auto-on when find_lesion_mask() finds a mask. Most subjects: no-op.
+# LIT_MODE=integrated (default): prepare mask → FastSurfer --lesion_mask on raw T1.
+# LIT_MODE=standalone: prepare → lit-inpainting/VBT → recon on filled T1.
 RUN_INPAINT="${RUN_INPAINT:-1}"
+LIT_MODE="${LIT_MODE:-integrated}"
+case "${LIT_MODE}" in
+  integrated|standalone) ;;
+  *) _pipeline_fail "config" "invalid LIT_MODE=${LIT_MODE} (use integrated or standalone)" ;;
+esac
+# Standalone fill backend (ignored for integrated except vbt forces standalone above).
 ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
 if [[ "${RUN_INPAINT}" != "1" ]]; then ANAT_MITIGATION=none; fi
+if [[ "${ANAT_MITIGATION}" == "vbt" ]]; then LIT_MODE=standalone; fi
 case "${ANAT_MITIGATION}" in
   none) RUN_INPAINT=0 ;;
   neurolit|vbt) RUN_INPAINT=1 ;;
@@ -442,10 +458,10 @@ INPAINT_SKIP_IF_EXISTS="${INPAINT_SKIP_IF_EXISTS:-1}"
 PREPARE_LESION_MASK="${REPO_ROOT}/dwi_pipeline/scripts/prepare_lesion_mask.py"
 CHECK_INPAINTING="${REPO_ROOT}/dwi_pipeline/scripts/check_inpainting.py"
 RUN_VBT="${REPO_ROOT}/dwi_pipeline/scripts/run_vbt.py"
-# Set by run_inpaint() when it actually ran and produced a result; consumed by
-# run_recon() and run_connectome() in place of the raw BIDS T1w. Empty means
-# "no inpainting for this subject/session -- behave exactly as before".
+# Standalone: set by run_inpaint() to filled T1. Integrated: left empty (raw T1 + mask).
 INPAINTED_T1W=""
+# Integrated: prepared mask path for FastSurfer --lesion_mask.
+LESION_MASK_PREPARED=""
 _INPAINT_ATTEMPTED=0
 
 # --- Recon (Step 2) defaults ---
@@ -760,14 +776,11 @@ find_lesion_mask() {
 }
 
 # -----------------------------------------------------------------------------
-# run_inpaint — Step 1.1: neuroLIT fills the lesion on the T1w before Step 2.
-#   No-op (not a failure) when no lesion mask exists for this subject/session,
-#   unless INPAINT_REQUIRE_MASK=1. Sets INPAINTED_T1W when it actually ran, so
-#   run_recon/run_connectome can pick up the result; leaves it empty otherwise
-#   so they fall back to the raw BIDS T1w exactly as before Step 1.1 existed.
-#   Idempotent per call (only does real work once per subject.sh invocation)
-#   and, across invocations, skips when INPAINT_SKIP_IF_EXISTS=1 (default) and
-#   a prior inpainting.json + result already exist.
+# run_inpaint — lesion prep (+ optional standalone fill) before / for Step 2.
+#   LIT_MODE=integrated (default): prepare mask only; FastSurfer --lesion_mask
+#     fills inside Step 2. Sets LESION_MASK_PREPARED; leaves INPAINTED_T1W empty.
+#   LIT_MODE=standalone: prepare → lit-inpainting/VBT → sets INPAINTED_T1W.
+#   No-op when no lesion mask (unless INPAINT_REQUIRE_MASK=1).
 # -----------------------------------------------------------------------------
 run_inpaint() {
   ((_INPAINT_ATTEMPTED)) && return 0
@@ -793,11 +806,67 @@ run_inpaint() {
       _pipeline_fail "inpaint" "INPAINT_REQUIRE_MASK=1 but no lesion mask found for sub-${SUBJECT} ses-${target_ses}" \
         "Expected ${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat/*_T1w_label-lesion_roi.nii.gz"
     fi
-    echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${target_ses} — skipping Step 1.1 (Step 2 uses the raw T1w)"
+    echo "Inpaint: no lesion mask for sub-${SUBJECT} ses-${target_ses} — skipping (Step 2 uses the raw T1w)"
     return 0
   fi
-  echo "Inpaint: found lesion mask ${mask}"
+  echo "Inpaint: found lesion mask ${mask} (LIT_MODE=${LIT_MODE})"
 
+  [[ -f "${PREPARE_LESION_MASK}" ]] || _pipeline_fail "inpaint" "missing ${PREPARE_LESION_MASK}"
+
+  local outdir="${INPAINT_OUT}/sub-${SUBJECT}/ses-${target_ses}"
+  local final_json="${outdir}/inpainting.json"
+  local result="${outdir}/inpainting_volumes/inpainting_result.nii.gz"
+  local mask_prepared="${outdir}/lesion_mask_prepared.nii.gz"
+  local mask_json="${outdir}/lesion_mask_prepared.json"
+
+  # --- Integrated: prepare mask only; fill happens in FastSurfer Step 2 ---
+  if [[ "${LIT_MODE}" == "integrated" ]]; then
+    if [[ "${INPAINT_SKIP_IF_EXISTS}" == "1" && -f "${final_json}" && -f "${mask_prepared}" ]]; then
+      local prior_mode
+      prior_mode="$(python3 -c "import json; print(json.load(open('${final_json}')).get('lit_mode',''))" 2>/dev/null || true)"
+      if [[ "${prior_mode}" == "integrated" ]]; then
+        echo "Inpaint: integrated prep already exists — skipping (INPAINT_SKIP_IF_EXISTS=1)"
+        LESION_MASK_PREPARED="${mask_prepared}"
+        return 0
+      fi
+    fi
+    echo "=== Lesion prep (integrated FastSurfer-LIT): sub-${SUBJECT} ses-${target_ses} ==="
+    mkdir -p "${outdir}"
+    local -a prep_xtra=()
+    [[ "${INPAINT_BINARIZE}" == "1" ]] && prep_xtra+=(--binarize)
+    python3 "${PREPARE_LESION_MASK}" \
+      --t1w "${t1w}" --mask "${mask}" \
+      --out "${mask_prepared}" --json "${mask_json}" \
+      --labels "${INPAINT_LABELS}" \
+      "${prep_xtra[@]}"
+    python3 - "${t1w}" "${mask}" "${mask_prepared}" "${mask_json}" "${final_json}" \
+      "sub-${SUBJECT}" "ses-${target_ses}" "${INPAINT_LABELS}" <<'PY'
+import json, sys
+t1w, mask, mask_prepared, mask_json, final_json, subject, session, labels = sys.argv[1:9]
+out = {
+    "subject": subject,
+    "session": session,
+    "lit_mode": "integrated",
+    "tool": "FastSurfer --lesion_mask (fill in Step 2)",
+    "input_t1w": t1w,
+    "lesion_mask_source": mask,
+    "lesion_mask_prepared": mask_prepared,
+    "mask_labels": labels,
+    "inpainted_t1w": None,
+    "mask_summary": json.load(open(mask_json)),
+}
+with open(final_json, "w") as fh:
+    json.dump(out, fh, indent=2)
+    fh.write("\n")
+PY
+    LESION_MASK_PREPARED="${mask_prepared}"
+    INPAINTED_T1W=""
+    echo "Inpaint: OK — prepared mask for integrated FastSurfer-LIT: ${mask_prepared}"
+    echo "         Provenance: ${final_json}"
+    return 0
+  fi
+
+  # --- Standalone: prepare → lit-inpainting / VBT → filled T1 ---
   local mitigation_container="${CONTAINER_LIT}"
   if [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
     [[ -f "${CONTAINER_LIT}" ]] || _pipeline_fail "inpaint" "missing CONTAINER_LIT: ${CONTAINER_LIT}" \
@@ -813,24 +882,17 @@ run_inpaint() {
         "Run: bash dwi_pipeline/containers/vbt/build_vbt.sh or ./dkt install"
     fi
   fi
-  [[ -f "${PREPARE_LESION_MASK}" ]] || _pipeline_fail "inpaint" "missing ${PREPARE_LESION_MASK}"
   [[ -f "${CHECK_INPAINTING}" ]] || _pipeline_fail "inpaint" "missing ${CHECK_INPAINTING}"
 
-  local outdir="${INPAINT_OUT}/sub-${SUBJECT}/ses-${target_ses}"
-  local final_json="${outdir}/inpainting.json"
-  local result="${outdir}/inpainting_volumes/inpainting_result.nii.gz"
-
   if [[ "${INPAINT_SKIP_IF_EXISTS}" == "1" && -f "${final_json}" && -f "${result}" ]]; then
-    echo "Inpaint: ${final_json} already exists — skipping (INPAINT_SKIP_IF_EXISTS=1)"
+    echo "Inpaint: standalone ${final_json} already exists — skipping (INPAINT_SKIP_IF_EXISTS=1)"
     INPAINTED_T1W="${result}"
     return 0
   fi
 
-  echo "=== Anatomical mitigation (${ANAT_MITIGATION}): sub-${SUBJECT} ses-${target_ses} ==="
+  echo "=== Anatomical mitigation standalone (${ANAT_MITIGATION}): sub-${SUBJECT} ses-${target_ses} ==="
   mkdir -p "${outdir}"
 
-  local mask_prepared="${outdir}/lesion_mask_prepared.nii.gz"
-  local mask_json="${outdir}/lesion_mask_prepared.json"
   local -a prep_xtra=()
   [[ "${INPAINT_BINARIZE}" == "1" ]] && prep_xtra+=(--binarize)
   python3 "${PREPARE_LESION_MASK}" \
@@ -840,7 +902,6 @@ run_inpaint() {
     "${prep_xtra[@]}"
 
   if [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
-    # --nv is a no-op (not a hard failure) on nodes with no visible GPU/driver.
     local -a nv_args=()
     [[ "${INPAINT_DEVICE}" != "cpu" ]] && nv_args+=(--nv)
     apptainer exec "${nv_args[@]}" --cleanenv --containall \
@@ -915,8 +976,9 @@ import json, sys
 out = {
     "subject": subject,
     "session": session,
+    "lit_mode": "standalone",
     "backend": backend,
-    "tool": "neuroLIT (FastSurfer-LIT)" if backend == "neurolit" else "virtual brain transplant",
+    "tool": "neuroLIT lit-inpainting" if backend == "neurolit" else "virtual brain transplant",
     "container": container,
     "input_t1w": t1w,
     "lesion_mask_source": mask,
@@ -937,7 +999,7 @@ with open(final_json, "w") as fh:
     fh.write("\n")
 PY
 
-  echo "Inpaint: OK — inpainted T1w: ${result}"
+  echo "Inpaint: OK — standalone inpainted T1w: ${result}"
   echo "         Provenance: ${final_json}"
   INPAINTED_T1W="${result}"
 }
@@ -978,13 +1040,26 @@ run_recon() {
   local t1w
   if [[ -n "${INPAINTED_T1W}" ]]; then
     t1w="${INPAINTED_T1W}"
-    echo "Recon: T1w input: ${t1w} (Step 1.1 inpainted — lesion mask was found)"
+    echo "Recon: T1w input: ${t1w} (standalone inpainted — LIT_MODE=standalone)"
   else
     t1w="$(_strict_find_one "recon/T1w" \
       find "${BIDS_DIR}/sub-${SUBJECT}/ses-${target_ses}/anat" -type f \
         \( -name '*_T1w.nii.gz' -o -name '*_T1w.nii' \))"
-    echo "Recon: T1w input: ${t1w}"
+    if [[ -n "${LESION_MASK_PREPARED}" ]]; then
+      echo "Recon: T1w input: ${t1w} (raw; integrated FastSurfer-LIT with --lesion_mask)"
+    else
+      echo "Recon: T1w input: ${t1w}"
+    fi
   fi
+
+  # Integrated + mask requires FastSurfer ≥2.5 with --lesion_mask.
+  if [[ -n "${LESION_MASK_PREPARED}" && "${LIT_MODE}" == "integrated" ]]; then
+    if [[ "${RECON_TOOL}" != "fastsurfer" ]]; then
+      echo "Recon: LIT_MODE=integrated with lesion mask → switching RECON_TOOL freesurfer→fastsurfer"
+      RECON_TOOL=fastsurfer
+    fi
+  fi
+
   mkdir -p "${RECON_OUT}"
 
   case "${RECON_TOOL}" in
@@ -1078,20 +1153,37 @@ _run_recon_freesurfer() {
 }
 
 # Internal: FastSurfer (segmentation + surface) inside CONTAINER_FASTSURFER.
+# When LESION_MASK_PREPARED is set (LIT_MODE=integrated), passes --lesion_mask
+# so fill + LIT reports land in the FreeSurfer subjects dir (needs FS ≥2.5).
 _run_recon_fastsurfer() {
   local t1="$1"
   apptainer exec --cleanenv "${CONTAINER_FASTSURFER}" bash -lc 'test -x /fastsurfer/run_fastsurfer.sh' || {
     echo "Recon: /fastsurfer/run_fastsurfer.sh not found in CONTAINER_FASTSURFER=${CONTAINER_FASTSURFER}"
     exit 1
   }
-  # --nv is a no-op (not a hard failure) on nodes with no visible GPU/driver.
   local -a nv_args=()
   [[ "${RECON_FASTSURFER_DEVICE}" != "cpu" ]] && nv_args+=(--nv)
-  # --fsaparc: also write the classic DK-68 aparc/ribbon (set by --fast-fs).
   local -a fsaparc_args=()
   [[ "${RECON_FSAPARC}" == "1" ]] && fsaparc_args+=(--fsaparc)
+
+  local -a lesion_args=()
+  local -a lesion_binds=()
+  if [[ -n "${LESION_MASK_PREPARED}" ]]; then
+    if ! apptainer exec --cleanenv "${CONTAINER_FASTSURFER}" \
+         bash -lc 'grep -q lesion_mask /fastsurfer/run_fastsurfer.sh'; then
+      _pipeline_fail "recon" \
+        "LIT_MODE=integrated needs FastSurfer ≥2.5 with --lesion_mask in CONTAINER_FASTSURFER=${CONTAINER_FASTSURFER}" \
+        "Pull e.g. deepmi/fastsurfer:cu126-v2.6.0, or use --lit-standalone for separate lit-inpainting."
+    fi
+    [[ -f "${LESION_MASK_PREPARED}" ]] || _pipeline_fail "recon" "missing prepared lesion mask: ${LESION_MASK_PREPARED}"
+    lesion_binds+=( -B "$(dirname "${LESION_MASK_PREPARED}")":/lesion_mask_input:ro )
+    lesion_args+=( --lesion_mask "/lesion_mask_input/$(basename "${LESION_MASK_PREPARED}")" )
+    echo "Recon: FastSurfer-LIT integrated (--lesion_mask $(basename "${LESION_MASK_PREPARED}"))"
+  fi
+
   apptainer exec "${nv_args[@]}" --cleanenv --containall \
     -B "$(dirname "${t1}")":/t1w_input:ro \
+    "${lesion_binds[@]}" \
     -B "${RECON_OUT}":/sd \
     -B "${FS_LICENSE}":/fs_license/license.txt:ro \
     "${CONTAINER_FASTSURFER}" \
@@ -1100,6 +1192,7 @@ _run_recon_fastsurfer() {
       --sid "sub-${SUBJECT}" \
       --sd /sd \
       --t1 "/t1w_input/$(basename "${t1}")" \
+      "${lesion_args[@]}" \
       --parallel \
       --threads "${NTHREADS}" \
       --device "${RECON_FASTSURFER_DEVICE}" \

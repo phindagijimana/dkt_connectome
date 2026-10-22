@@ -1,11 +1,11 @@
 """
-inpaint.smk — Step 1.1 plugin: selectable anatomical lesion mitigation before
-Step 2 (neuroLIT or LeAPP-inspired virtual brain transplant).
+inpaint.smk — Step 1.1 plugin: lesion handling before / for Step 2.
 
-Only ever included in the DAG for a subject when subject_has_lesion_mask()
-is true for them (see inpainted_t1w_for(), used by recon.smk / connectome.smk
-to decide their T1w input). Most subjects have no lesion mask and never touch
-this rule at all -- exactly as in subject.sh's run_inpaint() no-op path.
+inpaint.mode=integrated (DEFAULT): prepare lesion mask only; FastSurfer
+  --lesion_mask fills inside recon (FS ≥2.5). FreeSurfer mri/stats get LIT outputs.
+inpaint.mode=standalone: neuroLIT lit-inpainting or VBT fill → recon on filled T1.
+
+Only in the DAG when subject_has_lesion_mask() is true. Most subjects: no-op.
 """
 
 wildcard_constraints:
@@ -45,9 +45,13 @@ def inpaint_paths(subject: str) -> dict:
 
 
 def inpainted_t1w_for(subject: str) -> str | None:
-    """Path to the Step 1.1 result for `subject`, or None when no lesion mask
-    exists (the common case -- Step 2/4 then use the raw BIDS T1w)."""
+    """Standalone filled T1w, or None.
+
+    Integrated mode returns None so Step 2 uses the raw BIDS T1w with
+    --lesion_mask (see prepared_lesion_mask_for)."""
     if not mitigation_enabled_for(subject):
+        return None
+    if LIT_MODE == "integrated":
         return None
     return inpaint_paths(subject)["result"]
 
@@ -55,6 +59,13 @@ def inpainted_t1w_for(subject: str) -> str | None:
 def mitigated_t1w_for(subject: str) -> str | None:
     """Backend-neutral name used by new workflow code."""
     return inpainted_t1w_for(subject)
+
+
+def prepared_lesion_mask_for(subject: str) -> str | None:
+    """Prepared mask for FastSurfer --lesion_mask (integrated mode only)."""
+    if not mitigation_enabled_for(subject) or LIT_MODE != "integrated":
+        return None
+    return inpaint_paths(subject)["mask_prepared"]
 
 
 def lesion_mask_paths(subject: str) -> dict:
@@ -106,19 +117,25 @@ rule inpaint:
         t1w=lambda wc: _bids_t1w_for(wc.subject, wc.session),
         mask=lambda wc: find_lesion_mask(wc.subject, wc.session),
     output:
+        # Standalone: result is filled T1. Integrated: sentinel note (recon uses raw T1 + mask).
         result=INPAINT_RESULT_PATTERN,
         final_json=INPAINT_JSON_PATTERN,
         mask_prepared=INPAINT_MASK_PREPARED_PATTERN,
         mask_json=INPAINT_MASK_JSON_PATTERN,
     threads: 4
     resources:
-        gpu=1 if ANATOMY_MITIGATION_BACKEND == "neurolit" else 0,
+        gpu=(
+            1
+            if LIT_MODE == "standalone" and ANATOMY_MITIGATION_BACKEND == "neurolit"
+            else 0
+        ),
     log:
         f"{RESULTS_ROOT}/logs/sub-{{subject}}_ses-{{session}}_anat-{ANATOMY_MITIGATION_BACKEND}.log",
     params:
         outdir=lambda wc: f"{ANATOMY_MITIGATION_OUT}/sub-{wc.subject}/ses-{wc.session}",
         qc_json=lambda wc: f"{ANATOMY_MITIGATION_OUT}/sub-{wc.subject}/ses-{wc.session}/inpainting_qc.json",
         session=lambda wc: wc.session,
+        lit_mode=LIT_MODE,
         backend_container=(
             CONTAINER_LIT
             if ANATOMY_MITIGATION_BACKEND == "neurolit"
@@ -132,14 +149,44 @@ rule inpaint:
         set -euo pipefail
         source {COMMON_SH}
         SUBJECT="{wildcards.subject}"
-
-        echo "=== Anatomical mitigation ({ANATOMY_MITIGATION_BACKEND}): sub-${{SUBJECT}} ses-{params.session} ==="
         mkdir -p "{params.outdir}"
 
         {PIPELINE_PYTHON} "{PREPARE_LESION_MASK}" \
           --t1w "{input.t1w}" --mask "{input.mask}" \
           --out "{output.mask_prepared}" --json "{output.mask_json}" \
           --labels "{INPAINT_LABELS}"{params.binarize_suffix}
+
+        if [[ "{params.lit_mode}" == "integrated" ]]; then
+          echo "=== Lesion prep (integrated FastSurfer-LIT): sub-${{SUBJECT}} ses-{params.session} ==="
+          mkdir -p "$(dirname "{output.result}")"
+          echo "integrated: fill deferred to FastSurfer --lesion_mask" > "{output.result}.txt"
+          # Sentinel so the output path exists; recon ignores this and uses raw T1w.
+          cp -f "{output.mask_prepared}" "{output.result}"
+          {PIPELINE_PYTHON} - "{input.t1w}" "{input.mask}" "{output.mask_prepared}" "{output.mask_json}" \
+            "{output.final_json}" "sub-${{SUBJECT}}" "ses-{params.session}" "{INPAINT_LABELS}" <<'PY'
+import json, sys
+t1w, mask, mask_prepared, mask_json, final_json, subject, session, labels = sys.argv[1:9]
+out = {{
+    "subject": subject,
+    "session": session,
+    "lit_mode": "integrated",
+    "tool": "FastSurfer --lesion_mask (fill in Step 2)",
+    "input_t1w": t1w,
+    "lesion_mask_source": mask,
+    "lesion_mask_prepared": mask_prepared,
+    "mask_labels": labels,
+    "inpainted_t1w": None,
+    "mask_summary": json.load(open(mask_json)),
+}}
+with open(final_json, "w") as fh:
+    json.dump(out, fh, indent=2)
+    fh.write("\n")
+PY
+          echo "Inpaint: OK — prepared mask for integrated FastSurfer-LIT"
+          exit 0
+        fi
+
+        echo "=== Anatomical mitigation standalone ({ANATOMY_MITIGATION_BACKEND}): sub-${{SUBJECT}} ses-{params.session} ==="
 
         if [[ "{ANATOMY_MITIGATION_BACKEND}" == "neurolit" ]]; then
           apptainer exec {params.nv_flag} --cleanenv --containall \
@@ -217,8 +264,9 @@ import json, sys
 out = {{
     "subject": subject,
     "session": session,
+    "lit_mode": "standalone",
     "backend": backend,
-    "tool": "neuroLIT (FastSurfer-LIT)" if backend == "neurolit" else "virtual brain transplant",
+    "tool": "neuroLIT lit-inpainting" if backend == "neurolit" else "virtual brain transplant",
     "container": container,
     "input_t1w": t1w,
     "lesion_mask_source": mask,
@@ -239,5 +287,5 @@ with open(final_json, "w") as fh:
     fh.write("\n")
 PY
 
-        echo "Inpaint: OK — inpainted T1w: {output.result}"
+        echo "Inpaint: OK — standalone inpainted T1w: {output.result}"
         """
