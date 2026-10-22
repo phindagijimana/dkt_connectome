@@ -4,7 +4,7 @@ short_title: "edgeuq Paper 2"
 date: 2026-10-20
 status: DESIGN_LOCKED_PILOT_DEMO
 not: hat{U}; plant Ucal as leftover P; invent retune
-venue_target: NeuroImage / MedIA (if held-out P_L closes after scale)
+venue_target: NeuroImage / MedIA (site-map framing; scale for CIs)
 ---
 
 # Predicting and calibrating scan–rescan edge change in streamline-count connectomes
@@ -15,9 +15,9 @@ venue_target: NeuroImage / MedIA (if held-out P_L closes after scale)
 
 ---
 
-## Abstract (draft; finalize after scale)
+## Abstract (draft; cohort CIs after scale)
 
-Scan–rescan (“leftover”) changes in streamline-count connectomes concentrate on weak edges and are poorly ranked by endpoint plant-sensitivity scores. We formalize leftover edge move \(y^{\mathrm{leftover}}\) under frozen relative-change and count-floor rules, and introduce a ses-1 ranking score \(L=-\log(1+C^{(1)})\). On public pilots, \(L\) achieved leftover AUROC ≈ 0.70 versus ≈ 0.58–0.60 for plant scores. We then calibrate \(P_L=\phi(L)\) with isotonic regression using **subject-held-out** training on leftover labels only. Cross-site leave-one-subject-out (Kirby↔Boekel) preserves ranking but not calibration (ECE ≈ 0.18) when leftover base rates clash (~0.54 vs ~0.36). **Within-site** Kirby LOSO (interim n=4) yields mean ECE ≈ 0.043 with matched y-rates (~0.52–0.60), supporting **site- or protocol-specific** \(\phi_L\) rather than a universal map or silent harmonization. *[After scale + KKI239: held-out ECE/Brier CIs and FA/length baselines.]* \(P_L\) is not plant-calibrated \(U\) and is not named \(\hat{U}\).
+Scan–rescan (“leftover”) changes in streamline-count connectomes concentrate on weak edges and are poorly ranked by endpoint plant-sensitivity scores. We formalize leftover edge move \(y^{\mathrm{leftover}}\) under frozen relative-change and count-floor rules, and introduce a ses-1 ranking score \(L=-\log(1+C^{(1)})\). On public pilots, \(L\) achieved leftover AUROC ≈ 0.70 versus ≈ 0.58–0.60 for plant scores (and beats FA/length/random on a Kirby mini). We calibrate \(P_L=\phi(L)\) with isotonic regression using **subject-held-out** leftover labels only. Cross-site leave-one-subject-out (Kirby↔Boekel) preserves ranking but not calibration (ECE ≈ 0.18) when leftover base rates clash (~0.54 vs ~0.36). **Within-site** Kirby LOSO supports site- or protocol-specific \(\phi_L\): mean ECE ≈ **0.043** on n=4 matched peers (y-rates ~0.52–0.60), versus ≈ **0.118** when including KKI239 (skip-mtnorm rescue; y-rate ≈ 0.83, AUROC \(L\) ≈ 0.55) as a documented processing outlier. Product rule: ship per-stratum maps; refuse silent cross-site apply; do not treat harmonization as the default. *[Scale descriptive: multi-subject ECE/AUROC CIs and cohort move-rate tables.]* \(P_L\) is not plant-calibrated \(U\) and is not named \(\hat{U}\).
 
 ---
 
@@ -68,27 +68,28 @@ Source: `work/R/paper2/within_site_kirby/P_L_loso_within_kirby.json`.
 
 Interpretation: without 239, within-site ECE ≈ 0.04 vs cross-site ≈ 0.18 supports **site/protocol maps**. KKI239 is a **within-site outlier** (y-rate and ranking), consistent with a processing stratum — not silent peer evidence. Product rule unchanged: per-site \(\phi_L\); refuse silent cross-site apply; flag QC/recon exceptions ([PREFIT_AND_SITE_MAPS.md](PREFIT_AND_SITE_MAPS.md)).
 
-### 3.4 Pending after `scale descriptive`
+### 3.4 Done on mini / pending scale
+
+**Done (Kirby mini):** FA/length/random/\(U\)/\(F\) baselines; within-site n=5 LOSO; interim frozen \(\phi_L\) (n=4 stratum); plant≠leftover figures; coarse-atlas smoke.
+
+**Pending after `scale descriptive`:**
 
 - Multi-subject LOSO/k-fold AUROC + ECE + Brier with CIs.  
-- Strength-stratified performance.  
-- Baseline table vs FA/length/bootstrap if available.  
+- Strength-stratified performance / cohort move-rate tables.  
 - Optional \(R\) enrichment replication.  
-- Freeze versioned `isotonic_leftover_<stratum>.json`.
+- Re-freeze versioned `isotonic_leftover_<stratum>.json` with scale CIs.  
 
 ## 4. Discussion
 
-- Why plant \(\phi\) failed (Paper 1 G) and how subject-held-out leftover \(\phi\) fixes the **design**.  
-- Cross-site ECE failure is a **finding** (site maps), not a reason to drop \(P_L\).  
-- Harmonization is not the default substitute for stratum-specific \(\phi\) without an ECE test.  
-- \(L\) as count-aware score aligned with TRT lit.  
-- Limits: n, atlas, iFOD2-only; strong-edge residual hard; n=4 interim exploratory.  
-- Naming discipline: \(P_L\neq\hat{U}\). Contingency: if ECE fails within-site at scale, publish as ranking / instability prediction.
+Plant-trained isotonic maps failed on leftover \(y\) because the **event** differs (Paper 1 G): subject-held-out leftover \(\phi\) is the correct design for \(P_L\), not a retune of plant \(U_{\mathrm{cal}}\). Cross-site ECE ≈ 0.18 with clashing y-rates is evidence for **site/protocol maps**, not a reason to abandon \(P_L\). Harmonization is an optional research hypothesis; the product default is stratum-tagged \(\phi_L\) with refused silent cross-site apply (`edgeuq apply-leftover-map`). \(L=-\log(1+C_0)\) aligns with TRT findings that weak/low-count edges are less stable.
+
+**Limits (current evidence).** Public within-Kirby n=4 peers (primary map) and n=5 with KKI239 as a documented skip-mtnorm outlier; DKT-78 / iFOD2 singleshell only; strong-edge residual leftover remains hard; coarse DKT-39 smoke is not a full Schaefer stress. Naming: \(P_L\neq\hat{U}\). Contingency: if within-site ECE fails at scale, publish as ranking / instability prediction with site maps as protocol, not a universal probability product.
+
+**Figures.** Within-site hinge: [`figures/fig_within_site_PL`](figures/fig_within_site_PL.pdf). Plant≠leftover: [`figures/fig_plant_neq_leftover`](figures/fig_plant_neq_leftover.pdf).
 
 ## 5. Conclusion
 
-Leftover prediction/calibration is a separate problem from endpoint plant fragility. We lock the estimand, symbols, held-out protocol, and **site-specific map** rule; within-site interim supports calibration under matched base rates; scaled within-site ECE is the NeuroImage/MedIA submission gate.
-
+Leftover prediction/calibration is a separate problem from endpoint plant fragility. We lock the estimand, symbols, held-out protocol, and **site-specific map** rule; within-site interim (n=4 ECE ≈ 0.043; n=5 with outlier ≈ 0.118) supports calibration under matched base rates. Scaled within-site ECE/AUROC CIs remain the NeuroImage/MedIA **calibration** submission gate; ranking + site maps are already a coherent methods story. Software: `edgeuq` v0.2.0.
 ---
 
 ## Code

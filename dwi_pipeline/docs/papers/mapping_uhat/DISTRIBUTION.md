@@ -13,12 +13,12 @@ Authorship and journal choice can wait. **Versioned, licensed artifacts** should
 | Step | Status / action |
 |------|-----------------|
 | License Apache-2.0 | Done in repo |
-| `CITATION.cff` v0.1.0 | Done; add Zenodo DOI after first public release |
-| GitHub `phindagijimana/edgeuq` | Exists; follow [edgeuq `docs/release.md`](https://github.com/phindagijimana/edgeuq/blob/main/docs/release.md) |
-| Tag `v0.1.0` + GHCR image | When ready to cite from drafts |
-| Keep private until preprint if coauthors require | OK; still tag internally |
+| `CITATION.cff` **v0.2.0** | Done; add Zenodo DOI after public GH Release |
+| GitHub `phindagijimana/edgeuq` | `main` + tag **`v0.2.0` pushed** 2026-10-22 |
+| GitHub Release + Zenodo | **Blocked on `gh auth`** — re-login, make public if needed, *Create release* from `v0.2.0` |
+| GHCR image | Optional follow-on from release workflow |
 
-Cite in manuscripts as: *edgeuq vX.Y.Z (DOI…)* implementing Paper 1/2 protocols.
+Cite in manuscripts as: *edgeuq v0.2.0 (DOI pending)* implementing Paper 1/2 protocols.
 
 ## Software — `dkt-connectome`
 

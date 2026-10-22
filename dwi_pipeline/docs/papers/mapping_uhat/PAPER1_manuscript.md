@@ -22,7 +22,15 @@ Structural connectomes built from probabilistic tractography (iFOD2) assign stre
 
 We then tested whether plant-trained scores predict **scan–rescan leftover** edge changes on public same-day pairs (Kirby21 KKI849; Boekel pp01). They do not: leftover AUROC for \(U\)/\(F\) ≈ 0.58–0.60; plant calibration fails on leftover \(y\) (ECE ≈ 0.32). Soft expectation slightly reduces moved fraction but fails a locked invent≤0.001 rule because near-threshold counts blur across the floor of 10. A tracking-only reseed explains only ~9.5% move rate versus 36–54% leftover. Threshold-uncertain edges (\(0.1<P(C\ge10)<0.9\)) are rare (~1–3%) but highly enriched for crossings. A separate ses-1 count score \(L=-\log(1+C_0)\) ranked leftover movers at AUROC ≈ 0.70 on both pilots and is released as a distinct method (`edgeuq instability`), not a retuned \(U\).
 
-**Conclusion.** Endpoint fragility UQ is a validated product for planted assignment error; scan–rescan change is a different phenomenon and must not be named \(\hat{U}\). Cohort-scale descriptive replication is pending; leftover calibration is deferred to Paper 2.
+**Conclusion.** Endpoint fragility UQ is a validated product for planted assignment error; scan–rescan change is a different phenomenon and must not be named \(\hat{U}\). Cohort-scale descriptive replication is pending (`scale descriptive`); leftover calibration is Paper 2. Software: `edgeuq` v0.2.0.
+
+---
+
+## Figures (rendered)
+
+- Honesty / Claim B–C: [`figures/fig_plant_neq_leftover`](figures/fig_plant_neq_leftover.pdf) (leftover ranking + N16 claim split).  
+- Claim B bars: [`figures/fig_paper1_leftover_boundary`](figures/fig_paper1_leftover_boundary.pdf).  
+- Source plan: [PAPER1_figures.md](PAPER1_figures.md).
 
 ---
 

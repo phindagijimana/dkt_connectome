@@ -29,9 +29,9 @@ A **frozen map** \(\phi\): score \(\mapsto\) probability, learned once on a **ca
 | Map | Status | Location |
 |-----|--------|----------|
 | Plant \(\phi_{\mathrm{plant}}\) | **Yes — shipped** | `edgeuq` package data `isotonic_1mm.json` (`edgeuq.metrics.load_isotonic`) |
-| Leftover \(\phi_L\) | **Interim Kirby map shipped** (n=4 excl. KKI239) | `edgeuq/data/isotonic_leftover_kirby21_ifod2_radial4.json` — stratum `kirby21_ifod2_radial4`; refresh after scale |
+| Leftover \(\phi_L\) | **Interim Kirby map shipped** (n=4 excl. KKI239) | `edgeuq` `src/edgeuq/data/isotonic_leftover_kirby21_ifod2_radial4.json` — stratum `kirby21_ifod2_radial4`; in **v0.2.0**; refresh after scale |
 
-`edgeuq calibrate-leftover` **fits** \(\phi\) for a subject list; it does not yet install `isotonic_leftover_*.json` into the package.
+`edgeuq calibrate-leftover` fits \(\phi\); `apply-leftover-map` applies a shipped stratum JSON (refuses mismatch unless `--force-cross-site`).
 
 ---
 

@@ -41,11 +41,13 @@ Two ROCs or bar pairs: count-churn world (\(L\) wins) vs plant world (\(U\) wins
 
 ## Render checklist
 
-| Fig | Data ready now? | Blocked on scale? |
-|---|---|---|
-| 1 | Yes (schematic) | No |
-| 2 | Yes (plant locks) | No |
-| 3 | Yes (pilots) | Optional cohort panel |
-| 4 | Yes (pilots) | Optional cohort panel |
-| 5 | Yes (N16) | No |
-| S-scale | No | **Yes** — insert after `scale descriptive` |
+| Fig | Data ready now? | Blocked on scale? | Rendered |
+|---|---|---|---|
+| 1 | Yes (schematic) | No | Manual schematic still |
+| 2 | Yes (plant locks) | No | Use plant locks / N1 JSON |
+| 3 | Yes (pilots) | Optional cohort panel | **`figures/fig_paper1_leftover_boundary`** + **`fig_plant_neq_leftover`** |
+| 4 | Yes (pilots) | Optional cohort panel | Partial (enrichment in N JSON) |
+| 5 | Yes (N16) | No | **`figures/fig_plant_neq_leftover` panel B** |
+| S-scale | No | **Yes** — insert after `scale descriptive` | — |
+
+Render script: `methods/mapping_uhat/render_paper_figures.py` → `docs/papers/mapping_uhat/figures/`.

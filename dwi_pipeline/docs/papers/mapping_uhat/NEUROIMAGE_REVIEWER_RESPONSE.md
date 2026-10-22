@@ -35,12 +35,14 @@ Hard-reviewer bar from the lab red-team (clear estimand, enough n, baselines, fr
 | Concern | Status | Fix |
 |---------|--------|-----|
 | Cross-site ECE ≈ 0.18 = “maps don’t transfer” | **Solved as finding** | Frame as **site/protocol dependence**, not universal \(\phi\); ship per-site maps |
-| Within-site ECE must improve if clash was the driver | **Interim evidence** | Within-Kirby LOSO n=4: mean ECE ≈ **0.043**, y-rates 0.52–0.60 vs cross-site 0.54 vs 0.36 (`work/R/paper2/within_site_kirby/P_L_loso_within_kirby_interim_n4.json`) |
-| Refresh n=5 (add KKI239) | **Blocked on pack** | KKI239 ses-2 / pack pending (`uhat_mini_pack_KKI239`); then re-run `run_within_site_PL.py` |
-| Calibration CIs / n≈10–20 | **Open — scale** | n=5 exploratory; serious ECE bands after more Kirby + Boekel within-site |
-| Baselines (random, FA, length, \(U\)/\(F\)) | **Partial** | \(L\) vs \(U\)/\(F\) in pilots; FA/length when edge features available |
+| Within-site ECE must improve if clash was the driver | **Solved (interim)** | Within-Kirby LOSO n=4: mean ECE ≈ **0.043**; n=5 with 239: ≈ **0.118** (239 outlier) |
+| Refresh n=5 (add KKI239) | **Done** | Pack + `P_L_loso_within_kirby.json`; see `P_L_loso_within_kirby_n5.md` |
+| Calibration CIs / n≈10–20 | **Open — scale** | Serious ECE bands after more Kirby + Boekel within-site |
+| Baselines (random, FA, length, \(U\)/\(F\)) | **Done on Kirby mini** | `leftover_baselines_kirby.json` / `.md` |
 | If ECE never passes | **Contingency locked** | Retitle to ranking / instability prediction; still publishable |
-| Single-subject pre-fit \(\phi_L\) | **Rule locked; map not frozen** | CLI `apply-leftover-map` refuses stratum mismatch; freeze Kirby JSON after n=5 + scale CIs |
+| Single-subject pre-fit \(\phi_L\) | **Interim map frozen** | `isotonic_leftover_kirby21_ifod2_radial4.json` (n=4); refresh after scale CIs |
+| Plant≠leftover figures | **Rendered** | `docs/papers/mapping_uhat/figures/` |
+| Atlas smoke | **Cheap stand-in done** | Coarse DKT-39 vs 78 (`atlas_smoke_coarse_dkt.md`); full Schaefer still optional |
 
 ## Decision rule (submission)
 
@@ -62,9 +64,9 @@ Already closed or closeable in text/code today:
 
 Still require jobs / user gate:
 
-1. KKI239 pack → n=5 within-Kirby refresh  
-2. `scale descriptive` → cohort tables + CIs  
-3. Zenodo / alternate atlas / figure renders  
+1. `scale descriptive` → cohort tables + CIs  
+2. Zenodo DOI after public GitHub release of `edgeuq` `v0.2.0` (release package prepared)  
+3. Optional: true Schaefer/Lausanne N3 when nodes exist
 
 ---
 

@@ -1,0 +1,20 @@
+{
+  "smoke": "coarse_dkt39_vs_dkt78_matrix_aggregate",
+  "sid": "KKI849",
+  "not_hatU": true,
+  "note": "Cheap N3 stand-in: paired DKT labels \u2192 39. Not Schaefer/Lausanne (unavailable on pilots).",
+  "dkt78": {
+    "n_edges": 2264,
+    "y_rate": 0.5384275618374559,
+    "auroc_L": 0.6987208120233465,
+    "n_nodes": 78
+  },
+  "dkt39_coarse": {
+    "n_edges": 728,
+    "y_rate": 0.39972527472527475,
+    "auroc_L": 0.7313965101008909,
+    "n_nodes": 39
+  },
+  "delta_auroc_L": 0.032675698077544446,
+  "pass_heuristic": true
+}
