@@ -13,6 +13,8 @@ venue_target: NeuroImage / MedIA (site-map framing; scale for CIs)
 
 **Relation to Paper 1.** Paper 1 showed plant-trained \(U\)/\(F\) and plant \(U_{\mathrm{cal}}\) do **not** transfer to leftover \(y\) (AUROC ≈ 0.58–0.60; ECE ≈ 0.32). That domain-shift failure motivates a separate leftover model.
 
+**Lab reading (not for submission tone):** estimand, \(L\to P_L\), site maps — [CLAIMS_LIMITS_AND_MATH.md](CLAIMS_LIMITS_AND_MATH.md); formal protocol — [PAPER2_MATH.md](PAPER2_MATH.md).
+
 ---
 
 ## Abstract (draft; cohort CIs after scale)

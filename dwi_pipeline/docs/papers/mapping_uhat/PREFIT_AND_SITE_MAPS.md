@@ -2,10 +2,27 @@
 title: Pre-fit φ maps, single-subject use, site/protocol dependence, harmonization
 date: 2026-10-21
 status: LAB_NOTE
-companions: [PAPER2_LOCK.md, EDGEUQ_TRUST_BANDS_HOOK.md, EVALUATION_AS_SCIENCE.md]
+companions: [PAPER2_LOCK.md, EDGEUQ_TRUST_BANDS_HOOK.md, EVALUATION_AS_SCIENCE.md, CLAIMS_LIMITS_AND_MATH.md]
 ---
 
 # Pre-fit maps and site dependence (Paper 2 / `edgeuq`)
+
+Readable product note. Theory/claims spine: [CLAIMS_LIMITS_AND_MATH.md](CLAIMS_LIMITS_AND_MATH.md). Formal math: [PAPER2_MATH.md](PAPER2_MATH.md).
+
+---
+
+## Plain-language first
+
+**Pre-fit map** = a frozen lookup \(\phi\): “given this score, what probability do we report?” learned once on a calibration cohort, then applied to new people **without** needing their second visit.
+
+| Question | Answer |
+|----------|--------|
+| Can I get \(P_L\) from one scan? | **Yes**, if a **same-stratum** leftover map is shipped. |
+| Do I need TRT on the new person? | **No** for apply; **yes** for anyone used to *fit* \(\phi\). |
+| Can I use a Kirby map on Boekel? | **Not by default** — CLI refuses unless `--force-cross-site`. |
+| Is plant \(U_{\mathrm{cal}}\) a leftover map? | **No** — different event (Paper 1 G fail). |
+
+---
 
 ## What “pre-fit” means
 
@@ -21,6 +38,8 @@ A **frozen map** \(\phi\): score \(\mapsto\) probability, learned once on a **ca
 - **Allowed:** compute \(L\) from ses-1 only; apply a **shipped** same-site \(\phi_L\) if one exists.  
 - **Not allowed as validation:** fit \(\phi\) on that subject’s own edges then report ECE on the same edges.  
 - **Weak:** n=2 LOSO is a protocol demo, not a product map.
+
+**Why the “not allowed” rule?** Fitting and scoring on the same person’s edges makes ECE look good by construction. We claim generalization across people, so train/test must split by **subject**.
 
 ---
 
@@ -51,6 +70,10 @@ Interim within-Kirby n=4 (ECE ≈ 0.04 vs cross-site ≈ 0.18) frozen 2026-10-22
 
 ## Site / protocol dependence
 
+### Intuition
+
+Calibration asks: “when \(\phi\) says 0.6, do about 60% of edges move?” If site A moves ~54% of eligible edges and site B ~36%, a map trained on A will systematically mis-state probabilities on B — even if ranking (\(L\)) still helps.
+
 ### What we observed
 - Cross-site LOSO (Kirby ↔ Boekel): ECE ≈ 0.18 with **y-rate clash** (~0.54 vs ~0.36).  
 - Within-Kirby interim: ECE ≈ 0.04 with matched y-rates (~0.52–0.60).
@@ -77,6 +100,8 @@ So calibration failure is not “\(P_L\) never works”; it is often **wrong sit
 
 Plant \(\phi\) is a pre-fit for a **different estimand**. Reusing it on leftover \(y\) was Paper 1 G fail — that is why leftover needs its **own** \(\phi_L\), never named \(\hat{U}\).
 
+**Analogy.** A thermometer calibrated for water baths is not automatically correct for outdoor air. Same instrument family, wrong target event.
+
 ---
 
 ## Checklist before shipping a leftover pre-fit
@@ -92,7 +117,9 @@ Plant \(\phi\) is a pre-fit for a **different estimand**. Reusing it on leftover
 
 ## Related docs
 
+- [CLAIMS_LIMITS_AND_MATH.md](CLAIMS_LIMITS_AND_MATH.md)  
 - [PAPER2_LOCK.md](PAPER2_LOCK.md)  
+- [PAPER2_MATH.md](PAPER2_MATH.md)  
 - [EDGEUQ_TRUST_BANDS_HOOK.md](EDGEUQ_TRUST_BANDS_HOOK.md)  
 - [EVALUATION_AS_SCIENCE.md](EVALUATION_AS_SCIENCE.md)  
 - `edgeuq` `docs/leftover_cal.md`, `docs/shift.md`  

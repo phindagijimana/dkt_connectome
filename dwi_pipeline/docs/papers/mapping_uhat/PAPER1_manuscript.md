@@ -14,6 +14,8 @@ venue_target: NeuroImage / Human Brain Mapping
 
 **Product.** (i) Frozen shift sensitivity \(U\) and jitter leakage \(F\) for iFOD2 count connectomes under `radial_4`. (ii) Isotonic calibration of \(U\) to the planted 1 mm event. (iii) Public scan–rescan exam showing these scores do **not** transfer as leftover rankers/calibrators. (iv) Reporting schema and optional secondary score \(L=-\log(1+C_0)\). (v) Software: `edgeuq`.
 
+**Lab reading (not for submission tone):** plain-language claims, limits, and math — [CLAIMS_LIMITS_AND_MATH.md](CLAIMS_LIMITS_AND_MATH.md).
+
 ---
 
 ## Abstract

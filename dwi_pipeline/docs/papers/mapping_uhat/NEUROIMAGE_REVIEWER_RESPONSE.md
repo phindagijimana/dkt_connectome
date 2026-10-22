@@ -26,8 +26,8 @@ Hard-reviewer bar from the lab red-team (clear estimand, enough n, baselines, fr
 | Positive use case + honest TRT fail | **Solved in draft** | Claim A plant win + Claim B leftover fail in same abstract |
 | Soft invent / G quietly dropped | **Solved in draft** | Reported as locked fails |
 | Scale / multi-site / HCP stratum | **Open** | Descriptive panels after `scale descriptive` ([PAPER1_AWAITING_SCALE.md](PAPER1_AWAITING_SCALE.md)) |
-| Plant≠leftover figure | **Open (cheap)** | Fig plan exists; render PDF/SVG pre-submission |
-| Alternate-atlas smoke | **Open (optional)** | N3 if cheap — improves odds, not a gate |
+| Plant≠leftover figure | **Rendered** | `figures/fig_plant_neq_leftover` (+ Claim B bars) |
+| Alternate-atlas smoke | **Cheap stand-in done** | Coarse DKT-39; full Schaefer optional |
 | Clinical/TBI leap | **Solved by non-claim** | No clinical leap in P1; TRACK-TBI only for plant held-out |
 
 ## Paper 2 (\(L\) / \(P_L\))
