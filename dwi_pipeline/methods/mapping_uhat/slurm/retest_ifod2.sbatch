@@ -53,6 +53,7 @@ test -f "${FILT}"
 test -d "${TF}"
 if [[ ! -f "${COUNT}" ]]; then
   if ! find -L "${QOUT}" -type f -path "*sub-${SID}*ses-${SES}*" \( -name '*model-ifod2_streamlines.tck' -o -name '*model-ifod2_streamlines.tck.gz' \) | grep -q .; then
+    set +e
     apptainer run --cleanenv --containall \
       -B "${QSIPREP}":/qsiprep_input:ro \
       -B "${QOUT}":/output \
@@ -74,6 +75,13 @@ if [[ ! -f "${COUNT}" ]]; then
         --output-resolution 2 \
         --nthreads 8 --omp-nthreads 8 \
         --work-dir /work
+    qrc=$?
+    set -e
+    # QSIRecon often finishes tractography then dies in generate_reports (pybids session kw).
+    # Keep going if streamlines landed in QOUT.
+    if [[ "${qrc}" -ne 0 ]]; then
+      echo "[KIRBY-IFOD] qsirecon exit=${qrc}; checking for streamlines before failing"
+    fi
   fi
   TCK="$(find -L "${QOUT}" -type f -path "*sub-${SID}*ses-${SES}*" \( -name '*model-ifod2_streamlines.tck' -o -name '*model-ifod2_streamlines.tck.gz' \) | head -1)"
   test -n "${TCK}" && test -f "${TCK}"

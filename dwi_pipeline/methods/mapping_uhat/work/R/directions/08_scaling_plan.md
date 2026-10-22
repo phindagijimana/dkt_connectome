@@ -65,3 +65,7 @@ Home ~338 GB free after cleanup. Plan:
 ## Gate to start jobs
 
 Reply **scale descriptive** (or similar) after reviewing Dirs 1–7. Until then, no array submissions beyond current HCP pilot.
+
+## Gate status (2026-10-21)
+
+User authorized: **run scale cohort after this is done** (after KKI239 mini pack). Watcher: `slurm/watch_mini_then_scale.sh` → Boekel wave via `submit_scale_descriptive.sh`.

@@ -235,6 +235,8 @@
     "symbols": ["L", "P_L", "y_leftover", "R"],
     "edgeuq": "calibrate-leftover",
     "pilot_loso": "work/R/paper2/P_L_loso.json",
+    "publication_plan": "docs/papers/mapping_uhat/PUBLICATION_PLAN.md",
+    "three_outputs": ["Paper1_plant_boundary", "Paper2_leftover_PL", "DKT_connectome_software_edgeuq_hooks"],
     "forbidden": ["hatU", "plant_y_for_PL", "invent_retune"],
     "gate_for_calibration_claims": "scale descriptive"
   }

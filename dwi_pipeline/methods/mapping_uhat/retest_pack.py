@@ -26,7 +26,15 @@ C2_LOCK = HERE / "work" / "C2" / "LOCK.json"
 ISO = HERE / "work" / "C" / "isotonic.json"
 FIT_MM = (-0.5, -0.25, 0.25, 0.5)
 TEST_MM = (-1.0, 1.0)
-PAIRS = (("kirby21", "KKI849"), ("boekel_dwi_retest", "pp01"))
+# GOLD pilots + within-site Kirby mini (2026-10-21)
+PAIRS = (
+    ("kirby21", "KKI849"),
+    ("boekel_dwi_retest", "pp01"),
+    ("kirby21", "KKI113"),
+    ("kirby21", "KKI127"),
+    ("kirby21", "KKI142"),
+    ("kirby21", "KKI239"),
+)
 INVENT_FRAC = 0.001
 
 

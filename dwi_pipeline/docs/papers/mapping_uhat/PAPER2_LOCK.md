@@ -4,9 +4,12 @@ date: 2026-10-20
 status: DESIGN_LOCKED_PILOT_DEMO
 venue_target: NeuroImage / MedIA (if held-out P_L closes)
 depends_on: Paper 1 finalize; scale descriptive preferred for n≫2
+publication_plan: PUBLICATION_PLAN.md (P2 separate from P1 and DKT software note)
 ---
 
 # PAPER2_LOCK
+
+> **Publication:** methods paper alone (NeuroImage-tier). DKT-Connectome ships \(L\)/\(P_L\) as an optional hook and cites this paper — it does not absorb these claims.
 
 ## Core question
 
@@ -66,3 +69,7 @@ Primary ses-1 score (v0): \(L=-\log(1+C^{(1)})\). Features may be added later un
 ## Scale gate
 
 Serious multi-fold \(P_L\) claims after **`scale descriptive`** (or equivalent n≫2 public pairs). Until then: design + code + pilot protocol demo.
+
+## Pre-fit maps and site preference
+
+Single-subject users need a **shipped** \(\phi_L\) (pre-fit), not a local TRT fit. Prefer **per-site / per-protocol** maps; do not treat harmonization as a substitute without an explicit ECE test. See [PREFIT_AND_SITE_MAPS.md](PREFIT_AND_SITE_MAPS.md). Software: `edgeuq apply-leftover-map` refuses stratum mismatch unless `--force-cross-site`. Reviewer checklist: [NEUROIMAGE_REVIEWER_RESPONSE.md](NEUROIMAGE_REVIEWER_RESPONSE.md).

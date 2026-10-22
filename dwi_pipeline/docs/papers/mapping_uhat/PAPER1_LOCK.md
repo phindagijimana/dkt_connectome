@@ -2,10 +2,13 @@
 title: Paper 1 lock — endpoint fragility UQ for streamline-count connectomes
 date: 2026-10-20
 status: FINALIZE_PRE_SCALE
-venue_target: NeuroImage / Human Brain Mapping (methods)
+venue_target: NeuroImage / Imaging Neuroscience / HBM (methods)
+publication_plan: PUBLICATION_PLAN.md (P1 separate from P2 and DKT software note)
 ---
 
 # PAPER1_LOCK
+
+> **Publication:** methods paper alone. DKT-Connectome may ship `edgeuq` as an optional hook and cite this paper; it does not absorb Claims A–C.
 
 ## One-line product
 
