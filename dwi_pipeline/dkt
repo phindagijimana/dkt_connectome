@@ -176,6 +176,7 @@ cmd_check() {
   local outputs=0
   local cache=""
   local strict=0
+  local cache_only=0
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -183,6 +184,7 @@ cmd_check() {
       --subject) subject="${2#sub-}"; shift 2 ;;
       --results-root) results_root="$2"; shift 2 ;;
       --cache) cache="$2"; shift 2 ;;
+      --cache-only) cache_only=1; shift ;;
       --with-dry-run) with_dry_run=1; shift ;;
       --strict) strict=1; shift ;;
       --preflight) preflight=1; shift ;;
@@ -193,9 +195,14 @@ Usage: dkt check [options]
 
 Verify install and runtime readiness (wraps ./run doctor + optional checks).
 
+By default, container checks are path-agnostic: a step image is OK if it
+exists in any known location (CONTAINER_* env, config.local.yaml, or the
+install cache — pin-named or short name like qsirecon.sif).
+
 Options:
   --mode MODE           Pipeline mode for container checks (default: all)
-  --cache DIR           Check pin-named .sif files in DIR (ignores config.local.yaml)
+  --cache DIR           Also search DIR for .sif files (default: DKT_CONTAINER_CACHE)
+  --cache-only          Require pin-named files in the cache only (ignore env/config paths)
   --with-dry-run        Include Snakemake dry-run on bids_minimal fixture
   --preflight           Also run workflow/preflight.sh (--quick)
   --subject ID          With --outputs or --preflight: subject to validate
@@ -207,6 +214,7 @@ Examples:
   ./dkt check
   ./dkt check --strict
   ./dkt check --with-dry-run
+  ./dkt check --cache-only --cache ~/.cache/dkt-connectome/containers
   ./dkt check --preflight --mode all --subject 001
   ./dkt check --outputs --subject 001 --results-root /data/out
 EOF
@@ -219,6 +227,7 @@ EOF
   local exit_code=0
   local doctor_args=()
   [[ -n "${cache}" ]] && doctor_args+=(--cache "${cache}")
+  ((cache_only)) && doctor_args+=(--cache-only)
   doctor_args+=(--mode "${mode}")
   ((with_dry_run)) && doctor_args+=(--with-dry-run)
 

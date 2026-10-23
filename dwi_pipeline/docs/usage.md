@@ -17,7 +17,7 @@ Command-line reference for the DKT Connectome BIDS App (`./run`, `./dkt`) and HP
 | `./dkt pull` | Pull containers only (adds `--write-config` by default) |
 | `./dkt run …` | Same as `./run …` |
 | `./dkt log …` | List or tail logs under `RESULTS_ROOT/logs` |
-| `./dkt check` | Verify tools, license, containers (`doctor`) |
+| `./dkt check` | Verify tools, license, containers (`doctor`; path-agnostic) |
 | `./dkt version` | Print `PipelineVersion` from `app.json` |
 
 Examples:

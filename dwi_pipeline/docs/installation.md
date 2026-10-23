@@ -34,6 +34,8 @@ mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 
 `./dkt install` pulls pinned step `.sif` images and writes `workflow/config/config.local.yaml`. `--strict` compares SHA-256 to [`release_manifest.json`](../release_manifest.json).
 
+`./dkt check` is **path-agnostic**: each step image is OK if it exists in any known location (`CONTAINER_*` env, `config.local.yaml`, or the install cache — pin-named or short names like `qsirecon.sif`). Use `--cache-only` to require pin-named files in the cache directory only.
+
 Install all images, or one container at a time (useful after a failed pull):
 
 ```bash
