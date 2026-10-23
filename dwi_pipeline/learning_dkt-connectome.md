@@ -496,7 +496,7 @@ CIFTI files:
 - **neurolit** — deep-learning-inpainted T1w (*standalone* fill; factorial arms set `LIT_MODE=standalone`)
 - **vbt** — LeAPP Virtual Brain Transplant (also standalone)
 
-**Production lesion default (DKT pipeline):** `LIT_MODE=integrated` — prepare mask → FastSurfer ≥2.5 `--lesion_mask` on raw T1 (fill + LIT stats in FreeSurfer dir). Opt into standalone with `--lit-standalone`. See `dkt_examples_wt/dwi_pipeline/pipeline_science.md` §1.1.
+**DKT pipeline Step 1.1 is standalone by design** (fill outside recon → ordinary FastSurfer/FreeSurfer). Four reasons + optional `--post-hoc-fs` for LIT packaging after recon: `dkt_examples_wt/dwi_pipeline/docs/usage.md` § anatomical lesion mitigation · `methods/step1_1_inpaint.md` § standalone vs `--lesion_mask`. FastSurfer native `--lesion_mask` (integrated) remains an alternate wiring for FS ≥ 2.6 / neurolit-only.
 
 **ACT** axis — whether streamline propagation respects the lesion:
 - **std** — standard ACT (default 5TT, lesion effect implicit)
@@ -1805,7 +1805,7 @@ From cheap to expensive:
 - **LINC** — Lifespan Informatics Neuroimaging Center (XCP-D mode)
 - **magnitude1/2** — BIDS Case-2 fieldmap magnitude images at two echoes
 - **midtrans** — FSL tool computing the half-way transform
-- **neuroLIT / FastSurfer-LIT** — lesion inpainting; **integrated** (default) = FastSurfer `--lesion_mask`; **standalone** = separate `lit-inpainting` then recon
+- **neuroLIT / FastSurfer-LIT** — lesion inpainting; **standalone** (DKT default) = separate fill then ordinary recon (+ optional `--post-hoc-fs`); **integrated** = FastSurfer `--lesion_mask` (FS ≥ 2.6, neurolit-only)
 - **NIfTI** — Neuroimaging Informatics Technology Initiative (image format)
 - **PED / PhaseEncodingDirection** — BIDS field (`j-`, `i`, etc.)
 - **phasediff** — BIDS Case-2 phase-difference image

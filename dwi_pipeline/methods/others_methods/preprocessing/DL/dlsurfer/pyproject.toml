@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dlsurfer"
+version = "0.1.0"
+description = "Curated deep-learning morphometry orchestrator (FreeSurfer-shaped outputs)"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+dlsurfer = "dlsurfer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dlsurfer*"]
+
+[tool.setuptools.package-data]
+dlsurfer = ["*.yaml"]

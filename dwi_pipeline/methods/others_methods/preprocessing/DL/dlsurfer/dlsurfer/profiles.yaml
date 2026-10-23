@@ -1,0 +1,174 @@
+# DLSurfer run profiles — each step references engines.yaml ids
+
+profiles:
+
+  core:
+    phase: 1
+    description: >
+      Default morphometry: FastSurferVINN + CC + CerebNet + HypVINN + recon-surf.
+      FreeSurfer-shaped SUBJECTS_DIR for DKT/QSIRecon handoff.
+    requires_lesion_mask: false
+    engine: fastsurfer
+    steps:
+      - {engine: fastsurfer_vinn, stage: seg, device: gpu}
+      - {engine: fastsurfer_cc, stage: seg, device: gpu}
+      - {engine: cerebnet, stage: seg, device: gpu}
+      - {engine: hypvinn, stage: seg, device: gpu}
+      - {engine: recon_surf, stage: surf, device: cpu}
+    citations_note: "Cite Henschel 2020/2022; Faber 2022; Estrada 2023; Pollak CC 2026."
+
+  core-lesion:
+    phase: 1
+    description: >
+      BEST default lesion path: standalone neuroLIT fill → ordinary FastSurfer core
+      → optional lit-postprocessing. Preserves GPU seg / CPU surf HPC split
+      (native --lesion_mask cannot).
+    requires_lesion_mask: true
+    engine: fastsurfer
+    steps:
+      - {engine: neurolit, stage: fill, device: gpu, mode: standalone_inpaint}
+      - {engine: fastsurfer_vinn, stage: seg, device: gpu, t1: inpainted}
+      - {engine: fastsurfer_cc, stage: seg, device: gpu}
+      - {engine: cerebnet, stage: seg, device: gpu}
+      - {engine: hypvinn, stage: seg, device: gpu}
+      - {engine: recon_surf, stage: surf, device: cpu}
+      - {engine: neurolit, stage: post, device: cpu, mode: lit_post, optional_flag: post_lit}
+    citations_note: "Cite Pollak LIT 2025 + FastSurfer core citations."
+
+  core-lesion-native:
+    phase: 1
+    description: >
+      Opt-in native FastSurfer --lesion_mask (LIT inside recon). WARN: incompatible
+      with --seg_only/--surf_only HPC split. Prefer core-lesion for clusters.
+    requires_lesion_mask: true
+    engine: fastsurfer
+    warn: "Native LIT blocks FastSurfer seg/surf partition split."
+    steps:
+      - {engine: neurolit, stage: native, device: gpu, mode: lesion_mask_flag}
+      - {engine: fastsurfer_vinn, stage: all, device: gpu}
+      - {engine: recon_surf, stage: all, device: mixed}
+    citations_note: "Cite Pollak LIT 2025; FastSurfer LIT module docs."
+
+  seg-quick:
+    phase: 1
+    description: Volume segmentation only (FastSurferVINN) — no surfaces.
+    requires_lesion_mask: false
+    engine: fastsurfer
+    steps:
+      - {engine: fastsurfer_vinn, stage: seg_only, device: gpu}
+    citations_note: "Cite Henschel FastSurferVINN 2022."
+
+  seg-quick-synthseg:
+    phase: 1
+    description: SynthSeg volume seg (± parc) for odd contrast/resolution.
+    requires_lesion_mask: false
+    engine: freesurfer
+    steps:
+      - {engine: synthseg, stage: seg, device: auto}
+    citations_note: "Cite Billot SynthSeg."
+
+  strip:
+    phase: 1
+    description: SynthStrip skull-strip / brain mask utility.
+    requires_lesion_mask: false
+    engine: freesurfer
+    steps:
+      - {engine: synthstrip, stage: strip, device: cpu}
+    citations_note: "Cite Hoopes SynthStrip 2022."
+
+  fs8:
+    phase: 2
+    description: >
+      FreeSurfer 8 recon-all (embeds SynthSeg/Strip/Morph). XOR with FastSurfer
+      core — do not mix mid-subject.
+    requires_lesion_mask: false
+    engine: freesurfer8
+    steps:
+      - {engine: freesurfer8, stage: recon-all, device: cpu}
+    citations_note: "Cite FreeSurfer 8 release notes + Fischl 2012."
+
+  fs8-lesion:
+    phase: 2
+    description: neuroLIT fill then FreeSurfer 8 recon-all on inpainted T1 (+ optional lit.post).
+    requires_lesion_mask: true
+    engine: freesurfer8
+    steps:
+      - {engine: neurolit, stage: fill, device: gpu, mode: standalone_inpaint}
+      - {engine: freesurfer8, stage: recon-all, device: cpu, t1: inpainted}
+      - {engine: neurolit, stage: post, device: cpu, mode: lit_post, optional_flag: post_lit}
+    citations_note: "Cite Pollak LIT 2025 + FreeSurfer 8."
+
+  register-easyreg:
+    phase: 2
+    description: Utility — EasyReg symmetric multimodal registration.
+    requires_lesion_mask: false
+    engine: utility
+    steps:
+      - {engine: easyreg, stage: register, device: cpu}
+    citations_note: "Cite Iglesias EasyReg 2023."
+
+  register-synthmorph:
+    phase: 2
+    description: Utility — SynthMorph acquisition-agnostic registration.
+    requires_lesion_mask: false
+    engine: utility
+    steps:
+      - {engine: synthmorph, stage: register, device: auto}
+    citations_note: "Cite Hoffmann SynthMorph."
+
+  bias-deepn4:
+    phase: 2
+    description: Optional DeepN4 T1 bias-field correction utility.
+    requires_lesion_mask: false
+    engine: utility
+    steps:
+      - {engine: deepn4, stage: bias, device: auto}
+    citations_note: "Cite Kanakaraj DeepN4 2024."
+
+  surf-dl-topofit:
+    phase: 3
+    description: >
+      Experimental: after FastSurfer seg (or FS), replace classical white placement
+      with TopoFit. Requires TBI±LIT validation before production use.
+    experimental: true
+    requires_lesion_mask: false
+    engine: hybrid
+    steps:
+      - {engine: fastsurfer_vinn, stage: seg_only, device: gpu}
+      - {engine: topofit, stage: white, device: auto}
+    citations_note: "Cite Hoopes TopoFit 2022 + Henschel VINN."
+    gate: "Validate on lesioned T1 with and without LIT before enabling in production."
+
+  surf-dl-v2c:
+    phase: 3
+    description: >
+      Experimental: V2C-Flow WM+pial (+ template correspondence). Best Ready full
+      CSR candidate to eventually replace recon-surf.
+    experimental: true
+    requires_lesion_mask: false
+    engine: hybrid
+    steps:
+      - {engine: v2c_flow, stage: csr, device: gpu}
+    citations_note: "Cite Bongratz Vox2Cortex 2022 + V2C-Flow 2024."
+    gate: "TBI±LIT gate; map scanner-RAS meshes into analysis contract."
+
+  sphere-sugar:
+    phase: 3
+    description: Experimental spherical registration via SUGAR (needs existing surfaces).
+    experimental: true
+    requires_lesion_mask: false
+    engine: utility
+    steps:
+      - {engine: sugar, stage: sphere_reg, device: auto}
+    citations_note: "Cite Ren SUGAR 2023."
+
+  thickness-fast:
+    phase: 3
+    description: >
+      Fast volumetric thickness (DL-CTE family). NOT for connectome/aparc handoff.
+    experimental: true
+    requires_lesion_mask: false
+    engine: utility
+    steps:
+      - {engine: dl_cte, stage: thickness, device: auto}
+    citations_note: "Cite Rebsamen DL+DiReCT; CortexMorph; DL-CTE."

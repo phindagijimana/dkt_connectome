@@ -1,0 +1,303 @@
+# DLSurfer engine registry — best ready pick per classical stage
+# readiness: production | ready | research | classical
+# role: why this engine is in DLSurfer (not a reimplementation)
+
+pins:
+  fastsurfer_image: "deepmi/fastsurfer:cu132-v2.6.0"
+  freesurfer_min: "8.0.0"
+  neurolit_min: "0.7.0"
+
+engines:
+
+  synthstrip:
+    id: synthstrip
+    name: SynthStrip
+    classical_replaces: "FS watershed / hybrid skull-strip"
+    readiness: production
+    chosen: true
+    why: >
+      Best Production skull-strip already in FreeSurfer (≥7.3). Contrast- and
+      resolution-robust via synthetic training; removes a common classical failure
+      mode without a separate container. Prefer over HD-BET inside DLSurfer so
+      the strip utility stays license/tooling-aligned with FS8.
+    cite:
+      - "Hoopes A, et al. SynthStrip: skull-stripping for any brain image. NeuroImage 2022."
+      - "https://synthstrip.io"
+    cli: "mri_synthstrip"
+    device: cpu_ok
+    phase: 1
+
+  deepn4:
+    id: deepn4
+    name: DeepN4
+    classical_replaces: "N3/N4 / NU bias-field correction"
+    readiness: ready
+    chosen: true
+    why: >
+      Best Ready learned approximation of N4ITK for T1w (public weights; also in
+      DIPY). Optional pre-step when FastSurfer/FS bias handling is insufficient or
+      when a differentiable/portable N4 stand-in is needed outside FS. Not required
+      for core FastSurfer profiles (VINN path has its own biasfield stats).
+    cite:
+      - "Kanakaraj S, et al. DeepN4: Learning N4ITK Bias Field Correction for T1-weighted Images. 2024. PMC10680935."
+      - "https://github.com/MASILab/DeepN4"
+    cli: "deepn4 / dipy_bias_field_correction --method n4"
+    device: cuda_or_cpu
+    phase: 2
+
+  fastsurfer_vinn:
+    id: fastsurfer_vinn
+    name: FastSurferVINN (asegdkt)
+    classical_replaces: "CA aseg / classical volumetric labeling + DK-style cortex labels"
+    readiness: production
+    chosen: true
+    why: >
+      Primary whole-brain morphometry engine for DLSurfer. Resolution-independent
+      (0.7–1.0 mm) DL segmentation into FreeSurfer-compatible DKT/aseg products in
+      minutes on GPU. This is the core reason DLSurfer defaults to FastSurfer rather
+      than classical recon-all for 'core' profiles.
+    cite:
+      - "Henschel L, et al. FastSurfer. NeuroImage 2020;219:117012."
+      - "Henschel L, Kuegler D, Reuter M. FastSurferVINN. NeuroImage 2022;251:118933."
+    cli: "run_fastsurfer.sh (asegdkt module)"
+    device: auto
+    phase: 1
+
+  synthseg:
+    id: synthseg
+    name: SynthSeg
+    classical_replaces: "CA aseg; clinical / odd-contrast labeling"
+    readiness: production
+    chosen: true
+    why: >
+      Best Production alternative when T1 quality/contrast/resolution is non-standard,
+      or when using profile fs8 / seg-quick-synthseg. Domain-randomized; ships in
+      FreeSurfer. Not the default for research-grade isotropic T1 (VINN preferred for
+      DKT connectome handoff).
+    cite:
+      - "Billot B, et al. SynthSeg. Medical Image Analysis / FreeSurfer wiki SynthSeg."
+      - "https://surfer.nmr.mgh.harvard.edu/fswiki/SynthSeg"
+    cli: "mri_synthseg"
+    device: cuda_or_cpu
+    phase: 1
+
+  fastsurfer_cc:
+    id: fastsurfer_cc
+    name: FastSurfer-CC
+    classical_replaces: "Classical / limited CC post-processing"
+    readiness: production
+    chosen: true
+    why: >
+      Validated CC morphometry module in the default FastSurfer stack; included in
+      'core' so DLSurfer matches upstream FastSurfer defaults rather than stripping modules.
+    cite:
+      - "Pollak C, et al. FastSurfer-CC. Imaging Neuroscience 2026. doi:10.1162/IMAG.a.1221"
+    cli: "run_fastsurfer.sh (cc; disable with --no_cc)"
+    device: auto
+    phase: 1
+
+  cerebnet:
+    id: cerebnet
+    name: CerebNet
+    classical_replaces: "Limited classical cerebellum sub-segmentation"
+    readiness: production
+    chosen: true
+    why: >
+      Production cerebellum sub-segmentation in FastSurfer; kept on in 'core' for
+      parity with upstream morphometry defaults.
+    cite:
+      - "Faber J, et al. CerebNet. NeuroImage 2022;264:119703."
+    cli: "run_fastsurfer.sh (cereb; --no_cereb to disable)"
+    device: auto
+    phase: 1
+
+  hypvinn:
+    id: hypvinn
+    name: HypVINN
+    classical_replaces: "Sparse classical hypothalamic labeling"
+    readiness: production
+    chosen: true
+    why: >
+      Production hypothalamus + adjacent structure module. Preferred over ScLimbic
+      when the FastSurfer engine is selected (XOR with FS-only ScLimbic path).
+    cite:
+      - "Estrada S, et al. FastSurfer-HypVINN. Imaging Neuroscience 2023."
+    cli: "run_fastsurfer.sh (hypothal; optional --t2)"
+    device: auto
+    phase: 1
+
+  neurolit:
+    id: neurolit
+    name: neuroLIT / FastSurfer-LIT
+    classical_replaces: "No native classical lesion fill in FS/FastSurfer"
+    readiness: production
+    chosen: true
+    why: >
+      Best Production lesion inpainting (DDPM). Standalone lit-inpainting is the
+      DEFAULT lesion path in DLSurfer because native --lesion_mask cannot use
+      FastSurfer --seg_only/--surf_only (breaks GPU/CPU HPC split). lit-postprocessing
+      restores LIT packaging after ordinary recon. Native --lesion_mask remains an
+      explicit opt-in profile.
+    cite:
+      - "Pollak C, et al. FastSurfer-LIT. Imaging Neuroscience 2025. doi:10.1162/imag_a_00446"
+      - "https://github.com/Deep-MI/neurolit"
+      - "FastSurfer LIT docs: https://deep-mi.org/FastSurfer/stable/overview/modules/LIT.html"
+    cli: "lit-inpainting ; lit-postprocessing ; or run_fastsurfer.sh --lesion_mask"
+    device: auto
+    phase: 1
+
+  recon_surf:
+    id: recon_surf
+    name: FastSurfer recon-surf (classical geometry)
+    classical_replaces: "FS surface stages (tessellate→topology→white/pial→sphere→thickness)"
+    readiness: classical
+    chosen: true
+    why: >
+      Still the Production surface path for SUBJECTS_DIR / QSIRecon compatibility.
+      Not deep learning (spectral embedding + FreeSurfer binaries). Kept as default
+      surfaces backend until Phase-3 surf-dl backends pass the TBI±LIT gate. This is
+      intentional: DLSurfer does not fake a DL surface drop-in before validation.
+    cite:
+      - "Henschel L, et al. FastSurfer. NeuroImage 2020 (recon-surf description)."
+      - "Fischl B. FreeSurfer. NeuroImage 2012 (underlying surface methods)."
+    cli: "run_fastsurfer.sh (surf) / recon-surf.sh"
+    device: cpu
+    phase: 1
+
+  synthmorph:
+    id: synthmorph
+    name: SynthMorph
+    classical_replaces: "Talairach / CA linear+nonlinear volumetric registration"
+    readiness: production
+    chosen: true
+    why: >
+      Best Production acquisition-agnostic DL registration in FreeSurfer. Used as a
+      utility profile for multimodal alignment / MNI mapping — not required inside
+      FastSurfer 'core' (VINN path), but exposed so classical CA register is not
+      reintroduced by lab scripts.
+    cite:
+      - "Hoffmann M, et al. SynthMorph. IEEE TMI 2022; Imaging Neuroscience 2024."
+      - "https://synthmorph.io"
+    cli: "mri_synthmorph"
+    device: cuda_or_cpu
+    phase: 2
+
+  easyreg:
+    id: easyreg
+    name: EasyReg
+    classical_replaces: "Classical symmetric diffeomorphic volume registration"
+    readiness: production
+    chosen: true
+    why: >
+      Best Production symmetric, invertible, modality-agnostic registration CLI in
+      FreeSurfer 7.4+. Prefer when directionality/symmetry matters; companion to
+      SynthMorph for utility registration tasks.
+    cite:
+      - "Iglesias JE, et al. EasyReg. Scientific Reports 2023. doi:10.1038/s41598-023-33781-0"
+      - "https://surfer.nmr.mgh.harvard.edu/fswiki/EasyReg"
+    cli: "mri_easyreg"
+    device: cpu_ok
+    phase: 2
+
+  freesurfer8:
+    id: freesurfer8
+    name: FreeSurfer 8 recon-all
+    classical_replaces: "FS≤7 classical early stages (embeds SynthSeg/Strip/Morph)"
+    readiness: production
+    chosen: true
+    why: >
+      Alternate morphometry engine (XOR with FastSurfer). FS8 already embeds DL for
+      strip/seg/reg while keeping classical surfaces. Offered as profile 'fs8' for
+      sites standardized on FreeSurfer outputs or longitudinal FS workflows.
+    cite:
+      - "FreeSurfer 8.0.0 release notes (SynthSeg, SynthStrip, SynthMorph in recon-all)."
+      - "Fischl B. FreeSurfer. NeuroImage 2012."
+    cli: "recon-all"
+    device: cpu_ok
+    phase: 2
+
+  topofit:
+    id: topofit
+    name: TopoFit
+    classical_replaces: "Topology fixer + white-surface placement (partial)"
+    readiness: production
+    chosen: true
+    why: >
+      Best Production DL white-surface fit already shipped in FreeSurfer
+      (mris_estimate_wm). First Phase-3 surf-dl building block: lowest integration
+      risk. Does not alone replace pial/thickness/aparc — pair with recon-surf pial
+      or V2C-Flow for full surfaces.
+    cite:
+      - "Hoopes A, et al. TopoFit. MIDL 2022."
+      - "https://github.com/ahoopes/topofit"
+    cli: "mris_estimate_wm"
+    device: cuda_or_cpu
+    phase: 3
+
+  v2c_flow:
+    id: v2c_flow
+    name: V2C-Flow (Vox2Cortex-Flow)
+    classical_replaces: "White+pial surfaces; often sphere.reg via template IDs"
+    readiness: ready
+    chosen: true
+    why: >
+      Best Ready full explicit CSR: joint WM+pial, <2s, fsaverage-compatible vertex
+      correspondence. Primary candidate to replace recon-surf for speed once TBI±LIT
+      validation passes. Not SUBJECTS_DIR drop-in — adapter must map meshes into FS
+      tree / analysis convention (scanner RAS).
+    cite:
+      - "Bongratz F, et al. Vox2Cortex. CVPR 2022."
+      - "Bongratz F, et al. V2C-Flow. arXiv:2401.12938 (2024)."
+      - "https://github.com/ai-med/Vox2Cortex"
+    cli: "vox2organ / V2C-Flow pretrained"
+    device: cuda
+    phase: 3
+
+  sugar:
+    id: sugar
+    name: SUGAR
+    classical_replaces: "Spherical registration to fsaverage (sphere.reg)"
+    readiness: ready
+    chosen: true
+    why: >
+      Best Ready dedicated spherical surface registration (large multi-dataset
+      eval, sub-second). Used when recon-surf or TopoFit meshes exist but classical
+      sphere.reg is the measured bottleneck — or when V2C-Flow correspondences are
+      not used.
+    cite:
+      - "Ren J, et al. SUGAR. arXiv:2307.00511 (2023)."
+      - "https://github.com/pBFSLab/SUGAR"
+    cli: "SUGAR (see upstream README)"
+    device: cuda_or_cpu
+    phase: 3
+
+  dl_cte:
+    id: dl_cte
+    name: DL-CTE / CortexMorph family
+    classical_replaces: "Surface-based cortical thickness (when surfaces not required)"
+    readiness: ready
+    chosen: true
+    why: >
+      Best Ready fast thickness without full FreeSurfer surfaces (CNN seg +
+      diffeomorphic DiReCT-style registration). Profile 'thickness-fast' only —
+      NOT for DKT connectome / aparc handoff.
+    cite:
+      - "Rebsamen M, et al. DL+DiReCT. Hum Brain Mapp 2020."
+      - "CortexMorph arXiv:2307.11567 (2023)."
+      - "Wu et al. DL-CTE 2025. https://github.com/wujiong-hub/DL-CTE"
+    cli: "dl-cte / cortexmorph"
+    device: cuda_or_cpu
+    phase: 3
+
+# Explicitly NOT chosen as defaults (documented for honesty)
+deferred:
+  - id: hdbet
+    why: "Credible Ready stripper, but SynthStrip is already in FS and preferred for one-license tooling."
+  - id: vbg
+    why: "Ready fill, but Deutscher 2025 shows VBG can worsen FastSurfer on ms-TBI; TBI policy required first."
+  - id: leapp_vbt
+    why: "Stroke-oriented; lab VBT orientation SIGSEGV on radiological TBI T1s."
+  - id: cortexode
+    why: "Strong Research CSR; V2C-Flow chosen first as Ready pretrained full WM+pial."
+  - id: pialnn
+    why: "WM→pial only; consider after TopoFit if V2C-Flow fails TBI gate."
