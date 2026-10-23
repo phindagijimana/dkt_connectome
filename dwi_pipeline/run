@@ -80,11 +80,13 @@ Node strength (Step 5):
   --no-report           Skip PDF report
 
 Other:
-  ./dkt <command>           Unified CLI (install, pull, run, log, check)
+  ./dkt <command>           Unified CLI (init, install, check, run, status, …)
   ./run doctor [options]      Verify install (tools, license, containers)
+  --profile NAME        Named defaults: ideas | glioma | minimal (see ./dkt profiles)
   --dry-run             Snakemake plan only (-n)
   --export-bids-derivatives   Write RESULTS_ROOT/derivatives/ mirror after run
   --export-copy         Copy files instead of symlinks for BIDS export
+  --bids-exec-spec      Print Boutiques descriptor (BIDS execution-spec) and exit
   --version             Print pipeline version (app.json)
 
 Environment: FS_LICENSE, CONTAINER_*, TEMPLATEFLOW_HOME, ...
@@ -102,6 +104,9 @@ for arg in "$@"; do
   case "$arg" in
     -h|--help) usage; exit 0 ;;
     --version|-v) version; exit 0 ;;
+    --bids-exec-spec)
+      exec python3 "${SCRIPT_DIR}/scripts/dkt_cli.py" bids-exec-spec
+      ;;
   esac
 done
 
@@ -133,6 +138,7 @@ BIDS_VALIDATE=0
 BIDS_IGNORE_WARNINGS=0
 EXPORT_BIDS_DERIVATIVES=0
 EXPORT_COPY=0
+PROFILE=""
 EXTRA=()
 
 while [[ $# -gt 0 ]]; do
@@ -161,6 +167,7 @@ while [[ $# -gt 0 ]]; do
     --skip-bids-validation) shift ;;
     --bids-validation) BIDS_VALIDATE=1; shift ;;
     --ignore-warnings) BIDS_IGNORE_WARNINGS=1; shift ;;
+    --profile) PROFILE="$2"; shift 2 ;;
     --mode) MODE="$2"; shift 2 ;;
     --connectome-weighting) export CONNECTOME_WEIGHTING="$2"; EXTRA+=(--connectome-weighting "$2"); shift 2 ;;
     --disconnectome-weighting) EXTRA+=(--disconnectome-weighting "$2"); shift 2 ;;
@@ -192,6 +199,18 @@ while [[ $# -gt 0 ]]; do
 done
 
 PY="${PIPELINE_PYTHON:-python3.12}"
+
+# Expand named --profile into concrete flags (does not override explicit flags already parsed).
+if [[ -n "${PROFILE}" ]]; then
+  # shellcheck disable=SC2207
+  PROFILE_FLAGS=($(python3 "${SCRIPT_DIR}/scripts/dkt_cli.py" expand-profile "${PROFILE}"))
+  if [[ ${#PROFILE_FLAGS[@]} -gt 0 ]]; then
+    echo "[run] profile=${PROFILE} → ${PROFILE_FLAGS[*]}"
+    EXTRA=("${PROFILE_FLAGS[@]}" "${EXTRA[@]}")
+  else
+    echo "[run] profile=${PROFILE} (pipeline defaults)"
+  fi
+fi
 
 if [[ "${ANALYSIS_LEVEL}" == "group" ]]; then
   echo "[run] group-level: building cohort QC indexes"
@@ -259,6 +278,10 @@ for sub in "${PARTICIPANTS[@]}"; do
   PROCESSED+=("${sub}")
   if ! bash "${RUN_SUBJECT}" "${MODE}" "${sub}" "${SESSION_ARG[@]}" "${EXTRA[@]}" "${DRY_FLAG[@]}"; then
     exit_code=1
+    echo "[run] FAILED sub-${sub}" >&2
+    echo "Next:" >&2
+    echo "  1. ./dkt log --results-root ${OUTPUT_DIR} --subject ${sub}" >&2
+    echo "  2. ./dkt status --results-root ${OUTPUT_DIR}" >&2
     if [[ "${STOP_ON_FIRST_CRASH}" == "1" ]]; then
       echo "[run] stop-on-first-crash: aborting after sub-${sub}" >&2
       break
@@ -284,6 +307,16 @@ if ((EXPORT_BIDS_DERIVATIVES)); then
   export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
   ((EXPORT_COPY)) && export_args+=(--copy)
   "${PY}" "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit_code=1
+fi
+
+# Lightweight status snapshot (does not change derivatives layout).
+"${PY}" "${SCRIPT_DIR}/scripts/dkt_cli.py" status \
+  --results-root "${OUTPUT_DIR}" --write >/dev/null 2>&1 || true
+
+if [[ "${exit_code}" -eq 0 ]]; then
+  echo "[run] OK — next: ./dkt status --results-root ${OUTPUT_DIR}"
+else
+  echo "[run] finished with errors — next: ./dkt status --results-root ${OUTPUT_DIR}" >&2
 fi
 
 exit "${exit_code}"

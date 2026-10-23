@@ -23,6 +23,17 @@ Optional: Slurm for `submit.sh`. Cloud: [One-pull](#one-pull-docker--cloud) inst
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
 chmod +x run install dkt
+./dkt init --license /path/to/your/license.txt --bids /path/to/BIDS --out /path/to/OUT
+# init prints the three exports + next commands; then:
+./dkt install
+./dkt check
+./dkt run /path/to/BIDS /path/to/OUT participant --participant-label 001 --profile ideas
+./dkt status --results-root /path/to/OUT
+```
+
+Manual equivalent (if you prefer env vars):
+
+```bash
 export FS_LICENSE=/path/to/your/license.txt
 export DKT_CONTAINER_CACHE=$HOME/.cache/dkt-connectome/containers
 export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp

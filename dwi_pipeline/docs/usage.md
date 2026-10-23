@@ -8,26 +8,31 @@ Command-line reference for the DKT Connectome BIDS App (`./run`, `./dkt`) and HP
 
 ## Unified CLI (`./dkt`)
 
-`./dkt` wraps install, pull, run, log, and check without changing the BIDS App `./run` contract.
+`./dkt` wraps day-to-day commands without changing the BIDS App `./run` contract. Prefer a short path: **init → install → check → run → status**.
 
 | Command | Purpose |
 |---------|---------|
-| `./dkt install` / `./dkt install all` | Pull all step `.sif` images + write `config.local.yaml` |
-| `./dkt install qsirecon` | Pull / re-pull one container (also: `qsiprep`, `fastsurfer`, …) |
-| `./dkt pull` | Pull containers only (adds `--write-config` by default) |
-| `./dkt run …` | Same as `./run …` |
-| `./dkt log …` | List or tail logs under `RESULTS_ROOT/logs` |
-| `./dkt check` | Verify tools, license, containers (`doctor`; path-agnostic) |
+| `./dkt init` | Write `config.local.yaml` + print next steps |
+| `./dkt install` / `./dkt install all` | Pull all step `.sif` images |
+| `./dkt install qsirecon` | Pull / re-pull one container |
+| `./dkt check` | Verify tools, license, containers (path-agnostic) |
+| `./dkt run …` | Same as `./run …` (supports `--profile ideas\|glioma\|minimal`) |
+| `./dkt status --results-root OUT` | Subject × stage table (OK / .. / --) |
+| `./dkt log …` | List or tail logs |
+| `./dkt profiles` | List named `--profile` packs |
+| `./dkt provenance` | Short pin / dataset_description summary |
 | `./dkt version` | Print `PipelineVersion` from `app.json` |
 
 Examples:
 
 ```bash
+./dkt init --license ~/freesurfer/license.txt --bids BIDS --out OUT
 ./dkt install --missing-only
-./dkt check --with-dry-run
-./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+./dkt check
+./dkt run BIDS OUT participant --participant-label 001 --profile ideas
+./dkt status --results-root OUT
 ./dkt log --results-root OUT --subject 001 --stage connectome -f
-./dkt check --outputs --subject 001 --results-root OUT
+./run --bids-exec-spec    # Boutiques descriptor for platforms
 ```
 
 For **which steps run in containers vs on the host**, see [Architecture](architecture.md).

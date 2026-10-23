@@ -185,6 +185,8 @@ def test_find_container_any_path(tmp_path, monkeypatch):
     sys.path.insert(0, str(DWI / "scripts"))
     import container_install as ci  # noqa: WPS433
 
+    monkeypatch.delenv("CONTAINER_QSIRECON", raising=False)
+
     cache = tmp_path / "containers"
     cache.mkdir()
     pin = "pennlinc/qsirecon:1.2.0"
@@ -197,7 +199,7 @@ def test_find_container_any_path(tmp_path, monkeypatch):
     }
     found, candidates = ci.find_container(cfg, cache, "qsirecon", pin)
     assert found == sif
-    assert any("/path/to/" not in str(c) or True for c in candidates)
+    assert str(sif) in [str(c) for c in candidates]
 
     # env override wins
     env_sif = tmp_path / "from_env.sif"

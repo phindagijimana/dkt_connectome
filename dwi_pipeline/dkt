@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # dkt — unified CLI for the DKT Connectome pipeline
 #
-#   ./dkt install | pull | run | log | check | version
+#   ./dkt init | install | check | run | status | log | provenance | version
 #
 # Wraps existing entrypoints (install.sh, ./run, doctor, preflight) without
-# replacing the BIDS App ./run contract.
+# replacing the BIDS App ./run contract. Keep the surface small and actionable.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS="${ROOT}/scripts"
+DKT_PY="${SCRIPTS}/dkt_cli.py"
 
 version() {
   python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" \
@@ -19,27 +20,29 @@ usage() {
   cat <<EOF
 Usage: dkt <command> [options]
 
-Commands:
-  install   Pull step .sif images and write config.local.yaml
-            ./dkt install | ./dkt install all | ./dkt install qsirecon
-  pull      Pull containers only (scripts/pull_containers.sh)
-  run       Run the BIDS App pipeline (same as ./run)
-  log       List or tail per-subject pipeline logs under RESULTS_ROOT/logs
-  check     Verify install, environment, and optional subject outputs
-  version   Print pipeline version
+Getting started:
+  init        Write config.local.yaml + print next steps
+  install     Pull step .sif images (all | one key)
+  check       Verify tools, license, containers
+  run         Same as ./run (BIDS App)
+  status      Subject × stage table for a results root
+  log         Tail / list logs
+  profiles    List --profile packs (ideas | glioma | minimal)
+  provenance  Short pins + dataset provenance summary
+  version     Print pipeline version
 
 Quick start:
-  export FS_LICENSE=/path/to/license.txt
+  ./dkt init --license ~/freesurfer/license.txt --bids BIDS --out OUT
   ./dkt install
   ./dkt check
-  ./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+  ./dkt run BIDS OUT participant --participant-label 001 --profile ideas
+  ./dkt status --results-root OUT
 
-Install one container (e.g. after a failed qsirecon pull):
+Install one container:
   ./dkt install qsirecon
-  ./dkt install qsirecon --force
   ./dkt install --dry-run qsirecon
 
-Run './dkt <command> --help' for command-specific help.
+Run './dkt <command> --help' for details.
 Docs: https://dkt-connectome.readthedocs.io/en/latest/
 EOF
 }
@@ -57,6 +60,22 @@ cmd_pull() {
 
 cmd_run() {
   exec bash "${ROOT}/run" "$@"
+}
+
+cmd_init() {
+  exec python3 "${DKT_PY}" init "$@"
+}
+
+cmd_status() {
+  exec python3 "${DKT_PY}" status "$@"
+}
+
+cmd_profiles() {
+  exec python3 "${DKT_PY}" profiles "$@"
+}
+
+cmd_provenance() {
+  exec python3 "${DKT_PY}" provenance "$@"
 }
 
 cmd_version() {
@@ -275,8 +294,17 @@ EOF
 
   if [[ "${exit_code}" -eq 0 ]]; then
     echo "[dkt check] OK"
+    echo ""
+    echo "Next:"
+    echo "  1. ./dkt run BIDS OUT participant --participant-label ID --profile ideas"
+    echo "  2. ./dkt status --results-root OUT"
   else
     echo "[dkt check] FAIL" >&2
+    echo "" >&2
+    echo "Next:" >&2
+    echo "  1. ./dkt install <missing-key>     # e.g. qsirecon" >&2
+    echo "  2. ./dkt install --dry-run <key>   # preview only" >&2
+    echo "  3. ./dkt init --license LICENSE    # if FS_LICENSE unset" >&2
   fi
   return "${exit_code}"
 }
@@ -290,11 +318,15 @@ main() {
   case "$1" in
     -h|--help) usage; exit 0 ;;
     --version|-v) cmd_version; exit 0 ;;
+    init) shift; cmd_init "$@" ;;
     install) shift; cmd_install "$@" ;;
     pull) shift; cmd_pull "$@" ;;
     run) shift; cmd_run "$@" ;;
+    status) shift; cmd_status "$@" ;;
     log) shift; cmd_log "$@" ;;
     check) shift; cmd_check "$@" ;;
+    profiles) shift; cmd_profiles "$@" ;;
+    provenance) shift; cmd_provenance "$@" ;;
     version) shift; cmd_version ;;
     doctor)
       shift
