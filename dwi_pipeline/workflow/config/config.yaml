@@ -27,7 +27,7 @@ bids:
 # for connectome + nodestrength (GHCR -> Docker Hub phindagijimana321).
 container_pins:
   qsiprep: pennlinc/qsiprep:1.0.0
-  qsirecon: pennlinc/qsirecon:1.2.1
+  qsirecon: pennlinc/qsirecon:1.2.0
   freesurfer: freesurfer/freesurfer:7.4.1
   fastsurfer: deepmi/fastsurfer:latest
   connectome: ghcr.io/phindagijimana/dk-connectome:0.3.0

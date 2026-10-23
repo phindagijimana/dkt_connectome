@@ -28,7 +28,7 @@ JSON Schema: [Schema reference](schema_reference.md).
 | `bids.validate` | `false` | bool |
 | `bids.ignore_warnings` | `false` | bool |
 | `container_pins.qsiprep` | `pennlinc/qsiprep:1.0.0` | string |
-| `container_pins.qsirecon` | `pennlinc/qsirecon:1.2.1` | string |
+| `container_pins.qsirecon` | `pennlinc/qsirecon:1.2.0` | string |
 | `container_pins.freesurfer` | `freesurfer/freesurfer:7.4.1` | string |
 | `container_pins.fastsurfer` | `deepmi/fastsurfer:latest` | string |
 | `container_pins.connectome` | `ghcr.io/phindagijimana/dk-connectome:0.3.0` | string |

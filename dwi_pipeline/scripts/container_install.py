@@ -342,15 +342,56 @@ def default_cache() -> Path:
     return Path.home() / ".cache" / "dkt-connectome" / "containers"
 
 
+def known_container_keys() -> frozenset[str]:
+    """Valid single-container install keys (DEFAULT_KEYS plus optional orchestrator)."""
+    return frozenset(DEFAULT_KEYS) | frozenset({"orchestrator"})
+
+
 def resolve_keys(mode: str | None, only: str | None) -> tuple[str, ...]:
     if only:
-        return tuple(k.strip() for k in only.split(",") if k.strip())
+        keys = tuple(k.strip() for k in only.replace(" ", ",").split(",") if k.strip())
+        if not keys:
+            sys.exit("ERROR: --only / install targets produced an empty key list")
+        if len(keys) == 1 and keys[0] == "all":
+            return DEFAULT_KEYS
+        unknown = [k for k in keys if k not in known_container_keys()]
+        if unknown:
+            valid = ", ".join(("all",) + DEFAULT_KEYS)
+            sys.exit(
+                f"ERROR: unknown container key(s): {', '.join(unknown)}\n"
+                f"Valid: {valid}"
+            )
+        return keys
     if mode:
         keys = MODE_KEYS.get(mode)
         if keys is None:
             sys.exit(f"ERROR: unknown mode {mode!r}")
         return keys
     return DEFAULT_KEYS
+
+
+# Env overrides used by subject.sh / run wrappers (CONTAINER_QSIPREP, …).
+_CONTAINER_ENV: dict[str, str] = {
+    "qsiprep": "CONTAINER_QSIPREP",
+    "qsirecon": "CONTAINER_QSIRECON",
+    "freesurfer": "CONTAINER_FREESURFER",
+    "fastsurfer": "CONTAINER_FASTSURFER",
+    "connectome": "CONTAINER_CONNECTOME",
+    "vbt": "CONTAINER_VBT",
+    "lesion_act": "CONTAINER_LESION_ACT",
+    "deep_atropos": "CONTAINER_DEEP_ATROPOS",
+    "deep_atropos_seg": "CONTAINER_DEEP_ATROPOS_SEG",
+    "lit": "CONTAINER_LIT",
+    "nodestrength": "CONTAINER_NODESTRENGTH",
+    "orchestrator": "CONTAINER_ORCHESTRATOR",
+}
+
+
+def _path_is_sif(path: Path) -> bool:
+    try:
+        return path.is_file() and path.stat().st_size > 0
+    except OSError:
+        return False
 
 
 def resolve_container_path(
@@ -361,11 +402,10 @@ def resolve_container_path(
     *,
     use_configured: bool = True,
 ) -> Path:
-    """Resolved .sif path.
+    """Preferred .sif path (single location).
 
-    Site doctor (no ``--cache``) uses ``config.local.yaml`` ``containers:`` paths.
-    An explicit ``--cache DIR`` lists/checks pin-named files in DIR so a fresh
-    clone or empty cache is not masked by a leftover site config.
+    Site doctor historically used ``config.local.yaml`` ``containers:`` paths.
+    Prefer :func:`find_container` when checking availability across locations.
     """
     configured = (cfg.get("containers") or {}).get(key)
     if use_configured and configured:
@@ -375,8 +415,86 @@ def resolve_container_path(
     return cache / f"{key}.sif"
 
 
+def container_search_paths(
+    cfg: dict,
+    cache: Path,
+    key: str,
+    pin: str | None,
+    *,
+    include_configured: bool = True,
+    extra_caches: tuple[Path, ...] = (),
+) -> list[Path]:
+    """Ordered candidate .sif paths (env → config → pin-named cache → aliases).
+
+    Used by ``./dkt check`` / doctor so a container counts as present no matter
+    which supported location holds it.
+    """
+    seen: set[str] = set()
+    out: list[Path] = []
+
+    def add(raw: Path | str | None) -> None:
+        if raw is None:
+            return
+        p = Path(os.path.expandvars(str(raw))).expanduser()
+        key_s = str(p)
+        if key_s in seen:
+            return
+        # Skip obvious placeholders from config.yaml examples
+        if "/path/to/" in key_s:
+            return
+        seen.add(key_s)
+        out.append(p)
+
+    env_name = _CONTAINER_ENV.get(key)
+    if env_name:
+        add(os.environ.get(env_name))
+
+    if include_configured:
+        add((cfg.get("containers") or {}).get(key))
+
+    caches = (cache,) + tuple(extra_caches)
+    for c in caches:
+        if pin:
+            add(c / sif_name(key, pin))
+        add(c / f"{key}.sif")
+        # Lab-style short names already covered for most keys via sif_name aliases
+        if key == "fastsurfer":
+            add(c / "fastsurfer_cu126_v2.6.0.sif")
+            add(c / "fastsurfer_latest.sif")
+
+    return out
+
+
+def find_container(
+    cfg: dict,
+    cache: Path,
+    key: str,
+    pin: str | None,
+    *,
+    include_configured: bool = True,
+    extra_caches: tuple[Path, ...] = (),
+) -> tuple[Path | None, list[Path]]:
+    """Return (first existing sif, all candidates tried)."""
+    candidates = container_search_paths(
+        cfg,
+        cache,
+        key,
+        pin,
+        include_configured=include_configured,
+        extra_caches=extra_caches,
+    )
+    for path in candidates:
+        if _path_is_sif(path):
+            return path, candidates
+    return None, candidates
+
+
 def list_plan(
-    cache: Path, keys: tuple[str, ...], *, use_configured: bool = True
+    cache: Path,
+    keys: tuple[str, ...],
+    *,
+    use_configured: bool = True,
+    any_path: bool = False,
 ) -> list[dict]:
     cfg = _load_merged_config()
     pins = cfg.get("container_pins") or {}
@@ -386,19 +504,36 @@ def list_plan(
         if not pin:
             rows.append({"key": key, "pin": None, "sif": None, "path": None, "exists": False})
             continue
-        path = resolve_container_path(
-            cfg, cache, key, pin, use_configured=use_configured
-        )
-        rows.append(
-            {
-                "key": key,
-                "pin": pin,
-                "uri": apptainer_uri(pin),
-                "sif": path.name,
-                "path": str(path),
-                "exists": path.is_file() and path.stat().st_size > 0,
-            }
-        )
+        if any_path:
+            found, candidates = find_container(
+                cfg, cache, key, pin, include_configured=use_configured
+            )
+            path = found or (candidates[0] if candidates else cache / f"{key}.sif")
+            rows.append(
+                {
+                    "key": key,
+                    "pin": pin,
+                    "uri": apptainer_uri(pin),
+                    "sif": path.name,
+                    "path": str(path),
+                    "exists": found is not None,
+                    "candidates": [str(c) for c in candidates],
+                }
+            )
+        else:
+            path = resolve_container_path(
+                cfg, cache, key, pin, use_configured=use_configured
+            )
+            rows.append(
+                {
+                    "key": key,
+                    "pin": pin,
+                    "uri": apptainer_uri(pin),
+                    "sif": path.name,
+                    "path": str(path),
+                    "exists": _path_is_sif(path),
+                }
+            )
     return rows
 
 
@@ -685,7 +820,22 @@ def write_config(cache: Path, out: Path, *, quiet: bool) -> None:
         print(f"[install] wrote {out}")
 
 
-def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
+def doctor(
+    cache: Path | None,
+    *,
+    mode: str,
+    with_dry_run: bool = False,
+    any_path: bool = True,
+    cache_only: bool = False,
+) -> int:
+    """Verify tools, license, and step containers.
+
+    By default (``any_path=True``) a container is OK if it exists in *any*
+    known location: ``CONTAINER_*`` env, ``config.local.yaml``, or the
+    install cache (pin-named or short ``{key}.sif``). Pass ``cache_only``
+    (or ``./dkt check --cache-only``) to require pin-named files in the
+    cache directory only.
+    """
     errors: list[str] = []
     warnings: list[str] = []
     ci = os.environ.get("BIDS_APP_CI") == "1"
@@ -708,28 +858,43 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
             )
 
     cfg = _load_merged_config() if yaml else {}
-    use_configured = cache is None
     if cache is None:
         cache = default_cache()
 
+    # cache_only ⇒ ignore config/env; any_path=False with include_configured
+    # kept for backward-compatible single-path checks.
+    include_configured = not cache_only
+    search_any = any_path and not cache_only
+
     keys = resolve_keys(mode, None)
     pins = cfg.get("container_pins") or {}
+    found_rows: list[tuple[str, Path | None, list[Path]]] = []
     for key in keys:
-        path = resolve_container_path(
-            cfg, cache, key, pins.get(key), use_configured=use_configured
-        )
+        pin = pins.get(key)
+        if search_any:
+            found, candidates = find_container(
+                cfg, cache, key, pin, include_configured=include_configured
+            )
+        else:
+            path = resolve_container_path(
+                cfg, cache, key, pin, use_configured=include_configured
+            )
+            found = path if _path_is_sif(path) else None
+            candidates = [path]
+        found_rows.append((key, found, candidates))
         if ci:
             continue
-        p = path
-        if not p.is_file() or p.stat().st_size == 0:
+        if found is None:
+            tried = "\n".join(f"    - {c}" for c in candidates[:6])
+            more = f"\n    … +{len(candidates) - 6} more" if len(candidates) > 6 else ""
             errors.append(
-                f"missing container ({key}): {path}\n"
-                f"  fix: bash scripts/install.sh --cache {cache}"
+                f"missing container ({key}): not found in any known path\n"
+                f"  tried:\n{tried}{more}\n"
+                f"  fix: ./dkt install {key}   # or: ./dkt install --cache {cache}"
             )
 
     if with_dry_run and not ci:
         fixture = DWI_PIPELINE_DIR / "tests" / "fixtures" / "bids_minimal"
-        lic = os.environ.get("FS_LICENSE", "/tmp/license.txt")
         if fixture.is_dir() and shutil.which("bash"):
             proc = subprocess.run(
                 [
@@ -766,13 +931,16 @@ def doctor(cache: Path | None, *, mode: str, with_dry_run: bool = False) -> int:
     if errors:
         for e in errors:
             print(f"ERROR [doctor]: {e}", file=sys.stderr)
-        print("\nRun: bash scripts/install.sh", file=sys.stderr)
+        print("\nRun: ./dkt install   # or ./dkt install <key>", file=sys.stderr)
         return 1
     print("doctor: OK")
-    for row in list_plan(cache, keys, use_configured=use_configured):
-        if row.get("path"):
-            status = "OK" if row.get("exists") or ci else "missing"
-            print(f"  {row['key']}: {row['path']} [{status}]")
+    for key, found, _candidates in found_rows:
+        if found is not None:
+            print(f"  {key}: {found} [OK]")
+        elif ci:
+            pin = pins.get(key)
+            path = resolve_container_path(cfg, cache, key, pin, use_configured=False)
+            print(f"  {key}: {path} [OK]")
     return 0
 
 
@@ -946,7 +1114,15 @@ def cmd_write_config(args: argparse.Namespace) -> None:
 
 def cmd_doctor(args: argparse.Namespace) -> None:
     cache = Path(args.cache).expanduser() if args.cache else None
-    raise SystemExit(doctor(cache, mode=args.mode, with_dry_run=args.with_dry_run))
+    raise SystemExit(
+        doctor(
+            cache,
+            mode=args.mode,
+            with_dry_run=args.with_dry_run,
+            any_path=not args.cache_only,
+            cache_only=args.cache_only,
+        )
+    )
 
 
 def cmd_verify_manifest(args: argparse.Namespace) -> None:
@@ -999,12 +1175,18 @@ def main() -> None:
     p_cfg.set_defaults(func=cmd_write_config)
 
     p_doc = sub.add_parser("doctor", help="Verify tools, license, and containers")
-    p_doc.add_argument("--cache", default=None)
+    p_doc.add_argument("--cache", default=None, help="Also search this cache dir for .sif files")
     p_doc.add_argument("--mode", default="all")
     p_doc.add_argument(
         "--with-dry-run",
         action="store_true",
         help="Also run Snakemake dry-run on bids_minimal (slower)",
+    )
+    p_doc.add_argument(
+        "--cache-only",
+        action="store_true",
+        help="Require pin-named .sif files in --cache / DKT_CONTAINER_CACHE only "
+        "(ignore CONTAINER_* env and config.local.yaml paths)",
     )
     p_doc.set_defaults(func=cmd_doctor)
 

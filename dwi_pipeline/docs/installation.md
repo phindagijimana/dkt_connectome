@@ -23,6 +23,17 @@ Optional: Slurm for `submit.sh`. Cloud: [One-pull](#one-pull-docker--cloud) inst
 git clone https://github.com/phindagijimana/dkt_connectome.git
 cd dkt_connectome/dwi_pipeline
 chmod +x run install dkt
+./dkt init --license /path/to/your/license.txt --bids /path/to/BIDS --out /path/to/OUT
+# init prints the three exports + next commands; then:
+./dkt install
+./dkt check
+./dkt run /path/to/BIDS /path/to/OUT participant --participant-label 001 --profile ideas
+./dkt status --results-root /path/to/OUT
+```
+
+Manual equivalent (if you prefer env vars):
+
+```bash
 export FS_LICENSE=/path/to/your/license.txt
 export DKT_CONTAINER_CACHE=$HOME/.cache/dkt-connectome/containers
 export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp
@@ -34,12 +45,27 @@ mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 
 `./dkt install` pulls pinned step `.sif` images and writes `workflow/config/config.local.yaml`. `--strict` compares SHA-256 to [`release_manifest.json`](../release_manifest.json).
 
+`./dkt check` is **path-agnostic**: each step image is OK if it exists in any known location (`CONTAINER_*` env, `config.local.yaml`, or the install cache — pin-named or short names like `qsirecon.sif`). Use `--cache-only` to require pin-named files in the cache directory only.
+
+Install all images, or one container at a time (useful after a failed pull):
+
+```bash
+./dkt install                 # all containers
+./dkt install all             # same
+./dkt install qsirecon        # only qsirecon
+./dkt install qsirecon --force
+./dkt install --dry-run qsirecon   # print plan; no download
+```
+
 | Variable / flag | Default | Purpose |
 |-----------------|---------|---------|
 | `DKT_CONTAINER_CACHE` | `~/.cache/dkt-connectome/containers` | `.sif` files |
 | `APPTAINER_TMPDIR` / `PROOT_TMP_DIR` | `<cache>/../apptainer_tmp` | Pull temp — **not `/tmp`** if that mount is `noexec` |
-| `--mode qsiprep` | all steps | Pull only what a mode needs |
+| positional `KEY` / `all` | all | Pull one container or everything |
+| `--mode qsiprep` | — | Pull the image *set* for a pipeline mode (may be several keys) |
+| `--only KEY,KEY` | — | Same as positional keys (flag form) |
 | `--missing-only` | off | Skip images already in cache |
+| `--dry-run` | off | List keys that would be pulled; no download |
 
 Many clusters mount **`/tmp` with `noexec`**. OCI→SIF uses proot, which ignores `APPTAINER_TMPDIR` unless **`PROOT_TMP_DIR`** is set (`install.sh` sets it). First QSIPrep / QSIRecon / FreeSurfer conversion can take 30–90 minutes — prefer local disk, not NFS. Do not use rootless **podman** for the orchestrator pull (`lchown /etc/gshadow`).
 

@@ -79,7 +79,7 @@ Pin Apptainer images in `workflow/config/config.local.yaml` (see `container_pins
 | Step | Reference image |
 |------|-----------------|
 | QSIPrep | `pennlinc/qsiprep:1.0.0` |
-| QSIRecon | `pennlinc/qsirecon:1.2.1` |
+| QSIRecon | `pennlinc/qsirecon:1.2.0` |
 | FreeSurfer | `freesurfer/freesurfer:7.4.1` |
 | Connectome | `ghcr.io/phindagijimana/dk-connectome:0.1.0` |
 | LIT | `deepmi/lit:0.6.0` |

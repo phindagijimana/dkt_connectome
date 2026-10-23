@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # dkt — unified CLI for the DKT Connectome pipeline
 #
-#   ./dkt install | pull | run | log | check | version
+#   ./dkt init | install | check | run | status | log | provenance | version
 #
 # Wraps existing entrypoints (install.sh, ./run, doctor, preflight) without
-# replacing the BIDS App ./run contract.
+# replacing the BIDS App ./run contract. Keep the surface small and actionable.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS="${ROOT}/scripts"
+DKT_PY="${SCRIPTS}/dkt_cli.py"
 
 version() {
   python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" \
@@ -19,21 +20,29 @@ usage() {
   cat <<EOF
 Usage: dkt <command> [options]
 
-Commands:
-  install   Pull step .sif images and write config.local.yaml (scripts/install.sh)
-  pull      Pull containers only (scripts/pull_containers.sh)
-  run       Run the BIDS App pipeline (same as ./run)
-  log       List or tail per-subject pipeline logs under RESULTS_ROOT/logs
-  check     Verify install, environment, and optional subject outputs
-  version   Print pipeline version
+Getting started:
+  init        Write config.local.yaml + print next steps
+  install     Pull step .sif images (all | one key)
+  check       Verify tools, license, containers
+  run         Same as ./run (BIDS App)
+  status      Subject × stage table for a results root
+  log         Tail / list logs
+  profiles    List --profile packs (ideas | glioma | minimal)
+  provenance  Short pins + dataset provenance summary
+  version     Print pipeline version
 
 Quick start:
-  export FS_LICENSE=/path/to/license.txt
+  ./dkt init --license ~/freesurfer/license.txt --bids BIDS --out OUT
   ./dkt install
   ./dkt check
-  ./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+  ./dkt run BIDS OUT participant --participant-label 001 --profile ideas
+  ./dkt status --results-root OUT
 
-Run './dkt <command> --help' for command-specific help.
+Install one container:
+  ./dkt install qsirecon
+  ./dkt install --dry-run qsirecon
+
+Run './dkt <command> --help' for details.
 Docs: https://dkt-connectome.readthedocs.io/en/latest/
 EOF
 }
@@ -51,6 +60,22 @@ cmd_pull() {
 
 cmd_run() {
   exec bash "${ROOT}/run" "$@"
+}
+
+cmd_init() {
+  exec python3 "${DKT_PY}" init "$@"
+}
+
+cmd_status() {
+  exec python3 "${DKT_PY}" status "$@"
+}
+
+cmd_profiles() {
+  exec python3 "${DKT_PY}" profiles "$@"
+}
+
+cmd_provenance() {
+  exec python3 "${DKT_PY}" provenance "$@"
 }
 
 cmd_version() {
@@ -170,6 +195,7 @@ cmd_check() {
   local outputs=0
   local cache=""
   local strict=0
+  local cache_only=0
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -177,6 +203,7 @@ cmd_check() {
       --subject) subject="${2#sub-}"; shift 2 ;;
       --results-root) results_root="$2"; shift 2 ;;
       --cache) cache="$2"; shift 2 ;;
+      --cache-only) cache_only=1; shift ;;
       --with-dry-run) with_dry_run=1; shift ;;
       --strict) strict=1; shift ;;
       --preflight) preflight=1; shift ;;
@@ -187,9 +214,14 @@ Usage: dkt check [options]
 
 Verify install and runtime readiness (wraps ./run doctor + optional checks).
 
+By default, container checks are path-agnostic: a step image is OK if it
+exists in any known location (CONTAINER_* env, config.local.yaml, or the
+install cache — pin-named or short name like qsirecon.sif).
+
 Options:
   --mode MODE           Pipeline mode for container checks (default: all)
-  --cache DIR           Check pin-named .sif files in DIR (ignores config.local.yaml)
+  --cache DIR           Also search DIR for .sif files (default: DKT_CONTAINER_CACHE)
+  --cache-only          Require pin-named files in the cache only (ignore env/config paths)
   --with-dry-run        Include Snakemake dry-run on bids_minimal fixture
   --preflight           Also run workflow/preflight.sh (--quick)
   --subject ID          With --outputs or --preflight: subject to validate
@@ -201,6 +233,7 @@ Examples:
   ./dkt check
   ./dkt check --strict
   ./dkt check --with-dry-run
+  ./dkt check --cache-only --cache ~/.cache/dkt-connectome/containers
   ./dkt check --preflight --mode all --subject 001
   ./dkt check --outputs --subject 001 --results-root /data/out
 EOF
@@ -213,6 +246,7 @@ EOF
   local exit_code=0
   local doctor_args=()
   [[ -n "${cache}" ]] && doctor_args+=(--cache "${cache}")
+  ((cache_only)) && doctor_args+=(--cache-only)
   doctor_args+=(--mode "${mode}")
   ((with_dry_run)) && doctor_args+=(--with-dry-run)
 
@@ -260,8 +294,17 @@ EOF
 
   if [[ "${exit_code}" -eq 0 ]]; then
     echo "[dkt check] OK"
+    echo ""
+    echo "Next:"
+    echo "  1. ./dkt run BIDS OUT participant --participant-label ID --profile ideas"
+    echo "  2. ./dkt status --results-root OUT"
   else
     echo "[dkt check] FAIL" >&2
+    echo "" >&2
+    echo "Next:" >&2
+    echo "  1. ./dkt install <missing-key>     # e.g. qsirecon" >&2
+    echo "  2. ./dkt install --dry-run <key>   # preview only" >&2
+    echo "  3. ./dkt init --license LICENSE    # if FS_LICENSE unset" >&2
   fi
   return "${exit_code}"
 }
@@ -275,11 +318,15 @@ main() {
   case "$1" in
     -h|--help) usage; exit 0 ;;
     --version|-v) cmd_version; exit 0 ;;
+    init) shift; cmd_init "$@" ;;
     install) shift; cmd_install "$@" ;;
     pull) shift; cmd_pull "$@" ;;
     run) shift; cmd_run "$@" ;;
+    status) shift; cmd_status "$@" ;;
     log) shift; cmd_log "$@" ;;
     check) shift; cmd_check "$@" ;;
+    profiles) shift; cmd_profiles "$@" ;;
+    provenance) shift; cmd_provenance "$@" ;;
     version) shift; cmd_version ;;
     doctor)
       shift

@@ -76,7 +76,7 @@ SIFT2 weights are always computed in Step 3 and stored alongside the tractogram;
 
 | Item | Value |
 |------|-------|
-| Container | `pennlinc/qsirecon:1.2.1` (`qsirecon.sif`) |
+| Container | `pennlinc/qsirecon:1.2.0` (`qsirecon.sif`) |
 | Spec | `mrtrix_singleshell_ss3t_ACT-hsvs` |
 | Requires | FreeSurfer subject tree from Step 2 (for HSVS) |
 | Input DWI | QSIPrep `desc-preproc_dwi` on `dwiref` grid |
