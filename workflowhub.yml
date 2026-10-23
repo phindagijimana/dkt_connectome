@@ -47,7 +47,7 @@ containers:
   - name: qsiprep
     source: docker://pennlinc/qsiprep:1.0.0
   - name: qsirecon
-    source: docker://pennlinc/qsirecon:1.2.1
+    source: docker://pennlinc/qsirecon:1.2.0
   - name: freesurfer
     source: docker://freesurfer/freesurfer:7.4.1
   - name: dkt_connectome_orchestrator

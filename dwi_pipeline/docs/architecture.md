@@ -90,7 +90,7 @@ flowchart TB
 | **1 — QSIPrep** | `qsiprep_1.0.0.sif` | `build_bids_filter.py` |
 | **1.1 — Inpaint** | `lit.sif` or `qsiprep.sif` + bind `run_vbt.py` | `prepare_lesion_mask.py`, `check_inpainting.py` |
 | **2 — Recon** | `freesurfer` / `fastsurfer.sif` | — |
-| **3 — QSIRecon** | `qsirecon_1.2.1.sif` | — |
+| **3 — QSIRecon** | `qsirecon_1.2.0.sif` | — |
 | **3.1 — Lesion ACT** | `dkt_lesion_act.sif` | `prepare_lesion_mask.py` |
 | **3.2 — Deep Atropos** | `dkt_deep_atropos*.sif` | optional dev bind-mounts (`ACT_BIND_MOUNT_DEV=1`) |
 | **4 — Connectome** | `dkt_connectome.sif` | baked `run_connectome.sh` + DKT LUT; dev bind with `CONNECTOME_BIND_DEV=1` |

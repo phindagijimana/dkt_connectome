@@ -8,7 +8,7 @@ set -euo pipefail
 
 DEST_MRTrix="${1:?dest mrtrix dir}"
 DEST_ANTS="${2:?dest ants dir}"
-QSI_IMAGE="${QSI_IMAGE:-pennlinc/qsirecon:1.2.1}"
+QSI_IMAGE="${QSI_IMAGE:-pennlinc/qsirecon:1.2.0}"
 
 rm -rf "${DEST_MRTrix}" "${DEST_ANTS}"
 mkdir -p "${DEST_MRTrix}" "${DEST_ANTS}"

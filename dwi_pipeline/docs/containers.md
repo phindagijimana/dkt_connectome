@@ -28,7 +28,7 @@ Set `CONTAINER_*` only if you need to override a path (see [Installation](instal
 | 1.1 — Inpaint (VBT) | `dkt_vbt.sif` | `install.sh --mode inpaint` or [`containers/vbt/build_vbt.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/vbt/build_vbt.sh) · Docker Hub `phindagijimana321/dkt-vbt:0.1.0` |
 | 2 — Recon | `freesurfer_7.4.1.sif` | `install.sh` or [`containers/pull_freesurfer_sif.sbatch`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/pull_freesurfer_sif.sbatch) |
 | 2 alt | `fastsurfer_latest.sif` | `install.sh` or [FastSurfer](https://github.com/Deep-MI/FastSurfer) |
-| 3 — QSIRecon | `qsirecon_1.2.1.sif` | `install.sh` or [QSIRecon releases](https://github.com/pennlinc/qsirecon) |
+| 3 — QSIRecon | `qsirecon_1.2.0.sif` | `install.sh` or [QSIRecon releases](https://github.com/pennlinc/qsirecon) |
 | 3.1 — Lesion-aware ACT | `dkt_lesion_act.sif` | `install.sh --mode act` or [`containers/lesion_act/build_lesion_act.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/build_lesion_act.sh) · Docker Hub `phindagijimana321/dkt-lesion-act:0.1.0` |
 | 3.2 (5TT) — Deep Atropos native 5TT | `dkt_deep_atropos.sif` | [`containers/deep_atropos/build_deep_atropos.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos/build_deep_atropos.sh) · optional; `--act-5tt-source deep-atropos-native` |
 | 3.2 (seg) — Deep Atropos segmentation | `dkt_deep_atropos_seg.sif` | [`containers/deep_atropos_seg/build_deep_atropos_seg.sh`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos_seg/build_deep_atropos_seg.sh) · ANTsPyNet; `segmentation_mode=generate` or `auto` |

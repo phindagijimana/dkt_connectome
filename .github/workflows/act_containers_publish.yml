@@ -62,7 +62,7 @@ jobs:
 
   build-and-push:
     # Stages pennlinc/qsirecon and builds FROM ubuntu:22.04 (Docker Hub).
-    # qsirecon:1.2.1 is also unpublished; skip Hub pulls when secrets are empty.
+    # qsirecon was previously pinned to unpublished 1.2.1; now 1.2.0; skip Hub pulls when secrets are empty.
     needs: hub-credentials
     if: ${{ github.event_name == 'workflow_dispatch' || needs.hub-credentials.outputs.present == 'true' }}
     runs-on: ubuntu-latest

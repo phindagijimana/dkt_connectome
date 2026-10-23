@@ -8,7 +8,7 @@
 | Step | Pin | SIF file | Size (MB) | SHA256 |
 |------|-----|----------|-----------|--------|
 | qsiprep | `pennlinc/qsiprep:1.0.0` | `qsiprep_1.0.0.sif` | - | `(not cached)` |
-| qsirecon | `pennlinc/qsirecon:1.2.1` | `qsirecon_1.2.1.sif` | - | `(not cached)` |
+| qsirecon | `pennlinc/qsirecon:1.2.0` | `qsirecon_1.2.0.sif` | - | `(not cached)` |
 | freesurfer | `freesurfer/freesurfer:7.4.1` | `freesurfer_7.4.1.sif` | 8909.9 | `1c65de5707ae33cd…` |
 | fastsurfer | `deepmi/fastsurfer:latest` | `fastsurfer_latest.sif` | 3860.1 | `1baa5d51866df198…` |
 | connectome | `ghcr.io/phindagijimana/dk-connectome:0.3.0` | `dkt_connectome.sif` | 223.8 | `a634511a0ce11a95…` |
