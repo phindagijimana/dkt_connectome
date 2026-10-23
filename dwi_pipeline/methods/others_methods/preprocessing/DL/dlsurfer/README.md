@@ -2,94 +2,107 @@
 
 **Curated deep-learning morphometry orchestrator** — FreeSurfer-shaped outputs, lesion + device policy, every engine cited.
 
-> DLSurfer does **not** replace FreeSurfer or FastSurfer science. It calls published tools and keeps a `SUBJECTS_DIR` contract for DKT / QSIRecon.
+> Does **not** replace FreeSurfer / FastSurfer science.  
+> **Isolated** under `others_methods/preprocessing/DL/dlsurfer/` — does **not** couple to or modify the DKT connectome pipeline.  
+> **Atlases:** DKT is the default labeling scheme; DK / Destrieux / others are in-scope (see `dlsurfer atlases`).
 
-Plan / literature siblings: [`../DLSURFER_PLAN.md`](../DLSURFER_PLAN.md) · [`../CLASSICAL_TO_DL_TABLE.md`](../CLASSICAL_TO_DL_TABLE.md) · [`docs/PHASES.md`](docs/PHASES.md) · [`docs/CLAIMS.md`](docs/CLAIMS.md)
+Docs: [`docs/ISOLATION.md`](docs/ISOLATION.md) · [`docs/ATLASES.md`](docs/ATLASES.md) · [`docs/COMPARE_FS_FASTSURFER.md`](docs/COMPARE_FS_FASTSURFER.md) · [`docs/GAPS_WITHOUT_ALTERNATIVES.md`](docs/GAPS_WITHOUT_ALTERNATIVES.md) · [`docs/STRUCTURE_MODULES.md`](docs/STRUCTURE_MODULES.md) · [`docs/ALTERNATIVES.md`](docs/ALTERNATIVES.md) · [`docs/CLAIMS.md`](docs/CLAIMS.md) · [`docs/PHASES.md`](docs/PHASES.md)
+
+Parent notes: [`../DLSURFER_PLAN.md`](../DLSURFER_PLAN.md) · [`../CLASSICAL_TO_DL_TABLE.md`](../CLASSICAL_TO_DL_TABLE.md)
 
 ---
 
-## Install
+## Install / run
 
 ```bash
 cd dlsurfer
-pip install -e .
-dlsurfer doctor
-dlsurfer engines
-dlsurfer profiles
+PYTHONPATH=. python -m dlsurfer doctor
+PYTHONPATH=. python -m dlsurfer atlases
+PYTHONPATH=. python -m dlsurfer compare          # vs FreeSurfer & FastSurfer
+PYTHONPATH=. python -m dlsurfer gaps-remaining   # no credible alternative
+PYTHONPATH=. python -m dlsurfer engines --alternatives
 ```
 
----
-
-## Quick start (dry-run by default)
-
 ```bash
-dlsurfer run \
+PYTHONPATH=. python -m dlsurfer run \
   --profile core-lesion \
+  --atlas dkt \
   --t1 /path/T1.nii.gz \
   --lesion-mask /path/lesion.nii.gz \
-  --sd /path/subjects \
+  --sd /path/dlsurfer_subjects \
   --sid sub-EG \
   --fs-license /path/license.txt \
   --device auto
 ```
 
-Add `--execute` only after `doctor` is green and the printed plan looks right.
+Gap-fill examples (dry-run plans):
 
 ```bash
-dlsurfer cite --profile core-lesion
-dlsurfer handoff-dkt --sd /path/subjects --sid sub-EG
+# DK via FastSurfer --fsaparc
+python -m dlsurfer run --profile core --atlas dk --t1 T1.nii.gz --sd SD --sid S --fs-license LIC
+
+# Module off + hires + HPC launcher
+python -m dlsurfer run --profile core --t1 T1.nii.gz --sd SD --sid S \
+  --no-hypothal --vox-size 0.8 --hpc srun --fs-license LIC
+
+# Former FS-suite gaps
+python -m dlsurfer run --profile fs-long --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile subfields-ha --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile nuclei-bs-thal --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile atlas-destrieux --t1 T1.nii.gz --sd SD --sid S
+
+# Specialty (clau_seg / piriform / HippUnfold) — see docs/STRUCTURE_MODULES.md
+python -m dlsurfer run --profile preprocess-synthsr --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile structure-claustrum --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile structure-piriform-synthseg --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile clinical-claustrum --t1 T1.nii.gz --sd SD --sid S
+python -m dlsurfer run --profile structure-hippunfold --t1 T1.nii.gz --sd SD --sid S
+```
+
+Use a **dedicated `--sd`** (not the DKT pipeline work tree) unless you intentionally share a SUBJECTS_DIR.
+
+Optional consumer notes only (print-only):
+
+```bash
+python -m dlsurfer handoff --consumer generic --sd ... --sid ...
+python -m dlsurfer handoff --consumer dkt --sd ... --sid ...   # does not run DKT
 ```
 
 ---
 
-## Why each chosen engine is here
+## Chosen engines (defaults)
 
-Full text lives in `dlsurfer/engines.yaml` (also `dlsurfer engines`). Summary:
+| Engine | Why chosen |
+|--------|------------|
+| SynthStrip | Best Production strip in FS |
+| DeepN4 | Best Ready N4 approx (optional) |
+| FastSurferVINN + CC/CerebNet/HypVINN | Production morphometry core |
+| SynthSeg | Odd-contrast Production alt |
+| neuroLIT standalone | Lesion fill without breaking GPU/CPU split |
+| recon-surf | Production FS-shaped surfaces (classical) |
+| TopoFit / V2C-Flow / SUGAR / DL-CTE | Phase 3 experimental Ready/Production alts |
+| EasyReg / SynthMorph | Production registration utils |
+| FreeSurfer 8 | XOR alt engine |
 
-| Engine | Replaces (classical) | Why chosen |
-|--------|----------------------|------------|
-| **SynthStrip** | Watershed skull-strip | Best Production strip in FreeSurfer |
-| **DeepN4** | N3/N4 bias | Best Ready portable N4 approx (optional util) |
-| **FastSurferVINN** | CA aseg / DKT labels | Primary Production morphometry engine |
-| **SynthSeg** | CA aseg (odd contrast) | Production alt for clinical/odd data |
-| **FastSurfer-CC / CerebNet / HypVINN** | Limited classical substructure | Production FastSurfer defaults |
-| **neuroLIT** | No native FS lesion fill | Production lesion fill; **standalone** default keeps GPU/CPU split |
-| **recon-surf** | FS surface stages | Default surfaces — classical but Production FS contract |
-| **TopoFit** | Topology + white surface | Best Production DL WM (Phase 3 experimental) |
-| **V2C-Flow** | White+pial (+ template IDs) | Best Ready full CSR (Phase 3 experimental) |
-| **SUGAR** | sphere.reg | Best Ready spherical reg util (Phase 3) |
-| **EasyReg / SynthMorph** | CA volume registration | Production FS registration utils |
-| **DL-CTE family** | Surface thickness | Ready fast thickness — **not** for connectome |
-| **FreeSurfer 8** | FS≤7 early classical | Alt XOR engine (`fs8`) |
+**All other credible alternatives** (HD-BET, QuickNAT, DeepSCAN, VBG, CortexODE, PialNN, S3Reg, …) are documented for future reference:
 
-Deferred (documented, not default): HD-BET, VBG, LeAPP VBT, CortexODE, PialNN — see `engines.yaml` `deferred:`.
+- `dlsurfer engines --alternatives`
+- [`docs/ALTERNATIVES.md`](docs/ALTERNATIVES.md)
+- `engines.yaml` → `alternatives:` + `deferred:`
 
 ---
 
-## Profiles
+## What’s missing vs FreeSurfer / FastSurfer
 
-| Profile | Phase | Notes |
-|---------|-------|-------|
-| `core` | 1 | FastSurfer full morphometry |
-| `core-lesion` | 1 | **Recommended lesion path** |
-| `core-lesion-native` | 1 | Native `--lesion_mask` (no seg/surf split) |
-| `seg-quick` / `seg-quick-synthseg` / `strip` | 1 | Utilities |
-| `fs8` / `fs8-lesion` | 2 | FreeSurfer 8 XOR engine |
-| `register-*` / `bias-deepn4` | 2 | Utils |
-| `surf-dl-topofit` / `surf-dl-v2c` / `sphere-sugar` / `thickness-fast` | 3 | Experimental — TBI±LIT gate |
+- Full matrix: `dlsurfer compare` → [`docs/COMPARE_FS_FASTSURFER.md`](docs/COMPARE_FS_FASTSURFER.md)
+- **No credible alternative** (intentionally): `dlsurfer gaps-remaining` → [`docs/GAPS_WITHOUT_ALTERNATIVES.md`](docs/GAPS_WITHOUT_ALTERNATIVES.md)
 
----
-
-## Phases
-
-See [`docs/PHASES.md`](docs/PHASES.md). v0.1 implements Phase 0–4 as **spec + CLI + adapters + metrics hooks**; live cluster execution still needs FastSurfer/neuroLIT/FS installed (`dlsurfer doctor`).
+Best alternatives for former gaps are wired as profiles/flags (`fs-long`, `subfields-ha`, `nuclei-bs-thal`, `fs-clinical`, `atlas-*`, `--atlas dk`, `--hpc srun`, `--vox-size`, `--no-*`).
 
 ---
 
 ## Citation
 
 ```bash
-dlsurfer cite --profile <profile>
+python -m dlsurfer cite --profile core-lesion
 ```
-
-Always cite the **engines you ran**. DLSurfer is orchestration only.

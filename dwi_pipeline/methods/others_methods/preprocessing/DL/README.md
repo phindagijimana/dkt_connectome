@@ -76,4 +76,13 @@ Master table (every classical method → many alternatives + readiness): [`CLASS
 
 Curated FreeSurfer-shaped DL orchestrator (name: **dlsurfer**): [`DLSURFER_PLAN.md`](DLSURFER_PLAN.md).
 
-**Implementation (Phases 0–4 scaffold):** [`dlsurfer/`](dlsurfer/) — `pip install -e dlsurfer/` then `dlsurfer doctor` / `dlsurfer engines` / `dlsurfer run ...`.
+**Implementation (Phases 0–4 scaffold):** [`dlsurfer/`](dlsurfer/) — isolated from DKT connectome.
+
+```bash
+cd dlsurfer && PYTHONPATH=. python -m dlsurfer doctor
+PYTHONPATH=. python -m dlsurfer compare              # vs FreeSurfer / FastSurfer
+PYTHONPATH=. python -m dlsurfer atlases               # DKT default + others
+PYTHONPATH=. python -m dlsurfer engines --alternatives
+```
+
+Docs inside package: `docs/ISOLATION.md`, `ATLASES.md`, `COMPARE_FS_FASTSURFER.md`, `ALTERNATIVES.md`.

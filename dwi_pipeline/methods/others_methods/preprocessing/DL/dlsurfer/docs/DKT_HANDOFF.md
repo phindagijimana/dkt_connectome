@@ -1,23 +1,19 @@
-# Phase 2 — DKT / QSIRecon handoff
+# Optional handoff notes (not a DKT dependency)
 
-DLSurfer stops at a FreeSurfer-compatible subject tree. Connectomics stay in the existing DKT pipeline.
+**DLSurfer does not implement or require the DKT connectome pipeline.**  
+See [`ISOLATION.md`](ISOLATION.md).
 
-## Mapping
-
-| DLSurfer | DKT today |
-|----------|-----------|
-| `core` | `--fastsurfer` without lesion |
-| `core-lesion` | `--anat-mitigation neurolit` + ordinary FastSurfer (+ `--post-hoc-fs` ≈ `--post-lit`) |
-| `core-lesion-native` | `--fastsurfer-lesion-mask` |
-| `fs8` | `--freesurfer` with FS8 |
-
-## Usage
+If an operator wants to *read* DLSurfer outputs from DKT (or any other consumer):
 
 ```bash
-dlsurfer run --profile core-lesion --t1 T1.nii.gz --lesion-mask les.nii.gz \
-  --sd /path/subjects --sid sub-EG --fs-license $FS_LICENSE --execute
-
-dlsurfer handoff-dkt --sd /path/subjects --sid sub-EG
+dlsurfer handoff --consumer dkt --sd /path/subjects --sid sub-EG
+# alias: dlsurfer handoff-dkt ...
 ```
 
-Set `FS_SUBJECTS_DIR` / `fs_subjects_dir` to the same `--sd`.
+| DLSurfer profile | Typical consumer use |
+|------------------|----------------------|
+| `core` | FastSurfer-shaped tree with DKT labels |
+| `core-lesion` | Same after standalone LIT |
+| `fs8` | FreeSurfer 8 tree (DK / Destrieux possible) |
+
+Connectome / ACT / disconnectome remain entirely in the DKT stack.

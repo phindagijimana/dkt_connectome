@@ -1,0 +1,60 @@
+# Atlas registry — DKT is default, not exclusive. Connectome node sets stay outside DLSurfer.
+
+default: dkt
+
+atlases:
+  dkt:
+    name: Desikan–Killiany–Tourville (DKT)
+    status: default
+    freesurfer: true
+    fastsurfer: native
+    wired: true
+    how: "FastSurferVINN default labels"
+    outputs:
+      - label/?h.aparc.DKTatlas.mapped.annot
+      - mri/aparc.DKTatlas+aseg.mgz
+    note: Default because FastSurferVINN is DKT-native. Not the same as "DKT connectome pipeline."
+
+  dk:
+    name: Desikan–Killiany
+    status: wired
+    freesurfer: true
+    fastsurfer: via_fsaparc
+    wired: true
+    how: "dlsurfer run --profile core --atlas dk  OR  --profile core-dk  → FastSurfer --fsaparc"
+    outputs:
+      - label/?h.aparc.annot
+    note: Classical DK parc on FastSurfer surfaces via --fsaparc.
+
+  destrieux:
+    name: Destrieux (a2009s)
+    status: wired
+    freesurfer: true
+    fastsurfer: project_after_sphere_reg
+    wired: true
+    how: "dlsurfer run --profile atlas-destrieux  → recon-all -a2009s (needs surfaces)"
+    outputs:
+      - label/?h.aparc.a2009s.annot
+    note: Needs white/pial + sphere.reg then FS -a2009s; not VINN-native.
+
+  schaefer:
+    name: Schaefer (functional)
+    status: wired
+    freesurfer: project
+    fastsurfer: project
+    wired: true
+    how: "dlsurfer run --profile atlas-schaefer  → mri_surf2surf (set SCHAEFER_ANNOT_*)"
+    outputs:
+      - label/?h.schaefer.annot
+    note: External fsaverage annot projected after sphere.reg. Same pattern for HCP-MMP.
+
+  aseg:
+    name: Subcortical aseg
+    status: always_with_core
+    freesurfer: true
+    fastsurfer: true
+    wired: true
+    how: "Always with VINN/SynthSeg/FS8"
+    outputs:
+      - mri/aseg.mgz
+    note: Always produced with VINN/SynthSeg/FS8; not a cortical atlas choice.

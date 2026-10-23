@@ -6,7 +6,8 @@ profiles:
     phase: 1
     description: >
       Default morphometry: FastSurferVINN + CC + CerebNet + HypVINN + recon-surf.
-      FreeSurfer-shaped SUBJECTS_DIR for DKT/QSIRecon handoff.
+      FreeSurfer-shaped SUBJECTS_DIR (DKT labels by default; atlas-flexible — not
+      the DKT connectome pipeline).
     requires_lesion_mask: false
     engine: fastsurfer
     steps:
@@ -172,3 +173,152 @@ profiles:
     steps:
       - {engine: dl_cte, stage: thickness, device: auto}
     citations_note: "Cite Rebsamen DL+DiReCT; CortexMorph; DL-CTE."
+
+  # --- Gap-fill profiles (best alternatives from COMPARE_FS_FASTSURFER) ---
+
+  core-dk:
+    phase: 1
+    description: >
+      FastSurfer core with Desikan–Killiany via --fsaparc (best alt for DK gap).
+      Equivalent to: dlsurfer run --profile core --atlas dk
+    requires_lesion_mask: false
+    engine: fastsurfer
+    atlas: dk
+    steps:
+      - {engine: fastsurfer_vinn, stage: seg, device: gpu}
+      - {engine: fastsurfer_cc, stage: seg, device: gpu}
+      - {engine: cerebnet, stage: seg, device: gpu}
+      - {engine: hypvinn, stage: seg, device: gpu}
+      - {engine: recon_surf, stage: surf, device: cpu}
+    citations_note: "Cite FastSurfer + FreeSurfer aparc (DK)."
+
+  atlas-destrieux:
+    phase: 2
+    description: >
+      Best alt for Destrieux gap: FreeSurfer -a2009s on an existing subject tree
+      (needs white/pial + sphere.reg from core/fs8 first).
+    requires_lesion_mask: false
+    requires_existing_subject: true
+    engine: freesurfer
+    atlas: destrieux
+    steps:
+      - {engine: atlas_destrieux, stage: parc, device: cpu}
+    citations_note: "Cite Destrieux 2010."
+
+  atlas-schaefer:
+    phase: 2
+    description: >
+      Best alt for Schaefer gap: project fsaverage Schaefer annot → subject after
+      sphere.reg. Set SCHAEFER_ANNOT_{LH,RH} or pass paths in plan notes.
+    requires_lesion_mask: false
+    requires_existing_subject: true
+    engine: freesurfer
+    atlas: schaefer
+    steps:
+      - {engine: atlas_schaefer, stage: project, device: cpu}
+    citations_note: "Cite Schaefer 2018."
+
+  fs-long:
+    phase: 2
+    description: >
+      Best alt for longitudinal gap: FreeSurfer -base then -long (placeholders for
+      timepoints). Not a DL replacement.
+    requires_lesion_mask: false
+    engine: freesurfer
+    steps:
+      - {engine: freesurfer_long, stage: longitudinal, device: cpu}
+    citations_note: "Cite Reuter 2012 longitudinal FS."
+
+  subfields-ha:
+    phase: 2
+    description: Best alt for HA gap — FreeSurfer segmentHA_T1 on existing SUBJECTS_DIR.
+    requires_lesion_mask: false
+    requires_existing_subject: true
+    engine: freesurfer
+    steps:
+      - {engine: segment_ha, stage: ha, device: cpu}
+    citations_note: "Cite Iglesias HA / Saygin amygdala."
+
+  nuclei-bs-thal:
+    phase: 2
+    description: Best alt for brainstem + thalamic nuclei gaps (segmentBS + ThalamicNuclei).
+    requires_lesion_mask: false
+    requires_existing_subject: true
+    engine: freesurfer
+    steps:
+      - {engine: segment_bs, stage: brainstem, device: cpu}
+      - {engine: segment_thalamic, stage: thalamic, device: cpu}
+    citations_note: "Cite Iglesias brainstem 2015 + thalamic 2018."
+
+  fs-clinical:
+    phase: 2
+    description: >
+      Best alt for infant/clinical gap: recon-all-clinical (odd contrast / clinical
+      resolution). For true neonates prefer Infant FreeSurfer outside this profile.
+    requires_lesion_mask: false
+    engine: freesurfer
+    steps:
+      - {engine: recon_all_clinical, stage: clinical, device: auto}
+    citations_note: "Cite SynthSeg / recon-all-clinical docs."
+
+  # --- Specialty structure + Synth* (clau_seg / piriform lab tools) ---
+
+  preprocess-synthsr:
+    phase: 2
+    description: >
+      Optional T1 preprocess only (mri_synthsr). Writes synthsr T1 under SUBJECTS_DIR;
+      does not segment PC or claustrum. Chain into core / structure-* afterward.
+    requires_lesion_mask: false
+    engine: freesurfer
+    steps:
+      - {engine: synthsr, stage: preprocess, device: auto}
+    citations_note: "Cite Billot SynthSR; FreeSurfer mri_synthsr."
+
+  structure-claustrum:
+    phase: 2
+    description: >
+      Mauri 2025 claustrum (mri_claustrum_seg). Raw T1 → out under SUBJECTS_DIR/mri/claustrum.
+      Lab: Documents/clau_seg. Not a piriform model.
+    requires_lesion_mask: false
+    engine: freesurfer
+    steps:
+      - {engine: mauri_claustrum, stage: claustrum, device: cpu}
+    citations_note: "Cite Mauri Hum Brain Mapp 2025;46:e70303."
+
+  structure-piriform-synthseg:
+    phase: 3
+    description: >
+      Experimental SynthSeg-PC (Billot GMM U-Net) for Steinbart 125/126. Requires
+      SYNTHSEG_PC_MODEL / SYNTHSEG_PC_ROOT / label npy. IDEAS production PC stays JLF
+      until eval gate. Not mri_synthseg; not Mauri claustrum weights.
+    experimental: true
+    requires_lesion_mask: false
+    engine: hybrid
+    steps:
+      - {engine: synthseg_pc, stage: piriform, device: auto}
+    citations_note: "Cite Billot SynthSeg 2023; Steinbart 2023; Hammers 2003."
+    gate: "Hammers Dice/Jaccard vs JLF/MAPER; do not deploy as IDEAS production before gate."
+
+  structure-hippunfold:
+    phase: 2
+    description: >
+      Ready DL HA alternative (HippUnfold). Default HA remains profile subfields-ha
+      (segmentHA_T1); use this for unfold-based morphometry.
+    requires_lesion_mask: false
+    engine: hybrid
+    steps:
+      - {engine: hippunfold, stage: hippo, device: auto}
+    citations_note: "Cite DeKraker eLife 2022."
+
+  # Optional chain: clinical T1 → SynthSR → claustrum (dry-run composition)
+  clinical-claustrum:
+    phase: 2
+    description: >
+      SynthSR preprocess then Mauri claustrum. For poor clinical T1s needing both
+      salvage and claustrum labels.
+    requires_lesion_mask: false
+    engine: hybrid
+    steps:
+      - {engine: synthsr, stage: preprocess, device: auto}
+      - {engine: mauri_claustrum, stage: claustrum, device: cpu, t1: synthsr}
+    citations_note: "Cite Billot SynthSR + Mauri 2025."

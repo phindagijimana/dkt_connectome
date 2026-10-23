@@ -26,6 +26,10 @@ engines:
     cli: "mri_synthstrip"
     device: cpu_ok
     phase: 1
+    alternatives:
+      - {id: hdbet, readiness: ready, note: "Strong GPU stripper; prefer when FS not installed"}
+      - {id: robex, readiness: research, note: "Classic ML skull-strip"}
+      - {id: monai_brain_extract, readiness: research, note: "Custom nnU-Net / MONAI extractors"}
 
   deepn4:
     id: deepn4
@@ -44,6 +48,9 @@ engines:
     cli: "deepn4 / dipy_bias_field_correction --method n4"
     device: cuda_or_cpu
     phase: 2
+    alternatives:
+      - {id: simko_implicit_bias, readiness: research, note: "MIDL 2022 implicit CNN bias"}
+      - {id: n4itk, readiness: classical, note: "ITK N4 — keep if DeepN4 unavailable"}
 
   fastsurfer_vinn:
     id: fastsurfer_vinn
@@ -55,13 +62,20 @@ engines:
       Primary whole-brain morphometry engine for DLSurfer. Resolution-independent
       (0.7–1.0 mm) DL segmentation into FreeSurfer-compatible DKT/aseg products in
       minutes on GPU. This is the core reason DLSurfer defaults to FastSurfer rather
-      than classical recon-all for 'core' profiles.
+      than classical recon-all for 'core' profiles. Atlas default = DKT; other
+      atlases are orthogonal (see docs/ATLASES.md) — DLSurfer is not DKT-connectome.
     cite:
       - "Henschel L, et al. FastSurfer. NeuroImage 2020;219:117012."
       - "Henschel L, Kuegler D, Reuter M. FastSurferVINN. NeuroImage 2022;251:118933."
     cli: "run_fastsurfer.sh (asegdkt module)"
     device: auto
     phase: 1
+    alternatives:
+      - {id: synthseg, readiness: production, note: "Odd contrast/resolution; profile seg-quick-synthseg"}
+      - {id: quicknat, readiness: research, note: "Fast whole-brain parc; not FS-tree native"}
+      - {id: deepscan, readiness: research, note: "Strong seg for hybrid surface pipelines (Mello 2026)"}
+      - {id: assemblynet, readiness: research, note: "Multi-atlas DL ensemble"}
+      - {id: slant, readiness: research, note: "Hierarchical whole-brain seg"}
 
   synthseg:
     id: synthseg
@@ -72,14 +86,15 @@ engines:
     why: >
       Best Production alternative when T1 quality/contrast/resolution is non-standard,
       or when using profile fs8 / seg-quick-synthseg. Domain-randomized; ships in
-      FreeSurfer. Not the default for research-grade isotropic T1 (VINN preferred for
-      DKT connectome handoff).
+      FreeSurfer. Not the default for research-grade isotropic T1 (VINN preferred).
     cite:
       - "Billot B, et al. SynthSeg. Medical Image Analysis / FreeSurfer wiki SynthSeg."
       - "https://surfer.nmr.mgh.harvard.edu/fswiki/SynthSeg"
     cli: "mri_synthseg"
     device: cuda_or_cpu
     phase: 1
+    alternatives:
+      - {id: fastsurfer_vinn, readiness: production, note: "Default for isotropic T1 / DKT-native labels"}
 
   fastsurfer_cc:
     id: fastsurfer_cc
@@ -95,6 +110,9 @@ engines:
     cli: "run_fastsurfer.sh (cc; disable with --no_cc)"
     device: auto
     phase: 1
+    alternatives:
+      - {id: classical_cc, readiness: classical, note: "Older FS CC post-processing"}
+      - {id: skip_cc, readiness: production, note: "FastSurfer --no_cc if CC not needed"}
 
   cerebnet:
     id: cerebnet
@@ -110,6 +128,9 @@ engines:
     cli: "run_fastsurfer.sh (cereb; --no_cereb to disable)"
     device: auto
     phase: 1
+    alternatives:
+      - {id: classical_cereb, readiness: classical, note: "Atlas-based cereb tools"}
+      - {id: skip_cereb, readiness: production, note: "FastSurfer --no_cereb"}
 
   hypvinn:
     id: hypvinn
@@ -125,6 +146,9 @@ engines:
     cli: "run_fastsurfer.sh (hypothal; optional --t2)"
     device: auto
     phase: 1
+    alternatives:
+      - {id: sclimbic, readiness: production, note: "FS ScLimbic — use on fs8-only path (XOR with HypVINN)"}
+      - {id: skip_hypothal, readiness: production, note: "FastSurfer --no_hypothal"}
 
   neurolit:
     id: neurolit
@@ -145,6 +169,11 @@ engines:
     cli: "lit-inpainting ; lit-postprocessing ; or run_fastsurfer.sh --lesion_mask"
     device: auto
     phase: 1
+    alternatives:
+      - {id: neurolit_native_flag, readiness: production, note: "Profile core-lesion-native; blocks seg/surf split"}
+      - {id: vbg, readiness: ready, note: "Radwan 2021; caution Deutscher 2025 on ms-TBI"}
+      - {id: leapp_vbt, readiness: ready, note: "Bey 2024; TBI orientation crash risk in-lab"}
+      - {id: enantiomorphic, readiness: ready, note: "Unilateral only; Nachev / Fekonja+FastSurfer"}
 
   recon_surf:
     id: recon_surf
@@ -163,6 +192,16 @@ engines:
     cli: "run_fastsurfer.sh (surf) / recon-surf.sh"
     device: cpu
     phase: 1
+    alternatives:
+      - {id: topofit, readiness: production, note: "WM only; Phase 3 surf-dl-topofit"}
+      - {id: v2c_flow, readiness: ready, note: "Full WM+pial; Phase 3 surf-dl-v2c"}
+      - {id: cortexode, readiness: research, note: "Neural ODE CSR"}
+      - {id: pialnn, readiness: research, note: "WM→pial given white mesh"}
+      - {id: corticalflow, readiness: research, note: "Diffeomorphic template CSR"}
+      - {id: surfnn, readiness: research, note: "Joint midthickness CSR"}
+      - {id: deepcsr, readiness: research, note: "Implicit SDF + topology fix"}
+      - {id: fastcsr, readiness: research, note: "Level-set CSR ~5 min"}
+      - {id: recon_all_clinical, readiness: production, note: "SynthDist hybrid clinical path"}
 
   synthmorph:
     id: synthmorph
@@ -181,6 +220,10 @@ engines:
     cli: "mri_synthmorph"
     device: cuda_or_cpu
     phase: 2
+    alternatives:
+      - {id: easyreg, readiness: production, note: "Prefer when symmetry/invertibility required"}
+      - {id: voxelmorph, readiness: research, note: "Learning-based deformable family"}
+      - {id: ants, readiness: classical, note: "Classical gold-standard registration"}
 
   easyreg:
     id: easyreg
@@ -198,6 +241,9 @@ engines:
     cli: "mri_easyreg"
     device: cpu_ok
     phase: 2
+    alternatives:
+      - {id: synthmorph, readiness: production, note: "Acquisition-agnostic; companion util"}
+      - {id: voxelmorph, readiness: research, note: "Research deformable nets"}
 
   freesurfer8:
     id: freesurfer8
@@ -215,6 +261,9 @@ engines:
     cli: "recon-all"
     device: cpu_ok
     phase: 2
+    alternatives:
+      - {id: fastsurfer_core, readiness: production, note: "Preferred default morphometry engine (profile core)"}
+      - {id: recon_all_clinical, readiness: production, note: "Odd contrast/resolution clinical stream"}
 
   topofit:
     id: topofit
@@ -233,6 +282,10 @@ engines:
     cli: "mris_estimate_wm"
     device: cuda_or_cpu
     phase: 3
+    alternatives:
+      - {id: v2c_flow, readiness: ready, note: "Full surfaces if WM-only TopoFit insufficient"}
+      - {id: cortexode, readiness: research, note: "ODE deformation from init mesh"}
+      - {id: recon_surf, readiness: classical, note: "Default production surfaces"}
 
   v2c_flow:
     id: v2c_flow
@@ -252,6 +305,12 @@ engines:
     cli: "vox2organ / V2C-Flow pretrained"
     device: cuda
     phase: 3
+    alternatives:
+      - {id: vox2cortex, readiness: ready, note: "CVPR 2022 predecessor"}
+      - {id: cortexode, readiness: research, note: "TMI 2022 ODE pipeline"}
+      - {id: pialnn, readiness: research, note: "Pial given TopoFit WM"}
+      - {id: surfnn, readiness: research, note: "Joint midthickness"}
+      - {id: topofit, readiness: production, note: "WM-only lower-risk step"}
 
   sugar:
     id: sugar
@@ -270,6 +329,10 @@ engines:
     cli: "SUGAR (see upstream README)"
     device: cuda_or_cpu
     phase: 3
+    alternatives:
+      - {id: s3reg, readiness: ready, note: "Zhao TMI 2021 spherical U-Nets"}
+      - {id: v2c_flow_ids, readiness: ready, note: "Skip separate sphere.reg via template correspondence"}
+      - {id: classical_sphere_reg, readiness: classical, note: "FreeSurfer / FastSurfer recon-surf default"}
 
   dl_cte:
     id: dl_cte
@@ -280,7 +343,7 @@ engines:
     why: >
       Best Ready fast thickness without full FreeSurfer surfaces (CNN seg +
       diffeomorphic DiReCT-style registration). Profile 'thickness-fast' only —
-      NOT for DKT connectome / aparc handoff.
+      NOT a substitute for surface morphometry or connectome parcels.
     cite:
       - "Rebsamen M, et al. DL+DiReCT. Hum Brain Mapp 2020."
       - "CortexMorph arXiv:2307.11567 (2023)."
@@ -288,6 +351,240 @@ engines:
     cli: "dl-cte / cortexmorph"
     device: cuda_or_cpu
     phase: 3
+    alternatives:
+      - {id: dl_direct, readiness: ready, note: "Rebsamen DL+DiReCT"}
+      - {id: cortexmorph, readiness: ready, note: "VoxelMorph-accelerated DiReCT"}
+      - {id: surface_thickness, readiness: classical, note: "recon-surf / FreeSurfer thickness — morphometry default"}
+
+  # --- Gap-fill engines (best alternative for COMPARE gaps; not core defaults) ---
+
+  freesurfer_long:
+    name: FreeSurfer longitudinal (-base / -long)
+    chosen: true
+    readiness: production
+    classical_replaces: "Cross-sectional-only morphometry"
+    why: >
+      Best Production alternative for the longitudinal gap. FreeSurfer -base/-long
+      remains the field standard; FastSurfer longitudinal support is limited.
+    cite:
+      - "Reuter et al. NeuroImage 2012 (longitudinal FreeSurfer)"
+      - "FreeSurfer Longitudinal Processing docs"
+    cli: "recon-all -base … ; recon-all -long …"
+    device: cpu_ok
+    phase: 2
+    gap_fills: longitudinal
+    alternatives:
+      - {id: synthseg_per_tp, readiness: production, note: "FS8 SynthSeg independently per timepoint (partial)"}
+      - {id: v2c_long, readiness: early, note: "V2C-Long research longitudinal CSR"}
+
+  segment_ha:
+    name: FreeSurfer hippocampal/amygdala subfields (HA)
+    chosen: true
+    readiness: production
+    classical_replaces: "Whole-hippocampus aseg only"
+    why: >
+      Best Production alternative for the HA gap — segmentHA_T1 / recon-all
+      -hippocampal-subfields-T1 on an existing SUBJECTS_DIR.
+    cite:
+      - "Iglesias et al. NeuroImage 2015 (hippocampal subfields)"
+      - "Saygin et al. NeuroImage 2017 (amygdala)"
+    cli: "segmentHA_T1.sh <sid> <SUBJECTS_DIR>"
+    device: cpu_ok
+    phase: 2
+    gap_fills: ha_subfields
+    alternatives:
+      - {id: hippunfold, readiness: ready, note: "Unfold-based hippocampal surfaces"}
+      - {id: hippodeep, readiness: research, note: "Fast DL hippocampal segmentation"}
+
+  segment_bs:
+    name: FreeSurfer brainstem structures
+    chosen: true
+    readiness: production
+    classical_replaces: "Whole brainstem aseg label"
+    why: Best Production alternative for brainstem nuclei gap (segmentBS.sh).
+    cite:
+      - "Iglesias et al. NeuroImage 2015 (brainstem)"
+    cli: "segmentBS.sh <sid> <SUBJECTS_DIR>"
+    device: cpu_ok
+    phase: 2
+    gap_fills: brainstem
+    alternatives:
+      - {id: none_dl_default, readiness: none, note: "No stronger Production DL default for FS-tree brainstem"}
+
+  segment_thalamic:
+    name: FreeSurfer thalamic nuclei
+    chosen: true
+    readiness: production
+    classical_replaces: "Whole thalamus aseg label"
+    why: Best Production alternative for thalamic nuclei gap (segmentThalamicNuclei.sh).
+    cite:
+      - "Iglesias et al. NeuroImage 2018 (thalamic nuclei)"
+    cli: "segmentThalamicNuclei.sh <sid> <SUBJECTS_DIR>"
+    device: cpu_ok
+    phase: 2
+    gap_fills: thalamic
+    alternatives:
+      - {id: none_dl_default, readiness: none, note: "No stronger Production DL default for FS-tree thalamic nuclei"}
+
+  recon_all_clinical:
+    name: recon-all-clinical (SynthSeg/SynthDist clinical)
+    chosen: true
+    readiness: production
+    classical_replaces: "Standard recon-all on clinical / low-res / odd-contrast"
+    why: >
+      Best Production alternative for infant/clinical gap when standard recon-all
+      or FastSurferVINN is inappropriate (clinical stream in FS7.3+/FS8).
+    cite:
+      - "Billot SynthSeg; FreeSurfer recon-all-clinical docs"
+    cli: "recon-all-clinical.sh …"
+    device: auto
+    phase: 2
+    gap_fills: infant_clinical
+    alternatives:
+      - {id: synthseg, readiness: production, note: "Volume-only odd-contrast"}
+      - {id: infant_freesurfer, readiness: production, note: "Infant FreeSurfer for neonate T1/T2"}
+
+  atlas_destrieux:
+    name: Destrieux (a2009s) parcellation
+    chosen: true
+    readiness: production
+    classical_replaces: "DKT-only cortical labels"
+    why: >
+      Best alternative for Destrieux gap — classical FreeSurfer -a2009s on existing
+      surfaces (sphere.reg required). Not VINN-native.
+    cite:
+      - "Destrieux et al. NeuroImage 2010"
+      - "FreeSurfer aparc.a2009s docs"
+    cli: "recon-all -s <sid> -sd <SUBJECTS_DIR> -a2009s"
+    device: cpu_ok
+    phase: 2
+    gap_fills: atlas_destrieux
+    alternatives:
+      - {id: mris_ca_label_manual, readiness: classical, note: "Direct mris_ca_label with a2009s classifier"}
+
+  atlas_schaefer:
+    name: Schaefer surface projection
+    chosen: true
+    readiness: ready
+    classical_replaces: "Anatomical-only cortical atlases"
+    why: >
+      Best Ready alternative for Schaefer/MMP gap — project fsaverage annot after
+      sphere.reg (classical FS surf2surf). Annot source is external.
+    cite:
+      - "Schaefer et al. Cerebral Cortex 2018"
+      - "FreeSurfer mri_surf2surf / label projection docs"
+    cli: "mri_surf2surf --srcsubject fsaverage --trgsubject <sid> --sval-annot …"
+    device: cpu_ok
+    phase: 2
+    gap_fills: atlas_schaefer
+    alternatives:
+      - {id: hcp_mmp, readiness: ready, note: "Same projection pattern for HCP-MMP1.0"}
+      - {id: yeo_networks, readiness: ready, note: "Yeo 7/17 network annot projection"}
+
+  srun_fastsurfer:
+    name: FastSurfer srun / brun HPC wrap
+    chosen: true
+    readiness: production
+    classical_replaces: "Manual sbatch of run_fastsurfer.sh"
+    why: >
+      Best Production alternative for the srun gap — use upstream srun_fastsurfer.sh /
+      brun_fastsurfer.sh (enabled via --hpc srun).
+    cite:
+      - "FastSurfer HPC docs (brun_fastsurfer / srun_fastsurfer)"
+    cli: "srun_fastsurfer.sh …  OR  brun_fastsurfer.sh …"
+    device: auto
+    phase: 1
+    gap_fills: hpc_srun
+    alternatives:
+      - {id: slurm_template, readiness: production, note: "hpc/slurm_core_lesion.sh two-job split"}
+
+  # --- Specialty structure + Synth* preprocess (lab: clau_seg / piriform) ---
+
+  mauri_claustrum:
+    name: Mauri claustrum (mri_claustrum_seg)
+    chosen: true
+    readiness: production
+    classical_replaces: "No claustrum in standard aseg / FastSurferVINN"
+    why: >
+      Best Production DL tool for claustrum — FreeSurfer-integrated contrast-agnostic
+      U-Net (Mauri 2025). Lab path Documents/clau_seg; put0 FoV lock for IDEAS.
+      Not a piriform / PC model — do not reuse weights for Steinbart 125/126.
+    cite:
+      - "Mauri C, et al. Hum Brain Mapp. 2025;46:e70303. doi:10.1002/hbm.70303"
+      - "https://github.com/chiara-mauri/claustrum_segmentation"
+    cli: "mri_claustrum_seg --i <T1w> --o <outdir> --threads N --topo-correct"
+    device: cpu_ok
+    phase: 2
+    lab_path: "Documents/clau_seg"
+    gap_fills: claustrum
+    alternatives:
+      - {id: albishri_cnn, readiness: research, note: "Cross-dataset brittle (Mauri baseline Dice ~0.30)"}
+      - {id: casamitjana_bayesian, readiness: research, note: "Bayesian atlas baseline (Mauri ~0.37)"}
+
+  synthseg_pc:
+    name: SynthSeg-PC (Billot GMM → U-Net piriform)
+    chosen: true
+    readiness: research
+    classical_replaces: "MAPER / JLF piriform (Steinbart 125/126) when DL gate passes"
+    why: >
+      Lab SynthSeg-style PC segmenter (Documents/piriform/synthseg_pc): GMM on-the-fly
+      train → U-Net predict on Hammers dense FoV. NOT FreeSurfer mri_synthseg (no PC class).
+      NOT Mauri claustrum weights. Experimental until Hammers/IDEAS eval clears JLF bar;
+      IDEAS production PC remains JLF until that gate.
+    cite:
+      - "Billot B, et al. Nat Commun. 2023 (SynthSeg / GMM training)"
+      - "Steinbart D, et al. Hum Brain Mapp. 2023 (PC labels 125/126)"
+      - "Mauri et al. 2025 (dense FoV / real-T1 epoch pattern — not claustrum weights)"
+      - "Hammers A, et al. Hum Brain Mapp. 2003"
+    cli: "python Documents/piriform/synthseg_pc/predict_ideas_one.py --images … --model …"
+    device: cuda_or_cpu
+    phase: 3
+    lab_path: "Documents/piriform/synthseg_pc"
+    experimental: true
+    gap_fills: piriform_pc
+    alternatives:
+      - {id: jlf_pc, readiness: production, note: "IDEAS production today — Wang JLF + Steinbart 125/126"}
+      - {id: maper_pc, readiness: production, note: "Steinbart paper automatic method (Heckemann MAPER)"}
+      - {id: nnunet_pc, readiness: research, note: "piriform Dataset002/007 — training scaffold, not frozen product"}
+
+  synthsr:
+    name: SynthSR (mri_synthsr)
+    chosen: true
+    readiness: production
+    classical_replaces: "Manual clinical T1 upsampling / contrast salvage"
+    why: >
+      Optional T1 preprocess only — 1 mm T1-like from poor clinical scans (Billot).
+      Does NOT segment piriform or claustrum. Feed output into core / structure-* profiles.
+      Matches Documents/piriform/synthseg_pc/maybe_synthsr.sh policy.
+    cite:
+      - "Billot B, et al. SynthSR (FreeSurfer mri_synthsr)"
+      - "Iglesias / Billot Synth* family docs"
+    cli: "mri_synthsr --i <in> --o <out>"
+    device: auto
+    phase: 2
+    gap_fills: clinical_preprocess
+    alternatives:
+      - {id: skip_synthsr, readiness: production, note: "Use native T1 when quality is already 1 mm isotropic"}
+      - {id: recon_all_clinical, readiness: production, note: "Full clinical recon stream instead of preprocess-only"}
+
+  hippunfold:
+    name: HippUnfold
+    chosen: true
+    readiness: ready
+    classical_replaces: "FS segmentHA volumetric subfields (surface-unfold alternative)"
+    why: >
+      Best Ready DL alternative to segmentHA for hippocampal sheet morphometry.
+      Optional profile; default HA gap-fill remains classical segmentHA_T1.
+    cite:
+      - "DeKraker J, et al. eLife 2022;11:e77945"
+    cli: "hippunfold <bids> <out> participant …"
+    device: auto
+    phase: 2
+    lab_path: "Documents/HippUnfold"
+    gap_fills: ha_subfields_dl
+    alternatives:
+      - {id: segment_ha, readiness: production, note: "Default HA gap-fill in DLSurfer"}
+      - {id: hippodeep, readiness: research, note: "Fast hippocampus mask only"}
 
 # Explicitly NOT chosen as defaults (documented for honesty)
 deferred:
@@ -301,3 +598,15 @@ deferred:
     why: "Strong Research CSR; V2C-Flow chosen first as Ready pretrained full WM+pial."
   - id: pialnn
     why: "WM→pial only; consider after TopoFit if V2C-Flow fails TBI gate."
+  - id: s3reg
+    why: "Ready spherical reg; SUGAR chosen first for multi-dataset eval + speed claims."
+  - id: quicknat
+    why: "Credible seg; VINN/SynthSeg preferred for FS-shaped trees."
+  - id: deepscan
+    why: "Strong hybrid-pipeline seg; keep as documented alternative to VINN."
+  - id: beyondfs_zoo
+    why: >
+      SLANT/AssemblyNet/GIF/FIRST/etc. belong in piriform/beyondfs identity
+      (structures FS does not give) — do not dilute DLSurfer core with a methods zoo.
+  - id: mauri_weights_as_pc
+    why: "Never cite or run Mauri claustrum weights as Steinbart piriform — wrong structure."

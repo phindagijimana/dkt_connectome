@@ -11,6 +11,7 @@ CORE_REQUIRED = [
     "scripts",
 ]
 
+# Preferred paths for default atlas=dkt. Other atlases add annot/stats alongside.
 CORE_PREFERRED = [
     "mri/aparc.DKTatlas+aseg.deep.mgz",
     "mri/aseg.auto_noCCseg.mgz",
@@ -20,6 +21,23 @@ CORE_PREFERRED = [
     "surf/rh.pial",
     "stats",
 ]
+
+ATLAS_PREFERRED = {
+    "dkt": list(CORE_PREFERRED),
+    "dk": [
+        "mri/aseg.mgz",
+        "label/lh.aparc.annot",
+        "label/rh.aparc.annot",
+        "surf/lh.white",
+        "surf/rh.white",
+    ],
+    "destrieux": [
+        "label/lh.aparc.a2009s.annot",
+        "label/rh.aparc.a2009s.annot",
+        "surf/lh.white",
+        "surf/rh.white",
+    ],
+}
 
 
 def subject_dir(sd: Path, sid: str) -> Path:
