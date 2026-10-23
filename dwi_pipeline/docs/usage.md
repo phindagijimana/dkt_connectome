@@ -12,7 +12,8 @@ Command-line reference for the DKT Connectome BIDS App (`./run`, `./dkt`) and HP
 
 | Command | Purpose |
 |---------|---------|
-| `./dkt install` | Pull step `.sif` images + write `config.local.yaml` |
+| `./dkt install` / `./dkt install all` | Pull all step `.sif` images + write `config.local.yaml` |
+| `./dkt install qsirecon` | Pull / re-pull one container (also: `qsiprep`, `fastsurfer`, …) |
 | `./dkt pull` | Pull containers only (adds `--write-config` by default) |
 | `./dkt run …` | Same as `./run …` |
 | `./dkt log …` | List or tail logs under `RESULTS_ROOT/logs` |

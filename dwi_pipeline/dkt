@@ -20,7 +20,8 @@ usage() {
 Usage: dkt <command> [options]
 
 Commands:
-  install   Pull step .sif images and write config.local.yaml (scripts/install.sh)
+  install   Pull step .sif images and write config.local.yaml
+            ./dkt install | ./dkt install all | ./dkt install qsirecon
   pull      Pull containers only (scripts/pull_containers.sh)
   run       Run the BIDS App pipeline (same as ./run)
   log       List or tail per-subject pipeline logs under RESULTS_ROOT/logs
@@ -32,6 +33,11 @@ Quick start:
   ./dkt install
   ./dkt check
   ./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+
+Install one container (e.g. after a failed qsirecon pull):
+  ./dkt install qsirecon
+  ./dkt install qsirecon --force
+  ./dkt install --dry-run qsirecon
 
 Run './dkt <command> --help' for command-specific help.
 Docs: https://dkt-connectome.readthedocs.io/en/latest/

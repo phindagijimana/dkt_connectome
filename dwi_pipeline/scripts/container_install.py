@@ -342,9 +342,26 @@ def default_cache() -> Path:
     return Path.home() / ".cache" / "dkt-connectome" / "containers"
 
 
+def known_container_keys() -> frozenset[str]:
+    """Valid single-container install keys (DEFAULT_KEYS plus optional orchestrator)."""
+    return frozenset(DEFAULT_KEYS) | frozenset({"orchestrator"})
+
+
 def resolve_keys(mode: str | None, only: str | None) -> tuple[str, ...]:
     if only:
-        return tuple(k.strip() for k in only.split(",") if k.strip())
+        keys = tuple(k.strip() for k in only.replace(" ", ",").split(",") if k.strip())
+        if not keys:
+            sys.exit("ERROR: --only / install targets produced an empty key list")
+        if len(keys) == 1 and keys[0] == "all":
+            return DEFAULT_KEYS
+        unknown = [k for k in keys if k not in known_container_keys()]
+        if unknown:
+            valid = ", ".join(("all",) + DEFAULT_KEYS)
+            sys.exit(
+                f"ERROR: unknown container key(s): {', '.join(unknown)}\n"
+                f"Valid: {valid}"
+            )
+        return keys
     if mode:
         keys = MODE_KEYS.get(mode)
         if keys is None:
