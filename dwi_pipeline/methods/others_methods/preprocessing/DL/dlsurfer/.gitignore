@@ -11,8 +11,10 @@ build/
 .venv/
 venv/
 site/
+docs/_build/
 
 # Local runs / cluster noise
+.poll_*
 work/
 *.out
 *.err
