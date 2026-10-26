@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# iBEAT V2.0 — best Ready DL infant CSR (Wang Nat Protoc 2023)
+# https://github.com/iBEAT-V2/iBEAT-V2.0-Docker
+set -euo pipefail
+usage() {
+  cat <<EOF
+Usage: dlsurfer-ibeat --t1 T1.nii.gz --out-dir OUT --sid SID --age-months N [--t2 T2.nii.gz]
+Env:
+  IBEAT_SIF          Apptainer/Docker image (e.g. ibeatgroup/ibeat_v2:release205)
+  IBEAT_AGE_MONTHS   age in months (required if --age-months not passed as number)
+EOF
+}
+T1="" T2="" OUT="" SID="" AGE=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --t2) T2="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --age-months) AGE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown: $1" >&2; usage; exit 2 ;;
+  esac
+done
+[[ -n "$T1" && -n "$OUT" && -n "$SID" ]] || { usage; exit 2; }
+AGE="${AGE:-${IBEAT_AGE_MONTHS:-}}"
+if [[ -z "$AGE" || "$AGE" == '${IBEAT_AGE_MONTHS}' ]]; then
+  echo "[dlsurfer-ibeat] set --age-months or IBEAT_AGE_MONTHS" >&2
+  exit 2
+fi
+mkdir -p "$OUT"
+SIF="${IBEAT_SIF:-}"
+if [[ -z "$SIF" ]]; then
+  cat > "$OUT/dlsurfer_ibeat_cmd.txt" <<EOF
+# Example (Docker):
+# docker run --gpus=all --rm -v DATA:/InfantData ibeatgroup/ibeat_v2:release205 \\
+#   --t1 /InfantData/t1.nii --age $AGE --out_dir /InfantData/out --sub_name $SID
+# Set IBEAT_SIF to an Apptainer build of that image for HPC.
+EOF
+  echo "[dlsurfer-ibeat] set IBEAT_SIF (see iBEAT-V2.0-Docker README)" >&2
+  exit 2
+fi
+T1ABS="$(cd "$(dirname "$T1")" && pwd)/$(basename "$T1")"
+OUTABS="$(cd "$OUT" && pwd)"
+EXTRA=()
+[[ -n "$T2" ]] && EXTRA+=(--t2 "/data/$(basename "$T2")")
+BINDS=(-B "$(dirname "$T1ABS"):/data:ro" -B "$OUTABS:/out")
+[[ -n "$T2" ]] && BINDS+=(-B "$(cd "$(dirname "$T2")" && pwd):/data2:ro")
+set +e
+apptainer run --nv "${BINDS[@]}" "$SIF" \
+  --t1 "/data/$(basename "$T1")" --age "$AGE" --out_dir /out --sub_name "$SID" \
+  "${EXTRA[@]}" 2>"$OUT/dlsurfer_ibeat.err"
+rc=$?
+set -e
+echo "$rc" > "$OUT/dlsurfer_ibeat.exit"
+[[ $rc -eq 0 ]] || { echo "[dlsurfer-ibeat] failed ($rc); see $OUT/dlsurfer_ibeat.err" >&2; exit "$rc"; }
+echo ok > "$OUT/dlsurfer_ibeat.done"

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Install DL surface meshes into FreeSurfer SUBJECTS_DIR contract ($SD/$SID/surf).
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+export PYTHONPATH="${ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+exec python -m dlsurfer.adapters.surfaces_fs "$@"

@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: deepmi/fastsurfer:cu132-v2.6.0
+
+# Optional meta-image — orchestrator + FastSurfer base.
+# LIT / FreeSurfer license still bind-mounted (size + license policy).
+# Build:  apptainer build containers/dlsurfer.sif containers/dlsurfer.def
+# Run:    apptainer run --nv \
+#           -B $FS_LICENSE:/fs_license:ro \
+#           -B /data:/data \
+#           containers/dlsurfer.sif \
+#           /data/bids /data/out participant --participant_label 01 --fs-license /fs_license
+
+%files
+    ../dlsurfer /opt/dlsurfer/dlsurfer
+    ../pyproject.toml /opt/dlsurfer/pyproject.toml
+    ../boutiques /opt/dlsurfer/boutiques
+    entrypoint_bids.sh /opt/dlsurfer/containers/entrypoint_bids.sh
+
+%post
+    apt-get update || true
+    python3 -m pip install --no-cache-dir pyyaml nibabel 2>/dev/null || true
+    chmod +x /opt/dlsurfer/containers/entrypoint_bids.sh
+    echo "DLSurfer meta-SIF: bind FS_LICENSE + neurolit SIF as needed."
+
+%envscript
+    export DLSURFER_ROOT=/opt/dlsurfer
+    export PYTHONPATH=/opt/dlsurfer${PYTHONPATH:+:$PYTHONPATH}
+    export PATH=/opt/dlsurfer/containers:/opt/dlsurfer/env/bin:$PATH
+    export FS_LICENSE="${FS_LICENSE:-/fs_license}"
+
+%runscript
+    exec /opt/dlsurfer/containers/entrypoint_bids.sh "$@"
+
+%labels
+    Author TrackTBI-Sub lab
+    Version 0.1.0
+    BasedOn deepmi/fastsurfer:cu132-v2.6.0
+    OrgUrl https://github.com/phindagijimana/dlsurfer

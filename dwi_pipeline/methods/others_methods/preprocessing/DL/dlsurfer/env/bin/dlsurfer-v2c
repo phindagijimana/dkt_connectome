@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# V2C-Flow inference wrapper (literature-best Ready full CSR — Bongratz MedIA 2024).
+# Requires: V2C_ROOT (cloned ai-med/Vox2Cortex) + conda/apptainer env with pytorch3d.
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: dlsurfer-v2c --t1 T1.nii.gz --out-dir OUT --sid SID [--device cuda|cpu]
+Env:
+  V2C_ROOT          path to Vox2Cortex clone (required)
+  V2C_PYTHON        python in vox2organ env (default: python)
+  V2C_MODEL_NAME    experiment name (default: V2C-Flow-S-ADNI)
+  V2C_DATASET       dataset key registered in supported_datasets.py (default: dlsurfer_t1)
+EOF
+}
+
+T1="" OUT="" SID="" DEVICE="cuda"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown: $1" >&2; usage; exit 2 ;;
+  esac
+done
+
+[[ -n "$T1" && -n "$OUT" && -n "$SID" ]] || { usage; exit 2; }
+V2C_ROOT="${V2C_ROOT:-}"
+[[ -n "$V2C_ROOT" && -d "$V2C_ROOT/vox2organ" ]] || {
+  echo "[dlsurfer-v2c] set V2C_ROOT to a Vox2Cortex checkout" >&2
+  exit 2
+}
+V2C_PYTHON="${V2C_PYTHON:-python}"
+V2C_MODEL_NAME="${V2C_MODEL_NAME:-V2C-Flow-S-ADNI}"
+V2C_DATASET="${V2C_DATASET:-dlsurfer_t1}"
+
+mkdir -p "$OUT"
+# Stage subject for V2C: data-raw/<sid>/mri.nii.gz (+ optional seg)
+RAW="$OUT/v2c_raw/$SID"
+mkdir -p "$RAW"
+cp -f "$T1" "$RAW/mri.nii.gz"
+# Ensure pretrained experiment dir
+EXP="$V2C_ROOT/experiments/$V2C_MODEL_NAME"
+if [[ ! -d "$EXP" ]]; then
+  mkdir -p "$V2C_ROOT/experiments"
+  cp -a "$V2C_ROOT/vox2organ/pretrained_models/$V2C_MODEL_NAME" "$EXP"
+fi
+
+# Marker for DLSurfer SUBJECTS_DIR mapping (filled after successful inference)
+MARKER="$OUT/$SID/scripts"
+mkdir -p "$MARKER"
+cat > "$MARKER/dlsurfer_v2c_cmd.txt" <<EOF
+cd $V2C_ROOT/vox2organ
+$V2C_PYTHON main.py --test -n $V2C_MODEL_NAME --dataset $V2C_DATASET
+# device=$DEVICE t1=$T1 raw=$RAW
+# Map scanner-RAS meshes → FreeSurfer tree with mris_convert --to-scanner as needed.
+EOF
+
+cd "$V2C_ROOT/vox2organ"
+set +e
+$V2C_PYTHON main.py --test -n "$V2C_MODEL_NAME" --dataset "$V2C_DATASET"
+rc=$?
+set -e
+echo "$rc" > "$MARKER/dlsurfer_v2c.exit"
+if [[ $rc -ne 0 ]]; then
+  echo "[dlsurfer-v2c] inference failed (exit $rc). Env/dataset registration may be incomplete." >&2
+  echo "[dlsurfer-v2c] See $MARKER/dlsurfer_v2c_cmd.txt and docs/workflows/surfaces.md" >&2
+  exit "$rc"
+fi
+echo "ok" > "$MARKER/dlsurfer_v2c.done"
+
+# FreeSurfer SUBJECTS_DIR contract: map meshes → $OUT/$SID/surf/{lh,rh}.{white,pial}
+INSTALL="$(dirname "$0")/dlsurfer-install-surfaces"
+if [[ -x "$INSTALL" ]]; then
+  SEARCH_ARGS=(--search-dir "$OUT" --search-dir "$OUT/$SID")
+  [[ -d "$EXP" ]] && SEARCH_ARGS+=(--search-dir "$EXP")
+  set +e
+  "$INSTALL" --sd "$OUT" --sid "$SID" --backend v2c --mode full "${SEARCH_ARGS[@]}"
+  irc=$?
+  set -e
+  if [[ $irc -ne 0 ]]; then
+    echo "[dlsurfer-v2c] warning: FS surface contract install exit $irc (meshes may need --white-lh/…)" >&2
+  fi
+fi
+exit 0

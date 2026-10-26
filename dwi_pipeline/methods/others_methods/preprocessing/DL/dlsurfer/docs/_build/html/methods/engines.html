@@ -1,0 +1,804 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Methods — resources &amp; citations &mdash; DLSurfer 0.1.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=aefb4c58" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a58bc63e"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Engine policy — wrap FastSurfer / FreeSurfer" href="../workflows/engine_policy.html" />
+    <link rel="prev" title="Methods &amp; citations" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DLSurfer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../what_it_does.html">What DLSurfer does</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/apptainer.html">Apptainer containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/python.html">Python package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/doctor.html">Doctor check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/tutorial.html">Tutorial — first run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/sample_results.html">Sample results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/layout.html">Output layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/and_dkt.html">DLSurfer and DKT Connectome</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Using the pipeline</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../usage/minimal.html">A minimal command</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/profiles.html">Profiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/inputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/lesions.html">Lesion masks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/subjects_dir.html">SUBJECTS_DIR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/hpc.html">Devices and HPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/preview.html">Preview the plan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/gates.html">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bids_app.html">BIDS App status</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Methods</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Methods &amp; citations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Methods — resources &amp; citations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pinned-stack">Pinned stack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#chosen-engines">Chosen engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#per-engine-detail">Per-engine detail</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synthstrip-synthstrip">SynthStrip {#synthstrip}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deepn4-deepn4">DeepN4 {#deepn4}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastsurfervinn-asegdkt-fastsurfer-vinn">FastSurferVINN (asegdkt) {#fastsurfer_vinn}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#synthseg-synthseg">SynthSeg {#synthseg}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastsurfer-cc-fastsurfer-cc">FastSurfer-CC {#fastsurfer_cc}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cerebnet-cerebnet">CerebNet {#cerebnet}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hypvinn-hypvinn">HypVINN {#hypvinn}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#neurolit-fastsurfer-lit-neurolit">neuroLIT / FastSurfer-LIT {#neurolit}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastsurfer-recon-surf-classical-geometry-recon-surf">FastSurfer recon-surf (classical geometry) {#recon_surf}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#synthmorph-synthmorph">SynthMorph {#synthmorph}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#easyreg-easyreg">EasyReg {#easyreg}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#freesurfer-8-recon-all-freesurfer8">FreeSurfer 8 recon-all {#freesurfer8}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topofit-topofit">TopoFit {#topofit}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#v2c-flow-vox2cortex-flow-v2c-flow">V2C-Flow (Vox2Cortex-Flow) {#v2c_flow}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sugar-sugar">SUGAR {#sugar}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dl-cte-cortexmorph-family-dl-cte">DL-CTE / CortexMorph family {#dl_cte}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#freesurfer-longitudinal-base-long-freesurfer-long">FreeSurfer longitudinal (-base / -long) {#freesurfer_long}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#freesurfer-hippocampal-amygdala-subfields-ha-segment-ha">FreeSurfer hippocampal/amygdala subfields (HA) {#segment_ha}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#freesurfer-brainstem-structures-segment-bs">FreeSurfer brainstem structures {#segment_bs}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#freesurfer-thalamic-nuclei-segment-thalamic">FreeSurfer thalamic nuclei {#segment_thalamic}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recon-all-clinical-synthseg-synthdist-clinical-recon-all-clinical">recon-all-clinical (SynthSeg/SynthDist clinical) {#recon_all_clinical}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#destrieux-a2009s-parcellation-atlas-destrieux">Destrieux (a2009s) parcellation {#atlas_destrieux}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#schaefer-surface-projection-atlas-schaefer">Schaefer surface projection {#atlas_schaefer}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastsurfer-srun-brun-hpc-wrap-srun-fastsurfer">FastSurfer srun / brun HPC wrap {#srun_fastsurfer}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mauri-claustrum-mri-claustrum-seg-mauri-claustrum">Mauri claustrum (mri_claustrum_seg) {#mauri_claustrum}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#synthseg-pc-billot-gmm-u-net-piriform-synthseg-pc">SynthSeg-PC (Billot GMM → U-Net piriform) {#synthseg_pc}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#synthsr-mri-synthsr-synthsr">SynthSR (mri_synthsr) {#synthsr}</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hippunfold-hippunfold">HippUnfold {#hippunfold}</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#deferred-not-defaults">Deferred (not defaults)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/engine_policy.html">Engine policy — wrap FastSurfer / FreeSurfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/core.html">core / core-lesion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/atlases.html">Atlases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/specialty.html">Specialty modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/surfaces.html">Surfaces (Phase 3)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Outputs &amp; QC</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/metrics.html">Metrics and QC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/handoff.html">Handoff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/qc.html">Quality control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/cluster.html">Cluster notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/CLAIMS.html">DLSurfer claim boundary (Phase 0 — frozen)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ISOLATION.html">Isolation from DKT connectome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ENGINE_POLICY.html">FreeSurfer / FastSurfer vs individual DL methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ATLASES.html">Atlases — DKT is default, not exclusive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ALTERNATIVES.html">All credible alternatives (chosen + runners-up)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/COMPARE_FS_FASTSURFER.html">DLSurfer vs FreeSurfer vs FastSurfer — coverage &amp; gaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/GAPS_WITHOUT_ALTERNATIVES.html">Gaps remaining <strong>without</strong> a credible alternative</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/STRUCTURE_MODULES.html">Specialty structure + Synth* preprocess modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/PHASES.html">DLSurfer phases — status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/DKT_HANDOFF.html">Optional handoff notes (not a DKT dependency)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/LIVE_RUNS.html">Live runs — ops checklist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/EG_SMOKE_EVIDENCE.html">EG smoke evidence — <code class="docutils literal notranslate"><span class="pre">core_lesion_eg_smoke</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/TBI_LIT_SURFACES_REPORT.html">TBI ± LIT — surface DL gate report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/SYNTHSEG_PC_EVAL.html">SynthSeg-PC vs JLF — eval status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/PUBLISH.html">Phase 4 — harden &amp; publish notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DLSurfer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Methods — resources &amp; citations</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/phindagijimana/dlsurfer/blob/main/docs/methods/engines.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="methods-resources-citations">
+<h1>Methods — resources &amp; citations</h1>
+<p>Auto-generated from <code class="docutils literal notranslate"><span class="pre">dlsurfer/engines.yaml</span></code> (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/gen_methods_docs.py</span></code>).
+Cite <strong>these engines</strong>, not DLSurfer as morphometry science.</p>
+<section id="pinned-stack">
+<h2>Pinned stack</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Pin</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fastsurfer_image</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">deepmi/fastsurfer:cu132-v2.6.0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fastsurfer_sif_lab</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Documents/others/containers/fastsurfer_cu126_v2.6.0.sif</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">freesurfer_min</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8.0.0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">freesurfer_sif_lab</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Documents/others/containers/freesurfer_7.4.1.sif</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">neurolit_min</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.6.0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">neurolit_sif_lab</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Documents/others/containers/lit_0.6.0.sif</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="chosen-engines">
+<h2>Chosen engines</h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Engine</p></th>
+<th class="head"><p>CLI / resource</p></th>
+<th class="head"><p>Paper / docs</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>SynthStrip</strong> (<code class="docutils literal notranslate"><span class="pre">synthstrip</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_synthstrip</span></code></p></td>
+<td><p>Hoopes A, et al. SynthStrip: skull-stripping for any brain image. NeuroImage 2022.<br>https://synthstrip.io</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DeepN4</strong> (<code class="docutils literal notranslate"><span class="pre">deepn4</span></code>) · ready</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">deepn4</span> <span class="pre">/</span> <span class="pre">dipy_bias_field_correction</span> <span class="pre">--method</span> <span class="pre">n4</span></code></p></td>
+<td><p>Kanakaraj S, et al. DeepN4: Learning N4ITK Bias Field Correction for T1-weighted Images. 2024. PMC10680935.<br>https://github.com/MASILab/DeepN4</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FastSurferVINN (asegdkt)</strong> (<code class="docutils literal notranslate"><span class="pre">fastsurfer_vinn</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(asegdkt</span> <span class="pre">module)</span></code></p></td>
+<td><p>Henschel L, et al. FastSurfer. NeuroImage 2020;219:117012.<br>Henschel L, Kuegler D, Reuter M. FastSurferVINN. NeuroImage 2022;251:118933.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>SynthSeg</strong> (<code class="docutils literal notranslate"><span class="pre">synthseg</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_synthseg</span></code></p></td>
+<td><p>Billot B, et al. SynthSeg. Medical Image Analysis / FreeSurfer wiki SynthSeg.<br>https://surfer.nmr.mgh.harvard.edu/fswiki/SynthSeg</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FastSurfer-CC</strong> (<code class="docutils literal notranslate"><span class="pre">fastsurfer_cc</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(cc;</span> <span class="pre">disable</span> <span class="pre">with</span> <span class="pre">--no_cc)</span></code></p></td>
+<td><p>Pollak C, et al. FastSurfer-CC. Imaging Neuroscience 2026. doi:10.1162/IMAG.a.1221</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>CerebNet</strong> (<code class="docutils literal notranslate"><span class="pre">cerebnet</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(cereb;</span> <span class="pre">--no_cereb</span> <span class="pre">to</span> <span class="pre">disable)</span></code></p></td>
+<td><p>Faber J, et al. CerebNet. NeuroImage 2022;264:119703.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>HypVINN</strong> (<code class="docutils literal notranslate"><span class="pre">hypvinn</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(hypothal;</span> <span class="pre">optional</span> <span class="pre">--t2)</span></code></p></td>
+<td><p>Estrada S, et al. FastSurfer-HypVINN. Imaging Neuroscience 2023.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>neuroLIT / FastSurfer-LIT</strong> (<code class="docutils literal notranslate"><span class="pre">neurolit</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lit-inpainting</span> <span class="pre">;</span> <span class="pre">lit-postprocessing</span> <span class="pre">;</span> <span class="pre">or</span> <span class="pre">run_fastsurfer.sh</span> <span class="pre">--lesion_mask</span></code></p></td>
+<td><p>Pollak C, et al. FastSurfer-LIT. Imaging Neuroscience 2025. doi:10.1162/imag_a_00446<br>https://github.com/Deep-MI/neurolit<br>FastSurfer LIT docs: https://deep-mi.org/FastSurfer/stable/overview/modules/LIT.html</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FastSurfer recon-surf (classical geometry)</strong> (<code class="docutils literal notranslate"><span class="pre">recon_surf</span></code>) · classical</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(surf)</span> <span class="pre">/</span> <span class="pre">recon-surf.sh</span></code></p></td>
+<td><p>Henschel L, et al. FastSurfer. NeuroImage 2020 (recon-surf description).<br>Fischl B. FreeSurfer. NeuroImage 2012 (underlying surface methods).</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>SynthMorph</strong> (<code class="docutils literal notranslate"><span class="pre">synthmorph</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_synthmorph</span></code></p></td>
+<td><p>Hoffmann M, et al. SynthMorph. IEEE TMI 2022; Imaging Neuroscience 2024.<br>https://synthmorph.io</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>EasyReg</strong> (<code class="docutils literal notranslate"><span class="pre">easyreg</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_easyreg</span></code></p></td>
+<td><p>Iglesias JE, et al. EasyReg. Scientific Reports 2023. doi:10.1038/s41598-023-33781-0<br>https://surfer.nmr.mgh.harvard.edu/fswiki/EasyReg</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>FreeSurfer 8 recon-all</strong> (<code class="docutils literal notranslate"><span class="pre">freesurfer8</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">recon-all</span></code></p></td>
+<td><p>FreeSurfer 8.0.0 release notes (SynthSeg, SynthStrip, SynthMorph in recon-all).<br>Fischl B. FreeSurfer. NeuroImage 2012.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>TopoFit</strong> (<code class="docutils literal notranslate"><span class="pre">topofit</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mris_estimate_wm</span></code></p></td>
+<td><p>Hoopes A, et al. TopoFit. MIDL 2022.<br>https://github.com/ahoopes/topofit</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>V2C-Flow (Vox2Cortex-Flow)</strong> (<code class="docutils literal notranslate"><span class="pre">v2c_flow</span></code>) · ready</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">vox2organ</span> <span class="pre">/</span> <span class="pre">V2C-Flow</span> <span class="pre">pretrained</span></code></p></td>
+<td><p>Bongratz F, et al. Vox2Cortex. CVPR 2022.<br>Bongratz F, et al. V2C-Flow. arXiv:2401.12938 (2024).<br>https://github.com/ai-med/Vox2Cortex</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>SUGAR</strong> (<code class="docutils literal notranslate"><span class="pre">sugar</span></code>) · ready</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SUGAR</span> <span class="pre">(see</span> <span class="pre">upstream</span> <span class="pre">README)</span></code></p></td>
+<td><p>Ren J, et al. SUGAR. arXiv:2307.00511 (2023).<br>https://github.com/pBFSLab/SUGAR</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DL-CTE / CortexMorph family</strong> (<code class="docutils literal notranslate"><span class="pre">dl_cte</span></code>) · ready</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">dl-cte</span> <span class="pre">/</span> <span class="pre">cortexmorph</span></code></p></td>
+<td><p>Rebsamen M, et al. DL+DiReCT. Hum Brain Mapp 2020.<br>CortexMorph arXiv:2307.11567 (2023).<br>Wu et al. DL-CTE 2025. https://github.com/wujiong-hub/DL-CTE</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FreeSurfer longitudinal (-base / -long)</strong> (<code class="docutils literal notranslate"><span class="pre">freesurfer_long</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">recon-all</span> <span class="pre">-base</span> <span class="pre">…</span> <span class="pre">;</span> <span class="pre">recon-all</span> <span class="pre">-long</span> <span class="pre">…</span></code></p></td>
+<td><p>Reuter et al. NeuroImage 2012 (longitudinal FreeSurfer)<br>FreeSurfer Longitudinal Processing docs</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>FreeSurfer hippocampal/amygdala subfields (HA)</strong> (<code class="docutils literal notranslate"><span class="pre">segment_ha</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">segmentHA_T1.sh</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span></code></p></td>
+<td><p>Iglesias et al. NeuroImage 2015 (hippocampal subfields)<br>Saygin et al. NeuroImage 2017 (amygdala)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FreeSurfer brainstem structures</strong> (<code class="docutils literal notranslate"><span class="pre">segment_bs</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">segmentBS.sh</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span></code></p></td>
+<td><p>Iglesias et al. NeuroImage 2015 (brainstem)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>FreeSurfer thalamic nuclei</strong> (<code class="docutils literal notranslate"><span class="pre">segment_thalamic</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">segmentThalamicNuclei.sh</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span></code></p></td>
+<td><p>Iglesias et al. NeuroImage 2018 (thalamic nuclei)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>recon-all-clinical (SynthSeg/SynthDist clinical)</strong> (<code class="docutils literal notranslate"><span class="pre">recon_all_clinical</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">recon-all-clinical.sh</span> <span class="pre">…</span></code></p></td>
+<td><p>Billot SynthSeg; FreeSurfer recon-all-clinical docs</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Destrieux (a2009s) parcellation</strong> (<code class="docutils literal notranslate"><span class="pre">atlas_destrieux</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">recon-all</span> <span class="pre">-s</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">-sd</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span> <span class="pre">-a2009s</span></code></p></td>
+<td><p>Destrieux et al. NeuroImage 2010<br>FreeSurfer aparc.a2009s docs</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Schaefer surface projection</strong> (<code class="docutils literal notranslate"><span class="pre">atlas_schaefer</span></code>) · ready</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_surf2surf</span> <span class="pre">--srcsubject</span> <span class="pre">fsaverage</span> <span class="pre">--trgsubject</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">--sval-annot</span> <span class="pre">…</span></code></p></td>
+<td><p>Schaefer et al. Cerebral Cortex 2018<br>FreeSurfer mri_surf2surf / label projection docs</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>FastSurfer srun / brun HPC wrap</strong> (<code class="docutils literal notranslate"><span class="pre">srun_fastsurfer</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">srun_fastsurfer.sh</span> <span class="pre">…</span>&#160; <span class="pre">OR</span>&#160; <span class="pre">brun_fastsurfer.sh</span> <span class="pre">…</span></code></p></td>
+<td><p>FastSurfer HPC docs (brun_fastsurfer / srun_fastsurfer)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Mauri claustrum (mri_claustrum_seg)</strong> (<code class="docutils literal notranslate"><span class="pre">mauri_claustrum</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_claustrum_seg</span> <span class="pre">--i</span> <span class="pre">&lt;T1w&gt;</span> <span class="pre">--o</span> <span class="pre">&lt;outdir&gt;</span> <span class="pre">--threads</span> <span class="pre">N</span> <span class="pre">--topo-correct</span></code></p></td>
+<td><p>Mauri C, et al. Hum Brain Mapp. 2025;46:e70303. doi:10.1002/hbm.70303<br>https://github.com/chiara-mauri/claustrum_segmentation</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>SynthSeg-PC (Billot GMM → U-Net piriform)</strong> (<code class="docutils literal notranslate"><span class="pre">synthseg_pc</span></code>) · research</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">Documents/piriform/synthseg_pc/predict_ideas_one.py</span> <span class="pre">--images</span> <span class="pre">…</span> <span class="pre">--model</span> <span class="pre">…</span></code></p></td>
+<td><p>Billot B, et al. Nat Commun. 2023 (SynthSeg / GMM training)<br>Steinbart D, et al. Hum Brain Mapp. 2023 (PC labels 125/126)<br>Mauri et al. 2025 (dense FoV / real-T1 epoch pattern — not claustrum weights)<br>Hammers A, et al. Hum Brain Mapp. 2003</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>SynthSR (mri_synthsr)</strong> (<code class="docutils literal notranslate"><span class="pre">synthsr</span></code>) · production</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_synthsr</span> <span class="pre">--i</span> <span class="pre">&lt;in&gt;</span> <span class="pre">--o</span> <span class="pre">&lt;out&gt;</span></code></p></td>
+<td><p>Billot B, et al. SynthSR (FreeSurfer mri_synthsr)<br>Iglesias / Billot Synth* family docs</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>HippUnfold</strong> (<code class="docutils literal notranslate"><span class="pre">hippunfold</span></code>) · ready</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">hippunfold</span> <span class="pre">&lt;bids&gt;</span> <span class="pre">&lt;out&gt;</span> <span class="pre">participant</span> <span class="pre">…</span></code></p></td>
+<td><p>DeKraker J, et al. eLife 2022;11:e77945</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="per-engine-detail">
+<h2>Per-engine detail</h2>
+<section id="synthstrip-synthstrip">
+<h3>SynthStrip {#synthstrip}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> FS watershed / hybrid skull-strip</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_synthstrip</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production skull-strip already in FreeSurfer (≥7.3). Contrast- and resolution-robust via synthetic training; removes a common classical failure mode without a separate container. Prefer over HD-BET inside DLSurfer so the strip utility stays license/tooling-aligned with FS8.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Hoopes A, et al. SynthStrip: skull-stripping for any brain image. NeuroImage 2022.</p></li>
+<li><p>https://synthstrip.io</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">hdbet</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">robex</span></code> (research), <code class="docutils literal notranslate"><span class="pre">monai_brain_extract</span></code> (research)</p></li>
+</ul>
+</section>
+<section id="deepn4-deepn4">
+<h3>DeepN4 {#deepn4}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> N3/N4 / NU bias-field correction</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">deepn4</span> <span class="pre">/</span> <span class="pre">dipy_bias_field_correction</span> <span class="pre">--method</span> <span class="pre">n4</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Ready learned approximation of N4ITK for T1w (public weights; also in DIPY). Optional pre-step when FastSurfer/FS bias handling is insufficient or when a differentiable/portable N4 stand-in is needed outside FS. Not required for core FastSurfer profiles (VINN path has its own biasfield stats).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Kanakaraj S, et al. DeepN4: Learning N4ITK Bias Field Correction for T1-weighted Images. 2024. PMC10680935.</p></li>
+<li><p>https://github.com/MASILab/DeepN4</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">simko_implicit_bias</span></code> (research), <code class="docutils literal notranslate"><span class="pre">n4itk</span></code> (classical)</p></li>
+</ul>
+</section>
+<section id="fastsurfervinn-asegdkt-fastsurfer-vinn">
+<h3>FastSurferVINN (asegdkt) {#fastsurfer_vinn}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> CA aseg / classical volumetric labeling + DK-style cortex labels</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(asegdkt</span> <span class="pre">module)</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Primary whole-brain morphometry engine for DLSurfer. Resolution-independent (0.7–1.0 mm) DL segmentation into FreeSurfer-compatible DKT/aseg products in minutes on GPU. This is the core reason DLSurfer defaults to FastSurfer rather than classical recon-all for ‘core’ profiles. Atlas default = DKT; other atlases are orthogonal (see docs/ATLASES.md) — DLSurfer is not DKT-connectome.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Henschel L, et al. FastSurfer. NeuroImage 2020;219:117012.</p></li>
+<li><p>Henschel L, Kuegler D, Reuter M. FastSurferVINN. NeuroImage 2022;251:118933.</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">synthseg</span></code> (production), <code class="docutils literal notranslate"><span class="pre">quicknat</span></code> (research), <code class="docutils literal notranslate"><span class="pre">deepscan</span></code> (research), <code class="docutils literal notranslate"><span class="pre">assemblynet</span></code> (research), <code class="docutils literal notranslate"><span class="pre">slant</span></code> (research)</p></li>
+</ul>
+</section>
+<section id="synthseg-synthseg">
+<h3>SynthSeg {#synthseg}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> CA aseg; clinical / odd-contrast labeling</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_synthseg</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative when T1 quality/contrast/resolution is non-standard, or when using profile fs8 / seg-quick-synthseg. Domain-randomized; ships in FreeSurfer. Not the default for research-grade isotropic T1 (VINN preferred).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Billot B, et al. SynthSeg. Medical Image Analysis / FreeSurfer wiki SynthSeg.</p></li>
+<li><p>https://surfer.nmr.mgh.harvard.edu/fswiki/SynthSeg</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">fastsurfer_vinn</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="fastsurfer-cc-fastsurfer-cc">
+<h3>FastSurfer-CC {#fastsurfer_cc}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Classical / limited CC post-processing</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(cc;</span> <span class="pre">disable</span> <span class="pre">with</span> <span class="pre">--no_cc)</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Validated CC morphometry module in the default FastSurfer stack; included in ‘core’ so DLSurfer matches upstream FastSurfer defaults rather than stripping modules.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Pollak C, et al. FastSurfer-CC. Imaging Neuroscience 2026. doi:10.1162/IMAG.a.1221</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">classical_cc</span></code> (classical), <code class="docutils literal notranslate"><span class="pre">skip_cc</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="cerebnet-cerebnet">
+<h3>CerebNet {#cerebnet}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Limited classical cerebellum sub-segmentation</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(cereb;</span> <span class="pre">--no_cereb</span> <span class="pre">to</span> <span class="pre">disable)</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Production cerebellum sub-segmentation in FastSurfer; kept on in ‘core’ for parity with upstream morphometry defaults.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Faber J, et al. CerebNet. NeuroImage 2022;264:119703.</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">classical_cereb</span></code> (classical), <code class="docutils literal notranslate"><span class="pre">skip_cereb</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="hypvinn-hypvinn">
+<h3>HypVINN {#hypvinn}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Sparse classical hypothalamic labeling</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(hypothal;</span> <span class="pre">optional</span> <span class="pre">--t2)</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Production hypothalamus + adjacent structure module. Preferred over ScLimbic when the FastSurfer engine is selected (XOR with FS-only ScLimbic path).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Estrada S, et al. FastSurfer-HypVINN. Imaging Neuroscience 2023.</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">sclimbic</span></code> (production), <code class="docutils literal notranslate"><span class="pre">skip_hypothal</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="neurolit-fastsurfer-lit-neurolit">
+<h3>neuroLIT / FastSurfer-LIT {#neurolit}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> No native classical lesion fill in FS/FastSurfer</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">lit-inpainting</span> <span class="pre">;</span> <span class="pre">lit-postprocessing</span> <span class="pre">;</span> <span class="pre">or</span> <span class="pre">run_fastsurfer.sh</span> <span class="pre">--lesion_mask</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production lesion inpainting (DDPM). Standalone lit-inpainting is the DEFAULT lesion path in DLSurfer because native –lesion_mask cannot use FastSurfer –seg_only/–surf_only (breaks GPU/CPU HPC split). lit-postprocessing restores LIT packaging after ordinary recon. Native –lesion_mask remains an explicit opt-in profile.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Pollak C, et al. FastSurfer-LIT. Imaging Neuroscience 2025. doi:10.1162/imag_a_00446</p></li>
+<li><p>https://github.com/Deep-MI/neurolit</p></li>
+<li><p>FastSurfer LIT docs: https://deep-mi.org/FastSurfer/stable/overview/modules/LIT.html</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">neurolit_native_flag</span></code> (production), <code class="docutils literal notranslate"><span class="pre">vbg</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">leapp_vbt</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">enantiomorphic</span></code> (ready)</p></li>
+</ul>
+</section>
+<section id="fastsurfer-recon-surf-classical-geometry-recon-surf">
+<h3>FastSurfer recon-surf (classical geometry) {#recon_surf}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> FS surface stages (tessellate→topology→white/pial→sphere→thickness)</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span> <span class="pre">(surf)</span> <span class="pre">/</span> <span class="pre">recon-surf.sh</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Still the Production surface path for SUBJECTS_DIR / QSIRecon compatibility. Not deep learning (spectral embedding + FreeSurfer binaries). Kept as default surfaces backend until Phase-3 surf-dl backends pass the TBI±LIT gate. This is intentional: DLSurfer does not fake a DL surface drop-in before validation.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Henschel L, et al. FastSurfer. NeuroImage 2020 (recon-surf description).</p></li>
+<li><p>Fischl B. FreeSurfer. NeuroImage 2012 (underlying surface methods).</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">topofit</span></code> (production), <code class="docutils literal notranslate"><span class="pre">v2c_flow</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">cortexode</span></code> (research), <code class="docutils literal notranslate"><span class="pre">pialnn</span></code> (research), <code class="docutils literal notranslate"><span class="pre">corticalflow</span></code> (research), <code class="docutils literal notranslate"><span class="pre">surfnn</span></code> (research), <code class="docutils literal notranslate"><span class="pre">deepcsr</span></code> (research), <code class="docutils literal notranslate"><span class="pre">fastcsr</span></code> (research), <code class="docutils literal notranslate"><span class="pre">recon_all_clinical</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="synthmorph-synthmorph">
+<h3>SynthMorph {#synthmorph}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Talairach / CA linear+nonlinear volumetric registration</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_synthmorph</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production acquisition-agnostic DL registration in FreeSurfer. Used as a utility profile for multimodal alignment / MNI mapping — not required inside FastSurfer ‘core’ (VINN path), but exposed so classical CA register is not reintroduced by lab scripts.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Hoffmann M, et al. SynthMorph. IEEE TMI 2022; Imaging Neuroscience 2024.</p></li>
+<li><p>https://synthmorph.io</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">easyreg</span></code> (production), <code class="docutils literal notranslate"><span class="pre">voxelmorph</span></code> (research), <code class="docutils literal notranslate"><span class="pre">ants</span></code> (classical)</p></li>
+</ul>
+</section>
+<section id="easyreg-easyreg">
+<h3>EasyReg {#easyreg}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Classical symmetric diffeomorphic volume registration</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_easyreg</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production symmetric, invertible, modality-agnostic registration CLI in FreeSurfer 7.4+. Prefer when directionality/symmetry matters; companion to SynthMorph for utility registration tasks.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Iglesias JE, et al. EasyReg. Scientific Reports 2023. doi:10.1038/s41598-023-33781-0</p></li>
+<li><p>https://surfer.nmr.mgh.harvard.edu/fswiki/EasyReg</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">synthmorph</span></code> (production), <code class="docutils literal notranslate"><span class="pre">voxelmorph</span></code> (research)</p></li>
+</ul>
+</section>
+<section id="freesurfer-8-recon-all-freesurfer8">
+<h3>FreeSurfer 8 recon-all {#freesurfer8}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> FS≤7 classical early stages (embeds SynthSeg/Strip/Morph)</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">recon-all</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Alternate morphometry engine (XOR with FastSurfer). FS8 already embeds DL for strip/seg/reg while keeping classical surfaces. Offered as profile ‘fs8’ for sites standardized on FreeSurfer outputs or longitudinal FS workflows.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>FreeSurfer 8.0.0 release notes (SynthSeg, SynthStrip, SynthMorph in recon-all).</p></li>
+<li><p>Fischl B. FreeSurfer. NeuroImage 2012.</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">fastsurfer_core</span></code> (production), <code class="docutils literal notranslate"><span class="pre">recon_all_clinical</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="topofit-topofit">
+<h3>TopoFit {#topofit}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Topology fixer + white-surface placement (partial)</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mris_estimate_wm</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production DL white-surface fit already shipped in FreeSurfer (mris_estimate_wm). First Phase-3 surf-dl building block: lowest integration risk. Does not alone replace pial/thickness/aparc — pair with recon-surf pial or V2C-Flow for full surfaces.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Hoopes A, et al. TopoFit. MIDL 2022.</p></li>
+<li><p>https://github.com/ahoopes/topofit</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">v2c_flow</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">cortexode</span></code> (research), <code class="docutils literal notranslate"><span class="pre">recon_surf</span></code> (classical)</p></li>
+</ul>
+</section>
+<section id="v2c-flow-vox2cortex-flow-v2c-flow">
+<h3>V2C-Flow (Vox2Cortex-Flow) {#v2c_flow}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> White+pial surfaces; often sphere.reg via template IDs</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">vox2organ</span> <span class="pre">/</span> <span class="pre">V2C-Flow</span> <span class="pre">pretrained</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Ready full explicit CSR: joint WM+pial, &lt;2s, fsaverage-compatible vertex correspondence. Primary candidate to replace recon-surf for speed once TBI±LIT validation passes. Not SUBJECTS_DIR drop-in — adapter must map meshes into FS tree / analysis convention (scanner RAS).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Bongratz F, et al. Vox2Cortex. CVPR 2022.</p></li>
+<li><p>Bongratz F, et al. V2C-Flow. arXiv:2401.12938 (2024).</p></li>
+<li><p>https://github.com/ai-med/Vox2Cortex</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">vox2cortex</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">cortexode</span></code> (research), <code class="docutils literal notranslate"><span class="pre">pialnn</span></code> (research), <code class="docutils literal notranslate"><span class="pre">surfnn</span></code> (research), <code class="docutils literal notranslate"><span class="pre">topofit</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="sugar-sugar">
+<h3>SUGAR {#sugar}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Spherical registration to fsaverage (sphere.reg)</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">SUGAR</span> <span class="pre">(see</span> <span class="pre">upstream</span> <span class="pre">README)</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Ready dedicated spherical surface registration (large multi-dataset eval, sub-second). Used when recon-surf or TopoFit meshes exist but classical sphere.reg is the measured bottleneck — or when V2C-Flow correspondences are not used.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Ren J, et al. SUGAR. arXiv:2307.00511 (2023).</p></li>
+<li><p>https://github.com/pBFSLab/SUGAR</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">s3reg</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">v2c_flow_ids</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">classical_sphere_reg</span></code> (classical)</p></li>
+</ul>
+</section>
+<section id="dl-cte-cortexmorph-family-dl-cte">
+<h3>DL-CTE / CortexMorph family {#dl_cte}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Surface-based cortical thickness (when surfaces not required)</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">dl-cte</span> <span class="pre">/</span> <span class="pre">cortexmorph</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Ready fast thickness without full FreeSurfer surfaces (CNN seg + diffeomorphic DiReCT-style registration). Profile ‘thickness-fast’ only — NOT a substitute for surface morphometry or connectome parcels.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Rebsamen M, et al. DL+DiReCT. Hum Brain Mapp 2020.</p></li>
+<li><p>CortexMorph arXiv:2307.11567 (2023).</p></li>
+<li><p>Wu et al. DL-CTE 2025. https://github.com/wujiong-hub/DL-CTE</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">dl_direct</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">cortexmorph</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">surface_thickness</span></code> (classical)</p></li>
+</ul>
+</section>
+<section id="freesurfer-longitudinal-base-long-freesurfer-long">
+<h3>FreeSurfer longitudinal (-base / -long) {#freesurfer_long}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Cross-sectional-only morphometry</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">recon-all</span> <span class="pre">-base</span> <span class="pre">…</span> <span class="pre">;</span> <span class="pre">recon-all</span> <span class="pre">-long</span> <span class="pre">…</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative for the longitudinal gap. FreeSurfer -base/-long remains the field standard; FastSurfer longitudinal support is limited.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Reuter et al. NeuroImage 2012 (longitudinal FreeSurfer)</p></li>
+<li><p>FreeSurfer Longitudinal Processing docs</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">synthseg_per_tp</span></code> (production), <code class="docutils literal notranslate"><span class="pre">v2c_long</span></code> (early)</p></li>
+</ul>
+</section>
+<section id="freesurfer-hippocampal-amygdala-subfields-ha-segment-ha">
+<h3>FreeSurfer hippocampal/amygdala subfields (HA) {#segment_ha}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Whole-hippocampus aseg only</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">segmentHA_T1.sh</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative for the HA gap — segmentHA_T1 / recon-all -hippocampal-subfields-T1 on an existing SUBJECTS_DIR.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Iglesias et al. NeuroImage 2015 (hippocampal subfields)</p></li>
+<li><p>Saygin et al. NeuroImage 2017 (amygdala)</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">hippunfold</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">hippodeep</span></code> (research)</p></li>
+</ul>
+</section>
+<section id="freesurfer-brainstem-structures-segment-bs">
+<h3>FreeSurfer brainstem structures {#segment_bs}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Whole brainstem aseg label</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">segmentBS.sh</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative for brainstem nuclei gap (segmentBS.sh).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Iglesias et al. NeuroImage 2015 (brainstem)</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">none_dl_default</span></code> (none)</p></li>
+</ul>
+</section>
+<section id="freesurfer-thalamic-nuclei-segment-thalamic">
+<h3>FreeSurfer thalamic nuclei {#segment_thalamic}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Whole thalamus aseg label</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">segmentThalamicNuclei.sh</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative for thalamic nuclei gap (segmentThalamicNuclei.sh).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Iglesias et al. NeuroImage 2018 (thalamic nuclei)</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">none_dl_default</span></code> (none)</p></li>
+</ul>
+</section>
+<section id="recon-all-clinical-synthseg-synthdist-clinical-recon-all-clinical">
+<h3>recon-all-clinical (SynthSeg/SynthDist clinical) {#recon_all_clinical}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Standard recon-all on clinical / low-res / odd-contrast</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">recon-all-clinical.sh</span> <span class="pre">…</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative for infant/clinical gap when standard recon-all or FastSurferVINN is inappropriate (clinical stream in FS7.3+/FS8).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Billot SynthSeg; FreeSurfer recon-all-clinical docs</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">synthseg</span></code> (production), <code class="docutils literal notranslate"><span class="pre">infant_freesurfer</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="destrieux-a2009s-parcellation-atlas-destrieux">
+<h3>Destrieux (a2009s) parcellation {#atlas_destrieux}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> DKT-only cortical labels</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">recon-all</span> <span class="pre">-s</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">-sd</span> <span class="pre">&lt;SUBJECTS_DIR&gt;</span> <span class="pre">-a2009s</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best alternative for Destrieux gap — classical FreeSurfer -a2009s on existing surfaces (sphere.reg required). Not VINN-native.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Destrieux et al. NeuroImage 2010</p></li>
+<li><p>FreeSurfer aparc.a2009s docs</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">mris_ca_label_manual</span></code> (classical)</p></li>
+</ul>
+</section>
+<section id="schaefer-surface-projection-atlas-schaefer">
+<h3>Schaefer surface projection {#atlas_schaefer}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Anatomical-only cortical atlases</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_surf2surf</span> <span class="pre">--srcsubject</span> <span class="pre">fsaverage</span> <span class="pre">--trgsubject</span> <span class="pre">&lt;sid&gt;</span> <span class="pre">--sval-annot</span> <span class="pre">…</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Ready alternative for Schaefer/MMP gap — project fsaverage annot after sphere.reg (classical FS surf2surf). Annot source is external.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Schaefer et al. Cerebral Cortex 2018</p></li>
+<li><p>FreeSurfer mri_surf2surf / label projection docs</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">hcp_mmp</span></code> (ready), <code class="docutils literal notranslate"><span class="pre">yeo_networks</span></code> (ready)</p></li>
+</ul>
+</section>
+<section id="fastsurfer-srun-brun-hpc-wrap-srun-fastsurfer">
+<h3>FastSurfer srun / brun HPC wrap {#srun_fastsurfer}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Manual sbatch of run_fastsurfer.sh</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">srun_fastsurfer.sh</span> <span class="pre">…</span>&#160; <span class="pre">OR</span>&#160; <span class="pre">brun_fastsurfer.sh</span> <span class="pre">…</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production alternative for the srun gap — use upstream srun_fastsurfer.sh / brun_fastsurfer.sh (enabled via –hpc srun).</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>FastSurfer HPC docs (brun_fastsurfer / srun_fastsurfer)</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">slurm_template</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="mauri-claustrum-mri-claustrum-seg-mauri-claustrum">
+<h3>Mauri claustrum (mri_claustrum_seg) {#mauri_claustrum}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> No claustrum in standard aseg / FastSurferVINN</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_claustrum_seg</span> <span class="pre">--i</span> <span class="pre">&lt;T1w&gt;</span> <span class="pre">--o</span> <span class="pre">&lt;outdir&gt;</span> <span class="pre">--threads</span> <span class="pre">N</span> <span class="pre">--topo-correct</span></code></p></li>
+<li><p><strong>Lab path:</strong> <code class="docutils literal notranslate"><span class="pre">Documents/clau_seg</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Production DL tool for claustrum — FreeSurfer-integrated contrast-agnostic U-Net (Mauri 2025). Lab path Documents/clau_seg; put0 FoV lock for IDEAS. Not a piriform / PC model — do not reuse weights for Steinbart 125/126.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Mauri C, et al. Hum Brain Mapp. 2025;46:e70303. doi:10.1002/hbm.70303</p></li>
+<li><p>https://github.com/chiara-mauri/claustrum_segmentation</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">albishri_cnn</span></code> (research), <code class="docutils literal notranslate"><span class="pre">casamitjana_bayesian</span></code> (research)</p></li>
+</ul>
+</section>
+<section id="synthseg-pc-billot-gmm-u-net-piriform-synthseg-pc">
+<h3>SynthSeg-PC (Billot GMM → U-Net piriform) {#synthseg_pc}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> MAPER / JLF piriform (Steinbart 125/126) when DL gate passes</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">Documents/piriform/synthseg_pc/predict_ideas_one.py</span> <span class="pre">--images</span> <span class="pre">…</span> <span class="pre">--model</span> <span class="pre">…</span></code></p></li>
+<li><p><strong>Lab path:</strong> <code class="docutils literal notranslate"><span class="pre">Documents/piriform/synthseg_pc</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Lab SynthSeg-style PC segmenter (Documents/piriform/synthseg_pc): GMM on-the-fly train → U-Net predict on Hammers dense FoV. NOT FreeSurfer mri_synthseg (no PC class). NOT Mauri claustrum weights. Experimental until Hammers/IDEAS eval clears JLF bar; IDEAS production PC remains JLF until that gate.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Billot B, et al. Nat Commun. 2023 (SynthSeg / GMM training)</p></li>
+<li><p>Steinbart D, et al. Hum Brain Mapp. 2023 (PC labels 125/126)</p></li>
+<li><p>Mauri et al. 2025 (dense FoV / real-T1 epoch pattern — not claustrum weights)</p></li>
+<li><p>Hammers A, et al. Hum Brain Mapp. 2003</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">jlf_pc</span></code> (production), <code class="docutils literal notranslate"><span class="pre">maper_pc</span></code> (production), <code class="docutils literal notranslate"><span class="pre">nnunet_pc</span></code> (research)</p></li>
+</ul>
+</section>
+<section id="synthsr-mri-synthsr-synthsr">
+<h3>SynthSR (mri_synthsr) {#synthsr}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> Manual clinical T1 upsampling / contrast salvage</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">mri_synthsr</span> <span class="pre">--i</span> <span class="pre">&lt;in&gt;</span> <span class="pre">--o</span> <span class="pre">&lt;out&gt;</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Optional T1 preprocess only — 1 mm T1-like from poor clinical scans (Billot). Does NOT segment piriform or claustrum. Feed output into core / structure-* profiles. Matches Documents/piriform/synthseg_pc/maybe_synthsr.sh policy.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>Billot B, et al. SynthSR (FreeSurfer mri_synthsr)</p></li>
+<li><p>Iglesias / Billot Synth* family docs</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">skip_synthsr</span></code> (production), <code class="docutils literal notranslate"><span class="pre">recon_all_clinical</span></code> (production)</p></li>
+</ul>
+</section>
+<section id="hippunfold-hippunfold">
+<h3>HippUnfold {#hippunfold}</h3>
+<ul class="simple">
+<li><p><strong>Replaces (classical):</strong> FS segmentHA volumetric subfields (surface-unfold alternative)</p></li>
+<li><p><strong>CLI / resource:</strong> <code class="docutils literal notranslate"><span class="pre">hippunfold</span> <span class="pre">&lt;bids&gt;</span> <span class="pre">&lt;out&gt;</span> <span class="pre">participant</span> <span class="pre">…</span></code></p></li>
+<li><p><strong>Lab path:</strong> <code class="docutils literal notranslate"><span class="pre">Documents/HippUnfold</span></code></p></li>
+<li><p><strong>Why chosen:</strong> Best Ready DL alternative to segmentHA for hippocampal sheet morphometry. Optional profile; default HA gap-fill remains classical segmentHA_T1.</p></li>
+<li><p><strong>Cite:</strong></p>
+<ul>
+<li><p>DeKraker J, et al. eLife 2022;11:e77945</p></li>
+</ul>
+</li>
+<li><p><strong>Alternatives:</strong> <code class="docutils literal notranslate"><span class="pre">segment_ha</span></code> (production), <code class="docutils literal notranslate"><span class="pre">hippodeep</span></code> (research)</p></li>
+</ul>
+</section>
+</section>
+<section id="deferred-not-defaults">
+<h2>Deferred (not defaults)</h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hdbet</span></code> — Credible Ready stripper, but SynthStrip is already in FS and preferred for one-license tooling.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vbg</span></code> — Ready fill, but Deutscher 2025 shows VBG can worsen FastSurfer on ms-TBI; TBI policy required first.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">leapp_vbt</span></code> — Stroke-oriented; lab VBT orientation SIGSEGV on radiological TBI T1s.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cortexode</span></code> — Strong Research CSR; V2C-Flow chosen first as Ready pretrained full WM+pial.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pialnn</span></code> — WM→pial only; consider after TopoFit if V2C-Flow fails TBI gate.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">s3reg</span></code> — Ready spherical reg; SUGAR chosen first for multi-dataset eval + speed claims.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quicknat</span></code> — Credible seg; VINN/SynthSeg preferred for FS-shaped trees.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deepscan</span></code> — Strong hybrid-pipeline seg; keep as documented alternative to VINN.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beyondfs_zoo</span></code> — SLANT/AssemblyNet/GIF/FIRST/etc. belong in piriform/beyondfs identity (structures FS does not give) — do not dilute DLSurfer core with a methods zoo.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mauri_weights_as_pc</span></code> — Never cite or run Mauri claustrum weights as Steinbart piriform — wrong structure.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Methods &amp; citations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../workflows/engine_policy.html" class="btn btn-neutral float-right" title="Engine policy — wrap FastSurfer / FreeSurfer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Philbert Ndagijimana and contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

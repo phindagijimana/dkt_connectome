@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# WMH-SynthSeg — anatomy + WMH (FS label 77); Laso et al. / FreeSurfer wiki
+set -euo pipefail
+usage() {
+  echo "Usage: dlsurfer-wmh-synthseg --t1 T1 --out-dir OUT [--device cuda|cpu] [--crop]"
+}
+T1="" OUT="" DEVICE="cpu" EXTRA=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
+    --crop) EXTRA+=(--crop); shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
+done
+[[ -n "$T1" && -n "$OUT" ]] || { usage; exit 2; }
+mkdir -p "$OUT"
+TOOL="${DLSURFER_WMH_SYNTHSEG:-mri_WMHsynthseg}"
+if ! command -v "$TOOL" >/dev/null 2>&1; then
+  echo "[dlsurfer-wmh-synthseg] $TOOL not on PATH (FS8/dev + WMH-SynthSeg model .pth)" >&2
+  echo "  Model: \$FREESURFER_HOME/models/WMH-SynthSeg_v10_231110.pth" >&2
+  exit 2
+fi
+# GPU path often needs --crop per FS wiki
+if [[ "$DEVICE" == cuda* ]]; then
+  EXTRA+=(--crop)
+  DEV_ARG=(--device cuda)
+else
+  DEV_ARG=(--device cpu)
+fi
+SEG="$OUT/seg.nii.gz"
+"$TOOL" --i "$T1" --o "$SEG" "${DEV_ARG[@]}" "${EXTRA[@]}"
+echo "ok" > "$OUT/dlsurfer_wmh_synthseg.done"

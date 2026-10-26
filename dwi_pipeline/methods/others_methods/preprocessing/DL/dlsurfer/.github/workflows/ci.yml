@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Pytest
+        run: pytest -q
+      - name: BIDS App dry-run on fixture
+        run: |
+          python -m dlsurfer bids-app tests/fixtures/bids_tiny /tmp/dlsurfer_ci_out participant \
+            --participant_label 01 --profile seg-quick --device cpu
+          test -f /tmp/dlsurfer_ci_out/derivatives/dlsurfer/dataset_description.json
+      - name: Boutiques descriptor present
+        run: python -m dlsurfer bids-app /x /y participant --bids-exec-spec | head -5

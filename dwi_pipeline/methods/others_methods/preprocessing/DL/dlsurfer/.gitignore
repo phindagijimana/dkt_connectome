@@ -1,3 +1,38 @@
 __pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+site/
+
+# Local runs / cluster noise
+work/
+*.out
+*.err
+dlsurfer_*.out
+dlsurfer_*.err
+
+# Secrets / heavy binaries
+*.sif
+license.txt
+.freesurfer/
+.env
+*.mgz
+*.nii
+*.nii.gz
+
+# Editor
+.idea/
+.vscode/
+*~
+
+# Allow tiny CI BIDS fixture
+!tests/fixtures/
+!tests/fixtures/**/*.nii.gz

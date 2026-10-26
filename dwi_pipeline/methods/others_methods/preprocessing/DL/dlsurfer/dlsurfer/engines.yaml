@@ -180,12 +180,11 @@ engines:
     name: FastSurfer recon-surf (classical geometry)
     classical_replaces: "FS surface stages (tessellate→topology→white/pial→sphere→thickness)"
     readiness: classical
-    chosen: true
+    chosen: false
     why: >
-      Still the Production surface path for SUBJECTS_DIR / QSIRecon compatibility.
-      Not deep learning (spectral embedding + FreeSurfer binaries). Kept as default
-      surfaces backend until Phase-3 surf-dl backends pass the TBI±LIT gate. This is
-      intentional: DLSurfer does not fake a DL surface drop-in before validation.
+      Classical surface path (spectral embedding + FreeSurfer binaries). No longer
+      the default — replaced by V2C-Flow + fs_surf_contract after tbi_lit_surfaces
+      passed. Use profile core-recon-surf with --allow-classical if needed.
     cite:
       - "Henschel L, et al. FastSurfer. NeuroImage 2020 (recon-surf description)."
       - "Fischl B. FreeSurfer. NeuroImage 2012 (underlying surface methods)."
@@ -193,8 +192,8 @@ engines:
     device: cpu
     phase: 1
     alternatives:
+      - {id: v2c_flow, readiness: ready, note: "DEFAULT full WM+pial + FS contract"}
       - {id: topofit, readiness: production, note: "WM only; Phase 3 surf-dl-topofit"}
-      - {id: v2c_flow, readiness: ready, note: "Full WM+pial; Phase 3 surf-dl-v2c"}
       - {id: cortexode, readiness: research, note: "Neural ODE CSR"}
       - {id: pialnn, readiness: research, note: "WM→pial given white mesh"}
       - {id: corticalflow, readiness: research, note: "Diffeomorphic template CSR"}
@@ -202,6 +201,24 @@ engines:
       - {id: deepcsr, readiness: research, note: "Implicit SDF + topology fix"}
       - {id: fastcsr, readiness: research, note: "Level-set CSR ~5 min"}
       - {id: recon_all_clinical, readiness: production, note: "SynthDist hybrid clinical path"}
+
+  fs_surf_contract:
+    id: fs_surf_contract
+    name: FreeSurfer surface contract installer
+    classical_replaces: "SUBJECTS_DIR surf/ layout from DL meshes (recon-surf packaging)"
+    readiness: production
+    chosen: true
+    why: >
+      Maps TopoFit / V2C-Flow / SUGAR meshes into $SD/$SID/surf/ plus
+      scripts/dlsurfer_surf_dl.done so FreeView/aparc see a recon-surf-like tree.
+    cite:
+      - "FreeSurfer SUBJECTS_DIR surface naming (Dale/Fischl; recon-surf layout)."
+    cli: dlsurfer-install-surfaces
+    device: cpu
+    phase: 3
+    alternatives:
+      - {id: recon_surf, readiness: classical, note: "Writes the same surf/ names natively"}
+    is_deep_learning: true
 
   synthmorph:
     id: synthmorph
@@ -294,15 +311,14 @@ engines:
     readiness: ready
     chosen: true
     why: >
-      Best Ready full explicit CSR: joint WM+pial, <2s, fsaverage-compatible vertex
-      correspondence. Primary candidate to replace recon-surf for speed once TBI±LIT
-      validation passes. Not SUBJECTS_DIR drop-in — adapter must map meshes into FS
-      tree / analysis convention (scanner RAS).
+      Default full CSR for DLSurfer core after tbi_lit_surfaces passed: joint WM+pial
+      with fsaverage-compatible correspondence. SUBJECTS_DIR packaging via
+      fs_surf_contract / dlsurfer-install-surfaces.
     cite:
       - "Bongratz F, et al. Vox2Cortex. CVPR 2022."
       - "Bongratz F, et al. V2C-Flow. arXiv:2401.12938 (2024)."
       - "https://github.com/ai-med/Vox2Cortex"
-    cli: "vox2organ / V2C-Flow pretrained"
+    cli: "dlsurfer-v2c / V2C-Flow pretrained"
     device: cuda
     phase: 3
     alternatives:
@@ -311,6 +327,31 @@ engines:
       - {id: pialnn, readiness: research, note: "Pial given TopoFit WM"}
       - {id: surfnn, readiness: research, note: "Joint midthickness"}
       - {id: topofit, readiness: production, note: "WM-only lower-risk step"}
+      - {id: recon_surf, readiness: classical, note: "core-recon-surf fallback"}
+    is_deep_learning: true
+
+  v2c_long:
+    id: v2c_long
+    name: V2C-Long
+    classical_replaces: "FreeSurfer longitudinal -base/-long surface stream"
+    readiness: ready
+    chosen: true
+    why: >
+      Best Ready DL longitudinal CSR (Bongratz Imaging Neurosci 2025). Wired via
+      dlsurfer-v2c-long + hpc/sbatch_phase3_v2c_long_tbi_lit.sh. Gate tbi_lit_v2c_long
+      stays open until V2C-Long checkout + ≥2 registered T1 timepoints (±LIT) succeed.
+      EG alone is one TP — insufficient for the gate.
+    cite:
+      - "Bongratz F, et al. V2C-Long. Imaging Neuroscience 2025."
+      - "https://github.com/ai-med/V2C-Long"
+    cli: dlsurfer-v2c-long
+    device: cuda
+    phase: 3
+    lab_path: Documents/others/V2C-Long
+    alternatives:
+      - {id: freesurfer_long, readiness: production, note: "Classical fs-long"}
+      - {id: v2c_flow, readiness: ready, note: "Cross-sectional only"}
+    is_deep_learning: true
 
   sugar:
     id: sugar

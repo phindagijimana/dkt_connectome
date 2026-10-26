@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# SUGAR spherical registration (Ren 2023) — literature-best Ready sphere.reg alt.
+# Prefers SUGAR_SIF (ninganme/sugar); else SUGAR_ROOT + python predict.py.
+#
+# FreeSurfer templates for SUGAR (--fsd): use real ICO fsaverage3..6 subjects, not
+# FastSurfer full-res fsaverage symlinks. Resolution order:
+#   SUGAR_FSD → FREESURFER_HOME → data_mining/freesurfer (if subjects/fsaverage6 exists)
+#   → /usr/local/freesurfer
+set -euo pipefail
+usage() {
+  echo "Usage: dlsurfer-sugar --sd SUBJECTS_DIR --sid SID --out OUT [--hemi lh|rh|both] [--device cuda|cpu]"
+  echo "  SUGAR_FSD  FreeSurfer home with subjects/fsaverage3..6 (ICO templates for SUGAR)"
+}
+SD="" SID="" OUT="" HEMI="both" DEVICE="cuda"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --sd) SD="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --out) OUT="$2"; shift 2 ;;
+    --hemi) HEMI="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown $1"; usage; exit 2 ;;
+  esac
+done
+[[ -n "$SD" && -n "$SID" && -n "$OUT" ]] || { usage; exit 2; }
+mkdir -p "$OUT"
+SUGAR_ROOT="${SUGAR_ROOT:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/SUGAR}"
+SUGAR_SIF="${SUGAR_SIF:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/containers/sugar_latest.sif}"
+MODEL_PATH="${SUGAR_MODEL_PATH:-${SUGAR_ROOT}/pretrained}"
+DEFAULT_SUGAR_FSD="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/others/data_mining/freesurfer"
+resolve_sugar_fsd() {
+  local cand
+  for cand in "${SUGAR_FSD:-}" "${FREESURFER_HOME:-}" "$DEFAULT_SUGAR_FSD" "/usr/local/freesurfer"; do
+    [[ -n "$cand" && -d "$cand/subjects/fsaverage6/surf" ]] && { echo "$cand"; return 0; }
+  done
+  echo "/usr/local/freesurfer"
+}
+FS_HOME_IN="$(resolve_sugar_fsd)"
+
+hemis=()
+case "$HEMI" in
+  both) hemis=(lh rh) ;;
+  lh|rh) hemis=("$HEMI") ;;
+  *) echo "hemi must be lh|rh|both"; exit 2 ;;
+esac
+
+run_one() {
+  local hemi="$1"
+  if [[ -s "$SUGAR_SIF" ]]; then
+    apptainer exec --nv \
+      -B "$SD:/data:ro" \
+      -B "$OUT:/out" \
+      -B "${FS_LICENSE:-/dev/null}:${FS_LICENSE:-/fs_license}:ro" \
+      -B "${FS_HOME_IN}:/usr/local/freesurfer:ro" \
+      "$SUGAR_SIF" \
+      --fsd /usr/local/freesurfer --sd /data --out /out --sid "$SID" --hemi "$hemi" --device "$DEVICE" \
+      || apptainer exec --nv -B "$SD:/data" -B "$OUT:/out" -B "$MODEL_PATH:/models:ro" \
+           -B "${FS_HOME_IN}:/usr/local/freesurfer:ro" \
+           "$SUGAR_SIF" python /home/SUGAR/predict.py \
+           --sd /data --out /out --sid "$SID" --hemi "$hemi" --device "$DEVICE" \
+           --model-path /models --fsd /usr/local/freesurfer
+  else
+    export PYTHONPATH="${SUGAR_ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+    python "${SUGAR_ROOT}/predict.py" \
+      --sd "$SD" --out "$OUT" --sid "$SID" --hemi "$hemi" \
+      --device "$DEVICE" --model-path "$MODEL_PATH" --fsd "$FS_HOME_IN"
+  fi
+}
+
+rc=0
+for h in "${hemis[@]}"; do
+  run_one "$h" || rc=$?
+done
+mkdir -p "$OUT/$SID/scripts"
+if [[ $rc -eq 0 ]]; then
+  echo ok > "$OUT/$SID/scripts/dlsurfer_sugar.done"
+  INSTALL="$(dirname "$0")/dlsurfer-install-surfaces"
+  if [[ -x "$INSTALL" ]]; then
+    set +e
+    install_args=(
+      --sd "$SD" --sid "$SID" --backend sugar --mode sphere
+      --search-dir "$OUT" --search-dir "$OUT/$SID" --search-dir "$SD/$SID"
+    )
+    if [[ "$HEMI" != "both" ]]; then
+      install_args+=(--allow-partial-sphere)
+    fi
+    "$INSTALL" "${install_args[@]}"
+    irc=$?
+    set -e
+    if [[ $irc -ne 0 ]]; then
+      echo "[dlsurfer-sugar] warning: FS sphere.reg contract install exit $irc" >&2
+    fi
+  fi
+else
+  echo "$rc" > "$OUT/$SID/scripts/dlsurfer_sugar.exit"
+fi
+exit "$rc"

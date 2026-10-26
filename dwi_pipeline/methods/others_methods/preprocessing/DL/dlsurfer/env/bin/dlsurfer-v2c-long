@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# V2C-Long — longitudinal DL CSR (Bongratz Imaging Neurosci 2025)
+# Upstream: ai-med/V2C-Long (3-step: V2C-Flow base → mean meshes → V2C-Long)
+set -euo pipefail
+
+DLS="$(cd "$(dirname "$0")/../.." && pwd)"
+
+usage() {
+  cat <<EOF
+Usage: dlsurfer-v2c-long --out-dir OUT --sid SID (--t1 T1 [--t1-tp2 T2 [--t1-tpN ...]] | --visits-dir DIR)
+       [--aseg ASEG [--aseg-tp2 A2 ...]] [--ptid PTID] [--device cuda|cpu]
+
+Env:
+  V2C_LONG_ROOT              ai-med/V2C-Long checkout (required for inference)
+  V2C_PYTHON                 python in vox2organ env (default: python)
+  V2C_LONG_FLOW_BASE         step-1 experiment (default: v2c-flow-s_base)
+  V2C_LONG_MODEL             step-3 experiment (default: v2c-long)
+  V2C_LONG_DATASET           upstream dataset key (default: TEST_DATASET_LONG)
+  DLSURFER_V2C_LONG_STRICT   default 1 — fail if upstream CLI/weights missing
+EOF
+}
+
+T1S=()
+ASEGS=()
+VISITS_DIR=""
+OUT="" SID="" DEVICE="cuda" PTID=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1S+=("$2"); shift 2 ;;
+    --t1-tp2|--t1-tp3|--t1-tp4) T1S+=("$2"); shift 2 ;;
+    --aseg) ASEGS+=("$2"); shift 2 ;;
+    --aseg-tp2|--aseg-tp3|--aseg-tp4) ASEGS+=("$2"); shift 2 ;;
+    --visits-dir) VISITS_DIR="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --ptid) PTID="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown: $1" >&2; usage; exit 2 ;;
+  esac
+done
+
+[[ -n "$OUT" && -n "$SID" ]] || { usage; exit 2; }
+PTID="${PTID:-$SID}"
+
+ROOT="${V2C_LONG_ROOT:-}"
+STRICT="${DLSURFER_V2C_LONG_STRICT:-1}"
+if [[ -z "${V2C_PYTHON:-}" ]]; then
+  if [[ -x "${DLS}/work/phase3_gates/envs/v2c/bin/python" ]]; then
+    V2C_PYTHON="${DLS}/work/phase3_gates/envs/v2c/bin/python"
+  else
+    V2C_PYTHON="python"
+  fi
+fi
+FLOW_BASE="${V2C_LONG_FLOW_BASE:-v2c-flow-s_base}"
+LONG_MODEL="${V2C_LONG_MODEL:-v2c-long}"
+DATASET="${V2C_LONG_DATASET:-TEST_DATASET_LONG}"
+EXP_BASE="${V2C_LONG_EXPERIMENT_BASE:-../public_experiments/}"
+
+MARKER="$OUT/$SID/scripts"
+RAW="$OUT/v2c_long_raw"
+CSV="$OUT/v2c_long_raw/${SID}_longitudinal.csv"
+mkdir -p "$MARKER" "$RAW"
+
+stage_visits() {
+  local prep_args=(--raw-dir "$RAW" --csv-out "$CSV" --ptid "$PTID")
+  if [[ -n "$VISITS_DIR" ]]; then
+    [[ -d "$VISITS_DIR" ]] || { echo "[dlsurfer-v2c-long] missing --visits-dir $VISITS_DIR" >&2; exit 2; }
+    local i=0
+    for d in "$VISITS_DIR"/*; do
+      [[ -d "$d" ]] || continue
+      local scan_id
+      scan_id="$(basename "$d")"
+      local t1="$d/mri.nii.gz"
+      local aseg="$d/aseg.nii.gz"
+      [[ -f "$t1" ]] || { echo "[dlsurfer-v2c-long] $d missing mri.nii.gz" >&2; exit 2; }
+      if [[ -f "$aseg" ]]; then
+        prep_args+=(--visit "${scan_id}:${t1}:${aseg}")
+      else
+        prep_args+=(--visit "${scan_id}:${t1}")
+      fi
+      i=$((i + 1))
+    done
+    [[ $i -ge 2 ]] || { echo "[dlsurfer-v2c-long] need ≥2 visit subdirs under $VISITS_DIR" >&2; exit 2; }
+  else
+    [[ ${#T1S[@]} -ge 2 ]] || {
+      echo "[dlsurfer-v2c-long] pass ≥2 of --t1 / --t1-tp2 or use --visits-dir" >&2
+      exit 2
+    }
+    local i=0
+    for t1 in "${T1S[@]}"; do
+      local scan_id="${SID}_tp${i}"
+      if [[ $i -lt ${#ASEGS[@]} ]]; then
+        prep_args+=(--visit "${scan_id}:${t1}:${ASEGS[$i]}")
+      else
+        prep_args+=(--visit "${scan_id}:${t1}")
+      fi
+      i=$((i + 1))
+    done
+  fi
+  "$V2C_PYTHON" "${DLS}/scripts/prep_v2c_long_visits.py" "${prep_args[@]}"
+}
+
+CLI_OK=0
+if [[ -n "$ROOT" && -f "$ROOT/vox2organ/main.py" && -f "$ROOT/public_experiments/${FLOW_BASE}/best.pt" ]]; then
+  CLI_OK=1
+fi
+
+stage_visits
+
+cat > "$MARKER/dlsurfer_v2c_long_cmd.txt" <<EOF
+# V2C-Long — Bongratz Imaging Neurosci 2025; repo https://github.com/ai-med/V2C-Long
+# root=$ROOT sid=$SID ptid=$PTID device=$DEVICE strict=$STRICT
+export V2C_LONG_RAW_DATA_DIR=$RAW
+export V2C_LONG_CSV=$CSV
+cd $ROOT/vox2organ
+$V2C_PYTHON ${DLS}/scripts/patch_v2c_long_supported_datasets.py --v2c-long-root $ROOT
+$V2C_PYTHON ${DLS}/scripts/run_v2c_long_main.py --test -n $FLOW_BASE --dataset $DATASET --experiment_base_dir $EXP_BASE
+$V2C_PYTHON scripts/create_mean_meshes.py ${EXP_BASE%/}/$FLOW_BASE/test_template_fsaverage-smooth-no-parc_${DATASET}_n_5/ --csv-file \$V2C_LONG_CSV
+$V2C_PYTHON ${DLS}/scripts/run_v2c_long_main.py --test -n $LONG_MODEL --dataset $DATASET --experiment_base_dir $EXP_BASE
+EOF
+
+if [[ $CLI_OK -ne 1 ]]; then
+  echo "[dlsurfer-v2c-long] staged raw=$RAW csv=$CSV" >&2
+  echo "[dlsurfer-v2c-long] command notes: $MARKER/dlsurfer_v2c_long_cmd.txt" >&2
+  if [[ "$STRICT" == "1" ]]; then
+    echo "[dlsurfer-v2c-long] DLSURFER_V2C_LONG_STRICT=1 — set V2C_LONG_ROOT with vox2organ + public_experiments" >&2
+    exit 2
+  fi
+  echo "staged" > "$MARKER/dlsurfer_v2c_long.staged"
+  exit 0
+fi
+
+export V2C_LONG_RAW_DATA_DIR="$RAW"
+export V2C_LONG_CSV="$CSV"
+export WANDB_MODE="${WANDB_MODE:-disabled}"
+export USE_WANDB="${USE_WANDB:-0}"
+
+"$V2C_PYTHON" "${DLS}/scripts/patch_v2c_long_supported_datasets.py" --v2c-long-root "$ROOT"
+
+FLOW_OUT="${ROOT}/public_experiments/${FLOW_BASE}/test_template_fsaverage-smooth-no-parc_${DATASET}_n_5"
+MEAN_DIR="${FLOW_OUT}_mean"
+
+run_step() {
+  local label="$1"
+  shift
+  set +e
+  (
+    cd "$ROOT/vox2organ"
+    "$@"
+  )
+  local rc=$?
+  set -e
+  echo "$rc" > "$MARKER/dlsurfer_v2c_long_${label}.exit"
+  return "$rc"
+}
+
+echo "[dlsurfer-v2c-long] step 1 V2C-Flow base ($FLOW_BASE)" >&2
+run_step flow_base \
+  "$V2C_PYTHON" "${DLS}/scripts/run_v2c_long_main.py" --test -n "$FLOW_BASE" --dataset "$DATASET" --experiment_base_dir "$EXP_BASE" \
+  || { echo "[dlsurfer-v2c-long] V2C-Flow base failed" >&2; exit 2; }
+
+echo "[dlsurfer-v2c-long] step 2 mean meshes" >&2
+run_step mean_meshes \
+  "$V2C_PYTHON" scripts/create_mean_meshes.py "$FLOW_OUT" --csv-file "${V2C_LONG_CSV}" \
+  || { echo "[dlsurfer-v2c-long] create_mean_meshes failed" >&2; exit 2; }
+
+echo "[dlsurfer-v2c-long] step 3 V2C-Long ($LONG_MODEL)" >&2
+run_step v2c_long \
+  "$V2C_PYTHON" "${DLS}/scripts/run_v2c_long_main.py" --test -n "$LONG_MODEL" --dataset "$DATASET" --experiment_base_dir "$EXP_BASE" \
+  || { echo "[dlsurfer-v2c-long] V2C-Long inference failed" >&2; exit 2; }
+
+echo ok > "$MARKER/dlsurfer_v2c_long.done"
+find "$ROOT/public_experiments" -name '*.ply' 2>/dev/null | head -40 > "$MARKER/dlsurfer_v2c_long_meshes.txt" || true
+
+INSTALL="$(dirname "$0")/dlsurfer-install-surfaces"
+if [[ -x "$INSTALL" ]]; then
+  set +e
+  "$INSTALL" --sd "$OUT" --sid "$SID" --backend v2c --mode full \
+    --search-dir "$ROOT/public_experiments" --search-dir "$OUT"
+  irc=$?
+  set -e
+  echo "$irc" > "$MARKER/dlsurfer_v2c_long_fs_install.exit"
+fi
+exit 0

@@ -1,0 +1,117 @@
+site_name: DLSurfer
+site_description: Curated deep-learning morphometry orchestrator (FreeSurfer-shaped outputs)
+# Prefer Read the Docs when connected; GitHub Pages remains a mirror.
+site_url: https://dlsurfer.readthedocs.io/
+repo_url: https://github.com/phindagijimana/dlsurfer
+repo_name: phindagijimana/dlsurfer
+edit_uri: edit/main/docs/
+# Primary hosted docs are Sphinx + sphinx_rtd_theme (see docs/conf.py),
+# matching DKT Connectome (https://dkt-connectome.readthedocs.io/).
+# This MkDocs file remains an optional local Material mirror only.
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue-grey
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue-grey
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - What DLSurfer does: getting_started/what.md
+      - Installation: installation/index.md
+      - Apptainer containers: installation/apptainer.md
+      - Python package: installation/python.md
+      - Doctor check: installation/doctor.md
+      - Tutorial: getting_started/tutorial.md
+      - Sample results: getting_started/sample_results.md
+      - Outputs: outputs/layout.md
+      - Metrics and QC files: outputs/metrics.md
+      - Handoff: outputs/handoff.md
+      - And DKT Connectome: getting_started/and_dkt.md
+  - Using the pipeline:
+      - Usage: usage/minimal.md
+      - Profiles: usage/profiles.md
+      - Preparing your data: preparing/inputs.md
+      - Lesion masks: preparing/lesions.md
+      - SUBJECTS_DIR: preparing/subjects_dir.md
+      - Devices and HPC: usage/hpc.md
+      - Preview the plan: usage/preview.md
+      - Gates: usage/gates.md
+      - Quality control: usage/qc.md
+      - BIDS App status: bids_app.md
+  - Methods:
+      - Methods overview: methods/overview.md
+      - Engines (resources + papers): methods/engines.md
+      - Engine policy: workflows/engine_policy.md
+      - core / core-lesion: workflows/core.md
+      - Atlases: workflows/atlases.md
+      - Specialty modules: workflows/specialty.md
+      - Surfaces (Phase 3): workflows/surfaces.md
+  - Reference:
+      - FAQ: troubleshooting/faq.md
+      - Troubleshooting: troubleshooting/cluster.md
+      - Command-line reference: cli.md
+      - Citation: citation.md
+      - Changelog: changelog.md
+      - Claims: reference/CLAIMS.md
+      - Isolation: reference/ISOLATION.md
+      - Engine policy (full): reference/ENGINE_POLICY.md
+      - Atlases (full): reference/ATLASES.md
+      - Alternatives: reference/ALTERNATIVES.md
+      - Compare FS/FastSurfer: reference/COMPARE_FS_FASTSURFER.md
+      - Gaps without alts: reference/GAPS_WITHOUT_ALTERNATIVES.md
+      - Credibility (A/B/C/D): reference/CREDIBILITY.md
+      - Structure modules: reference/STRUCTURE_MODULES.md
+      - FS DL methods (sources + run): reference/FS_DL_METHODS.md
+      - LIT GPU/CPU split: reference/LIT_SPLIT.md
+      - Phases: reference/PHASES.md
+      - DKT handoff: reference/DKT_HANDOFF.md
+  - Developer:
+      - Contributing: contributing.md
+      - Live runs: lab/LIVE_RUNS.md
+      - EG smoke: lab/EG_SMOKE_EVIDENCE.md
+      - TBI ± LIT surfaces: lab/TBI_LIT_SURFACES_REPORT.md
+      - SynthSeg-PC vs JLF: lab/SYNTHSEG_PC_EVAL.md
+      - Publish notes: lab/PUBLISH.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/phindagijimana/dlsurfer

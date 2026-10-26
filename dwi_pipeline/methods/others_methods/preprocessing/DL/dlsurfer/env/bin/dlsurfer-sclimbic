@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# ScLimbic — FreeSurfer 3D U-Net limbic segmentation (Greve NeuroImage 2021)
+set -euo pipefail
+usage() {
+  echo "Usage: dlsurfer-sclimbic --t1 T1.{mgz,nii.gz} --out OUT.mgz [--sid SID] [--conform]"
+}
+T1="" OUT="" SID="" CONFORM=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --out) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --conform) CONFORM=(--conform); shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
+done
+[[ -n "$T1" && -n "$OUT" ]] || { usage; exit 2; }
+mkdir -p "$(dirname "$OUT")"
+TOOL="${DLSURFER_SCLIMBIC:-mri_sclimbic_seg}"
+if ! command -v "$TOOL" >/dev/null 2>&1; then
+  echo "[dlsurfer-sclimbic] $TOOL not on PATH (source FREESURFER_HOME)" >&2
+  exit 2
+fi
+"$TOOL" --i "$T1" --o "$OUT" "${CONFORM[@]}"
+# Optional volume CSV beside output
+if [[ -n "$SID" ]]; then
+  echo "sid=$SID out=$OUT" > "${OUT%.mgz}.dlsurfer_sclimbic.txt"
+fi

@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# HippUnfold BIDS App (DeKraker eLife 2022) — preferred Ready DL HA alt to segmentHA.
+# Uses lab SIF (Documents/HippUnfold/khanlab_hippunfold_latest.sif) or HIPPUNFOLD_SIF.
+set -euo pipefail
+usage() {
+  cat <<EOF
+Usage: dlsurfer-hippunfold --t1 T1.nii.gz --out-dir OUT --sid SID [--modality T1w] [--cores N]
+Env:
+  HIPPUNFOLD_SIF         Apptainer image (default: Documents/HippUnfold/khanlab_…)
+  HIPPUNFOLD_CACHE_DIR   model cache (default: \$HOME/hippunfold_cache)
+  HIPPUNFOLD_RUN         optional path to run_hippunfold.sh
+EOF
+}
+T1="" OUT="" SID="" MOD="T1w" CORES="${SLURM_CPUS_PER_TASK:-4}"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --modality) MOD="$2"; shift 2 ;;
+    --cores) CORES="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown: $1" >&2; usage; exit 2 ;;
+  esac
+done
+[[ -n "$T1" && -n "$OUT" && -n "$SID" ]] || { usage; exit 2; }
+[[ -f "$T1" ]] || { echo "[dlsurfer-hippunfold] missing T1: $T1" >&2; exit 2; }
+
+LAB_DEFAULT="/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/HippUnfold/khanlab_hippunfold_latest.sif"
+SIF="${HIPPUNFOLD_SIF:-$LAB_DEFAULT}"
+[[ -f "$SIF" ]] || { echo "[dlsurfer-hippunfold] HIPPUNFOLD_SIF not found: $SIF" >&2; exit 2; }
+export HIPPUNFOLD_SIF="$SIF"
+export HIPPUNFOLD_CACHE_DIR="${HIPPUNFOLD_CACHE_DIR:-${HOME}/hippunfold_cache}"
+mkdir -p "$HIPPUNFOLD_CACHE_DIR" "$OUT"
+
+# Strip sub- prefix for --participant-label
+LABEL="$SID"
+LABEL="${LABEL#sub-}"
+
+T1ABS="$(cd "$(dirname "$T1")" && pwd)/$(basename "$T1")"
+# Minimal BIDS layout so the App can discover the T1w
+BIDS="$OUT/_bids_staging"
+SUBDIR="$BIDS/sub-${LABEL}/anat"
+mkdir -p "$SUBDIR"
+EXT="nii.gz"
+[[ "$T1ABS" == *.mgz ]] && EXT="mgz"
+# Prefer NIfTI for HippUnfold; convert mgz via mri_convert if needed
+ANAT="$SUBDIR/sub-${LABEL}_T1w.nii.gz"
+if [[ "$T1ABS" == *.nii.gz || "$T1ABS" == *.nii ]]; then
+  ln -sfn "$T1ABS" "$ANAT"
+elif command -v mri_convert >/dev/null 2>&1; then
+  mri_convert "$T1ABS" "$ANAT"
+else
+  echo "[dlsurfer-hippunfold] need NIfTI T1 or mri_convert on PATH for .mgz" >&2
+  exit 2
+fi
+printf '{"Name":"dlsurfer-hippunfold","BIDSVersion":"1.0.0"}\n' > "$BIDS/dataset_description.json"
+
+RUN="${HIPPUNFOLD_RUN:-/mnt/nfs/home/urmc-sh.rochester.edu/pndagiji/Documents/HippUnfold/run_hippunfold.sh}"
+export SINGULARITY_BINDPATH="${BIDS}:${BIDS},${OUT}:${OUT},${HIPPUNFOLD_CACHE_DIR}:${HIPPUNFOLD_CACHE_DIR}${SINGULARITY_BINDPATH:+,${SINGULARITY_BINDPATH}}"
+export APPTAINER_BINDPATH="$SINGULARITY_BINDPATH"
+export PYTHONNOUSERSITE=1
+unset PYTHONPATH 2>/dev/null || true
+
+set +e
+# --force-output: OUT may already exist from a prior staging/failed attempt
+if [[ -x "$RUN" ]]; then
+  "$RUN" "$BIDS" "$OUT" participant \
+    --participant-label "$LABEL" \
+    --modality "$MOD" \
+    --force-output \
+    -p \
+    --cores "$CORES" \
+    --latency-wait 60
+  rc=$?
+else
+  apptainer run -e \
+    --env "HIPPUNFOLD_CACHE_DIR=$HIPPUNFOLD_CACHE_DIR" \
+    --env "PYTHONNOUSERSITE=1" \
+    --env "PYTHONPATH=" \
+    "$SIF" \
+    "$BIDS" "$OUT" participant \
+    --participant-label "$LABEL" \
+    --modality "$MOD" \
+    --force-output \
+    -p \
+    --cores "$CORES" \
+    --latency-wait 60
+  rc=$?
+fi
+set -e
+echo "$rc" > "$OUT/dlsurfer_hippunfold.exit"
+[[ $rc -eq 0 ]] || { echo "[dlsurfer-hippunfold] failed ($rc)" >&2; exit "$rc"; }
+echo ok > "$OUT/dlsurfer_hippunfold.done"

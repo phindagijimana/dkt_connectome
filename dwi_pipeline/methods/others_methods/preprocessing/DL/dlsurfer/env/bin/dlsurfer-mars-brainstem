@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# MARS brainstem nnU-Net (Gesierich Hum Brain Mapp 2025) — best Ready DL alt to segmentBS.
+# https://github.com/miac-research/dl-brainstem
+# Container: ghcr.io/miac-research/brainstem-nnunet:latest
+set -euo pipefail
+usage() {
+  cat <<EOF
+Usage: dlsurfer-mars-brainstem --t1 T1.nii.gz --out-dir OUT --sid SID [--device cuda|cpu]
+Env:
+  MARS_SIF     Apptainer image (ghcr.io/miac-research/brainstem-nnunet)
+  MARS_ROOT    checkout fallback (notes only)
+EOF
+}
+T1="" OUT="" SID="" DEVICE="cuda"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "unknown: $1" >&2; usage; exit 2 ;;
+  esac
+done
+[[ -n "$T1" && -n "$OUT" && -n "$SID" ]] || { usage; exit 2; }
+[[ -f "$T1" ]] || { echo "[dlsurfer-mars-brainstem] missing T1: $T1" >&2; exit 2; }
+mkdir -p "$OUT"
+MARKER="$OUT"
+T1ABS="$(cd "$(dirname "$T1")" && pwd)/$(basename "$T1")"
+# Upstream writes next to the input NIfTI; stage a working copy under OUT
+WORK="$OUT/work"
+mkdir -p "$WORK"
+STAGE="$WORK/$(basename "$T1ABS")"
+if [[ ! -e "$STAGE" ]]; then
+  ln -sfn "$T1ABS" "$STAGE" 2>/dev/null || cp -L "$T1ABS" "$STAGE"
+fi
+
+if [[ -z "${MARS_SIF:-}" || ! -f "$MARS_SIF" ]]; then
+  echo "[dlsurfer-mars-brainstem] set MARS_SIF to brainstem-nnunet Apptainer image" >&2
+  echo "  apptainer pull mars_brainstem_nnunet.sif docker://ghcr.io/miac-research/brainstem-nnunet:latest" >&2
+  exit 2
+fi
+
+NV=()
+[[ "$DEVICE" == cuda* ]] && NV=(--nv)
+cat > "$MARKER/dlsurfer_mars_cmd.txt" <<EOF
+apptainer run ${NV[*]:-} -B "$WORK:$WORK" "$MARS_SIF" "$STAGE"
+# sid=$SID
+EOF
+set +e
+# shellcheck disable=SC2086
+apptainer run ${NV[@]+"${NV[@]}"} -B "$WORK:$WORK" "$MARS_SIF" "$STAGE" \
+  >"$MARKER/dlsurfer_mars.out" 2>"$MARKER/dlsurfer_mars.err"
+rc=$?
+set -e
+echo "$rc" > "$MARKER/dlsurfer_mars.exit"
+# Collect common output names into OUT
+shopt -s nullglob
+for f in "$WORK"/*brainstem* "$WORK"/*MARS* "$WORK"/*.nii.gz; do
+  [[ "$(basename "$f")" == "$(basename "$STAGE")" ]] && continue
+  cp -n "$f" "$OUT/" 2>/dev/null || true
+done
+[[ $rc -eq 0 ]] || { echo "[dlsurfer-mars-brainstem] failed ($rc); see $MARKER/dlsurfer_mars.err" >&2; exit "$rc"; }
+echo ok > "$MARKER/dlsurfer_mars.done"

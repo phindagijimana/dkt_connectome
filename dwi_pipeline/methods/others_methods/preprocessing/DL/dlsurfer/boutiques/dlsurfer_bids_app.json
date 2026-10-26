@@ -1,0 +1,102 @@
+{
+  "name": "dlsurfer_bids_app",
+  "tool-version": "0.1.0",
+  "schema-version": "0.5",
+  "description": "DLSurfer BIDS App–style morphometry orchestrator (FreeSurfer-shaped SUBJECTS_DIR).",
+  "command-line": "dlsurfer bids-app [BIDS_DIR] [OUTPUT_DIR] [ANALYSIS_LEVEL] [PARTICIPANT_LABEL] [PROFILE] [FS_LICENSE] [DEVICE] [EXECUTE]",
+  "container-image": {
+    "image": "dlsurfer.sif",
+    "type": "singularity",
+    "entrypoint": "/opt/dlsurfer/containers/entrypoint_bids.sh"
+  },
+  "inputs": [
+    {
+      "id": "bids_dir",
+      "name": "BIDS directory",
+      "type": "File",
+      "value-key": "[BIDS_DIR]",
+      "optional": false
+    },
+    {
+      "id": "output_dir",
+      "name": "Output directory",
+      "type": "File",
+      "value-key": "[OUTPUT_DIR]",
+      "optional": false
+    },
+    {
+      "id": "analysis_level",
+      "name": "Analysis level",
+      "type": "String",
+      "value-key": "[ANALYSIS_LEVEL]",
+      "value-choices": ["participant", "group"],
+      "optional": false
+    },
+    {
+      "id": "participant_label",
+      "name": "Participant label(s)",
+      "type": "String",
+      "list": true,
+      "command-line-flag": "--participant_label",
+      "value-key": "[PARTICIPANT_LABEL]",
+      "optional": true
+    },
+    {
+      "id": "profile",
+      "name": "DLSurfer profile",
+      "type": "String",
+      "command-line-flag": "--profile",
+      "value-key": "[PROFILE]",
+      "default-value": "core",
+      "optional": true
+    },
+    {
+      "id": "fs_license",
+      "name": "FreeSurfer license file",
+      "type": "File",
+      "command-line-flag": "--fs-license",
+      "value-key": "[FS_LICENSE]",
+      "optional": true
+    },
+    {
+      "id": "device",
+      "name": "Device",
+      "type": "String",
+      "command-line-flag": "--device",
+      "value-key": "[DEVICE]",
+      "value-choices": ["auto", "cpu", "cuda"],
+      "default-value": "auto",
+      "optional": true
+    },
+    {
+      "id": "execute",
+      "name": "Execute (else dry-run)",
+      "type": "Flag",
+      "command-line-flag": "--execute",
+      "value-key": "[EXECUTE]",
+      "optional": true
+    }
+  ],
+  "output-files": [
+    {
+      "id": "derivatives",
+      "name": "DLSurfer derivatives",
+      "path-template": "[OUTPUT_DIR]/derivatives/dlsurfer",
+      "optional": true
+    },
+    {
+      "id": "freesurfer_sd",
+      "name": "FreeSurfer SUBJECTS_DIR",
+      "path-template": "[OUTPUT_DIR]/freesurfer",
+      "optional": true
+    }
+  ],
+  "tags": {
+    "domain": ["neuroimaging", "morphometry"],
+    "modality": ["T1w"]
+  },
+  "error-codes": [
+    {"code": 2, "description": "Input / participant error"},
+    {"code": 3, "description": "Blocked by open production gate"}
+  ]
+}

@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core / core-lesion &mdash; DLSurfer 0.1.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=aefb4c58" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a58bc63e"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Atlases" href="atlases.html" />
+    <link rel="prev" title="Engine policy — wrap FastSurfer / FreeSurfer" href="engine_policy.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DLSurfer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../what_it_does.html">What DLSurfer does</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/apptainer.html">Apptainer containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/python.html">Python package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/doctor.html">Doctor check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/tutorial.html">Tutorial — first run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/sample_results.html">Sample results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/layout.html">Output layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/and_dkt.html">DLSurfer and DKT Connectome</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Using the pipeline</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../usage/minimal.html">A minimal command</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/profiles.html">Profiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/inputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/lesions.html">Lesion masks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/subjects_dir.html">SUBJECTS_DIR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/hpc.html">Devices and HPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/preview.html">Preview the plan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/gates.html">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bids_app.html">BIDS App status</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Methods</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../methods/index.html">Methods &amp; citations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methods/engines.html">Methods — resources &amp; citations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="engine_policy.html">Engine policy — wrap FastSurfer / FreeSurfer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">core / core-lesion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#core"><code class="docutils literal notranslate"><span class="pre">core</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#core-lesion"><code class="docutils literal notranslate"><span class="pre">core-lesion</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="atlases.html">Atlases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="specialty.html">Specialty modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="surfaces.html">Surfaces (Phase 3)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Outputs &amp; QC</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/metrics.html">Metrics and QC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/handoff.html">Handoff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/qc.html">Quality control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/cluster.html">Cluster notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/CLAIMS.html">DLSurfer claim boundary (Phase 0 — frozen)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ISOLATION.html">Isolation from DKT connectome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ENGINE_POLICY.html">FreeSurfer / FastSurfer vs individual DL methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ATLASES.html">Atlases — DKT is default, not exclusive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/ALTERNATIVES.html">All credible alternatives (chosen + runners-up)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/COMPARE_FS_FASTSURFER.html">DLSurfer vs FreeSurfer vs FastSurfer — coverage &amp; gaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/GAPS_WITHOUT_ALTERNATIVES.html">Gaps remaining <strong>without</strong> a credible alternative</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/STRUCTURE_MODULES.html">Specialty structure + Synth* preprocess modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/PHASES.html">DLSurfer phases — status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/DKT_HANDOFF.html">Optional handoff notes (not a DKT dependency)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/LIVE_RUNS.html">Live runs — ops checklist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/EG_SMOKE_EVIDENCE.html">EG smoke evidence — <code class="docutils literal notranslate"><span class="pre">core_lesion_eg_smoke</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/TBI_LIT_SURFACES_REPORT.html">TBI ± LIT — surface DL gate report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/SYNTHSEG_PC_EVAL.html">SynthSeg-PC vs JLF — eval status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/PUBLISH.html">Phase 4 — harden &amp; publish notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DLSurfer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">core / core-lesion</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/phindagijimana/dlsurfer/blob/main/docs/workflows/core.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core-core-lesion">
+<h1>core / core-lesion</h1>
+<section id="core">
+<h2><code class="docutils literal notranslate"><span class="pre">core</span></code></h2>
+<ol class="arabic simple">
+<li><p>FastSurfer VINN (+ CC, CerebNet, HypVINN) — GPU <code class="docutils literal notranslate"><span class="pre">--seg_only</span> <span class="pre">--tal_reg</span></code></p></li>
+<li><p>recon-surf — CPU <code class="docutils literal notranslate"><span class="pre">--surf_only</span></code></p></li>
+</ol>
+</section>
+<section id="core-lesion">
+<h2><code class="docutils literal notranslate"><span class="pre">core-lesion</span></code></h2>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lit-inpainting</span></code> (GPU)</p></li>
+<li><p>Same as <code class="docutils literal notranslate"><span class="pre">core</span></code> on <strong>inpainted</strong> T1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lit-postprocessing</span></code> (CPU)</p></li>
+</ol>
+<p>Planner collapses contiguous FastSurfer modules into <code class="docutils literal notranslate"><span class="pre">run_fastsurfer.sh</span></code> so citations stay honest without reimplementing the stack.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="engine_policy.html" class="btn btn-neutral float-left" title="Engine policy — wrap FastSurfer / FreeSurfer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="atlases.html" class="btn btn-neutral float-right" title="Atlases" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Philbert Ndagijimana and contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

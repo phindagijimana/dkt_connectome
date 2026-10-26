@@ -1,0 +1,386 @@
+# FreeSurfer-shaped SUBJECTS_DIR contract for all DLSurfer outputs.
+# SSOT: plan destinations + post-run checks. Never invent empty classical files.
+#
+# Layout under $SD/$SID/:
+#   mri/ surf/ label/ stats/ scripts/ tmp/ touch/   # classical-compatible
+#   dwi/ pet/ fmri/ qc/                             # modality siblings (FS-suite)
+#   hippunfold/ ibeat/ dhcp/                        # third-party app trees (documented)
+#   surf/dlsurfer/<backend>/                        # non-promoted DL meshes
+#   mri/<tool>/                                     # DL structure extensions
+
+layout:
+  dirs:
+    - mri
+    - surf
+    - label
+    - stats
+    - scripts
+    - tmp
+    - touch
+  modality_dirs:
+    - dwi
+    - pet
+    - fmri
+    - qc
+  app_dirs:
+    - hippunfold
+    - ibeat
+    - dhcp
+  policy: >
+    Classical-compatible products use FreeSurfer names under mri/surf/label/stats.
+    DL extensions live under mri/<tool>/ or surf/dlsurfer/<backend>/ until promoted
+    by fs_surf_contract. Multimodal outputs use sibling modality dirs (not stuffed into mri/).
+    Markers: scripts/dlsurfer_<engine>.done and scripts/dlsurfer_surf_dl.done —
+    do not treat soft recon-surf.done from DL install as classical recon-surf.
+
+# Profile → contract (paths relative to $SD/$SID)
+profiles:
+  # --- morphometry core ---
+  core:
+    category: morphometry
+    kind: full
+    preferred:
+      - mri/aparc.DKTatlas+aseg.deep.mgz
+      - mri/aseg.auto_noCCseg.mgz
+      - surf/lh.white
+      - surf/rh.white
+      - surf/lh.pial
+      - surf/rh.pial
+      - stats
+  core-lesion:
+    category: morphometry
+    kind: full
+    preferred:
+      - mri/aparc.DKTatlas+aseg.deep.mgz
+      - mri/inpainted.lit.nii.gz
+      - surf/lh.white
+      - surf/rh.white
+      - stats
+  core-lesion-native:
+    category: morphometry
+    kind: full
+    preferred:
+      - mri/aparc.DKTatlas+aseg.deep.mgz
+      - mri/inpainted.lit.nii.gz
+      - surf/lh.white
+      - surf/rh.white
+      - stats
+  core-dk:
+    category: morphometry
+    kind: full
+    atlas: dk
+    preferred:
+      - mri/aseg.mgz
+      - label/lh.aparc.annot
+      - label/rh.aparc.annot
+      - surf/lh.white
+      - surf/rh.white
+  core-dl-surf:
+    category: surfaces_dl
+    kind: seg_plus_surf_dl
+    required:
+      - mri
+      - surf/lh.white
+      - surf/rh.white
+      - surf/lh.pial
+      - surf/rh.pial
+      - scripts/dlsurfer_surf_dl.done
+  core-recon-surf:
+    category: morphometry
+    kind: full
+    preferred:
+      - mri/aparc.DKTatlas+aseg.deep.mgz
+      - surf/lh.white
+      - surf/rh.white
+      - surf/lh.pial
+      - surf/rh.pial
+      - stats
+  seg-quick:
+    category: morphometry
+    kind: seg_only
+    required: [mri, scripts]
+  seg-quick-synthseg:
+    category: morphometry
+    kind: seg_only
+    required: [mri]
+  seg-synthseg-robust:
+    category: morphometry
+    kind: volume
+    required: [mri/synthseg_robust]
+  seg-super-synth:
+    category: morphometry
+    kind: volume
+    required: [mri/super_synth]
+  strip:
+    category: utility
+    kind: volume
+    preferred:
+      - mri/brain_synthstrip.mgz
+      - mri/brainmask_synthstrip.mgz
+    required: [mri]
+  strip-hdbet:
+    category: utility
+    kind: volume
+    required: [mri/hdbet]
+  bias-deepn4:
+    category: utility
+    kind: volume
+    required: [mri]
+  preprocess-synthsr:
+    category: utility
+    kind: volume
+    preferred: [mri/T1.synthsr.nii.gz]
+    required: [mri]
+  register-easyreg:
+    category: utility
+    kind: volume
+    required: [mri]
+  register-synthmorph:
+    category: utility
+    kind: volume
+    preferred: [mri/synthmorph]
+    required: [mri]
+  fs8:
+    category: morphometry
+    kind: full
+    preferred: [mri, surf, scripts, stats]
+  fs8-lesion:
+    category: morphometry
+    kind: full
+    preferred: [mri, surf, scripts]
+  fs-clinical:
+    category: morphometry
+    kind: full
+    preferred: [mri, scripts]
+  fs8-dl-modules:
+    category: morphometry
+    kind: inventory
+    required: [mri]
+  fs-long:
+    category: morphometry
+    kind: longitudinal
+    preferred: [mri, surf, scripts]
+
+  # --- surfaces DL ---
+  surf-dl-topofit:
+    category: surfaces_dl
+    kind: white_dl
+    required:
+      - surf/lh.white
+      - surf/rh.white
+      - scripts/dlsurfer_surf_dl.done
+  surf-dl-topofit-only:
+    category: surfaces_dl
+    kind: white_dl
+    required:
+      - surf/lh.white
+      - surf/rh.white
+      - scripts/dlsurfer_surf_dl.done
+  surf-dl-v2c:
+    category: surfaces_dl
+    kind: full_dl
+    required:
+      - surf/lh.white
+      - surf/rh.white
+      - surf/lh.pial
+      - surf/rh.pial
+      - scripts/dlsurfer_surf_dl.done
+  surf-dl-v2c-long:
+    category: surfaces_dl
+    kind: longitudinal_dl
+    preferred: [surf/dlsurfer/v2c_long]
+    required: [scripts]
+  sphere-sugar:
+    category: surfaces_dl
+    kind: sphere_dl
+    required:
+      - surf/lh.sphere.reg
+      - surf/rh.sphere.reg
+      - scripts/dlsurfer_surf_dl.done
+  sphere-s3reg:
+    category: surfaces_dl
+    kind: sphere_backup
+    required: [surf/dlsurfer/s3reg]
+  surf-dl-cortexode:
+    category: surfaces_dl
+    kind: backup_mesh
+    required: [surf/dlsurfer/cortexode]
+  surf-dl-pialnn:
+    category: surfaces_dl
+    kind: backup_mesh
+    required: [surf/dlsurfer/pialnn]
+  surf-dl-corticalflow:
+    category: surfaces_dl
+    kind: backup_mesh
+    required: [surf/dlsurfer/corticalflow]
+  surf-dl-surfnn:
+    category: surfaces_dl
+    kind: backup_mesh
+    required: [surf/dlsurfer/surfnn]
+  surf-dl-deepcsr:
+    category: surfaces_dl
+    kind: backup_mesh
+    required: [surf/dlsurfer/deepcsr]
+  surf-dl-fastcsr:
+    category: surfaces_dl
+    kind: backup_mesh
+    required: [surf/dlsurfer/fastcsr]
+  thickness-fast:
+    category: thickness
+    kind: biomarker
+    preferred: [stats/thickness_cortexmorph.csv, mri/thickness_cortexmorph.csv]
+    required: [scripts]
+  thickness-dl-direct:
+    category: thickness
+    kind: biomarker
+    required: [mri/dlsurfer/thickness_dl_direct]
+
+  # --- atlases ---
+  atlas-destrieux:
+    category: atlas
+    kind: label
+    preferred:
+      - label/lh.aparc.a2009s.annot
+      - label/rh.aparc.a2009s.annot
+  atlas-destrieux-dl:
+    category: atlas
+    kind: label_dl
+    preferred:
+      - label/lh.aparc.a2009s.annot
+      - label/rh.aparc.a2009s.annot
+      - scripts/dlsurfer_surf_dl.done
+  atlas-schaefer:
+    category: atlas
+    kind: label
+    preferred:
+      - label/lh.schaefer.annot
+      - label/rh.schaefer.annot
+  atlas-schaefer-dl:
+    category: atlas
+    kind: label_dl
+    preferred:
+      - label/lh.schaefer.annot
+      - label/rh.schaefer.annot
+  atlas-easyatlas:
+    category: atlas
+    kind: volume
+    required: [mri/easyatlas]
+
+  # --- structure / nuclei ---
+  structure-hippunfold:
+    category: structure
+    kind: app_tree
+    required: [hippunfold]
+  structure-hippodeep:
+    category: structure
+    kind: volume
+    required: [mri/hippodeep]
+  structure-sclimbic:
+    category: structure
+    kind: volume
+    preferred: [mri/sclimbic.mgz]
+    required: [mri]
+  structure-brainstem-mars:
+    category: structure
+    kind: volume
+    required: [mri/brainstem_mars]
+  structure-ventricles-mars:
+    category: structure
+    kind: volume
+    required: [mri/mars_ventricles]
+  structure-claustrum:
+    category: structure
+    kind: volume
+    required: [mri/claustrum]
+  structure-claustrum-albishri:
+    category: structure
+    kind: volume
+    required: [mri/albishri_claustrum]
+  structure-piriform-synthseg:
+    category: structure
+    kind: volume
+    required: [mri/piriform_synthseg_pc]
+  structure-piriform-nnunet:
+    category: structure
+    kind: volume
+    required: [mri/nnunet_piriform]
+  structure-amygdala-go:
+    category: structure
+    kind: volume
+    required: [mri/amygdala_go]
+  structure-histo-atlas:
+    category: structure
+    kind: volume
+    required: [mri/histo_atlas]
+  structure-hypvinn-t2:
+    category: structure
+    kind: seg_only
+    required: [mri, scripts]
+  clinical-claustrum:
+    category: structure
+    kind: volume
+    preferred: [mri/claustrum, mri/T1.synthsr.nii.gz]
+  nuclei-thalamic-dti-cnn:
+    category: nuclei
+    kind: volume
+    required: [mri/thalamic_nuclei_dti_cnn]
+  nuclei-thalamic-deep-thomas:
+    category: nuclei
+    kind: volume
+    required: [mri/thalamic_deep_thomas]
+  nuclei-bs-thal:
+    category: nuclei
+    kind: classical
+    preferred: [mri, stats]
+  subfields-ha:
+    category: structure
+    kind: classical
+    preferred: [mri, stats]
+  seg-wmh-synthseg:
+    category: lesion
+    kind: volume
+    required: [mri/wmh_synthseg]
+  seg-wmh-mars:
+    category: lesion
+    kind: volume
+    required: [mri/mars_wmh]
+  lesion-vbg:
+    category: lesion
+    kind: fill
+    required: [mri/vbg]
+  lesion-enantiomorphic:
+    category: lesion
+    kind: fill
+    required: [mri/enantiomorphic]
+
+  # --- infant ---
+  infant-ibeat:
+    category: infant
+    kind: app_tree
+    required: [ibeat]
+  infant-dhcp:
+    category: infant
+    kind: app_tree
+    required: [dhcp]
+
+  # --- multimodal FS-suite ---
+  dwi-tractseg:
+    category: multimodal
+    kind: dwi
+    required: [dwi/tractseg]
+  dwi-deepwma:
+    category: multimodal
+    kind: dwi
+    required: [dwi/deepwma]
+  pet-dl-quant:
+    category: multimodal
+    kind: pet
+    required: [pet/dl_quant]
+  fmri-deepprep:
+    category: multimodal
+    kind: fmri
+    required: [fmri/deepprep]
+  qc-brainqcnet:
+    category: multimodal
+    kind: qc
+    required: [qc/brainqcnet]

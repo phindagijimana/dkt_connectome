@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaps remaining without a credible alternative &mdash; DLSurfer 0.1.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=aefb4c58" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a58bc63e"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Specialty structure + Synth* preprocess modules" href="STRUCTURE_MODULES.html" />
+    <link rel="prev" title="DLSurfer vs FreeSurfer vs FastSurfer — coverage &amp; gaps" href="COMPARE_FS_FASTSURFER.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DLSurfer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../what_it_does.html">What DLSurfer does</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/apptainer.html">Apptainer containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/python.html">Python package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/doctor.html">Doctor check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/tutorial.html">Tutorial — first run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/sample_results.html">Sample results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/layout.html">Output layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/and_dkt.html">DLSurfer and DKT Connectome</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Using the pipeline</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../usage/minimal.html">A minimal command</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/profiles.html">Profiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/inputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/lesions.html">Lesion masks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preparing/subjects_dir.html">SUBJECTS_DIR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/hpc.html">Devices and HPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/preview.html">Preview the plan</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/gates.html">Gates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bids_app.html">BIDS App status</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Methods</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../methods/index.html">Methods &amp; citations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../methods/engines.html">Methods — resources &amp; citations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/engine_policy.html">Engine policy — wrap FastSurfer / FreeSurfer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/core.html">core / core-lesion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/atlases.html">Atlases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/specialty.html">Specialty modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflows/surfaces.html">Surfaces (Phase 3)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Outputs &amp; QC</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/metrics.html">Metrics and QC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../outputs/handoff.html">Handoff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/qc.html">Quality control</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/cluster.html">Cluster notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CLAIMS.html">DLSurfer claim boundary (Phase 0 — frozen)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ISOLATION.html">Isolation from DKT connectome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ENGINE_POLICY.html">FreeSurfer / FastSurfer vs individual DL methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ATLASES.html">Atlases — DKT is default, not exclusive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ALTERNATIVES.html">All credible alternatives (chosen + runners-up)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COMPARE_FS_FASTSURFER.html">DLSurfer vs FreeSurfer vs FastSurfer — coverage &amp; gaps</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Gaps remaining <strong>without</strong> a credible alternative</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#explicitly-not-missing-alternatives">Explicitly <em>not</em> “missing alternatives”</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="STRUCTURE_MODULES.html">Specialty structure + Synth* preprocess modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PHASES.html">DLSurfer phases — status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DKT_HANDOFF.html">Optional handoff notes (not a DKT dependency)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/LIVE_RUNS.html">Live runs — ops checklist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/EG_SMOKE_EVIDENCE.html">EG smoke evidence — <code class="docutils literal notranslate"><span class="pre">core_lesion_eg_smoke</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/TBI_LIT_SURFACES_REPORT.html">TBI ± LIT — surface DL gate report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/SYNTHSEG_PC_EVAL.html">SynthSeg-PC vs JLF — eval status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lab/PUBLISH.html">Phase 4 — harden &amp; publish notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DLSurfer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Gaps remaining <strong>without</strong> a credible alternative</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/phindagijimana/dlsurfer/blob/main/docs/reference/GAPS_WITHOUT_ALTERNATIVES.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gaps-remaining-without-a-credible-alternative">
+<h1>Gaps remaining <strong>without</strong> a credible alternative</h1>
+<p>These COMPARE gaps have <strong>no</strong> best alternative implemented (and often none that belong in DLSurfer).<br />
+Everything else from <code class="docutils literal notranslate"><span class="pre">COMPARE_FS_FASTSURFER.md</span></code> now has a wired best alternative (profile, flag, or engine).</p>
+<p>Run: <code class="docutils literal notranslate"><span class="pre">dlsurfer</span> <span class="pre">gaps-remaining</span></code></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Gap</p></th>
+<th class="head"><p>Why no alternative in DLSurfer</p></th>
+<th class="head"><p>What to do instead</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Dedicated DLSurfer meta-container (SIF/Docker)</strong></p></td>
+<td><p>Packaging/ops only — not a morphometry method. No separate science tool substitutes for “our” image.</p></td>
+<td><p>Use pinned FastSurfer image + host FS; scaffold <code class="docutils literal notranslate"><span class="pre">containers/dlsurfer.def</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Manual edit loops (<code class="docutils literal notranslate"><span class="pre">-autorecon2-*</span></code>)</strong></p></td>
+<td><p>Interactive QC by design; automation would fight FreeSurfer’s edit model</p></td>
+<td><p>FreeView + targeted <code class="docutils literal notranslate"><span class="pre">recon-all</span> <span class="pre">-autorecon2-*</span></code> outside DLSurfer</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Full QC GUI (FreeView workflows)</strong></p></td>
+<td><p>GUI is FreeSurfer’s product; DLSurfer is CLI orchestration</p></td>
+<td><p>Open SUBJECTS_DIR in FreeView</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>TRACULA / PET / fMRI helper streams</strong></p></td>
+<td><p>Explicitly out of scope (diffusion/PET/fMRI ≠ T1 morphometry orchestrator)</p></td>
+<td><p>Use FreeSurfer / modality-specific pipelines</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Bit-identical <code class="docutils literal notranslate"><span class="pre">recon-all</span></code> reproducibility claim</strong></p></td>
+<td><p>Non-claim: FastSurfer/DLSurfer do not promise bit-identity with classical recon-all</p></td>
+<td><p>Prefer FS8 profile if you need classical FS tree semantics</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>True Infant FreeSurfer neonate stream</strong></p></td>
+<td><p>Only partially covered: <code class="docutils literal notranslate"><span class="pre">fs-clinical</span></code> = clinical/odd-contrast, <strong>not</strong> Infant FS</p></td>
+<td><p>Install <a class="reference external" href="https://surfer.nmr.mgh.harvard.edu/fswiki/infantFS">Infant FreeSurfer</a> separately (documented runner-up under <code class="docutils literal notranslate"><span class="pre">recon_all_clinical</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Native LIT + optimal GPU/CPU seg↔surf split</strong></p></td>
+<td><p>Upstream FastSurfer constraint (<code class="docutils literal notranslate"><span class="pre">--lesion_mask</span></code> blocks <code class="docutils literal notranslate"><span class="pre">--seg_only</span></code>/<code class="docutils literal notranslate"><span class="pre">--surf_only</span></code>) — not solvable by another engine</p></td>
+<td><p>Prefer profile <code class="docutils literal notranslate"><span class="pre">core-lesion</span></code> (standalone neuroLIT)</p></td>
+</tr>
+</tbody>
+</table>
+<section id="explicitly-not-missing-alternatives">
+<h2>Explicitly <em>not</em> “missing alternatives”</h2>
+<p>These looked like gaps but now have a <strong>chosen best alternative</strong> wired:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Former gap</p></th>
+<th class="head"><p>Best alternative</p></th>
+<th class="head"><p>How</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>DK / <code class="docutils literal notranslate"><span class="pre">--fsaparc</span></code></p></td>
+<td><p>FastSurfer <code class="docutils literal notranslate"><span class="pre">--fsaparc</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--atlas</span> <span class="pre">dk</span></code> or profile <code class="docutils literal notranslate"><span class="pre">core-dk</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Destrieux</p></td>
+<td><p>FS <code class="docutils literal notranslate"><span class="pre">-a2009s</span></code></p></td>
+<td><p>profile <code class="docutils literal notranslate"><span class="pre">atlas-destrieux</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Schaefer / MMP-style</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mri_surf2surf</span></code> annot project</p></td>
+<td><p>profile <code class="docutils literal notranslate"><span class="pre">atlas-schaefer</span></code> (MMP same pattern)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Longitudinal</p></td>
+<td><p>FS <code class="docutils literal notranslate"><span class="pre">-base</span></code> / <code class="docutils literal notranslate"><span class="pre">-long</span></code></p></td>
+<td><p>profile <code class="docutils literal notranslate"><span class="pre">fs-long</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>HA subfields</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">segmentHA_T1.sh</span></code></p></td>
+<td><p>profile <code class="docutils literal notranslate"><span class="pre">subfields-ha</span></code> (+ HippUnfold/Hippodeep as runners-up)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Brainstem / thalamic</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">segmentBS</span></code> + <code class="docutils literal notranslate"><span class="pre">segmentThalamicNuclei</span></code></p></td>
+<td><p>profile <code class="docutils literal notranslate"><span class="pre">nuclei-bs-thal</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Clinical / odd contrast</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">recon-all-clinical</span></code></p></td>
+<td><p>profile <code class="docutils literal notranslate"><span class="pre">fs-clinical</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Module toggles</p></td>
+<td><p>FastSurfer <code class="docutils literal notranslate"><span class="pre">--no_*</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--no-cc</span></code> / <code class="docutils literal notranslate"><span class="pre">--no-cereb</span></code> / <code class="docutils literal notranslate"><span class="pre">--no-hypothal</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>HPC <code class="docutils literal notranslate"><span class="pre">srun</span></code> / <code class="docutils literal notranslate"><span class="pre">brun</span></code></p></td>
+<td><p>Upstream wrappers</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--hpc</span> <span class="pre">srun|brun</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>High-res VINN</p></td>
+<td><p>FastSurfer <code class="docutils literal notranslate"><span class="pre">--vox_size</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--vox-size</span> <span class="pre">&lt;mm&gt;</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>DL surfaces / fast thickness</p></td>
+<td><p>TopoFit / V2C-Flow / SUGAR / DL-CTE</p></td>
+<td><p>existing Phase 3 experimental profiles</p></td>
+</tr>
+</tbody>
+</table>
+<p>See also: <a class="reference internal" href="COMPARE_FS_FASTSURFER.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">COMPARE_FS_FASTSURFER.md</span></code></span></a> · <a class="reference internal" href="ALTERNATIVES.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">ALTERNATIVES.md</span></code></span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="COMPARE_FS_FASTSURFER.html" class="btn btn-neutral float-left" title="DLSurfer vs FreeSurfer vs FastSurfer — coverage &amp; gaps" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="STRUCTURE_MODULES.html" class="btn btn-neutral float-right" title="Specialty structure + Synth* preprocess modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Philbert Ndagijimana and contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

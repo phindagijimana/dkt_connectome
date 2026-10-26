@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# FS-shaped entry: DL morphometry orchestrator (FastSurferVINN core).
+# Not classical FreeSurfer recon-all.
+exec dlsurfer recon-all "$@"

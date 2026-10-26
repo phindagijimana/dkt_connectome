@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# FreeSurfer thalamic nuclei DTI-CNN (T1 + FA + V1) — best Ready DL alt to Bayesian ThalamicNuclei
+set -euo pipefail
+usage() {
+  cat <<EOF
+Usage: dlsurfer-thalamic-dti-cnn --t1 T1 --out-dir OUT --sid SID --sd SUBJECTS_DIR [--device cuda|cpu]
+Env (required for live run):
+  THAL_FA     FA volume registered to T1 (physical coords; do not resample)
+  THAL_V1     V1 volume co-registered with FA
+  THAL_ASEG   aseg in same space (default: \$SD/\$SID/mri/aseg.mgz)
+EOF
+}
+T1="" OUT="" SID="" SD="" DEVICE="cpu"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --t1) T1="$2"; shift 2 ;;
+    --out-dir) OUT="$2"; shift 2 ;;
+    --sid) SID="$2"; shift 2 ;;
+    --sd) SD="$2"; shift 2 ;;
+    --device) DEVICE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
+done
+[[ -n "$T1" && -n "$OUT" && -n "$SID" && -n "$SD" ]] || { usage; exit 2; }
+mkdir -p "$OUT"
+TOOL="${DLSURFER_THAL_DTI_CNN:-mri_segment_thalamic_nuclei_dti_cnn}"
+ASEG="${THAL_ASEG:-$SD/$SID/mri/aseg.mgz}"
+FA="${THAL_FA:-}"
+V1="${THAL_V1:-}"
+if [[ -z "$FA" || -z "$V1" ]]; then
+  cat > "$OUT/dlsurfer_thalamic_dti_cnn_cmd.txt" <<EOF
+# Missing THAL_FA / THAL_V1 — set env then re-run.
+$TOOL --t1 $T1 --aseg $ASEG --fa \$THAL_FA --v1 \$THAL_V1 --o $OUT/seg.mgz \\
+  $([ "$DEVICE" = cpu ] && echo --cpu || true)
+EOF
+  echo "[dlsurfer-thalamic-dti-cnn] set THAL_FA and THAL_V1 (see FreeSurfer ThalamicNucleiDTI wiki)" >&2
+  exit 2
+fi
+if ! command -v "$TOOL" >/dev/null 2>&1; then
+  echo "[dlsurfer-thalamic-dti-cnn] $TOOL not on PATH (FreeSurfer with ThalamicNucleiDTI)" >&2
+  exit 2
+fi
+ARGS=(--t1 "$T1" --aseg "$ASEG" --fa "$FA" --v1 "$V1" --o "$OUT/seg.mgz")
+[[ "$DEVICE" == cpu ]] && ARGS+=(--cpu)
+"$TOOL" "${ARGS[@]}"
+echo ok > "$OUT/dlsurfer_thalamic_dti_cnn.done"

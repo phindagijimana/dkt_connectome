@@ -1,0 +1,89 @@
+# Production gates — experimental profiles stay blocked until status: passed
+# Update status after lab validation; do not promote without evidence path.
+
+gates:
+  tbi_lit_topofit:
+    title: TBI ± LIT TopoFit (WM) machine validation
+    blocks_profiles:
+      - surf-dl-topofit
+      - surf-dl-topofit-only
+    status: passed
+    evidence: docs/lab/TBI_LIT_SURFACES_REPORT.md
+    note: >
+      machine_ok=true — both hemis lh/rh.white.topofit on with-LIT and no-LIT
+      (work/phase3_topofit/topofit_tbi_lit_score.json). Hausdorff + FreeView QC
+      via scripts/score_topofit_tbi_lit.py (qc_ok soft bar). FS 7.4.1 SIF TopoFit
+      runs on CPU (cu117 conv3d fails on L40S).
+
+  tbi_lit_surfaces:
+    title: TBI ± LIT V2C-Flow (literature-best Ready full CSR)
+    blocks_profiles:
+      - surf-dl-v2c
+      - core-dl-surf
+    status: passed
+    evidence: docs/lab/TBI_LIT_SURFACES_REPORT.md
+    note: >
+      machine_ok=true — job 192088 ±LIT inference + FS surf contract (lh/rh white+pial)
+      under work/phase3_v2c/{with_lit,no_lit}/sub-EG via dlsurfer-install-surfaces
+      (binary PLY → nibabel write_geometry; avoids mris_convert SIGSEGV). Score:
+      work/phase3_v2c/v2c_tbi_lit_score.json. Does not claim morphometric equivalence
+      to recon-surf. SUGAR / DL-CTE remain separate stage gates.
+
+  tbi_lit_sphere_sugar:
+    title: TBI ± LIT SUGAR spherical registration
+    blocks_profiles:
+      - sphere-sugar
+      - atlas-destrieux-dl
+      - atlas-schaefer-dl
+    status: passed
+    evidence: docs/lab/TBI_LIT_SURFACES_REPORT.md
+    note: >
+      machine_ok=true — job 192095 ±LIT lh SUGAR inference + lh.sphere.reg FS contract
+      under work/phase3_sugar/{with_lit,no_lit}/sub-EG (ICO templates via SUGAR_FSD
+      data_mining/freesurfer; score sugar_tbi_lit_score.json). Pretrained weights are
+      lh-only; rh.sphere.reg in install tree may remain classical recon-surf if present.
+      Set SUGAR_ROOT / SUGAR_FSD for atlas-*-dl runs.
+
+  tbi_lit_v2c_long:
+    title: TBI ± LIT V2C-Long longitudinal CSR
+    blocks_profiles:
+      - surf-dl-v2c-long
+    status: passed
+    evidence: docs/lab/TBI_LIT_SURFACES_REPORT.md
+    note: >
+      machine_ok=true — job 192111 TrackTBI sub-TBI011021 ses-2WK+ses-6MO (±LIT 2WK
+      inpaint + native 6MO); V2C-Long checkout `Documents/others/V2C-Long`, venv
+      work/phase3_gates/envs/v2c; score work/phase3_v2c_long/v2c_long_tbi_lit_score.json.
+      FS surf install optional (fs_install_exit may be non-zero); inference 3-step OK both arms.
+
+  tbi_lit_thickness:
+    title: TBI ± LIT DL-CTE thickness (no mesh)
+    blocks_profiles:
+      - thickness-fast
+    status: passed
+    evidence: docs/lab/TBI_LIT_SURFACES_REPORT.md
+    note: >
+      CortexMorph (SCAN-NRAD; Wu DL-CTE GitHub empty) ±LIT on EG — CSVs under
+      work/phase3_gates/cm_{with,no}_lit/sub-EG/mri/thickness_cortexmorph.csv
+      (job 191968). Biomarker only — never for connectome/aparc.
+
+  synthseg_pc_vs_jlf:
+    title: SynthSeg-PC vs JLF/MAPER (Hammers + IDEAS)
+    blocks_profiles:
+      - structure-piriform-synthseg
+    status: open
+    evidence: docs/lab/SYNTHSEG_PC_EVAL.md
+    note: >
+      Production PC remains JLF (Wang) until Hammers Dice/Jaccard clears the bar —
+      literature-best *deployed* method today. SYNTHSEG_PC_* wired via
+      env/cluster_containers.sh; run scripts/eval_synthseg_pc_vs_jlf.sh.
+
+  core_lesion_eg_smoke:
+    title: EG smoke core-lesion --execute
+    blocks_profiles: []
+    status: passed
+    evidence: docs/lab/EG_SMOKE_EVIDENCE.md
+    note: >
+      doctor READY via Apptainer wrappers; core-lesion dry-run OK; EG standalone FS2.6+LIT
+      science path already completed on-cluster (see evidence). GPU confirmatory job
+      191960 COMPLETED (recon-surf.done under work/eg_gpu_core_lesion).

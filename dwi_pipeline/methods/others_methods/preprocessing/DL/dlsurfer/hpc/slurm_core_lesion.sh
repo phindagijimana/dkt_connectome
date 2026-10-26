@@ -29,4 +29,4 @@ dlsurfer run --profile "$PROFILE" --t1 "$T1" --lesion-mask "$LESION" \
   --sd "$SD" --sid "$SID" --fs-license "$FS_LICENSE" --device "$DEVICE"
 
 echo "Re-run with --execute on the appropriate partitions after reviewing the plan."
-echo "Native profile core-lesion-native cannot split seg/surf across partitions."
+echo "Prefer hpc/slurm_core_lesion_split.sh for GPU fill+seg → CPU surf+post (DL separable LIT)."

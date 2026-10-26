@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+: "${DLSURFER_SIF_LIT:?source env/cluster_containers.sh}"
+NV=()
+if [[ "${DLSURFER_LIT_NV:-1}" == "1" ]] && command -v nvidia-smi >/dev/null 2>&1; then
+  NV=(--nv)
+fi
+exec apptainer exec "${NV[@]}" -B /mnt/nfs "$DLSURFER_SIF_LIT" lit-inpainting "$@"

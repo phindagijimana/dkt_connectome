@@ -1,108 +1,69 @@
 # DLSurfer
 
-**Curated deep-learning morphometry orchestrator** — FreeSurfer-shaped outputs, lesion + device policy, every engine cited.
+[![Docs](https://readthedocs.org/projects/dlsurfer/badge/?version=latest)](https://dlsurfer.readthedocs.io/en/latest/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
+[![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)](pyproject.toml)
+
+**Curated deep-learning morphometry orchestrator** — FreeSurfer-shaped `SUBJECTS_DIR` outputs, lesion + device policy, every engine cited.
 
 > Does **not** replace FreeSurfer / FastSurfer science.  
-> **Isolated** under `others_methods/preprocessing/DL/dlsurfer/` — does **not** couple to or modify the DKT connectome pipeline.  
-> **Atlases:** DKT is the default labeling scheme; DK / Destrieux / others are in-scope (see `dlsurfer atlases`).
+> Orchestrates validated tools (FastSurfer VINN, neuroLIT, Synth*, TopoFit, …).
 
-Docs: [`docs/ISOLATION.md`](docs/ISOLATION.md) · [`docs/ATLASES.md`](docs/ATLASES.md) · [`docs/COMPARE_FS_FASTSURFER.md`](docs/COMPARE_FS_FASTSURFER.md) · [`docs/GAPS_WITHOUT_ALTERNATIVES.md`](docs/GAPS_WITHOUT_ALTERNATIVES.md) · [`docs/STRUCTURE_MODULES.md`](docs/STRUCTURE_MODULES.md) · [`docs/ALTERNATIVES.md`](docs/ALTERNATIVES.md) · [`docs/CLAIMS.md`](docs/CLAIMS.md) · [`docs/PHASES.md`](docs/PHASES.md)
+**Documentation** uses the same **Sphinx + Read the Docs theme** stack as [DKT Connectome](https://dkt-connectome.readthedocs.io/): https://dlsurfer.readthedocs.io/
 
-Parent notes: [`../DLSURFER_PLAN.md`](../DLSURFER_PLAN.md) · [`../CLASSICAL_TO_DL_TABLE.md`](../CLASSICAL_TO_DL_TABLE.md)
+```bash
+pip install -r docs/requirements.txt
+cd docs && make html   # open _build/html/index.html
+```
 
 ---
 
 ## Install / run
 
 ```bash
+git clone https://github.com/phindagijimana/dlsurfer.git
 cd dlsurfer
-PYTHONPATH=. python -m dlsurfer doctor
-PYTHONPATH=. python -m dlsurfer atlases
-PYTHONPATH=. python -m dlsurfer compare          # vs FreeSurfer & FastSurfer
-PYTHONPATH=. python -m dlsurfer gaps-remaining   # no credible alternative
-PYTHONPATH=. python -m dlsurfer engines --alternatives
+pip install -e .
+source env/cluster_containers.sh   # Apptainer SIFs → doctor READY
+dlsurfer doctor
+dlsurfer smoke                     # doctor + dry-run core-lesion
 ```
 
 ```bash
-PYTHONPATH=. python -m dlsurfer run \
+dlsurfer run \
   --profile core-lesion \
-  --atlas dkt \
   --t1 /path/T1.nii.gz \
   --lesion-mask /path/lesion.nii.gz \
   --sd /path/dlsurfer_subjects \
-  --sid sub-EG \
+  --sid sub-01 \
   --fs-license /path/license.txt \
   --device auto
+# add --execute to run
 ```
 
-Gap-fill examples (dry-run plans):
-
-```bash
-# DK via FastSurfer --fsaparc
-python -m dlsurfer run --profile core --atlas dk --t1 T1.nii.gz --sd SD --sid S --fs-license LIC
-
-# Module off + hires + HPC launcher
-python -m dlsurfer run --profile core --t1 T1.nii.gz --sd SD --sid S \
-  --no-hypothal --vox-size 0.8 --hpc srun --fs-license LIC
-
-# Former FS-suite gaps
-python -m dlsurfer run --profile fs-long --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile subfields-ha --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile nuclei-bs-thal --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile atlas-destrieux --t1 T1.nii.gz --sd SD --sid S
-
-# Specialty (clau_seg / piriform / HippUnfold) — see docs/STRUCTURE_MODULES.md
-python -m dlsurfer run --profile preprocess-synthsr --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile structure-claustrum --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile structure-piriform-synthseg --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile clinical-claustrum --t1 T1.nii.gz --sd SD --sid S
-python -m dlsurfer run --profile structure-hippunfold --t1 T1.nii.gz --sd SD --sid S
-```
-
-Use a **dedicated `--sd`** (not the DKT pipeline work tree) unless you intentionally share a SUBJECTS_DIR.
-
-Optional consumer notes only (print-only):
-
-```bash
-python -m dlsurfer handoff --consumer generic --sd ... --sid ...
-python -m dlsurfer handoff --consumer dkt --sd ... --sid ...   # does not run DKT
-```
+Use a **dedicated `--sd`**. See docs for profiles, HPC, gates, and outputs.
 
 ---
 
-## Chosen engines (defaults)
+## Tests
 
-| Engine | Why chosen |
-|--------|------------|
-| SynthStrip | Best Production strip in FS |
-| DeepN4 | Best Ready N4 approx (optional) |
-| FastSurferVINN + CC/CerebNet/HypVINN | Production morphometry core |
-| SynthSeg | Odd-contrast Production alt |
-| neuroLIT standalone | Lesion fill without breaking GPU/CPU split |
-| recon-surf | Production FS-shaped surfaces (classical) |
-| TopoFit / V2C-Flow / SUGAR / DL-CTE | Phase 3 experimental Ready/Production alts |
-| EasyReg / SynthMorph | Production registration utils |
-| FreeSurfer 8 | XOR alt engine |
-
-**All other credible alternatives** (HD-BET, QuickNAT, DeepSCAN, VBG, CortexODE, PialNN, S3Reg, …) are documented for future reference:
-
-- `dlsurfer engines --alternatives`
-- [`docs/ALTERNATIVES.md`](docs/ALTERNATIVES.md)
-- `engines.yaml` → `alternatives:` + `deferred:`
-
----
-
-## What’s missing vs FreeSurfer / FastSurfer
-
-- Full matrix: `dlsurfer compare` → [`docs/COMPARE_FS_FASTSURFER.md`](docs/COMPARE_FS_FASTSURFER.md)
-- **No credible alternative** (intentionally): `dlsurfer gaps-remaining` → [`docs/GAPS_WITHOUT_ALTERNATIVES.md`](docs/GAPS_WITHOUT_ALTERNATIVES.md)
-
-Best alternatives for former gaps are wired as profiles/flags (`fs-long`, `subfields-ha`, `nuclei-bs-thal`, `fs-clinical`, `atlas-*`, `--atlas dk`, `--hpc srun`, `--vox-size`, `--no-*`).
+```bash
+pip install -e ".[dev]"
+pytest -q
+```
 
 ---
 
 ## Citation
 
 ```bash
-python -m dlsurfer cite --profile core-lesion
+dlsurfer cite --profile core-lesion
 ```
+
+Cite **engines**, not DLSurfer as a morphometry method.
+
+---
+
+## License
+
+Apache-2.0 for the orchestrator code and docs. Upstream FastSurfer / FreeSurfer / neuroLIT remain under their own licenses; you need a FreeSurfer license file to run those tools.
