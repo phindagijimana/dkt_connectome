@@ -1,6 +1,6 @@
 # Pipeline steps
 
-What happens inside each step of the DKT Connectome. **Theory and rationale:** [Science overview](science_overview.md) and [Methods](methods/index.md). For outputs, see [Outputs](outputs.md). For citation tables, see [References by step](references.md).
+What happens inside each step of the DKT Connectome. **Short introduction:** [What DKT Connectome does](what_it_does.md). **Theory and rationale:** [Science overview](science_overview.md) and [Methods](methods/index.md). For outputs, see [Outputs](outputs.md). For citation tables, see [References by step](references.md).
 
 ---
 
@@ -13,6 +13,7 @@ What happens inside each step of the DKT Connectome. **Theory and rationale:** [
 | **1** | QSIPrep preprocessing |
 | **1.1** | Lesion inpainting (neuroLIT; optional VBT) |
 | **2** | Cortical reconstruction |
+| **2.1** | Post-hoc FS LIT packaging (optional) |
 | **3** | QSIRecon tractography |
 | **3.1** | Lesion-aware ACT tractography |
 | **3.2** | Deep Atropos native-T1 5TT (optional branch) |
@@ -24,6 +25,7 @@ What happens inside each step of the DKT Connectome. **Theory and rationale:** [
 Step 1    QSIPrep           DWI + T1w preprocessing, SDC (fmap or SyN)
 Step 1.1  Inpaint           Lesion anatomical mitigation (neuroLIT default; optional VBT)
 Step 2    Recon             FreeSurfer or FastSurfer → DKT parcellation
+Step 2.1  Post-hoc FS       Optional LIT packaging after standalone recon (--post-hoc-fs)
 Step 3    QSIRecon          SS3T-CSD, ACT-HSVS tractography, SIFT2 weights
 Step 3.1  Lesion-aware ACT  Optional: rebuild tractography with lesion in 5TT (--act-mode lesion-aware)
           ├─ default        QSIRecon HSVS base 5TT → ACPC 5ttedit → dwiref → tckgen
@@ -63,6 +65,8 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 ## Step 1.1 — Inpaint (optional)
 
+**Standalone by design** (fill outside recon → ordinary Step 2). Not FastSurfer native `--lesion_mask`. Reasons + optional `--post-hoc-fs`: [Usage § Step 1.1](usage.md#options-for-anatomical-lesion-mitigation-step-1-1) · [methods](methods/step1_1_inpaint.md#standalone-fill-vs-fastsurfer-lesion-mask).
+
 **Tools:** [neuroLIT](https://github.com/Deep-MI/lit) (`lit_0.6.0.sif`, default) or LeAPP-compatible **virtual brain transplant** (`--anat-mitigation vbt`)
 
 **Trigger:** sibling `*_T1w_label-lesion_roi.nii.gz` in BIDS for the session
@@ -75,7 +79,7 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 **Skip:** `--no-inpaint` / `--anat-mitigation none`, or no mask present (silent no-op)
 
-**References:** [Step 1.1 — Inpainting (methods)](methods/step1_1_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [References table](references.md#step-11-anatomical-lesion-mitigation-optional) (Pollak et al. 2025; Bey et al. 2024).
+**References:** [Step 1.1 — Inpainting (methods)](methods/step1_1_inpaint.md) · [Lesion-aware tractography](lesion_aware.md) · [References table](references.md#step-1-1-anatomical-lesion-mitigation-optional) (Pollak et al. 2025; Bey et al. 2024).
 
 ---
 
@@ -93,6 +97,23 @@ Deep Atropos branch details: [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 **Key outputs:** `freesurfer/sub-<ID>/`
 
 **References:** [Step 2 — Recon (methods)](methods/step2_recon.md) · [References table](references.md#step-2-cortical-reconstruction-freesurfer-fastsurfer) (Fischl 2012; Henschel et al. 2020; Klein & Tourville 2012).
+
+---
+
+## Step 2.1 — Post-hoc FS LIT packaging (optional)
+
+**Trigger:** `--post-hoc-fs` flag + finished Step 2 recon + BIDS lesion mask (standalone path only)
+
+**Processing:**
+
+1. Run neurolit LIT packaging into the FreeSurfer/FastSurfer subject tree (`*.lit*`, lesion reports)
+2. Prefer FastSurfer image with embedded neurolit; else `lit.sif`
+
+**Skip:** omit `--post-hoc-fs` (default), `--no-post-hoc-fs`, native `--fastsurfer-lesion-mask` (LIT already in-recon), or no lesion mask
+
+**Standalone re-run:** `--mode posthoc-fs` (or `bash workflow/run_subject.sh posthoc-fs <ID>`) after Step 2 — same pattern as `--mode disconnectome` for Step 4.1.
+
+See [Usage § Step 1.1 / post-hoc](usage.md#why-step-1-1-is-standalone-fill-not-fastsurfer-lesion-mask) · [methods](methods/step1_1_inpaint.md#standalone-fill-vs-fastsurfer-lesion-mask).
 
 ---
 

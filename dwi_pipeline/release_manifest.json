@@ -1,10 +1,10 @@
 {
   "pipeline_version": "0.3.0",
-  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. Null sha256 means digest not yet recorded at release build time \u2014 strict check skips those keys.",
+  "notes": "Pin this file with git tag v0.3.0. After install, run ./dkt check --strict to verify cached .sif SHA256 values. Step sha256 values are SHA256 of the cached .sif files. orchestrator.sha256 is the GHCR OCI digest of orchestrator.uri. A null sha256 means the digest was not recorded at release build time \u2014 strict check skips those keys.",
   "orchestrator": {
     "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.0",
     "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.0",
-    "sha256": null
+    "sha256": "4c36f82d0a14fc4e28d21d8ac0c1a975d8e4275fa0df65d672d8239135e9219f"
   },
   "steps": {
     "qsiprep": {
@@ -20,7 +20,7 @@
       "sha256": "1c65de5707ae33cd4948a173d18e5ec65bd4dbd80efbf821356f2f8686869984"
     },
     "fastsurfer": {
-      "uri": "deepmi/fastsurfer:latest",
+      "uri": "deepmi/fastsurfer:cpu-v2.4.2",
       "sha256": "1baa5d51866df1980f779922f01526ac4e4167d66054af9ba59c3c34e55f6136"
     },
     "connectome": {

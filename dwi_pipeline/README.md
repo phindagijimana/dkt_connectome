@@ -374,7 +374,7 @@ bash dwi_pipeline/containers/connectome/build_connectome.sh
 # Stages minimal FS + ANTs/MRtrix from qsirecon.sif; see containers/connectome/README.md
 ```
 
-Legacy dual-container Step 4: see [workflow/LEGACY.md](workflow/LEGACY.md).
+Step 4 runs from the baked connectome image. See [containers/connectome/README.md](containers/connectome/README.md).
 
 Build the Step 1.1 SIF (straight Docker Hub pull, no custom layers):
 
@@ -470,7 +470,7 @@ T1w/DWI grid.
 | `workflow/run_subject.sh` | One subject via Snakemake (modes match `./run`) |
 | `submit.sh` | Build subject list + Slurm array |
 | `array.sh` | Slurm array worker (do not run directly) |
-| `subject.sh` | Legacy bash engine only — see [workflow/LEGACY.md](workflow/LEGACY.md) |
+| `subject.sh` | Older bash engine. New cohorts use `workflow/run_subject.sh` |
 | `scripts/build_bids_filter.py` | dwi-select → QSIPrep filter JSON |
 | `scripts/repair_bids_sidecars.py` | BIDS sidecar repair |
 | `scripts/run_bids_repair.sh` | Repair wrapper |
@@ -480,7 +480,6 @@ T1w/DWI grid.
 | `containers/connectome/` | Step 4 container (Dockerfile, build script, entrypoint) |
 | `containers/lit/` | Step 1.1 container (`build_lit.sh` pulls `deepmi/lit` from Docker Hub) |
 | `config/dwi_select_b1000.json` | Default b1000 + IntendedFor fmaps |
-| `reports/scripts/` | Per-subject visualization scripts (connectome, morphometry, imaging, ENIGMA 3D) |
 | [`node_strength` on Docker Hub](https://hub.docker.com/r/phindagijimana321/nodestrength) | Step 5 — separate repo/container; node strength, AI, ENIGMA figures |
 
 ---

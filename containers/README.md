@@ -7,7 +7,7 @@ the fourth is built from the recipes in this directory.
 | stage | image | source | size | recipe lives where |
 |---|---|---|---:|---|
 | 1. qsiprep | `docker://pennlinc/qsiprep:1.0.0` | upstream | ~3.5 GB | [PennLINC/qsiprep](https://github.com/PennLINC/qsiprep) |
-| 2. recon | `docker://freesurfer/freesurfer:7.4.1` *or* `docker://deepmi/fastsurfer:latest` | upstream | ~6 GB / ~5 GB | upstream |
+| 2. recon | `docker://freesurfer/freesurfer:7.4.1` *or* `docker://deepmi/fastsurfer:cpu-v2.4.2` | upstream | ~6 GB / ~5 GB | upstream |
 | 3. qsirecon | `docker://pennlinc/qsirecon:1.2.1` | upstream | ~5 GB | [PennLINC/qsirecon](https://github.com/PennLINC/qsirecon) |
 | 4. **dk_connectome** | `docker://ghcr.io/phindagijimana/dk-connectome:0.1.0` | **this repo** | ~900 MB | [Dockerfile.dk_connectome](Dockerfile.dk_connectome) / [Apptainer.dk_connectome.def](Apptainer.dk_connectome.def) |
 

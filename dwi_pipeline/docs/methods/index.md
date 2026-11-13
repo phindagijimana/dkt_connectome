@@ -31,7 +31,6 @@ This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods 
 ## Related pages
 
 - [Science overview](../science_overview.md) — end-to-end flow, physics summary, default choices
-- [Publication strategy](../publication_strategy.md) — TrackTBI cohort manuscripts, factorial contrasts, journal targets
 - [Step 3.2 — Deep Atropos native-T1 5TT](../deep_atropos_5tt.md) — optional branch before Step 3.1
 - [Pipeline steps](../pipeline_steps.md) — operational reference
 - [Disconnectome](../disconnectome.md) — CLI defaults and QC (Step 4.1 user guide)

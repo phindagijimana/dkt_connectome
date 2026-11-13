@@ -2,36 +2,83 @@
 
 Command-line reference for the DKT Connectome BIDS App (`./run`, `./dkt`) and HPC entry points. Layout follows [QSIPrep usage](https://qsiprep.readthedocs.io/en/stable/usage.html).
 
-For a minimal example, see the [Tutorial](tutorial.md). For **when to use which flag**, see [Decision tables](decision_tables.md). For config keys and env vars, see [Configuration](configuration.md).
+**First run?** Use the [Tutorial](tutorial.md), not this page. **Lesion / recon flags:** start with [Lesion / recon paths](#lesion-recon-paths-start-here) below, then [Decision tables](decision_tables.md). Config keys: [Configuration](configuration.md).
+
+---
+
+## Lesion / recon paths (start here)
+
+Pick **one** anatomy path. Optional packaging / disconnectome are separate opt-ins (default **off**).
+
+| Path | Flags | What runs |
+|------|-------|-----------|
+| **Standalone** (default) | *(none)* or `--anat-mitigation neurolit\|vbt` | Step 1.1 fill → ordinary Step 2 |
+| **Standalone + LIT** | `--post-hoc-fs` | … → Step 2.1 neurolit packaging into the FS tree |
+| **Native** | `--fastsurfer-lesion-mask` | Skip 1.1; FastSurfer `--lesion_mask` (FS ≥ 2.6) |
+| **No fill** | `--no-inpaint` / `--anat-mitigation none` | Raw T1 → ordinary Step 2 |
+
+### Recipes
+
+```bash
+./submit.sh --fastsurfer                         # default standalone
+./submit.sh --fastsurfer --post-hoc-fs            # + LIT packaging (Step 2.1)
+./submit.sh --fastsurfer-lesion-mask              # native FastSurfer ≥ 2.6
+./submit.sh --experiment-arm vbt-lesion           # factorial anatomy × ACT
+PIPELINE_MODE=posthoc-fs ./submit.sh              # re-run Step 2.1 only
+PIPELINE_MODE=disconnectome ./submit.sh           # re-run Step 4.1 only
+```
+
+### Don't mix
+
+- Do **not** combine `--fastsurfer-lesion-mask` with `--inpaint`, `--anat-mitigation neurolit|vbt`, or `--post-hoc-fs` (CLI **errors**; pick one path).
+- `--post-hoc-fs` is **packaging**, not fill — fill is still Step 1.1.
+- `--no-fastsurfer-lesion-mask` only disables native recon `--lesion_mask`; it does **not** skip Step 1.1 (use `--no-inpaint`).
+
+### Opt-in steps vs re-run modes
+
+| Step | Opt-in during `all` | Re-run that step only |
+|------|---------------------|------------------------|
+| **2.1** Post-hoc FS | `--post-hoc-fs` | `--mode posthoc-fs` |
+| **4.1** Disconnectome | `--disconnection` | `--mode disconnectome` |
+
+Prefer long names: `--fastsurfer-lesion-mask` (not `--lesion-mask`), `--disconnection` (flag) vs `--mode disconnectome` (mode). Aliases remain for scripts.
+
+More detail: [Decision tables — standalone vs native](decision_tables.md#standalone-fill-vs-native-fastsurfer-lesion-mask).
 
 ---
 
 ## Unified CLI (`./dkt`)
 
-`./dkt` wraps install, pull, run, log, and check without changing the BIDS App `./run` contract.
+`./dkt` wraps day-to-day commands without changing the BIDS App `./run` contract. Prefer a short path: **init → install → check → run → status**.
 
 | Command | Purpose |
 |---------|---------|
-| `./dkt install` | Pull step `.sif` images + write `config.local.yaml` |
-| `./dkt pull` | Pull containers only (adds `--write-config` by default) |
-| `./dkt run …` | Same as `./run …` |
-| `./dkt log …` | List or tail logs under `RESULTS_ROOT/logs` |
-| `./dkt check` | Verify tools, license, containers (`doctor`) |
+| `./dkt init` | Write `config.local.yaml` + print next steps |
+| `./dkt install` / `./dkt install all` | Pull all step `.sif` images |
+| `./dkt install qsirecon` | Pull / re-pull one container |
+| `./dkt check` | Verify tools, license, containers (path-agnostic) |
+| `./dkt run …` | Same as `./run …` (supports `--profile ideas\|glioma\|minimal`) |
+| `./dkt status --results-root OUT` | Subject × stage table (OK / .. / --) |
+| `./dkt log …` | List or tail logs |
+| `./dkt profiles` | List named `--profile` packs |
+| `./dkt provenance` | Short pin / dataset_description summary |
 | `./dkt version` | Print `PipelineVersion` from `app.json` |
 
 Examples:
 
 ```bash
+./dkt init --license ~/freesurfer/license.txt --bids BIDS --out OUT
 ./dkt install --missing-only
-./dkt check --with-dry-run
-./dkt run BIDS OUT participant --participant-label 001 --fastsurfer --syn
+./dkt check
+./dkt run BIDS OUT participant --participant-label 001 --profile ideas
+./dkt status --results-root OUT
 ./dkt log --results-root OUT --subject 001 --stage connectome -f
-./dkt check --outputs --subject 001 --results-root OUT
+./run --bids-exec-spec    # Boutiques descriptor for platforms
 ```
 
 For **which steps run in containers vs on the host**, see [Architecture](architecture.md).
 
-Legacy entrypoints (`./run`, `install`, `bash scripts/install.sh`, `./run doctor`) remain supported.
+`./run` remains the BIDS App contract (`./dkt run` calls it). HPC cohorts should use `bash submit.sh`, not `subject.sh`.
 
 ---
 
@@ -118,10 +165,11 @@ See [Preparing your data](preparing_data.md) for fieldmaps, Siemens sidecars, an
 
 | Flag | Steps run |
 |------|-----------|
-| `--mode all` | 1 → 1.1 (if mask) → 2 → 3 → 4 → 4.1 (if mask) → 5 |
+| `--mode all` | 1 → 1.1 (if mask) → 2 → 2.1 (if `--post-hoc-fs`) → 3 → 4 → 4.1 (if `--disconnection`) → 5 |
 | `--mode qsiprep` | Step 1 only |
 | `--mode inpaint` | Step 1.1 only |
 | `--mode recon` | Step 2 only |
+| `--mode posthoc-fs` | Step 2.1 only (LIT packaging; needs finished recon + lesion mask) |
 | `--mode qsirecon` | Step 3 only |
 | `--mode act` | Step 3.1 only (lesion-aware ACT; needs lesion mask) |
 | `--mode connectome` | Step 4 (+ 5 if enabled) |
@@ -132,11 +180,12 @@ See [Preparing your data](preparing_data.md) for fieldmaps, Siemens sidecars, an
 | `--no-connectome` / `--no-dk` | Skip Steps 4 and 5 |
 | `--no-node-strength` | Skip Step 5 only |
 | `--no-inpaint` / `--inpaint` | Force skip / enable Step 1.1 |
-| `--disconnection` | Opt in to Step 4.1 disconnectome (default: off) |
+| `--post-hoc-fs` / `--no-post-hoc-fs` | Opt in / out of Step 2.1 (default **off**) |
+| `--disconnection` | Opt in to Step 4.1 (default **off**) |
 | `--no-disconnectome` | Explicitly skip Step 4.1 |
-| `--disconnectome` | Alias for `--disconnection` |
+| `--disconnectome` | **Alias** for `--disconnection` (prefer `--disconnection`; mode is `--mode disconnectome`) |
 
-What each step does: [Pipeline steps](pipeline_steps.md).
+What each step does: [Pipeline steps](pipeline_steps.md). Path chooser: [above](#lesion-recon-paths-start-here).
 
 ---
 
@@ -157,8 +206,15 @@ Without a fieldmap in the filter, the pipeline **requires** one of `--syn`, `--f
 | Flag | Env | Description |
 |------|-----|-------------|
 | `--fastsurfer` | `RECON_TOOL=fastsurfer` | FastSurfer instead of `recon-all` |
-| `--freesurfer` | `RECON_TOOL=freesurfer` | FreeSurfer `recon-all` (default) |
+| `--fastsurfer-device cpu\|cuda` | `RECON_FASTSURFER_DEVICE` | FastSurfer device (default `cpu`). `cuda` also auto-requests a GPU in `submit.sh` |
+| `--freesurfer` | `RECON_TOOL=freesurfer` | FreeSurfer `recon-all` (default in `config.yaml`; `submit.sh` defaults to FastSurfer) |
 | `--fast-fs` | `RECON_FSAPARC=1` | FastSurfer + classic DK aparc |
+| `--fastsurfer-lesion-mask` | `RECON_LESION_MASK=1` | Native FastSurfer `--lesion_mask` (FS ≥ 2.6). Skips Step 1.1; forces FastSurfer; mutually exclusive with `--post-hoc-fs` / standalone fill |
+| `--no-fastsurfer-lesion-mask` | `RECON_LESION_MASK=0` | Disable **native** FastSurfer `--lesion_mask` only (default). Does **not** skip Step 1.1 |
+| `--post-hoc-fs` | `POST_HOC_FS=1` | After **standalone** recon, neurolit LIT packaging (Step 2.1; default off) |
+| `--no-post-hoc-fs` | `POST_HOC_FS=0` | No Step 2.1 (default) |
+
+**Aliases (prefer long names above):** `--lesion-mask` → `--fastsurfer-lesion-mask`; `--no-lesion-mask` → `--no-fastsurfer-lesion-mask`.
 
 ---
 
@@ -187,7 +243,20 @@ bash workflow/run_subject.sh all 011 --anat-mitigation vbt
 bash submit.sh --anat-mitigation none   # original-T1w sensitivity arm
 ```
 
-**When publishing:** cite Pollak et al. 2025 for neuroLIT; Bey et al. 2024 for VBT and state that VBT is a port of LeAPP's released code, not a full LeAPP container run. See [References § Step 1.1](references.md#step-11-anatomical-lesion-mitigation-optional).
+### Why Step 1.1 is **standalone** fill (not FastSurfer `--lesion_mask`)
+
+Step 1.1 inpaints **outside** recon, then Step 2 runs **ordinary** FastSurfer / FreeSurfer on the filled T1 (**no** `--lesion_mask`). Keep this design for four reasons:
+
+1. **Older FastSurfer** — Native `--lesion_mask` exists only in **FS ≥ 2.6**; 2.4.x and classic FreeSurfer have no equivalent flag.
+2. **Pluggable fill** — Same recon path for **neurolit** or **VBT**; native `--lesion_mask` hard-wires neurolit inside FastSurfer.
+3. **Optional LIT files** — Skip neurolit packaging if you only need fill → recon; native always writes LIT products in-recon.
+4. **Classic FreeSurfer** — `--lesion_mask` is FastSurfer-only; standalone works with `recon-all` too.
+
+Optional **post-hoc** after standalone Step 2 is `--post-hoc-fs`. Combining it with `--fastsurfer-lesion-mask` is an error (native already writes LIT). Recipes: [Lesion / recon paths](#lesion-recon-paths-start-here).
+
+Theory detail: [Step 1.1 methods — standalone vs native](methods/step1_1_inpaint.md#standalone-fill-vs-fastsurfer-lesion-mask).
+
+**When publishing:** cite Pollak et al. 2025 for neuroLIT; Bey et al. 2024 for VBT and state that VBT is a port of LeAPP's released code, not a full LeAPP container run. See [References § Step 1.1](references.md#step-1-1-anatomical-lesion-mitigation-optional).
 
 ---
 
@@ -247,7 +316,7 @@ Set `act.deep_atropos.antsxnet_cache` (or `DEEP_ATROPOS_ANTSXNET_CACHE`) to a pe
 
 ### Experiment arms (`--experiment-arm`) {#experiment-arms-experiment-arm}
 
-Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For a concise arm-by-arm guide and LeAPP relationship, see **[TBI experimental arms](TBI_Experimental_Arms.md)**. For cohort-scale manuscript planning (~100 TrackTBI lesion subjects), pre-specified contrasts, and journal targets, see [Publication strategy](publication_strategy.md).
+Each arm is a **separate run** (submit one Slurm job per arm). Requires a lesion mask for any `*-lesion` arm or for neurolit/VBT arms that run Step 1.1. Factorial design follows Bey et al. 2024 (LeAPP). For a concise arm-by-arm guide and LeAPP relationship, see **[TBI experimental arms](TBI_Experimental_Arms.md)**. `./run` forwards `--experiment-arm`, ACT flags, and `--fastsurfer-device` the same way as `run_subject.sh`.
 
 | Arm | Step 1.1 anatomy | Step 3.1 ACT | Typical contrast | Cite when contrasting |
 |-----|------------------|--------------|------------------|------------------------|

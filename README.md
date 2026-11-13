@@ -119,6 +119,12 @@ bash dwi_pipeline/workflow/run_subject.sh all SUBJ01 --fastsurfer --syn
 
 ---
 
+## Funding
+
+Developed and maintained by Philbert Ndagijimana, with mentorship from the co-authors named in the documentation. James Gugger, PI. Final pipeline for Neuroimaging Biomarkers of Post-Traumatic Epileptogenesis (DoD W81XWH-22-1-0593, $483,975; PI Nishant Sinha). Run on Phase 1 (600 subjects, 1,200 timepoints); Phase 2 of the same size is waiting. DoD technical-report deliverable.
+
+---
+
 ## License
 
 [Apache License 2.0](LICENSE)

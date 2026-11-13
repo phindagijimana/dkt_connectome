@@ -24,7 +24,7 @@ containers:
   # atlas — point this at a real freesurfer .sif (e.g. freesurfer/7.4.1).
   freesurfer:     /path/to/freesurfer_7.4.1.sif  # docker://freesurfer/freesurfer:7.4.1
   # Optional: only needed if recon.tool == "fastsurfer".
-  fastsurfer:     /path/to/fastsurfer_latest.sif # docker://deepmi/fastsurfer:latest
+  fastsurfer:     /path/to/fastsurfer_2.4.2.sif  # docker://deepmi/fastsurfer:cpu-v2.4.2
   # Step 4: the dedicated dk-connectome image built from this repo
   # (MRtrix3 + ANTs + FreeSurferColorLUT; ~900 MB). Recipes live in
   # containers/Dockerfile.dk_connectome and Apptainer.dk_connectome.def.

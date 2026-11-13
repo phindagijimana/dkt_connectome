@@ -5,8 +5,8 @@
 # =============================================================================
 
 # --- Paths ---
-results_root: /path/to/dwi_pipeline/dwi_test_TBI   # outputs; use a per-run subdir
-bids_dir: /path/to/dwi_pipeline/dwi_test_TBI/bids  # local TBI test inputs
+results_root: /path/to/results   # outputs; use a per-run subdir
+bids_dir: /path/to/BIDS          # BIDS dataset root
 templateflow_home: null   # default: <repo>/templateflow
 recon_out: null             # default: <results_root>/freesurfer  (RECON_OUT)
 fs_subjects_dir: null       # default: recon_out                 (FS_SUBJECTS_DIR)
@@ -29,7 +29,7 @@ container_pins:
   qsiprep: pennlinc/qsiprep:1.0.0
   qsirecon: pennlinc/qsirecon:1.2.1
   freesurfer: freesurfer/freesurfer:7.4.1
-  fastsurfer: deepmi/fastsurfer:latest
+  fastsurfer: deepmi/fastsurfer:cpu-v2.4.2
   connectome: ghcr.io/phindagijimana/dk-connectome:0.3.0
   vbt: ghcr.io/phindagijimana/dkt-vbt:0.3.0
   lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.3.0
@@ -80,9 +80,9 @@ inpaint:
   batch_size: 4            # 8 OOMs on gpu:l40s.6g MIG slices; use 12g/24g or lower this
   labels: all
   binarize: false
-  min_outside_corr: 0.995
-  max_corr_drop: 0.01
-  fail_on_qc: false
+  min_outside_corr: 0.995  # optional local default; not a published cutoff
+  max_corr_drop: 0.01      # optional local default; not a published cutoff
+  fail_on_qc: false        # true: abort if those optional defaults are missed
   vbt:
     smoothing_factor: 2.0  # Gaussian sigma in voxels, matching LeAPP code
 
@@ -93,6 +93,10 @@ recon:
   fsaparc: false           # --fast-fs sets tool=fastsurfer + fsaparc=true
   fastsurfer_device: cpu
   session: null            # override auto-resolved session (RECON_SESSION; bare label, e.g. 2WK)
+  # Native FastSurfer --lesion_mask (FS ≥ 2.6, neurolit inside recon). Skips standalone Step 1.1 fill.
+  lesion_mask: false       # --fastsurfer-lesion-mask
+  # After standalone fill→recon, run neurolit LIT packaging into the subject tree (not needed for native).
+  post_hoc_fs: false       # --post-hoc-fs
 
 # --- Step 3: QSIRecon ---
 qsirecon:
@@ -104,7 +108,7 @@ act:
   mode: standard            # standard | lesion-aware
   five_tt_source: hsvs      # hsvs | deep-atropos-native
   streamlines: 10000000
-  random_seed: 0
+  random_seed: 0            # MRTRIX_RNG_SEED for QSIRecon, SD_STREAM, and lesion-aware tckgen. tckgen uses 1 thread; dynamic seeding does not repeat with more.
   cutoff: 0.05
   min_length_mm: 30
   max_length_mm: 250

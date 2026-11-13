@@ -66,18 +66,42 @@ When Step 1.1 runs, **`INPAINTED_T1W`** replaces the raw BIDS T1w for:
 
 ---
 
+## Standalone fill vs FastSurfer `--lesion_mask`
+
+This pipeline’s Step 1.1 is **standalone**: fill the T1 **outside** recon, then run **ordinary** Step 2 (no FastSurfer `--lesion_mask`). FastSurfer ≥ 2.6 also offers an **integrated** path (`run_fastsurfer.sh --lesion_mask`) where neurolit runs inside recon and writes LIT products automatically.
+
+**Why we keep standalone** (anyone wondering “why not always `--lesion_mask`?”):
+
+1. **Older FastSurfer / missing flag** — `--lesion_mask` is only in recent FastSurfer (2.6+).
+2. **Pluggable fill** — neurolit *or* VBT (or another fill) then the same recon; native hard-wires neurolit.
+3. **No LIT required** — fill → recon without neurolit packaging; use `--post-hoc-fs` only when you want `*.lit*` / lesion reports.
+4. **Classic FreeSurfer** — `--lesion_mask` is not a `recon-all` flag; standalone + optional neurolit `lit-postprocessing` is the FreeSurfer path.
+
+| Wiring | Fill | Recon | LIT packaging |
+|--------|------|-------|---------------|
+| **Standalone** (default) | Step 1.1 (`--anat-mitigation neurolit\|vbt`) | Ordinary FastSurfer / FreeSurfer | Optional `--post-hoc-fs` |
+| **Native** (FastSurfer ≥ 2.6) | Inside recon via `--fastsurfer-lesion-mask` | Same job (`run_fastsurfer.sh --lesion_mask`) | Built-in (neurolit only; `--post-hoc-fs` ignored) |
+
+CLI: [Usage § Step 2](../usage.md#options-for-reconstruction-step-2) · [Usage § Step 1.1](../usage.md#options-for-anatomical-lesion-mitigation-step-1-1) · [Decision tables](../decision_tables.md#standalone-fill-vs-native-fastsurfer-lesion-mask).
+
+---
+
 ## Quality control
 
-`check_inpainting.py` verifies inpainting **only changed voxels inside (or near) the lesion**:
+`check_inpainting.py` reports whether the inpainted T1w is **usable**, then prints outside-mask agreement as **descriptive IQMs** (same idea as MRIQC: numbers for inspection, not an automatic disease grade).
 
-| Metric | Meaning | Default gate |
-|--------|---------|--------------|
-| Outside-lesion correlation | Pearson *r* between original and inpainted outside mask | ≥ 0.995 |
-| Resampling control | Same correlation after conform/resample round-trip without inpainting | baseline |
-| Correlation drop | Control − outside correlation; large values mean network altered healthy tissue | ≤ 0.01 |
-| Regenerated voxels | Count of outside-lesion voxels changed beyond adaptive threshold | reported only |
+**FAIL (`ok: false`) only when the step is broken:** no volume, wrong grid (`geometry_matches_original` false), NaN correlation, or empty mask.
 
-Set `INPAINT_FAIL_ON_QC=1` to fail the run on QC violation (default: warn and continue).
+| Metric | Meaning | Role |
+|--------|---------|------|
+| Outside-lesion Pearson *r* | Original vs inpainted outside the mask | Always printed |
+| Resampling-control *r* | Same correlation after conform/resample with **no** inpaint | Always printed |
+| Correlation drop | Control − outside *r* | Always printed |
+| Regenerated voxels | Outside-mask voxels past an adaptive intensity threshold | Reported only |
+
+Inpaint finished. Outside-mask Pearson *r* is reported for inspection. **0.995 / 0.01 are optional pipeline defaults, not a published cutoff.** Judge the before/after PNGs ([Pollak et al. 2025](https://doi.org/10.1162/imag_a_00446) evaluates SSIM/PSNR and downstream Dice/HD95, not this Pearson gate; [MRIQC](https://doi.org/10.1371/journal.pone.0184661) uses visual reports).
+
+Set `INPAINT_FAIL_ON_QC=1` (or `inpaint.fail_on_qc: true`) if a lab wants those optional defaults to abort the run. Default is report-only.
 
 ---
 
@@ -124,7 +148,7 @@ Unlike neuroLIT's learned synthesis, VBT is **deterministic**, requires **no GPU
 | Inpainting strategy | Lugmayr A, et al. RePaint. *CVPR* 2022 | [10.1109/CVPR52688.2022.01175](https://doi.org/10.1109/CVPR52688.2022.01175) |
 | **VBT / LeAPP (when `--anat-mitigation vbt`)** | Bey P, et al. LeAPP. *Human Brain Mapping* 2024;45(9):e26701. | [10.1002/hbm.26701](https://doi.org/10.1002/hbm.26701) |
 
-Full table: [References § Step 1.1](../references.md#step-11-anatomical-lesion-mitigation-optional).
+Full table: [References § Step 1.1](../references.md#step-1-1-anatomical-lesion-mitigation-optional).
 
 ---
 

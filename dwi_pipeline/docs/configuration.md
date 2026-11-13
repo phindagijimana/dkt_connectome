@@ -107,7 +107,7 @@ Set `.sif` paths in `config.local.yaml` under `containers:` or via `CONTAINER_*`
 | `deep_atropos.segmentation_mode` | `--deep-atropos-seg-mode`, `DEEP_ATROPOS_SEG_MODE` | `auto` |
 | `deep_atropos.antsxnet_cache` | `DEEP_ATROPOS_ANTSXNET_CACHE` | *(unset)* |
 
-Lesion-aware mode requires a BIDS lesion mask. Outputs: `lesion_aware_act/sub-<ID>/`; with Deep Atropos also `deep_atropos_seg/` and `deep_atropos/`. See [Deep Atropos plan](maintainer/deep_atropos_5tt_plan.md).
+Lesion-aware mode requires a BIDS lesion mask. Outputs: `lesion_aware_act/sub-<ID>/`; with Deep Atropos also `deep_atropos_seg/` and `deep_atropos/`. See [Deep Atropos native-T1 5TT](deep_atropos_5tt.md).
 
 ---
 

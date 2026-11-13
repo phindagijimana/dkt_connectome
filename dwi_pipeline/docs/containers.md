@@ -64,4 +64,3 @@ Reference upstream tags with `container_pins:` in config — see [Configuration]
 - **Step 3.1 lesion-aware ACT:** [containers/lesion_act/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/lesion_act/README.md) — stages ANTs + MRtrix from `qsirecon.sif`; HSVS ACPC and Deep Atropos native paths
 - **Step 3.2 Deep Atropos:** [containers/deep_atropos/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos/README.md) · [deep_atropos_seg/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/deep_atropos_seg/README.md)
 - **Step 4:** [containers/connectome/README.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/containers/connectome/README.md)
-- **Publish orchestrator:** [Release checklist on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/publishing.md)

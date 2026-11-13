@@ -130,7 +130,7 @@ mkdir -p containers && cd containers
 apptainer pull qsiprep.sif          docker://pennlinc/qsiprep:1.0.0
 apptainer pull qsirecon.sif         docker://pennlinc/qsirecon:1.2.1
 apptainer pull freesurfer_7.4.1.sif docker://freesurfer/freesurfer:7.4.1
-apptainer pull fastsurfer.sif       docker://deepmi/fastsurfer:latest        # optional
+apptainer pull fastsurfer.sif       docker://deepmi/fastsurfer:cpu-v2.4.2    # optional
 
 # Step 4 — built from this repo, published on ghcr.io
 apptainer pull dk-connectome.sif    docker://ghcr.io/phindagijimana/dk-connectome:0.1.0

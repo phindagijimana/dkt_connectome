@@ -6,6 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 
 ## [Unreleased]
 
+### Changed
+- Tractography (`tckgen`) runs with one thread. Dynamic seeding does not repeat when several threads share one `MRTRIX_RNG_SEED`. QSIRecon, SD_STREAM, and lesion-aware tracking all use that pin. `act.random_seed` (default 0) is passed into QSIRecon as `MRTRIX_RNG_SEED`.
+
 ## [0.3.0] — Tier 1 reproducibility (baked step scripts)
 
 ### Added
@@ -89,7 +92,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **CI full-workflow dry-run** — `scripts/snakemake_dryrun_ci.sh` exercises all nine Snakemake targets (with lesion-mask stub)
 - **Documentation site pages:** [configuration.md](configuration.md), [faq.md](faq.md), [troubleshooting.md](troubleshooting.md), [changelog.md](changelog.md), [containers.md](containers.md)
 - **`./run --version`** flag
-- Read the Docs setup — [Maintainer tasks §14 on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md#14-read-the-docs-auto-rebuild)
+- Read the Docs site at [dkt-connectome.readthedocs.io](https://dkt-connectome.readthedocs.io/en/latest/)
 - **Material for MkDocs** theme; generated config catalog (GitHub) and [QC doc figures](qc.md)
 - Expanded **BIDS App `./run` CLI** (SDC, dwi-select, nodestrength, disconnectome flags)
 - **QSIPrep-style docs** under `dwi_pipeline/docs/` with GitHub-navigable links

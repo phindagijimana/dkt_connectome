@@ -118,7 +118,7 @@ CLI: `python3 scripts/evaluate_disconnectome_integrity.py --disconnectome-dir ..
 
 ### Who maintains this pipeline? How do I contact you?
 
-**Maintainer:** Philbert Ndagijimana
+**Maintainer:** Philbert Ndagijimana. [Funding](citation.md#funding).
 
 - **GitHub:** [phindagijimana/dkt_connectome](https://github.com/phindagijimana/dkt_connectome) (bugs and feature requests via [Issues](https://github.com/phindagijimana/dkt_connectome/issues))
 - **Email:** [phindagiji@gmail.com](mailto:phindagiji@gmail.com)

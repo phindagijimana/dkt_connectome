@@ -35,4 +35,4 @@ Outputs: `base_5tt_native.mif`, `deep_atropos_5tt.json`.
 Rule `deep_atropos_5tt` in `workflow/rules/deep_atropos_5tt.smk` runs after
 `deep_atropos_seg` when `--act-5tt-source deep-atropos-native`.
 
-See [deep_atropos_5tt_plan.md](../../docs/maintainer/deep_atropos_5tt_plan.md).
+See [Deep Atropos native-T1 5TT](../../docs/deep_atropos_5tt.md).

@@ -113,7 +113,7 @@ flowchart TB
 | `run_vbt.py` | `dkt_vbt.sif` | `VBT_BIND_DEV=1` |
 | Deep Atropos scripts | `dkt_deep_atropos*.sif` | `ACT_BIND_MOUNT_DEV=1` |
 
-**Release pinning:** use `release_manifest.json` + `./dkt check --strict` after install. See [container digests](maintainer/container_digests.md).
+**Release pinning:** use `release_manifest.json` + `./dkt check --strict` after install.
 
 ---
 

@@ -42,7 +42,6 @@ CI runs `scripts/check_public_repo_privacy.sh` on every push/PR. Keep sensitive 
 | `workflow/config/config.yaml` | Default configuration |
 | `scripts/` | Python/bash utilities |
 | `docs/` | Sphinx site source (user-facing pages on [Read the Docs](https://dkt-connectome.readthedocs.io/en/latest/); QSIPrep-style RTD theme) |
-| `docs/maintainer/` | **GitHub-only** release and registry runbooks (not published on RTD) |
 | `containers/` | In-house image recipes |
 | `schemas/` | JSON Schema for config validation |
 
@@ -76,24 +75,7 @@ snakemake -s ../workflow/Snakefile --lint
 
 ---
 
-## Repository-local documentation
-
-<a id="repository-local-documentation"></a>
-
-The following files live in the repository but are **not** published on Read the Docs (maintainer credentials, release runbooks, auto-generated config dumps). Open them on GitHub:
-
-| Topic | Path |
-|-------|------|
-| Open-work tracker (canonical) | [`remaining.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/remaining.md) |
-| Maintainer one-shot tasks (release, Docker, RTD, Dockstore, Zenodo) | [`docs/maintainer/maintainer_tasks.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md) |
-| Release checklist | [`docs/maintainer/publishing.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/publishing.md) |
-| Readiness checklist (P0–P5) | [`docs/maintainer/readiness_checklist.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/readiness_checklist.md) |
-| Integration CI (real containers) | [`docs/maintainer/integration_ci.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/integration_ci.md) |
-| v1.0 science track | [`docs/maintainer/v1_science_track.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/v1_science_track.md) |
-| Container digests | [`docs/maintainer/container_digests.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/container_digests.md) |
-| BIDS Apps registry submission (optional) | [`docs/maintainer/bids_apps_registry.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/bids_apps_registry.md) |
-| Configuration catalog (auto-generated) | [`docs/config_catalog.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/config_catalog.md) |
-| JSON Schema reference | [`docs/schema_reference.md`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/schema_reference.md) |
+## Configuration catalog
 
 Regenerate the config catalog after editing `workflow/config/config.yaml`:
 

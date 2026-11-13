@@ -78,7 +78,7 @@ Primary pin: `ghcr.io/phindagijimana/dkt-lesion-act:0.1.0`.
 ## See also
 
 - [Step 3.1 methods](../../docs/methods/step3_1_lesion_act.md)
-- [Deep Atropos branch](../../docs/maintainer/deep_atropos_5tt_plan.md)
+- [Deep Atropos branch](../../docs/deep_atropos_5tt.md)
 
 ## Citation
 

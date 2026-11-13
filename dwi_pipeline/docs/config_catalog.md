@@ -30,7 +30,7 @@ JSON Schema: [Schema reference](schema_reference.md).
 | `container_pins.qsiprep` | `pennlinc/qsiprep:1.0.0` | string |
 | `container_pins.qsirecon` | `pennlinc/qsirecon:1.2.1` | string |
 | `container_pins.freesurfer` | `freesurfer/freesurfer:7.4.1` | string |
-| `container_pins.fastsurfer` | `deepmi/fastsurfer:latest` | string |
+| `container_pins.fastsurfer` | `deepmi/fastsurfer:cpu-v2.4.2` | string |
 | `container_pins.connectome` | `ghcr.io/phindagijimana/dk-connectome:0.1.0` | string |
 | `container_pins.lit` | `deepmi/lit:0.6.0` | string |
 | `container_pins.nodestrength` | `phindagijimana321/nodestrength:0.1.0` | string |

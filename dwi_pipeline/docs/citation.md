@@ -20,6 +20,14 @@ Replace superscripts with numbered references from [References by step](referenc
 
 ---
 
+## Funding
+
+<a id="funding"></a>
+
+Developed and maintained by Philbert Ndagijimana, with mentorship from the co-authors named in this documentation. James Gugger, PI. Final pipeline for Neuroimaging Biomarkers of Post-Traumatic Epileptogenesis (DoD W81XWH-22-1-0593, $483,975; PI Nishant Sinha). Run on Phase 1 (600 subjects, 1,200 timepoints); Phase 2 of the same size is waiting. DoD technical-report deliverable.
+
+---
+
 ## Minimum citations (most papers)
 
 If space is limited, include at least:
@@ -135,7 +143,8 @@ From [`app.json`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi
 ```text
 HowToAcknowledge: Cite QSIPrep (Cieslak et al., Nature Methods 2021), QSIRecon,
 FastSurfer/FreeSurfer, MRtrix3, Pollak et al. 2025 for neuroLIT inpainting,
-and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
+and Griffis et al. 2019 for disconnectome methods. Developed and maintained by
+Philbert Ndagijimana (DoD W81XWH-22-1-0593; PI Nishant Sinha; James Gugger, PI).
 ```
 
 ---
@@ -147,10 +156,7 @@ and Griffis et al. 2019 for disconnectome methods. See documentation/citation.
 | Documentation | https://dkt-connectome.readthedocs.io/en/latest/ |
 | Source code | https://github.com/phindagijimana/dkt_connectome |
 | GitHub Releases | https://github.com/phindagijimana/dkt_connectome/releases |
-| Zenodo archive | *(enable GitHub integration — see [Maintainer §17 on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/maintainer_tasks.md#17-zenodo-archive-doi))* |
 | CITATION.cff | https://github.com/phindagijimana/dkt_connectome/blob/main/CITATION.cff |
-
-After the first Zenodo release, add the software DOI here and in `CITATION.cff`:
 
 ```bibtex
 @software{Ndagijimana2026DKTConnectome,
@@ -158,12 +164,9 @@ After the first Zenodo release, add the software DOI here and in `CITATION.cff`:
   title     = {{DKT Connectome} — lesion-aware structural connectomics {BIDS App}}},
   year      = {2026},
   version   = {0.3.0},
-  url       = {https://github.com/phindagijimana/dkt_connectome},
-  doi       = {10.5281/zenodo.xxxxx}
+  url       = {https://github.com/phindagijimana/dkt_connectome}
 }
 ```
-
-Replace `10.5281/zenodo.xxxxx` with the DOI from your Zenodo record.
 
 ---
 

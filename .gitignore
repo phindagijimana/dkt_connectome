@@ -161,14 +161,9 @@ backups/
 /dwi_pipeline/config/bids_repair_subjects.local.csv
 
 # --- Report figures (per-subject, derived from real study data) ---------------
-# The visualization CODE in dwi_pipeline/reports/scripts/ is tracked; every
-# per-subject output folder it writes into is not. Do not commit figures,
-# volumes, or draft reports built from participant data.
-/dwi_pipeline/reports/sub-*/
-
-# venv_enigma_vtk is a full python venv (~1.7GB, incl. a pinned VTK build) --
-# see dwi_pipeline/reports/scripts/README.md to rebuild it locally, never commit it.
-/dwi_pipeline/reports/scripts/venv_enigma_vtk/
+# Local report figures, volumes and drafts built from participant data (and any
+# helper venvs) live here; never commit them.
+/dwi_pipeline/reports/
 
 # TemplateFlow cache (download at runtime; do not commit)
 dwi_pipeline/templateflow/
@@ -185,6 +180,12 @@ dwi_pipeline/sample_software_paper/*.pdf
 dwi_pipeline/sample_software_paper/*.docx
 dwi_pipeline/config/bids_repair_phase2_rsfmap.json
 dwi_pipeline/workflow/config/config.local.yaml
+
+# Maintainer notes and manuscript plans (local machine only)
+remaining.md
+dwi_pipeline/docs/maintainer/
+dwi_pipeline/docs/publication_strategy.md
+dwi_pipeline/workflow/LEGACY.md
 
 # --- Study exports and local cohort data (never public) ------------------------
 dwi_pipeline/networks_URMC/

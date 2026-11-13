@@ -44,6 +44,35 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 
 ---
 
+## Standalone fill vs native FastSurfer `--lesion_mask`
+
+**Start here** for lesion anatomy. Usage summary: [Usage — lesion / recon paths](usage.md#lesion-recon-paths-start-here).
+
+| Goal | Flags | What runs |
+|------|-------|-----------|
+| **Default** (standalone) | *(none)* or `--anat-mitigation neurolit` | Step 1.1 fill → ordinary Step 2 (no LIT packaging) |
+| Standalone + LIT files | `--post-hoc-fs` | Fill → ordinary recon → neurolit packaging into subject dir |
+| Native integrated LIT | `--fastsurfer-lesion-mask` | Skip Step 1.1; FastSurfer `--lesion_mask` on raw T1 (FS ≥ 2.6) |
+| VBT fill | `--anat-mitigation vbt` | Standalone VBT → ordinary recon (not compatible with `--fastsurfer-lesion-mask`) |
+| No fill | `--anat-mitigation none` / `--no-inpaint` | Raw T1 → ordinary recon |
+
+### Don't mix
+
+| Illegal combo | Why |
+|---------------|-----|
+| `--fastsurfer-lesion-mask` + `--anat-mitigation neurolit\|vbt` / `--inpaint` | Native XOR standalone fill |
+| `--fastsurfer-lesion-mask` + `--post-hoc-fs` | Native already writes LIT in-recon |
+| Relying on `--no-lesion-mask` to skip Step 1.1 | That flag only clears native recon; use `--no-inpaint` |
+
+CLI **exits with an error** on the illegal combos (no silent last-wins). Prefer long names: `--fastsurfer-lesion-mask`, `--no-fastsurfer-lesion-mask`.
+
+### Opt-in vs re-run
+
+| Step | Opt-in in `all` | Re-run only |
+|------|-----------------|-------------|
+| 2.1 Post-hoc FS | `--post-hoc-fs` | `--mode posthoc-fs` |
+| 4.1 Disconnectome | `--disconnection` | `--mode disconnectome` |
+
 ## Lesion inpainting (Step 1.1)
 
 | Situation | Behavior |
@@ -52,7 +81,7 @@ QSIPrep-style **when to use which flag** reference. Full flag list: [Usage](usag
 | No mask | Silent skip (raw T1w → Step 2) |
 | Mask present but skip desired | `--no-inpaint` or `--anat-mitigation none` |
 | LeAPP-compatible VBT instead of neuroLIT | `--anat-mitigation vbt` |
-| QC failure should abort run | `INPAINT_FAIL_ON_QC=1` |
+| Abort if optional *r* / drop defaults are missed | `INPAINT_FAIL_ON_QC=1` (default: print IQMs only; those numbers are not a published cutoff) |
 
 ---
 
@@ -125,13 +154,12 @@ Step 4 also writes **MeanLength, MeanFA, MeanMD** from the same tractogram. Inte
 | Situation | Flag |
 |-----------|------|
 | Standard connectome only | *(default — off)* |
-| Lesion disconnection analysis | `--disconnection` |
+| Lesion disconnection analysis | `--disconnection` (prefer this spelling) |
 | Sensitivity: core only | `--disconnectome-core-only` |
 | Sensitivity: eroded lesion | `--disconnectome-erode-voxels 1` |
 | Standalone re-run | `--mode disconnectome` |
 
-Requires: lesion mask from Step 1.1 + DKT connectome from Step 4.
-
+`--disconnectome` without `--mode` is only an **alias** for `--disconnection`. Requires: lesion mask + DKT connectome from Step 4.
 ---
 
 ## Node strength (Step 5)

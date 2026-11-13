@@ -112,4 +112,3 @@ Rebuilds cohort QC indexes and subject report links. Does **not** re-run QSIPrep
 
 - [Installation](installation.md) · [Containers](containers.md)
 - [BIDS App specification](bids_app.md) · [Usage](usage.md)
-- [Release checklist on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/publishing.md)

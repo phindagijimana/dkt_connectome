@@ -38,6 +38,7 @@ exclude_patterns = [
     ".DS_Store",
     "maintainer",
     "maintainer/**",
+    "publication_strategy.md",
     "config_catalog.md",
     "schema_reference.md",
     "presentations",

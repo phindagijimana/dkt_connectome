@@ -90,4 +90,4 @@ Under the hood, `./run` invokes the Snakemake workflow in [`workflow/Snakefile`]
 
 ## Registry listing (optional)
 
-Listing on [bids-apps.neuroimaging.io](https://bids-apps.neuroimaging.io/apps/) is **not required** to run, cite, or release the pipeline. Maintainer submission guide (GitHub only): [bids_apps_registry.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/docs/maintainer/bids_apps_registry.md).
+The pipeline runs, is cited, and is released from this repository. A listing on [bids-apps.neuroimaging.io](https://bids-apps.neuroimaging.io/apps/) is separate from that.

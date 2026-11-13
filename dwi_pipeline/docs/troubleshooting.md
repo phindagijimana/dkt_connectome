@@ -70,7 +70,7 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | Script changes not in published SIF | Set `ACT_BIND_MOUNT_DEV=1` for dev only, or rebuild/publish containers |
 | Slow `tckgen` | Default 10M streamlines; reduce with `--act-streamlines` for pilots |
 
-Theory: [Step 3.1 methods](methods/step3_1_lesion_act.md) · Deep Atropos: [maintainer plan](maintainer/deep_atropos_5tt_plan.md).
+Theory: [Step 3.1 methods](methods/step3_1_lesion_act.md) · Deep Atropos: [native-T1 5TT](deep_atropos_5tt.md).
 
 ---
 

@@ -89,4 +89,4 @@ reassigning that territory to neighbouring gyri.
 | `CONTAINER_CONNECTOME` | `.../others/containers/dkt_connectome.sif` | Shared image |
 | `CONNECTOME_BIND_DEV` | `1` | Dev-only: bind-mount repo `run_connectome.sh` and DKT LUT over baked image copies |
 
-Legacy dual-container Step 4 (`CONNECTOME_LEGACY_DUAL_CONTAINER=1`): see [workflow/LEGACY.md](../../workflow/LEGACY.md).
+Step 4 runs from this baked image.

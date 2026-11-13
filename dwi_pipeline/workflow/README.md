@@ -8,9 +8,7 @@ inputs/outputs/params) joined into **one workflow** (the `Snakefile`, which
 computes the dependency graph from those declarations instead of a human
 tracing bash).
 
-Status: **production-ready via `submit.sh` / `array.sh` → Snakemake** (`run_subject.sh`).
-
-Legacy bash / dual-container paths: **[LEGACY.md](LEGACY.md)** (local maintainer notes, not on Read the Docs).
+Status: **`submit.sh` / `array.sh` → Snakemake** (`run_subject.sh`).
 
 ### Machine setup (required once per host)
 
@@ -104,7 +102,7 @@ bash submit.sh --syn \
 `submit.sh` auto-requests `SBATCH_GRES=gpu:l40s.24g:1` when Step 1.1 inpaint
 is enabled. Override with `SBATCH_GRES=` or a different slice if needed.
 
-If you still need the bash engine or dual-container connectome, see **[LEGACY.md](LEGACY.md)**.
+New cohorts use the Snakemake path above.
 
 Before re-running subjects that were processed outside Snakemake, backfill
 markers so Steps 1 and 3 are not redone:
@@ -202,7 +200,7 @@ Both engines are kept in sync deliberately, not by accident:
   `subject.sh` itself to start sourcing, once this engine is trusted).
 - `run_subject.sh` mirrors the historical `subject.sh` CLI and env vars for drop-in use with `submit.sh`.
 
-Unported legacy paths (bash engine, dual-container Step 4): **[LEGACY.md](LEGACY.md)**.
+New cohorts use the Snakemake path (`run_subject.sh`).
 
 ## SDC (Step 1 / QSIPrep) — four modes
 

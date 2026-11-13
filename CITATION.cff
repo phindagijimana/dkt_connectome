@@ -3,6 +3,8 @@ message: >-
   If you use this software in published work, please cite the upstream tools
   that do the heavy lifting (QSIPrep, QSIRecon, FreeSurfer, MRtrix3, ANTs);
   this pipeline only orchestrates them. See README.md for citation guidance.
+  Developed and maintained by Philbert Ndagijimana (DoD W81XWH-22-1-0593;
+  PI Nishant Sinha; James Gugger, PI).
 title: "DKT Connectome — lesion-aware structural connectomics BIDS App"
 authors:
   - family-names: Ndagijimana

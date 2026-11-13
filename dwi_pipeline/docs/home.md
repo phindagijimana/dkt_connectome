@@ -8,6 +8,12 @@ orphan: true
 
 The pipeline is **study-agnostic** (any BIDS DWI + T1w cohort). It was developed and validated in **TBI** settings where manual lesion masks and explicit distortion correction matter.
 
+## Funding
+
+<a id="funding"></a>
+
+Developed and maintained by Philbert Ndagijimana, with mentorship from the co-authors named in this documentation. James Gugger, PI. Final pipeline for Neuroimaging Biomarkers of Post-Traumatic Epileptogenesis (DoD W81XWH-22-1-0593, $483,975; PI Nishant Sinha). Run on Phase 1 (600 subjects, 1,200 timepoints); Phase 2 of the same size is waiting. DoD technical-report deliverable.
+
 **Also on GitHub:** [README](https://github.com/phindagijimana/dkt_connectome/blob/main/README.md) (same quick start) · **Release:** [v0.3.0](https://github.com/phindagijimana/dkt_connectome/releases/tag/v0.3.0-step-sifs)
 
 ```{note} Recommended setup

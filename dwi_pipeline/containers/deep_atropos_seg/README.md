@@ -73,4 +73,4 @@ Outputs: `desc-deepatropos_seg.nii.gz`, `deep_atropos_seg.json`.
 0=background, 1=CSF, 2=cortical GM, 3=WM, 4=subcortical GM, 5=brain stem, 6=cerebellum
 (MRtrix Deep Atropos convention).
 
-See [deep_atropos_5tt_plan.md](../../docs/maintainer/deep_atropos_5tt_plan.md).
+See [Deep Atropos native-T1 5TT](../../docs/deep_atropos_5tt.md).

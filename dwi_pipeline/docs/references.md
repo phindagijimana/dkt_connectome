@@ -99,7 +99,7 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 | HSVS 5TT | Smith RE, et al. Hybrid surface/volume segmentation. *NeuroImage* 2020;223:117345. | [10.1016/j.neuroimage.2020.117345](https://doi.org/10.1016/j.neuroimage.2020.117345) |
 | SIFT2 (rebuilt weights) | Smith RE, et al. SIFT2. *NeuroImage* 2015;119:338–351. | [10.1016/j.neuroimage.2015.02.069](https://doi.org/10.1016/j.neuroimage.2015.02.069) |
 
-**Docs:** [Step 3.1 theory](methods/step3_1_lesion_act.md) · [Deep Atropos implementation](maintainer/deep_atropos_5tt_plan.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
+**Docs:** [Step 3.1 theory](methods/step3_1_lesion_act.md) · [Deep Atropos native-T1 5TT](deep_atropos_5tt.md) · [Lesion-aware tractography](lesion_aware.md) · [Usage — experiment arms](usage.md)
 
 ---
 

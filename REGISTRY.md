@@ -18,7 +18,7 @@ everything needed to publish, share, and run the workflow somewhere new.
 | `pennlinc/qsirecon:1.2.1`                     | [Docker Hub](https://hub.docker.com/r/pennlinc/qsirecon) | QSIRecon upstream        |
 | `freesurfer/freesurfer:7.4.1`                 | [Docker Hub](https://hub.docker.com/r/freesurfer/freesurfer) | FreeSurfer upstream      |
 | `ghcr.io/phindagijimana/dk-connectome:<tag>`  | [GHCR](https://github.com/phindagijimana/dk_connectome/pkgs/container/dk-connectome) | This repo (CI-built)     |
-| `deepmi/fastsurfer:latest` *(optional)*       | [Docker Hub](https://hub.docker.com/r/deepmi/fastsurfer) | FastSurfer upstream      |
+| `deepmi/fastsurfer:cpu-v2.4.2` *(optional)*   | [Docker Hub](https://hub.docker.com/r/deepmi/fastsurfer) | FastSurfer upstream      |
 
 The `dk-connectome` image is the only one we publish ourselves. It's built
 by `.github/workflows/build-dk-connectome.yml` on every push to `main`
@@ -42,7 +42,7 @@ README's *Containers* section.
 |---------------------------------------|------------------------|------------------------|
 | [Dockstore](https://dockstore.org)    | `.dockstore.yml`       | one-time GitHub link   |
 | [WorkflowHub](https://workflowhub.eu) | `workflowhub.yml`      | upload a Workflow RO-Crate |
-| [BIDS Apps](https://bids-apps.neuroimaging.io/) | [`dwi_pipeline/run`](dwi_pipeline/run) | optional listing — see [bids_apps_registry.md](dwi_pipeline/docs/maintainer/bids_apps_registry.md) |
+| [BIDS Apps](https://bids-apps.neuroimaging.io/) | [`dwi_pipeline/run`](dwi_pipeline/run) | optional listing |
 | [nf-core](https://nf-co.re) / [Snakemake catalog](https://snakemake.github.io/snakemake-workflow-catalog/) | `Snakefile`, `config/`, `README.md` | tagged release |
 
 ### Dockstore
@@ -70,7 +70,7 @@ cd dwi_pipeline
   --participant-label 01 --session-filter ses-1
 ```
 
-Optional listing on bids-apps.neuroimaging.io: [bids_apps_registry.md](dwi_pipeline/docs/maintainer/bids_apps_registry.md) (not required for release).
+A listing on bids-apps.neuroimaging.io is separate from running and releasing the pipeline.
 
 The legacy root `./connectome bids` facade matches the older 4-stage workflow only — do not use for new cohort work. See [Comparisons](dwi_pipeline/docs/comparisons.md#vs-legacy-root-dk_connectome-this-repo-only).
 
