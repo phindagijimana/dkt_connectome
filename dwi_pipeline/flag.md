@@ -2,7 +2,23 @@
 
 CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow/run_subject.sh`. Most flags are shared; a few are entry-point specific (noted below).
 
-**Pipeline steps:** QSIPrep → Inpaint (1.1) → Recon → QSIRecon → Lesion-aware ACT (3.1, optional) → Connectome → Node strength
+**Pipeline steps:** QSIPrep → Inpaint (1.1) → Recon → Post-hoc FS (2.1, optional) → QSIRecon → Lesion-aware ACT (3.1, optional) → Connectome → Disconnectome (4.1, optional) → Node strength
+
+**Lesion / recon — pick one path first** ([Usage](docs/usage.md#lesion-recon-paths-start-here) · [Decision tables](docs/decision_tables.md#standalone-fill-vs-native-fastsurfer-lesion-mask)):
+
+| Path | Flags |
+|------|-------|
+| Standalone (default) | `--anat-mitigation neurolit\|vbt` (or default) |
+| Standalone + LIT | add `--post-hoc-fs` |
+| Native FastSurfer ≥ 2.6 | `--fastsurfer-lesion-mask` alone |
+| No fill | `--no-inpaint` / `--anat-mitigation none` |
+
+| Step | Opt-in in `all` | Re-run only |
+|------|-----------------|-------------|
+| 2.1 | `--post-hoc-fs` | `--mode posthoc-fs` |
+| 4.1 | `--disconnection` | `--mode disconnectome` |
+
+Illegal: `--fastsurfer-lesion-mask` with standalone fill or `--post-hoc-fs` (CLI errors). Prefer long names over aliases `--lesion-mask` / flag `--disconnectome`.
 
 **Modes** (`PIPELINE_MODE` or first arg to `subject.sh` / `run_subject.sh`):
 
@@ -12,6 +28,7 @@ CLI flags and environment overrides for `submit.sh`, `subject.sh`, and `workflow
 | `qsiprep` | Step 1 only |
 | `inpaint` | Step 1.1 only (needs lesion mask) |
 | `recon` | Step 2 only |
+| `posthoc-fs` | Step 2.1 only (needs finished recon + lesion mask; implies `--post-hoc-fs`) |
 | `qsirecon` | Step 3 only (needs QSIPrep) |
 | `act` | Step 3.1 only (needs QSIRecon + lesion mask) |
 | `sdstream` | SD_STREAM tractography + connectomes (needs QSIRecon + Step 4 nodes) |
@@ -54,7 +71,14 @@ Both `--syn` and `--fmap-retry` pass QSIPrep `--use-syn-sdc error` (strict): if 
 | `--fastsurfer` | `RECON_TOOL=fastsurfer` | Run FastSurfer instead of FreeSurfer `recon-all`. Default atlas is **DKT** (`aparc+aseg.mgz`). Faster (~1–2 h CPU). |
 | `--freesurfer` | `RECON_TOOL=freesurfer` | Run FreeSurfer `recon-all` (default without `--fastsurfer`). Produces classic DK + DKT volumes. |
 | `--fast-fs` | `RECON_TOOL=fastsurfer` + `RECON_FSAPARC=1` | FastSurfer **plus** `--fsaparc`: also writes classic **DK-68** aparc/ribbon alongside native DKT. Needed if you want both DK and DKT from FastSurfer. |
+| `--fastsurfer-lesion-mask` | `RECON_LESION_MASK=1` | Native FastSurfer `--lesion_mask` (FS ≥ 2.6). Skips Step 1.1; XOR with standalone fill / `--post-hoc-fs`. |
+| `--no-fastsurfer-lesion-mask` | `RECON_LESION_MASK=0` | Disable **native** recon `--lesion_mask` only (not Step 1.1). |
+| `--post-hoc-fs` | `POST_HOC_FS=1` | Opt in to Step 2.1 LIT packaging after **standalone** recon (default **off**). |
+| `--no-post-hoc-fs` | `POST_HOC_FS=0` | Explicitly skip Step 2.1 (default without `--post-hoc-fs`). |
 | `--no-recon` | `RUN_RECON=0` | Skip Step 2 in `all` mode. For QSIRecon ACT-hsvs you must already have an FS subjects dir, or switch to an ACT-fast spec. |
+
+**Aliases:** `--lesion-mask` → `--fastsurfer-lesion-mask`; `--no-lesion-mask` → `--no-fastsurfer-lesion-mask`.  
+Standalone re-run: `run_subject.sh posthoc-fs <ID>` or `PIPELINE_MODE=posthoc-fs` (implies `--post-hoc-fs`).
 
 ### Inpaint (Step 1.1)
 
@@ -118,13 +142,13 @@ User guide: [docs/usage.md](docs/usage.md) (Read the Docs — experiment arms se
 | Flag | Env equivalent | What it does |
 |------|----------------|--------------|
 | `--disconnection` | `RUN_DISCONNECTOME=1` | Opt in to Step 4.1 disconnectome (default **off**; method under validation). Requires lesion mask + DKT connectome. |
-| `--disconnectome` | `RUN_DISCONNECTOME=1` | Alias for `--disconnection`. |
+| `--disconnectome` | `RUN_DISCONNECTOME=1` | **Alias** for `--disconnection` (prefer `--disconnection`; mode spelling is `--mode disconnectome`). |
 | `--no-disconnectome` | `RUN_DISCONNECTOME=0` | Explicitly skip Step 4.1. |
 | `--disconnectome-core-only` | `DISCONNECTOME_CORE_ONLY=1` | Sensitivity: core lesion label only. |
 | `--disconnectome-erode-voxels N` | `DISCONNECTOME_ERODE_VOXELS=N` | Erode lesion mask by N voxels before excision. |
 | `--disconnectome-weighting count\|sift2` | `DISCONNECTOME_WEIGHTING` | Edge weighting for Step 4.1 (must match Step 4). |
 
-Standalone: `subject.sh disconnectome <ID>` or `--mode disconnectome` (does not require `--disconnection`).
+Standalone re-run: `run_subject.sh disconnectome <ID>` or `PIPELINE_MODE=disconnectome` (implies enable; does not require `--disconnection`).
 
 ### Node strength (Step 5)
 
@@ -210,9 +234,9 @@ Set before `./submit.sh` or before `subject.sh` / `run_subject.sh`.
 | `INPAINT_BATCH_SIZE` | `4` | GPU batch size (lower if OOM on small MIG slices). |
 | `INPAINT_LABELS` | `all` | Mask label values to inpaint, or `all`. |
 | `INPAINT_BINARIZE` | `0` | Collapse selected labels to one value before inpaint. |
-| `INPAINT_MIN_OUTSIDE_CORR` | `0.995` | QC: correlation outside lesion. |
-| `INPAINT_MAX_CORR_DROP` | `0.01` | QC: max drop vs resampling-only control. |
-| `INPAINT_FAIL_ON_QC` | `0` | If `1`, fail when inpaint QC reports `ok=false`. |
+| `INPAINT_MIN_OUTSIDE_CORR` | `0.995` | Optional local default for inspection / `INPAINT_FAIL_ON_QC`. Not a published cutoff. |
+| `INPAINT_MAX_CORR_DROP` | `0.01` | Optional local default for inspection / `INPAINT_FAIL_ON_QC`. Not a published cutoff. |
+| `INPAINT_FAIL_ON_QC` | `0` | If `1`, abort when *r* or drop miss those optional defaults. Default: print IQMs only. FAIL remains for missing volume / wrong grid / NaN / empty mask. |
 | `INPAINT_SKIP_IF_EXISTS` | `1` | Skip if `inpainting.json` already exists (`0` = force rerun). |
 
 ### Connectome extras

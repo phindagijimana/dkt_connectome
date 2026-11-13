@@ -38,7 +38,7 @@ done
 BIDS_DIR="${BIDS_DIR:-/path/to/dwi_pipeline/dwi_test_TBI/bids}"
 RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
 CONFIG="${WORKFLOW_DIR}/config/config.yaml"
-LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
+LOCAL_CONFIG="${DKT_LOCAL_CONFIG:-${WORKFLOW_DIR}/config/config.local.yaml}"
 
 read_config() {
   python3 - "${CONFIG}" "${LOCAL_CONFIG}" "$1" <<'PY'
@@ -112,9 +112,13 @@ fi
 
 mkdir -p "${RESULTS_ROOT}" "${RESULTS_ROOT}/logs"
 
-# Snakemake cache must live on writable storage (not $HOME on some nodes).
+# Snakemake cache must live on writable storage. Inside the Hub orchestrator
+# image REPO_ROOT is /opt/dkt-connectome (read-only), so fall back to RESULTS_ROOT.
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
-mkdir -p "${XDG_CACHE_HOME}"
+if ! mkdir -p "${XDG_CACHE_HOME}" 2>/dev/null; then
+  export XDG_CACHE_HOME="${RESULTS_ROOT}/.cache"
+  mkdir -p "${XDG_CACHE_HOME}"
+fi
 
 if [[ -n "${SUBJECT}" ]]; then
   [[ -d "${BIDS_DIR}/sub-${SUBJECT}" ]] || fail "subject missing: ${BIDS_DIR}/sub-${SUBJECT}"
@@ -125,7 +129,7 @@ read_container() {
   read_config "containers.${1}"
 }
 
-need_qsiprep=0 need_qsirecon=0 need_recon=0 need_connectome=0 need_inpaint=0 need_nodestrength=0
+need_qsiprep=0 need_qsirecon=0 need_recon=0 need_connectome=0 need_inpaint=0 need_nodestrength=0 need_posthoc_fs=0
 case "${PIPELINE_MODE}" in
   all)
     need_qsiprep=1; need_qsirecon=1; need_connectome=1; need_nodestrength=1
@@ -133,10 +137,12 @@ case "${PIPELINE_MODE}" in
     [[ "${RUN_INPAINT:-1}" == "1" ]] && need_inpaint=1
     [[ "${RUN_CONNECTOME:-1}" == "0" ]] && need_connectome=0 && need_nodestrength=0
     [[ "${RUN_NODESTRENGTH:-1}" == "0" ]] && need_nodestrength=0
+    [[ "${POST_HOC_FS:-0}" == "1" ]] && need_posthoc_fs=1
     ;;
   qsiprep) need_qsiprep=1 ;;
   inpaint) need_inpaint=1 ;;
   recon) need_recon=1 ;;
+  posthoc-fs|posthoc_fs|post-hoc-fs) need_posthoc_fs=1; PIPELINE_MODE=posthoc-fs ;;
   qsirecon) need_qsirecon=1 ;;
   act) need_qsirecon=1 ;;
   sdstream) need_qsirecon=1; need_connectome=1 ;;
@@ -152,6 +158,25 @@ case "${ANAT_MITIGATION}" in
   *) fail "invalid ANAT_MITIGATION=${ANAT_MITIGATION} (use none, neurolit, or vbt)" ;;
 esac
 [[ "${ANAT_MITIGATION}" == "none" ]] && need_inpaint=0
+
+RECON_LESION_MASK="${RECON_LESION_MASK:-0}"
+POST_HOC_FS="${POST_HOC_FS:-0}"
+# Standalone Step 2.1 mode implies the opt-in (like disconnectome mode).
+[[ "${PIPELINE_MODE}" == "posthoc-fs" ]] && POST_HOC_FS=1 && need_posthoc_fs=1
+_recon_tool="${RECON_TOOL:-$(read_config recon.tool)}"
+_recon_tool="${_recon_tool:-freesurfer}"
+if [[ "${RECON_LESION_MASK}" == "1" ]]; then
+  need_inpaint=0
+  ANAT_MITIGATION=none
+  POST_HOC_FS=0
+  need_posthoc_fs=0
+  if [[ "${_recon_tool}" != "fastsurfer" ]]; then
+    fail "RECON_LESION_MASK=1 / --fastsurfer-lesion-mask requires RECON_TOOL=fastsurfer"
+  fi
+fi
+if [[ "${PIPELINE_MODE}" == "posthoc-fs" && "${RECON_LESION_MASK}" == "1" ]]; then
+  fail "PIPELINE_MODE=posthoc-fs is for standalone recon; native --lesion_mask already writes LIT"
+fi
 
 # Prefer subject.sh-style env overrides, then config.local.yaml / config.yaml.
 FS_LICENSE="${FS_LICENSE:-$(read_config fs_license)}"
@@ -183,6 +208,24 @@ if ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "neurolit" ]]; then
   check_sif lit "$(container_path lit CONTAINER_LIT)"
 elif ((need_inpaint)) && [[ "${ANAT_MITIGATION}" == "vbt" ]]; then
   check_sif vbt "$(container_path vbt CONTAINER_VBT)"
+fi
+if [[ "${RECON_LESION_MASK}" == "1" ]]; then
+  ((need_recon)) && check_sif fastsurfer "$(container_path fastsurfer CONTAINER_FASTSURFER)"
+fi
+if [[ "${POST_HOC_FS}" == "1" && "${RECON_LESION_MASK}" != "1" ]]; then
+  need_posthoc_fs=1
+fi
+if ((need_posthoc_fs)) && [[ "${RECON_LESION_MASK}" != "1" ]]; then
+  # Packaging prefers FastSurfer (neurolit) then lit.sif — require at least one.
+  _fs="$(container_path fastsurfer CONTAINER_FASTSURFER)"
+  _lit="$(container_path lit CONTAINER_LIT)"
+  if [[ -n "${_fs}" && -f "${_fs}" ]]; then
+    check_sif fastsurfer "${_fs}"
+  elif [[ -n "${_lit}" && -f "${_lit}" ]]; then
+    check_sif lit "${_lit}"
+  else
+    fail "posthoc-fs needs CONTAINER_FASTSURFER or CONTAINER_LIT (neurolit packaging)"
+  fi
 fi
 ACT_MODE="${ACT_MODE:-$(read_config act.mode)}"
 ACT_MODE="${ACT_MODE:-standard}"
@@ -248,9 +291,22 @@ if ((need_qsiprep)) && [[ "${QSIPREP_FMAP_RETRY}" != "1" && "${QSIPREP_USE_SYN_S
   fi
 fi
 
-# GPU recommendation for inpaint / FastSurfer cuda.
+# GPU recommendation only when inpaint will actually run (a lesion mask exists).
+# mode=all sets need_inpaint=1, but Step 1.1 is a no-op without
+# *_T1w_label-lesion_roi.nii.gz — do not warn on the IDEAS tutorial subject.
+_bids_has_lesion_mask() {
+  local root="${BIDS_DIR}"
+  if [[ -n "${SUBJECT:-}" ]]; then
+    root="${BIDS_DIR}/sub-${SUBJECT}"
+  fi
+  [[ -d "${root}" ]] || return 1
+  local found
+  found="$(find "${root}" -name '*_T1w_label-lesion_roi.nii.gz' -print -quit 2>/dev/null || true)"
+  [[ -n "${found}" ]]
+}
+
 if ((need_inpaint)) && [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
-  if [[ -z "${SBATCH_GRES:-}" && -z "${SLURM_JOB_ID:-}" ]]; then
+  if [[ -z "${SBATCH_GRES:-}" && -z "${SLURM_JOB_ID:-}" ]] && _bids_has_lesion_mask; then
     warn "Step 1.1 (inpaint) needs a GPU slice (gpu:l40s.12g or gpu:l40s.24g). Set SBATCH_GRES before submit."
   fi
 fi

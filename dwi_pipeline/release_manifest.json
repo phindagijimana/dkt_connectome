@@ -4,7 +4,8 @@
   "orchestrator": {
     "uri": "ghcr.io/phindagijimana/dkt-connectome:0.3.0",
     "dockerhub_uri": "phindagijimana321/dkt-connectome:0.3.0",
-    "sha256": "4c36f82d0a14fc4e28d21d8ac0c1a975d8e4275fa0df65d672d8239135e9219f"
+    "sha256": "4c36f82d0a14fc4e28d21d8ac0c1a975d8e4275fa0df65d672d8239135e9219f",
+    "dockerhub_sha256": "c0ef8d7742a10733fcd50a002323a954c6d711dded0e860d797b1d4160a776c2"
   },
   "steps": {
     "qsiprep": {
@@ -21,7 +22,8 @@
     },
     "fastsurfer": {
       "uri": "deepmi/fastsurfer:cpu-v2.4.2",
-      "sha256": "1baa5d51866df1980f779922f01526ac4e4167d66054af9ba59c3c34e55f6136"
+      "sha256": "1baa5d51866df1980f779922f01526ac4e4167d66054af9ba59c3c34e55f6136",
+      "note": "sha256 is the cached .sif built 2025-08-30 from the image that reported FastSurfer 2.4.2. A new Apptainer pull of cpu-v2.4.2 can differ in that file hash."
     },
     "connectome": {
       "uri": "ghcr.io/phindagijimana/dk-connectome:0.3.0",

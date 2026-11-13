@@ -24,6 +24,7 @@ include: "rules/common.smk"
 include: "rules/qsiprep.smk"
 include: "rules/inpaint.smk"
 include: "rules/recon.smk"
+include: "rules/posthoc_fs.smk"
 include: "rules/qsirecon.smk"
 include: "rules/deep_atropos_seg.smk"
 include: "rules/deep_atropos_5tt.smk"
@@ -44,6 +45,8 @@ def subject_targets(subject: str) -> list:
         targets.append(qsirecon_marker(subject))
         return targets
     targets.append(recon_aparc(subject))
+    if post_hoc_fs_enabled_for(subject):
+        targets.append(posthoc_fs_marker(subject))
     targets.append(qsirecon_marker(subject))
     targets.extend(lesion_act_products(subject))
     if not CONNECTOME_CFG.get("enabled", True):
@@ -98,6 +101,11 @@ rule target_inpaint:
 rule target_recon:
     input:
         lambda wc: recon_aparc(_config_subject()),
+
+
+rule target_posthoc_fs:
+    input:
+        lambda wc: posthoc_fs_marker(_config_subject()),
 
 
 rule target_qsirecon:

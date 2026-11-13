@@ -113,7 +113,9 @@ flowchart TB
 | `run_vbt.py` | `dkt_vbt.sif` | `VBT_BIND_DEV=1` |
 | Deep Atropos scripts | `dkt_deep_atropos*.sif` | `ACT_BIND_MOUNT_DEV=1` |
 
-**Release pinning:** use `release_manifest.json` + `./dkt check --strict` after install.
+**Release pinning:** use `release_manifest.json` + `./dkt check --strict` after install. Step `sha256` values are the cached `.sif` files. Apptainer writes the build time into each file, so a new pull of the same tag can fail that check even when the upstream image is unchanged. `orchestrator.sha256` is the GHCR digest; Docker Hub’s copy of the same tag has its own digest (`orchestrator.dockerhub_sha256`).
+
+Tractography uses `act.random_seed` (`MRTRIX_RNG_SEED`) and one `tckgen` thread. QSIPrep’s ANTs SyN step receives that same seed as `ANTS_RANDOM_SEED`. eddy does not take a seed, so a repeat that starts from raw diffusion data can still change the fiber orientation before tractography.
 
 ---
 

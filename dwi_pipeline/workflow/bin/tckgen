@@ -1,0 +1,23 @@
+#!/bin/bash
+# QSIRecon calls tckgen with the workflow thread count. Dynamic seeding
+# (-seed_dynamic) does not repeat when more than one thread is used, even
+# with MRTRIX_RNG_SEED set to the same value. Force one thread. The seed
+# stays in the environment QSIRecon was given.
+set -euo pipefail
+here=$(cd "$(dirname "$0")" && pwd)
+PATH=$(printf '%s\n' "$PATH" | tr ':' '\n' | grep -vxF "$here" | paste -sd: -)
+export PATH
+args=()
+skip=0
+for a in "$@"; do
+  if [[ "$skip" -eq 1 ]]; then
+    skip=0
+    continue
+  fi
+  case "$a" in
+    -nthreads|--nthreads) skip=1 ;;
+    -nthreads=*|--nthreads=*) ;;
+    *) args+=("$a") ;;
+  esac
+done
+exec tckgen "${args[@]}" -nthreads 1

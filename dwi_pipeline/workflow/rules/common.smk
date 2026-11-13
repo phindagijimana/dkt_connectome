@@ -197,6 +197,25 @@ ANATOMY_MITIGATION_OUT = (
     else INPAINT_OUT
 )
 
+# Native FastSurfer --lesion_mask vs standalone post-hoc LIT packaging (Step 2 companions)
+RECON_LESION_MASK = bool(RECON_CFG.get("lesion_mask", False))
+RECON_POST_HOC_FS = bool(RECON_CFG.get("post_hoc_fs", False))
+if RECON_LESION_MASK:
+    if str(RECON_CFG.get("tool", "freesurfer")).lower() != "fastsurfer":
+        raise WorkflowError(
+            "recon.lesion_mask=true requires recon.tool=fastsurfer "
+            "(native --lesion_mask is a FastSurfer flag, not recon-all)"
+        )
+    if ANATOMY_MITIGATION_BACKEND != "none":
+        raise WorkflowError(
+            "recon.lesion_mask=true is mutually exclusive with standalone "
+            f"inpaint.backend={ANATOMY_MITIGATION_BACKEND}; use --no-inpaint / "
+            "--anat-mitigation none (CLI --fastsurfer-lesion-mask does this)"
+        )
+    if RECON_POST_HOC_FS:
+        # Native already writes LIT products in-recon
+        RECON_POST_HOC_FS = False
+
 CONNECTOME_SIFT2_ENABLED = bool(CONNECTOME_CFG.get("sift2", False))
 
 CONNECTOME_LUT_DKT = CONNECTOME_CFG.get("lut_dkt") or str(
@@ -347,7 +366,20 @@ def find_deep_atropos_segmentation(subject: str, session: str) -> str:
 
 
 def mitigation_enabled_for(subject: str) -> bool:
+    """Standalone Step 1.1 fill. False when native FastSurfer --lesion_mask is on."""
+    if RECON_LESION_MASK:
+        return False
     return (
         ANATOMY_MITIGATION_BACKEND != "none"
+        and subject_has_lesion_mask(subject)
+    )
+
+
+def post_hoc_fs_enabled_for(subject: str) -> bool:
+    """LIT packaging after ordinary recon (standalone path only)."""
+    return (
+        RECON_POST_HOC_FS
+        and not RECON_LESION_MASK
+        and bool(RECON_CFG.get("enabled", True))
         and subject_has_lesion_mask(subject)
     )

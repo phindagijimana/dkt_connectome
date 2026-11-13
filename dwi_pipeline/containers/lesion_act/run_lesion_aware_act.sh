@@ -268,7 +268,7 @@ tckgen -force \
   -minlength "${MIN_LENGTH}" \
   -maxlength "${MAX_LENGTH}" \
   -select "${STREAMLINES}" \
-  -nthreads "${THREADS}"
+  -nthreads 1
 
 tcksift2 -force \
   "${OUTDIR}/model-ifod2_streamlines.tck" \

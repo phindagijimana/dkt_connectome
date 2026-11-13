@@ -6,6 +6,8 @@ Supports dwi-select (default), static --bids-filter, and
 """
 
 QSIPREP_MARKER_PATTERN = f"{MARKERS_DIR}/sub-{{subject}}/qsiprep.done"
+# ANTs SyN inside QSIPrep honors ANTS_RANDOM_SEED. eddy does not.
+QSIPREP_ANTS_SEED = int(config.get("random_seed", 0))
 
 
 def qsiprep_marker(subject: str) -> str:
@@ -35,7 +37,10 @@ rule qsiprep:
         [[ -n "${{session_label}}" ]] && session_args+=(--session "${{session_label}}")
 
         echo "=== QSIPrep (ACT pipeline): sub-${{SUBJECT}} ==="
-        rm -rf "{params.work}"
+        # A 12-hour timeout retry sets DKT_RESUME=1 and keeps this work directory.
+        if [[ "${{DKT_RESUME:-0}}" != "1" ]]; then
+          rm -rf "{params.work}"
+        fi
         mkdir -p "{params.work}" "{QSIPREP_OUT}" "{TEMPLATEFLOW_HOME}"
 
         xtra=()
@@ -95,6 +100,7 @@ rule qsiprep:
           -B "{TEMPLATEFLOW_HOME}":/templateflow \
           "${{filter_binds[@]}}" \
           --env "TEMPLATEFLOW_HOME=/templateflow" \
+          --env "ANTS_RANDOM_SEED={QSIPREP_ANTS_SEED}" \
           "{CONTAINER_QSIPREP}" \
           /bids_input /output participant \
           --participant-label "${{SUBJECT}}" \

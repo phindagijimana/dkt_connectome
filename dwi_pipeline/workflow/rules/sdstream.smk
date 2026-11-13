@@ -119,7 +119,7 @@ rule sdstream_tractography:
               -minlength {ACT_MIN_LENGTH} \
               -maxlength {ACT_MAX_LENGTH} \
               -select {ACT_STREAMLINES} \
-              -nthreads {threads}
+              -nthreads 1
             tcksift2 -force \
               /out/model-SDSTREAM_streamlines.tck \
               /qsirecon/${{wm_fod_rel}} \

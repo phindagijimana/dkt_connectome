@@ -10,13 +10,13 @@
 #
 # Pipeline per subject (see subject.sh / workflow/run_subject.sh):
 #   QSIPrep -> Inpaint (Step 1.1, only if a lesion mask exists) ->
-#   Recon (recon-all by default, FastSurfer with --fastsurfer) ->
+#   Recon (FastSurfer by default; recon-all with --freesurfer) ->
 #   QSIRecon (mrtrix_singleshell_ss3t_ACT-hsvs) -> connectome ->
 #   Node strength / ENIGMA report (Step 5, auto-on when the connectome ran)
 #
 # Usage:
-#   ./submit.sh                    # full pipeline, recon-all (slow, ~10 h/subject)
-#   ./submit.sh --fastsurfer       # full pipeline, FastSurfer (~1-2 h/subject CPU)
+#   ./submit.sh                    # full pipeline, FastSurfer (~1-2 h/subject CPU)
+#   ./submit.sh --freesurfer       # full pipeline, recon-all (slow, ~10 h/subject)
 #   ./submit.sh --fast-fs          # FastSurfer + --fsaparc (adds a DK-68 atlas too)
 #   ./submit.sh --no-recon         # skip Step 2 (set ACT-fast spec or FS dir first)
 #   ./submit.sh --no-connectome    # full QSIPrep+Recon+QSIRecon, no connectome CSV (skips Step 5 too)
@@ -40,8 +40,10 @@
 #   PIPELINE_MODE=qsiprep        # only QSIPrep
 #   PIPELINE_MODE=inpaint        # only Step 1.1 (needs a lesion mask for the subject)
 #   PIPELINE_MODE=recon          # only Step 2 (recon-all / FastSurfer)
+#   PIPELINE_MODE=posthoc-fs     # only Step 2.1 LIT packaging (needs finished recon + mask)
 #   PIPELINE_MODE=qsirecon       # only QSIRecon (QSIPrep must already exist)
 #   PIPELINE_MODE=connectome     # only Step 4 (needs QSIRecon + FS outputs)
+#   PIPELINE_MODE=disconnectome  # only Step 4.1 (needs lesion mask + DKT connectome)
 #   PIPELINE_MODE=nodestrength   # only Step 5 (needs an existing connectome CSV)
 #   RECON_TOOL=fastsurfer        # same as --fastsurfer
 #   RECON_FSAPARC=1              # same as --fast-fs (with RECON_TOOL=fastsurfer)
@@ -87,11 +89,20 @@ DWI_SELECT_JSON="${DWI_SELECT_JSON:-}"
 DWI_SHELL_B="${DWI_SHELL_B:-1000}"
 QSIPREP_NO_DWI_FILTER="${QSIPREP_NO_DWI_FILTER:-0}"
 RUN_RECON="${RUN_RECON:-1}"
-RECON_TOOL="${RECON_TOOL:-freesurfer}"
+RECON_TOOL="${RECON_TOOL:-fastsurfer}"
 RECON_FSAPARC="${RECON_FSAPARC:-0}"
+RECON_LESION_MASK="${RECON_LESION_MASK:-0}"
+POST_HOC_FS="${POST_HOC_FS:-0}"
 RUN_INPAINT="${RUN_INPAINT:-1}"
 ANAT_MITIGATION="${ANAT_MITIGATION:-neurolit}"
 [[ "${RUN_INPAINT}" == "1" ]] || ANAT_MITIGATION=none
+# Native FastSurfer --lesion_mask implies no standalone fill
+if [[ "${RECON_LESION_MASK}" == "1" ]]; then
+  RECON_TOOL=fastsurfer
+  RUN_INPAINT=0
+  ANAT_MITIGATION=none
+  POST_HOC_FS=0
+fi
 # RUN_DK_CONNECTOME was the name before Step 4 served both DK and DKT.
 RUN_CONNECTOME="${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}"
 PRIMARY_CONNECTOME_MEASURE="${PRIMARY_CONNECTOME_MEASURE:-}"
@@ -117,6 +128,35 @@ VBT_SMOOTHING_FACTOR="${VBT_SMOOTHING_FACTOR:-2.0}"
 BIDS_VALIDATE="${BIDS_VALIDATE:-0}"
 BIDS_IGNORE_WARNINGS="${BIDS_IGNORE_WARNINGS:-0}"
 
+# Track contradictory argv (fail-fast; do not silently last-wins).
+_SEEN_NATIVE_LESION=0
+_SEEN_STANDALONE_FILL=0
+_SEEN_POST_HOC_FS=0
+
+_validate_lesion_recon_flags() {
+  # Native FastSurfer --lesion_mask XOR standalone fill / post-hoc packaging.
+  if [[ "${RECON_LESION_MASK}" == "1" && "${POST_HOC_FS}" == "1" ]]; then
+    echo "ERROR: --fastsurfer-lesion-mask and --post-hoc-fs are mutually exclusive" >&2
+    echo "  Native path already writes LIT in-recon; omit --post-hoc-fs, or use standalone fill + --post-hoc-fs." >&2
+    exit 2
+  fi
+  if [[ "${RECON_LESION_MASK}" == "1" && "${ANAT_MITIGATION}" != "none" ]]; then
+    echo "ERROR: --fastsurfer-lesion-mask is mutually exclusive with --anat-mitigation ${ANAT_MITIGATION} / --inpaint" >&2
+    echo "  Pick native (--fastsurfer-lesion-mask) or standalone fill (--anat-mitigation neurolit|vbt), not both." >&2
+    exit 2
+  fi
+  if ((_SEEN_NATIVE_LESION && _SEEN_STANDALONE_FILL)); then
+    echo "ERROR: both native --fastsurfer-lesion-mask and standalone fill flags were passed" >&2
+    echo "  Pick one anatomy path (see docs/usage.md § Lesion / recon paths)." >&2
+    exit 2
+  fi
+  if ((_SEEN_NATIVE_LESION && _SEEN_POST_HOC_FS)); then
+    echo "ERROR: both --fastsurfer-lesion-mask and --post-hoc-fs were passed" >&2
+    echo "  Native already packages LIT; --post-hoc-fs is for the standalone path only." >&2
+    exit 2
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --syn|--use-syn-sdc)
@@ -133,10 +173,30 @@ while [[ $# -gt 0 ]]; do
       ;;
     --freesurfer)
       RECON_TOOL=freesurfer
+      RECON_LESION_MASK=0
       ;;
     --fast-fs)
       RECON_TOOL=fastsurfer
       RECON_FSAPARC=1
+      ;;
+    --fastsurfer-lesion-mask|--lesion-mask)
+      _SEEN_NATIVE_LESION=1
+      RECON_TOOL=fastsurfer
+      RECON_LESION_MASK=1
+      RUN_INPAINT=0
+      ANAT_MITIGATION=none
+      POST_HOC_FS=0
+      ;;
+    --no-fastsurfer-lesion-mask|--no-lesion-mask)
+      # Disables native FastSurfer --lesion_mask only — does not skip Step 1.1.
+      RECON_LESION_MASK=0
+      ;;
+    --post-hoc-fs)
+      _SEEN_POST_HOC_FS=1
+      POST_HOC_FS=1
+      ;;
+    --no-post-hoc-fs)
+      POST_HOC_FS=0
       ;;
     --no-recon)
       RUN_RECON=0
@@ -145,8 +205,10 @@ while [[ $# -gt 0 ]]; do
       RUN_CONNECTOME=0
       ;;
     --inpaint)
+      _SEEN_STANDALONE_FILL=1
       RUN_INPAINT=1
       ANAT_MITIGATION=neurolit
+      RECON_LESION_MASK=0
       ;;
     --no-inpaint)
       RUN_INPAINT=0
@@ -155,6 +217,10 @@ while [[ $# -gt 0 ]]; do
     --anat-mitigation)
       ANAT_MITIGATION="${2:?Need none, neurolit, or vbt}"
       [[ "${ANAT_MITIGATION}" == "none" ]] && RUN_INPAINT=0 || RUN_INPAINT=1
+      if [[ "${ANAT_MITIGATION}" != "none" ]]; then
+        _SEEN_STANDALONE_FILL=1
+        RECON_LESION_MASK=0
+      fi
       shift 2
       continue
       ;;
@@ -251,7 +317,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --no-recon, --no-connectome, --anat-mitigation, --act-mode, --experiment-arm, --tractography-model, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
+      echo "Unknown option: $1 (try --syn, --fmap-retry, --no-sdc, --dwi-shell, --no-dwi-filter, --fastsurfer, --fast-fs, --fastsurfer-lesion-mask, --post-hoc-fs, --no-recon, --no-connectome, --anat-mitigation, --act-mode, --experiment-arm, --tractography-model, --inpaint, --no-inpaint, --node-strength, --no-node-strength)"
       exit 1
       ;;
   esac
@@ -300,6 +366,10 @@ if [[ -n "${EXPERIMENT_ARM}" ]]; then
     *) echo "ERROR: invalid EXPERIMENT_ARM=${EXPERIMENT_ARM}"; exit 2 ;;
   esac
   [[ "${ANAT_MITIGATION}" == "none" ]] && RUN_INPAINT=0 || RUN_INPAINT=1
+  if [[ "${ANAT_MITIGATION}" != "none" ]]; then
+    _SEEN_STANDALONE_FILL=1
+    RECON_LESION_MASK=0
+  fi
   if [[ "${EXPERIMENT_ISOLATE_OUTPUTS:-1}" == "1" ]]; then
     case "${RESULTS_ROOT}" in
       */arms/"${EXPERIMENT_ARM}") ;;
@@ -307,6 +377,7 @@ if [[ -n "${EXPERIMENT_ARM}" ]]; then
     esac
   fi
 fi
+_validate_lesion_recon_flags
 SUBJECT_LIST_FILE="${SUBJECT_LIST_FILE:-${DWI_ROOT}/subjects.txt}"
 SUBJECT_LIST_ONLY_DWI="${SUBJECT_LIST_ONLY_DWI:-1}"
 ARRAY_SCRIPT="${ARRAY_SCRIPT:-${DWI_ROOT}/array.sh}"
@@ -316,6 +387,9 @@ OMP_NTHREADS="${OMP_NTHREADS:-8}"
 PIPELINE_MODE="${PIPELINE_MODE:-all}"
 # Step 4 was called "dk" before it served both DK and DKT.
 [[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
+[[ "${PIPELINE_MODE}" == "posthoc_fs" || "${PIPELINE_MODE}" == "post-hoc-fs" ]] && PIPELINE_MODE="posthoc-fs"
+# Standalone Step 2.1 implies the opt-in flag (like disconnectome mode).
+[[ "${PIPELINE_MODE}" == "posthoc-fs" ]] && POST_HOC_FS=1
 QSIRECON_SPEC="${QSIRECON_SPEC:-mrtrix_singleshell_ss3t_ACT-hsvs}"
 # QSIRecon MRtrix specs require at least one atlas for connectivity estimation.
 # 4S156Parcels = Schaefer-100 cortex + Tian/HCP 56 subcortex (modern default).
@@ -404,11 +478,18 @@ else
   echo "  dwi-select: dwi_select_b${DWI_SHELL_B}.json (default)"
 fi
 [[ -n "${QSIPREP_BIDS_FILTER}" ]] && echo "  QSIPREP_BIDS_FILTER: ${QSIPREP_BIDS_FILTER}"
-if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" ]]; then
-  echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  fsaparc=${RECON_FSAPARC}  out=${RECON_OUT}"
+if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "recon" || "${PIPELINE_MODE}" == "posthoc-fs" ]]; then
+  echo "  Recon (Step 2): $([[ ${RUN_RECON} == 1 ]] && echo on || echo off)  tool=${RECON_TOOL}  fsaparc=${RECON_FSAPARC}  lesion_mask=${RECON_LESION_MASK}  post_hoc_fs=${POST_HOC_FS}  out=${RECON_OUT}"
+fi
+if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "posthoc-fs" ]]; then
+  echo "  Post-hoc FS (Step 2.1): $([[ ${POST_HOC_FS} == 1 ]] && echo on || echo off)"
 fi
 if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "inpaint" || "${PIPELINE_MODE}" == "recon" ]]; then
-  echo "  Anatomy mitigation (Step 1.1): $([[ ${RUN_INPAINT} == 1 ]] && echo "${ANAT_MITIGATION} (runs only if a lesion mask is found)" || echo off)"
+  if [[ "${RECON_LESION_MASK}" == "1" ]]; then
+    echo "  Anatomy mitigation (Step 1.1): skipped (native FastSurfer --lesion_mask)"
+  else
+    echo "  Anatomy mitigation (Step 1.1): $([[ ${RUN_INPAINT} == 1 ]] && echo "${ANAT_MITIGATION} (runs only if a lesion mask is found)" || echo off)"
+  fi
 fi
 echo "  FS_SUBJECTS_DIR: ${FS_SUBJECTS_DIR}"
 echo "  Connectome (Step 4): $([[ ${RUN_CONNECTOME} == 1 && ( ${PIPELINE_MODE} == all || ${PIPELINE_MODE} == connectome ) ]] && echo on || echo off/skip)"
@@ -469,7 +550,7 @@ export BIDS_DIR RESULTS_ROOT SUBJECT_LIST_FILE PIPELINE_MODE NTHREADS OMP_NTHREA
 export QSIPREP_USE_SYN_SDC QSIPREP_FMAP_RETRY QSIPREP_NO_SDC QSIPREP_BIDS_FILTER DWI_SELECT_JSON
 export DWI_SHELL_B QSIPREP_NO_DWI_FILTER
 export RUN_RECON RECON_TOOL RECON_FSAPARC RECON_OUT RUN_CONNECTOME RUN_INPAINT RUN_NODESTRENGTH FS_SUBJECTS_DIR
-export RECON_FASTSURFER_DEVICE RECON_SESSION
+export RECON_FASTSURFER_DEVICE RECON_SESSION RECON_LESION_MASK POST_HOC_FS
 export INPAINT_DEVICE INPAINT_BATCH_SIZE INPAINT_DILATE INPAINT_LABELS INPAINT_BINARIZE INPAINT_REQUIRE_MASK INPAINT_FAIL_ON_QC
 export ANAT_MITIGATION VBT_SMOOTHING_FACTOR
 export CONNECTOME_PARCELLATION CONNECTOME_FAIL_ON_EMPTY_NODES CONNECTOME_DETERMINISTIC CONNECTOME_RESAMPLE_TO_DWI
@@ -485,6 +566,8 @@ export CONTAINER_ORCHESTRATOR DKT_CONTAINER_CACHE DKT_ORCHESTRATOR_VERSION
 export CONTAINER_QSIPREP CONTAINER_QSIRECON CONTAINER_FASTSURFER CONTAINER_FREESURFER
 export CONTAINER_CONNECTOME CONTAINER_VBT CONTAINER_LESION_ACT CONTAINER_DEEP_ATROPOS CONTAINER_DEEP_ATROPOS_SEG CONTAINER_LIT CONTAINER_NODESTRENGTH FS_LICENSE TEMPLATEFLOW_HOME
 export BIDS_VALIDATE BIDS_IGNORE_WARNINGS
+export DKT_RESUME
+export DKT_RESUME
 
 SBATCH_EXTRA=()
 [[ -n "${EXCLUDE_NODES}" ]] && SBATCH_EXTRA+=(--exclude="${EXCLUDE_NODES}")

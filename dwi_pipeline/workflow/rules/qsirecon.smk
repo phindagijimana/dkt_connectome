@@ -5,6 +5,10 @@ CSD + ACT, HSVS 5TT using Step 2's FreeSurfer subjects dir by default).
 
 QSIRECON_SPEC = str(QSIRECON_CFG.get("spec", "mrtrix_singleshell_ss3t_ACT-hsvs"))
 QSIRECON_ATLASES = QSIRECON_CFG.get("atlases", ["4S156Parcels"]) or []
+# Same act.random_seed as SD_STREAM and lesion-aware tckgen. QSIRecon is
+# included before those rules, so read the config here. MRtrix children
+# inherit MRTRIX_RNG_SEED from this process.
+QSIRECON_RNG_SEED = int(ACT_CFG.get("random_seed", config.get("random_seed", 0)))
 
 QSIRECON_MARKER_PATTERN = f"{MARKERS_DIR}/sub-{{subject}}/qsirecon.done"
 
@@ -33,6 +37,7 @@ rule qsirecon:
     params:
         work=lambda wc: f"{INTER_QSI}/_work_qsirecon_{wc.subject}",
         atlas_args=(f"--atlases {' '.join(QSIRECON_ATLASES)}" if QSIRECON_ATLASES else ""),
+        rng_seed=QSIRECON_RNG_SEED,
     shell:
         r"""
         exec > {log} 2>&1
@@ -53,15 +58,19 @@ rule qsirecon:
           _pipeline_fail "qsirecon" "spec {QSIRECON_SPEC} needs a FreeSurfer subjects dir, but {FS_SUBJECTS_DIR} does not exist"
         fi
 
-        echo "=== QSIRecon ({QSIRECON_SPEC}): sub-${{SUBJECT}} ==="
-        # Wipe prior/partial outputs for this subject so a resume replaces them
-        # instead of mixing old workdirs or half-written derivatives.
-        rm -rf "{params.work}"
-        find "{QSIRECON_OUT}" -mindepth 1 \( -type d -name "sub-${{SUBJECT}}" \) \
-          -prune -exec rm -rf {{}} + 2>/dev/null || true
-        rm -f "{MARKERS_DIR}/sub-${{SUBJECT}}/qsirecon.done"
+        echo "=== QSIRecon ({QSIRECON_SPEC}): sub-${{SUBJECT}} MRTRIX_RNG_SEED={params.rng_seed} DKT_RESUME=${{DKT_RESUME:-0}} ==="
+        # A 12-hour timeout retry sets DKT_RESUME=1 and keeps the work directory
+        # and any partial tractogram. A fresh run still starts clean.
+        if [[ "${{DKT_RESUME:-0}}" != "1" ]]; then
+          rm -rf "{params.work}"
+          find "{QSIRECON_OUT}" -mindepth 1 \( -type d -name "sub-${{SUBJECT}}" \) \
+            -prune -exec rm -rf {{}} + 2>/dev/null || true
+          rm -f "{MARKERS_DIR}/sub-${{SUBJECT}}/qsirecon.done"
+        fi
         mkdir -p "{params.work}" "{QSIRECON_OUT}/derivatives"
 
+        # /opt/dkt-bin/tckgen forces -nthreads 1. See workflow/bin/tckgen.
+        APPTAINERENV_PREPEND_PATH=/opt/dkt-bin \
         apptainer run --cleanenv --containall \
           -B "{QSIPREP_OUT}":/qsiprep_input:ro \
           -B "{QSIRECON_OUT}":/output \
@@ -69,7 +78,9 @@ rule qsirecon:
           "${{recon_binds[@]}}" \
           -B "{FS_LICENSE}":/opt/freesurfer/license.txt:ro \
           -B "{TEMPLATEFLOW_HOME}":/templateflow \
+          -B "{WORKFLOW_DIR}/bin":/opt/dkt-bin:ro \
           --env "TEMPLATEFLOW_HOME=/templateflow" \
+          --env "MRTRIX_RNG_SEED={params.rng_seed}" \
           "{CONTAINER_QSIRECON}" \
           /qsiprep_input /output participant \
           --input-type qsiprep \

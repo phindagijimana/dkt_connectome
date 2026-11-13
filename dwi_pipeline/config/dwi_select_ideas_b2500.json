@@ -9,5 +9,5 @@
   "include_sessions": null,
   "exclude_acquisitions": [],
   "on_no_match": "error",
-  "dwi_acquisition": "ideas_b2500"
+  "dwi_acquisition": null
 }

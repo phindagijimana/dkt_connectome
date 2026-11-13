@@ -8,7 +8,7 @@
 #
 # Usage (mirrors dwi_pipeline/subject.sh exactly):
 #   bash run_subject.sh all 014                  # full pipeline
-#   bash run_subject.sh all 014 --fastsurfer
+#   bash run_subject.sh all 014 --fastsurfer --fastsurfer-device cpu
 #   bash run_subject.sh all 014 --fast-fs         # FastSurfer + --fsaparc
 #   bash run_subject.sh all 014 --no-recon
 #   bash run_subject.sh all 014 --no-connectome   # (Step 5 with it)
@@ -17,6 +17,7 @@
 #   bash run_subject.sh qsiprep 014
 #   bash run_subject.sh inpaint 014               # Step 1.1 only (needs a lesion mask)
 #   bash run_subject.sh recon 014 --fastsurfer
+#   bash run_subject.sh posthoc-fs 014       # Step 2.1 (needs finished recon + lesion mask)
 #   bash run_subject.sh qsirecon 014
 #   bash run_subject.sh connectome 014
 #   bash run_subject.sh disconnectome 014   # Step 4.1 (needs lesion mask + DKT connectome)
@@ -37,7 +38,26 @@ DWI_PIPELINE_DIR="$(dirname "${WORKFLOW_DIR}")"
 COMMON_SH="${WORKFLOW_DIR}/lib/common.sh"
 SLURM_ENV_SH="${WORKFLOW_DIR}/lib/slurm_env.sh"
 RESOLVE_SESSION_PY="${WORKFLOW_DIR}/lib/resolve_session.py"
+MAKE_DWI_SELECT_CONFIG="${DWI_PIPELINE_DIR}/scripts/make_dwi_select_config.py"
 source "${COMMON_SH}"
+
+_resolve_dwi_select_json() {
+  local shell_b="$1"
+  local explicit="${2:-}"
+  local generated_dir="${RESULTS_ROOT:-/tmp}/intermediate_results_qsiprep_single"
+  mkdir -p "${generated_dir}"
+  local -a args=(
+    "${PIPELINE_PYTHON:-python3.12}" "${MAKE_DWI_SELECT_CONFIG}"
+    --resolve --target-shell-b "${shell_b}"
+    --config-dir "${DWI_PIPELINE_DIR}/config"
+    --output "${generated_dir}/dwi_select_b${shell_b}.generated.json"
+  )
+  if [[ -n "${explicit}" ]]; then
+    printf '%s\n' "${explicit}"
+    return
+  fi
+  "${args[@]}"
+}
 # shellcheck source=workflow/lib/slurm_env.sh
 if [[ -z "${DKT_ORCHESTRATOR_RUNTIME:-}" && "${BIDS_APP_CI:-}" != "1" ]]; then
   source "${SLURM_ENV_SH}"
@@ -52,8 +72,9 @@ if [[ -z "${PIPELINE_PYTHON:-}" ]]; then
   fi
 fi
 
-PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, qsirecon, connectome, disconnectome, or nodestrength}"
+PIPELINE_MODE="${1:?Need mode: all, qsiprep, inpaint, recon, posthoc-fs, qsirecon, connectome, disconnectome, or nodestrength}"
 [[ "${PIPELINE_MODE}" == "dk" ]] && PIPELINE_MODE="connectome"
+[[ "${PIPELINE_MODE}" == "posthoc_fs" || "${PIPELINE_MODE}" == "post-hoc-fs" ]] && PIPELINE_MODE="posthoc-fs"
 SUBJECT="${2:?Need subject id}"
 SUBJECT="${SUBJECT#sub-}"
 shift 2 || true
@@ -65,10 +86,16 @@ DRY_RUN=0
 declare -A OVERRIDES=()   # dotted-path -> YAML scalar value
 [[ -n "${RECON_SESSION:-}" ]] && OVERRIDES[recon.session]="${RECON_SESSION}"
 declare -a SNAKEMAKE_PASSTHROUGH=()
+_SEEN_NATIVE_LESION=0
+_SEEN_STANDALONE_FILL=0
+_SEEN_POST_HOC_FS=0
 
 REPO_ROOT="$(dirname "${DWI_PIPELINE_DIR}")"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${REPO_ROOT}/.cache}"
-mkdir -p "${XDG_CACHE_HOME}"
+if ! mkdir -p "${XDG_CACHE_HOME}" 2>/dev/null; then
+  export XDG_CACHE_HOME="${RESULTS_ROOT:-${TMPDIR:-/tmp}}/.cache"
+  mkdir -p "${XDG_CACHE_HOME}"
+fi
 
 # Apply subject.sh-equivalent env vars when CLI flags did not already set them.
 _apply_env() {
@@ -80,6 +107,7 @@ _apply_env() {
   return 0
 }
 [[ "${QSIPREP_USE_SYN_SDC:-0}" == "1" ]] && _apply_env qsiprep.use_syn_sdc true
+[[ "${QSIPREP_FORCE_SYN:-0}" == "1" ]] && _apply_env qsiprep.force_syn true
 [[ "${QSIPREP_FMAP_RETRY:-0}" == "1" ]] && _apply_env qsiprep.fmap_retry true
 [[ "${QSIPREP_NO_SDC:-0}"      == "1" ]] && _apply_env qsiprep.no_sdc      true
 _apply_env qsiprep.bids_filter        "${QSIPREP_BIDS_FILTER:-}"
@@ -91,6 +119,8 @@ _apply_env recon.tool                 "${RECON_TOOL:-}"
 _apply_env recon.fsaparc              "$([[ "${RECON_FSAPARC:-0}" == "1" ]] && echo true || echo false)"
 _apply_env recon.fastsurfer_device    "${RECON_FASTSURFER_DEVICE:-}"
 _apply_env recon.session              "${RECON_SESSION:-}"
+_apply_env recon.lesion_mask          "$([[ "${RECON_LESION_MASK:-0}" == "1" ]] && echo true || echo false)"
+_apply_env recon.post_hoc_fs          "$([[ "${POST_HOC_FS:-0}" == "1" ]] && echo true || echo false)"
 _apply_env recon_out                  "${RECON_OUT:-}"
 _apply_env fs_subjects_dir            "${FS_SUBJECTS_DIR:-}"
 _apply_env nodestrength_out           "${NODESTRENGTH_OUT:-}"
@@ -116,6 +146,7 @@ _apply_env experiment.arm              "${EXPERIMENT_ARM:-}"
 _apply_env connectome.enabled         "$([[ "${RUN_CONNECTOME:-${RUN_DK_CONNECTOME:-1}}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.parcellation    "${CONNECTOME_PARCELLATION:-}"
 _apply_env connectome.fail_on_empty_nodes "$([[ "${CONNECTOME_FAIL_ON_EMPTY_NODES:-0}" == "1" ]] && echo true || echo false)"
+_apply_env connectome.max_empty_nodes "${CONNECTOME_MAX_EMPTY_NODES:-10}"
 _apply_env connectome.deterministic   "$([[ "${CONNECTOME_DETERMINISTIC:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.resample_to_dwi "$([[ "${CONNECTOME_RESAMPLE_TO_DWI:-1}" == "1" ]] && echo true || echo false)"
 _apply_env connectome.weighting       "${CONNECTOME_WEIGHTING:-count}"
@@ -153,23 +184,58 @@ _apply_env templateflow_home          "${TEMPLATEFLOW_HOME:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true ;;
+    --syn|--use-syn-sdc)   OVERRIDES[qsiprep.use_syn_sdc]=true; OVERRIDES[qsiprep.force_syn]=true ;;
+    --force-syn)           OVERRIDES[qsiprep.force_syn]=true; OVERRIDES[qsiprep.use_syn_sdc]=true ;;
     --fmap-retry)          OVERRIDES[qsiprep.fmap_retry]=true ;;
     --no-sdc)              OVERRIDES[qsiprep.no_sdc]=true ;;
     --bids-filter)         OVERRIDES[qsiprep.bids_filter]="${2:?Need path after --bids-filter}"; shift ;;
     --fastsurfer)          OVERRIDES[recon.tool]=fastsurfer ;;
-    --freesurfer)          OVERRIDES[recon.tool]=freesurfer ;;
+    --fastsurfer-device)
+      case "${2:?Need cpu or cuda after --fastsurfer-device}" in
+        cpu|cuda) OVERRIDES[recon.fastsurfer_device]="$2"; export RECON_FASTSURFER_DEVICE="$2" ;;
+        *) echo "Invalid --fastsurfer-device=$2 (use cpu or cuda)" >&2; exit 2 ;;
+      esac
+      shift
+      ;;
+    --freesurfer)          OVERRIDES[recon.tool]=freesurfer; OVERRIDES[recon.lesion_mask]=false ;;
     --fast-fs)             OVERRIDES[recon.tool]=fastsurfer; OVERRIDES[recon.fsaparc]=true ;;
+    --fastsurfer-lesion-mask|--lesion-mask)
+      # Native FastSurfer --lesion_mask (not standalone Step 1.1 / BIDS ROI)
+      _SEEN_NATIVE_LESION=1
+      OVERRIDES[recon.tool]=fastsurfer
+      OVERRIDES[recon.lesion_mask]=true
+      OVERRIDES[inpaint.enabled]=false
+      OVERRIDES[inpaint.backend]=none
+      OVERRIDES[recon.post_hoc_fs]=false
+      ;;
+    --no-fastsurfer-lesion-mask|--no-lesion-mask)
+      # Disables native recon --lesion_mask only — does not skip Step 1.1.
+      OVERRIDES[recon.lesion_mask]=false
+      ;;
+    --post-hoc-fs)
+      _SEEN_POST_HOC_FS=1
+      OVERRIDES[recon.post_hoc_fs]=true
+      ;;
+    --no-post-hoc-fs)
+      OVERRIDES[recon.post_hoc_fs]=false
+      ;;
     --no-recon)            OVERRIDES[recon.enabled]=false ;;
     --no-connectome|--no-dk) OVERRIDES[connectome.enabled]=false ;;
-    --inpaint)             OVERRIDES[inpaint.enabled]=true; OVERRIDES[inpaint.backend]=neurolit ;;
+    --inpaint)
+      _SEEN_STANDALONE_FILL=1
+      OVERRIDES[inpaint.enabled]=true
+      OVERRIDES[inpaint.backend]=neurolit
+      OVERRIDES[recon.lesion_mask]=false
+      ;;
     --no-inpaint)          OVERRIDES[inpaint.enabled]=false; OVERRIDES[inpaint.backend]=none ;;
     --anat-mitigation)
       OVERRIDES[inpaint.backend]="${2:?Need none, neurolit, or vbt}"
       if [[ "${2}" == "none" ]]; then
         OVERRIDES[inpaint.enabled]=false
       else
+        _SEEN_STANDALONE_FILL=1
         OVERRIDES[inpaint.enabled]=true
+        OVERRIDES[recon.lesion_mask]=false
       fi
       shift
       ;;
@@ -232,6 +298,10 @@ if [[ -n "${EXPERIMENT_ARM_EFFECTIVE}" ]]; then
   OVERRIDES[inpaint.backend]="${_arm_backend}"
   OVERRIDES[inpaint.enabled]="$([[ "${_arm_backend}" == "none" ]] && echo false || echo true)"
   OVERRIDES[act.mode]="${_arm_act}"
+  if [[ "${_arm_backend}" != "none" ]]; then
+    _SEEN_STANDALONE_FILL=1
+    OVERRIDES[recon.lesion_mask]=false
+  fi
   if [[ -n "${RESULTS_ROOT}" && "${EXPERIMENT_ISOLATE_OUTPUTS:-1}" == "1" ]]; then
     case "${RESULTS_ROOT}" in
       */arms/"${EXPERIMENT_ARM_EFFECTIVE}") ;;
@@ -241,11 +311,47 @@ if [[ -n "${EXPERIMENT_ARM_EFFECTIVE}" ]]; then
   echo "Experiment arm: ${EXPERIMENT_ARM_EFFECTIVE} (anatomy=${_arm_backend}, ACT=${_arm_act})"
 fi
 
+# Standalone Step 2.1 / 4.1 modes imply their opt-in flags (same as subject.sh
+# auto-enabling RUN_DISCONNECTOME when PIPELINE_MODE=disconnectome).
+if [[ "${PIPELINE_MODE}" == "posthoc-fs" ]]; then
+  OVERRIDES[recon.post_hoc_fs]=true
+  _SEEN_POST_HOC_FS=1
+fi
+if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
+  OVERRIDES[disconnectome.enabled]=true
+fi
+
+# Native XOR standalone fill / post-hoc (fail-fast; no silent last-wins).
+_lm="${OVERRIDES[recon.lesion_mask]:-false}"
+_ph="${OVERRIDES[recon.post_hoc_fs]:-false}"
+_ib="${OVERRIDES[inpaint.backend]:-neurolit}"
+_ie="${OVERRIDES[inpaint.enabled]:-true}"
+if [[ "${_lm}" == "true" && "${_ph}" == "true" ]]; then
+  echo "ERROR: --fastsurfer-lesion-mask and --post-hoc-fs are mutually exclusive" >&2
+  echo "  Native path already writes LIT in-recon; omit --post-hoc-fs, or use standalone fill + --post-hoc-fs." >&2
+  exit 2
+fi
+if [[ "${_lm}" == "true" && "${_ie}" == "true" && "${_ib}" != "none" ]]; then
+  echo "ERROR: --fastsurfer-lesion-mask is mutually exclusive with --anat-mitigation ${_ib} / --inpaint" >&2
+  echo "  Pick native (--fastsurfer-lesion-mask) or standalone fill, not both." >&2
+  exit 2
+fi
+if ((_SEEN_NATIVE_LESION && _SEEN_STANDALONE_FILL)); then
+  echo "ERROR: both native --fastsurfer-lesion-mask and standalone fill flags were passed" >&2
+  echo "  Pick one anatomy path (see docs/usage.md § Lesion / recon paths)." >&2
+  exit 2
+fi
+if ((_SEEN_NATIVE_LESION && _SEEN_POST_HOC_FS)); then
+  echo "ERROR: both --fastsurfer-lesion-mask and --post-hoc-fs were passed" >&2
+  echo "  Native already packages LIT; --post-hoc-fs is for the standalone path only." >&2
+  exit 2
+fi
+
 # --- Build merged configfile (Snakemake replaces config on each --configfile) ---
 OVERRIDE_YAML="$(mktemp /tmp/dwi_workflow_override_XXXXXX.yaml)"
 trap 'rm -f "${OVERRIDE_YAML}"' EXIT
 BASE_CONFIG="${WORKFLOW_DIR}/config/config.yaml"
-LOCAL_CONFIG="${WORKFLOW_DIR}/config/config.local.yaml"
+LOCAL_CONFIG="${DKT_LOCAL_CONFIG:-${WORKFLOW_DIR}/config/config.local.yaml}"
 {
   echo "subject: \"${SUBJECT}\""
   [[ -n "${RESULTS_ROOT}" ]] && echo "results_root: \"${RESULTS_ROOT}\""
@@ -297,6 +403,7 @@ case "${PIPELINE_MODE}" in
   all)          TARGET="all" ;;
   qsiprep)      TARGET="target_qsiprep" ;;
   recon)        TARGET="target_recon" ;;
+  posthoc-fs)   TARGET="target_posthoc_fs" ;;
   qsirecon)     TARGET="target_qsirecon" ;;
   act)          TARGET="target_act" ;;
   sdstream)     TARGET="target_sdstream" ;;
@@ -307,7 +414,7 @@ case "${PIPELINE_MODE}" in
   subject_qc)   TARGET="target_subject_qc" ;;
   inpaint)      TARGET="target_inpaint" ;;
   *)
-    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, qsirecon, act, sdstream, sdstream-tractography, connectome, disconnectome, nodestrength, or subject_qc)"
+    echo "Invalid mode=${PIPELINE_MODE} (use all, qsiprep, inpaint, recon, posthoc-fs, qsirecon, act, sdstream, sdstream-tractography, connectome, disconnectome, nodestrength, or subject_qc)"
     exit 1
     ;;
 esac
@@ -327,7 +434,7 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"
     _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
-    _dwi_select_json="${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-${DWI_PIPELINE_DIR}/config/dwi_select_b${_dwi_shell_b}.json}}"
+    _dwi_select_json="$(_resolve_dwi_select_json "${_dwi_shell_b}" "${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-}}")"
     _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
     declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
     if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
@@ -351,6 +458,48 @@ if [[ "${PIPELINE_MODE}" == "inpaint" ]]; then
   fi
 fi
 
+# --- Step 2.1 no-op / require-recon guard for standalone `posthoc-fs` mode ----
+if [[ "${PIPELINE_MODE}" == "posthoc-fs" ]]; then
+  if [[ "${OVERRIDES[recon.lesion_mask]:-false}" == "true" || "${RECON_LESION_MASK:-0}" == "1" ]]; then
+    echo "Post-hoc FS: skipped (native FastSurfer --lesion_mask already writes LIT)"
+    exit 0
+  fi
+  _results_root="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
+  _recon_out="${OVERRIDES[recon_out]:-${RECON_OUT:-${_results_root}/freesurfer}}"
+  _aparc="${_recon_out}/sub-${SUBJECT}/mri/aparc+aseg.mgz"
+  if [[ ! -f "${_aparc}" ]]; then
+    for src in \
+      "${_recon_out}/sub-${SUBJECT}/mri/aparc.DKTatlas+aseg.mapped.mgz" \
+      "${_recon_out}/sub-${SUBJECT}/mri/aparc.DKTatlas+aseg.mgz"; do
+      [[ -f "${src}" ]] && _aparc="${src}" && break
+    done
+  fi
+  if [[ ! -f "${_aparc}" ]]; then
+    _pipeline_fail "posthoc_fs" "missing recon outputs under ${_recon_out}/sub-${SUBJECT}/ (run Step 2 first)"
+  fi
+  _bids_dir="${BIDS_DIR:-/path/to/BIDS}"
+  _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
+  mkdir -p "$(dirname "${_filter_cache}")"
+  _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
+  _dwi_select_json="$(_resolve_dwi_select_json "${_dwi_shell_b}" "${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-}}")"
+  _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
+  declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
+  if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
+    _resolve_session_args+=(--recon-session "${OVERRIDES[recon.session]:-${RECON_SESSION}}")
+  elif [[ -n "${_static_filter}" ]]; then
+    _resolve_session_args+=(--static-bids-filter "${_static_filter}")
+  else
+    _resolve_session_args+=(--dwi-select-json "${_dwi_select_json}")
+  fi
+  _session="$("${PIPELINE_PYTHON}" "${RESOLVE_SESSION_PY}" "${_resolve_session_args[@]}")"
+  BIDS_DIR="${_bids_dir}"
+  _mask="$(find_lesion_mask "${SUBJECT}" "${_session}")"
+  if [[ -z "${_mask}" ]]; then
+    echo "Post-hoc FS: no lesion mask for sub-${SUBJECT} ses-${_session} — skipping Step 2.1 (no-op)"
+    exit 0
+  fi
+fi
+
 # --- Step 4.1 no-op guard for standalone `disconnectome` mode ----------------
 if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
   DISCONNECTOME_ENABLED="${OVERRIDES[disconnectome.enabled]:-true}"
@@ -360,7 +509,7 @@ if [[ "${PIPELINE_MODE}" == "disconnectome" ]]; then
     _filter_cache="${_results_root}/intermediate_results_qsiprep_single/bids_filter_sub-${SUBJECT}.json"
     mkdir -p "$(dirname "${_filter_cache}")"
     _dwi_shell_b="${OVERRIDES[dwi_select.shell_b]:-${DWI_SHELL_B:-1000}}"
-    _dwi_select_json="${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-${DWI_PIPELINE_DIR}/config/dwi_select_b${_dwi_shell_b}.json}}"
+    _dwi_select_json="$(_resolve_dwi_select_json "${_dwi_shell_b}" "${OVERRIDES[dwi_select.json]:-${DWI_SELECT_JSON:-}}")"
     _static_filter="${OVERRIDES[qsiprep.bids_filter]:-${QSIPREP_BIDS_FILTER:-}}"
     declare -a _resolve_session_args=(--bids-dir "${_bids_dir}" --subject "${SUBJECT}" --filter-cache "${_filter_cache}")
     if [[ -n "${OVERRIDES[recon.session]:-${RECON_SESSION:-}}" ]]; then
@@ -389,7 +538,10 @@ if [[ -z "${SNAKEMAKE_WORKDIR:-}" && -n "${_experiment_arm}" && -n "${RESULTS_RO
   SNAKEMAKE_WORKDIR="${RESULTS_ROOT}/.snakemake_workdir"
 fi
 SNAKEMAKE_WORKDIR="${SNAKEMAKE_WORKDIR:-${DWI_PIPELINE_DIR}}"
-mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+if ! mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks" 2>/dev/null; then
+  SNAKEMAKE_WORKDIR="${RESULTS_ROOT}/.snakemake_workdir"
+  mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
+fi
 if [[ -n "${_experiment_arm}" ]]; then
   rm -rf "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
   mkdir -p "${SNAKEMAKE_WORKDIR}/.snakemake/locks"
@@ -416,6 +568,14 @@ CMD+=(
 ((DRY_RUN)) && CMD+=(--dry-run)
 CMD+=("${SNAKEMAKE_PASSTHROUGH[@]}")
 CMD+=(-- "${TARGET}")
+
+# A 12-hour Slurm kill leaves the Snakemake lock in place. The next chunk
+# cannot start until those files are removed. snakemake --unlock is not used
+# here: it loads config/config.yaml before it can clear the lock.
+if [[ "${DKT_RESUME:-0}" == "1" ]]; then
+  echo "DKT_RESUME=1: removing Snakemake locks left by a killed chunk" >&2
+  rm -f "${SNAKEMAKE_WORKDIR}/.snakemake/locks/"*.lock
+fi
 
 echo "+ ${CMD[*]}" >&2
 exec "${CMD[@]}"

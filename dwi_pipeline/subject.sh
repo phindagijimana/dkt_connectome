@@ -728,6 +728,7 @@ run_qsiprep() {
     -B "${TEMPLATEFLOW_HOME}":/templateflow \
     "${filter_binds[@]}" \
     --env "TEMPLATEFLOW_HOME=/templateflow" \
+    --env "ANTS_RANDOM_SEED=${RANDOM_SEED:-0}" \
     "${CONTAINER_QSIPREP}" \
     /bids_input /output participant \
     --participant-label "${SUBJECT}" \
@@ -1142,6 +1143,11 @@ run_qsirecon() {
   rm -rf "${WORK_QSIRECON}"
   mkdir -p "${WORK_QSIRECON}" "${QSIRECON_OUT}/derivatives"
 
+  local dkt_bin
+  dkt_bin="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/workflow/bin"
+  echo "QSIRecon: MRTRIX_RNG_SEED=${RANDOM_SEED:-0}; tckgen forced to 1 thread"
+  # /opt/dkt-bin/tckgen forces -nthreads 1. See workflow/bin/tckgen.
+  APPTAINERENV_PREPEND_PATH=/opt/dkt-bin \
   apptainer run --cleanenv --containall \
     -B "${QSIPREP_OUT}":/qsiprep_input:ro \
     -B "${QSIRECON_OUT}":/output \
@@ -1149,7 +1155,9 @@ run_qsirecon() {
     "${recon_binds[@]}" \
     -B "${FS_LICENSE}":/opt/freesurfer/license.txt:ro \
     -B "${TEMPLATEFLOW_HOME}":/templateflow \
+    -B "${dkt_bin}":/opt/dkt-bin:ro \
     --env "TEMPLATEFLOW_HOME=/templateflow" \
+    --env "MRTRIX_RNG_SEED=${RANDOM_SEED:-0}" \
     "${CONTAINER_QSIRECON}" \
     /qsiprep_input /output participant \
     --input-type qsiprep \

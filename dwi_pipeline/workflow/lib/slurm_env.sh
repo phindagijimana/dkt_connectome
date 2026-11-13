@@ -39,19 +39,10 @@ _slurm_fix_user_env() {
   if ! command -v snakemake >/dev/null 2>&1 && [[ -n "${_inherited_path}" ]]; then
     export PATH="${PATH}:${_inherited_path}"
   fi
-  local py_site="${HOME}/.local/lib/python3.12/site-packages"
-  if [[ -d "${py_site}/snakemake" ]]; then
-    case ":${PYTHONPATH:-}:" in
-      *:"${py_site}":*) ;;
-      *)
-        if [[ -n "${PYTHONPATH:-}" ]]; then
-          export PYTHONPATH="${py_site}:${PYTHONPATH}"
-        else
-          export PYTHONPATH="${py_site}"
-        fi
-        ;;
-    esac
-  fi
+  # Do not put user site-packages on PYTHONPATH. That directory is searched
+  # before the standard library, and a leftover argparse.py there hides
+  # Python 3.12's argparse (no BooleanOptionalAction), which makes snakemake
+  # crash. With HOME set, python3.12 still finds ~/.local via the user site.
 }
 
 _slurm_fix_user_env

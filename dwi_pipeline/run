@@ -34,28 +34,44 @@ Validation / provenance:
   --ignore-warnings                 Pass --ignore-warnings to bids-validator
 
 Pipeline modes (--mode):
-  all | qsiprep | inpaint | recon | qsirecon | connectome | disconnectome | nodestrength
+  all | qsiprep | inpaint | recon | posthoc-fs | qsirecon | connectome | disconnectome | nodestrength
 
 Preprocessing / SDC:
   --syn                 SyN SDC when no fmap in dwi-select filter
+  --force-syn           Same as --syn (explicit force; forwarded to QSIPrep)
   --fmap-retry          Ignore fieldmaps; use SyN SDC
   --no-sdc              Skip SDC entirely
-  --dwi-shell N         Filter to b=N shell (default 1000)
+  --dwi-shell N         Filter to b=N (default 1000; canned JSON if present, else generated)
   --dwi-select PATH     Explicit dwi-select JSON
   --no-dwi-filter       Process all DWI series
   --bids-filter PATH    Static QSIPrep BIDS filter JSON (alias: --bids-filter-file)
 
 Recon / connectome:
   --fastsurfer          FastSurfer for Step 2
+  --fastsurfer-device cpu|cuda   FastSurfer device (default cpu; same as RECON_FASTSURFER_DEVICE)
   --fast-fs             FastSurfer + classic DK aparc
   --freesurfer          recon-all (default)
+  --fastsurfer-lesion-mask  Native FastSurfer --lesion_mask (FS≥2.6; XOR standalone fill / --post-hoc-fs)
+  --no-fastsurfer-lesion-mask  Disable native recon --lesion_mask only (not Step 1.1)
+  --post-hoc-fs / --no-post-hoc-fs  Step 2.1 LIT packaging after standalone recon (default off)
   --no-recon            Skip Step 2
   --no-connectome       Skip Steps 4 and 5
   --connectome-weighting count|sift2
+  --connectome-atlases LIST   Atlases (comma or space; default dkt)
+
+Lesion / ACT / experiment arms:
+  --experiment-arm ARM          orig-std|orig-lesion|neurolit-std|neurolit-lesion|vbt-std|vbt-lesion|deep-atropos-pilot
+  --act-mode standard|lesion-aware
+  --act-5tt-source hsvs|deep-atropos-native
+  --deep-atropos-seg PATH       Override Deep Atropos segmentation ({subject} {session} OK)
+  --deep-atropos-seg-mode auto|import|generate
+  --act-streamlines N           Lesion-aware ACT streamline count
+  --anat-mitigation none|neurolit|vbt
+  --tractography-model ifod2|sd_stream|both
 
 Lesion / disconnectome:
   --inpaint / --no-inpaint
-  --disconnection       Opt in to Step 4.1 disconnectome (off by default; under validation)
+  --disconnection       Opt in to Step 4.1 (off by default; prefer this over flag --disconnectome)
   --no-disconnectome    Explicitly skip Step 4.1 (default without --disconnection)
   --disconnectome-core-only
   --disconnectome-erode-voxels N
@@ -67,11 +83,13 @@ Node strength (Step 5):
   --no-report           Skip PDF report
 
 Other:
-  ./dkt <command>           Unified CLI (install, pull, run, log, check)
+  ./dkt <command>           Unified CLI (init, install, check, run, status, …)
   ./run doctor [options]      Verify install (tools, license, containers)
+  --profile NAME        Named defaults: ideas | glioma | minimal (see ./dkt profiles)
   --dry-run             Snakemake plan only (-n)
   --export-bids-derivatives   Write RESULTS_ROOT/derivatives/ mirror after run
   --export-copy         Copy files instead of symlinks for BIDS export
+  --bids-exec-spec      Print Boutiques descriptor (BIDS execution-spec) and exit
   --version             Print pipeline version (app.json)
 
 Environment: FS_LICENSE, CONTAINER_*, TEMPLATEFLOW_HOME, ...
@@ -82,13 +100,16 @@ EOF
 }
 
 version() {
-  python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" "${SCRIPT_DIR}/app.json" 2>/dev/null || echo "0.2.2"
+  python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['PipelineVersion'])" "${SCRIPT_DIR}/app.json" 2>/dev/null || echo "0.3.1"
 }
 
 for arg in "$@"; do
   case "$arg" in
     -h|--help) usage; exit 0 ;;
     --version|-v) version; exit 0 ;;
+    --bids-exec-spec)
+      exec python3 "${SCRIPT_DIR}/scripts/dkt_cli.py" bids-exec-spec
+      ;;
   esac
 done
 
@@ -120,6 +141,7 @@ BIDS_VALIDATE=0
 BIDS_IGNORE_WARNINGS=0
 EXPORT_BIDS_DERIVATIVES=0
 EXPORT_COPY=0
+PROFILE=""
 EXTRA=()
 
 while [[ $# -gt 0 ]]; do
@@ -148,6 +170,7 @@ while [[ $# -gt 0 ]]; do
     --skip-bids-validation) shift ;;
     --bids-validation) BIDS_VALIDATE=1; shift ;;
     --ignore-warnings) BIDS_IGNORE_WARNINGS=1; shift ;;
+    --profile) PROFILE="$2"; shift 2 ;;
     --mode) MODE="$2"; shift 2 ;;
     --connectome-weighting) export CONNECTOME_WEIGHTING="$2"; EXTRA+=(--connectome-weighting "$2"); shift 2 ;;
     --disconnectome-weighting) EXTRA+=(--disconnectome-weighting "$2"); shift 2 ;;
@@ -158,9 +181,15 @@ while [[ $# -gt 0 ]]; do
     --primary-connectome-measure) EXTRA+=(--primary-connectome-measure "$2"); shift 2 ;;
     --act-mode|--act-streamlines|--tractography-model|--experiment-arm|--anat-mitigation|--recon-session)
       EXTRA+=("$1" "$2"); shift 2 ;;
+    --fastsurfer-device)
+      EXTRA+=("$1" "$2"); export RECON_FASTSURFER_DEVICE="$2"; shift 2 ;;
+    --act-5tt-source|--deep-atropos-seg|--deep-atropos-seg-mode|--connectome-atlases)
+      EXTRA+=("$1" "$2"); shift 2 ;;
     --connectome-sift2)
       EXTRA+=("$1"); shift ;;
-    --syn|--use-syn-sdc|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
+    --syn|--use-syn-sdc|--force-syn|--fmap-retry|--no-sdc|--no-dwi-filter|--fastsurfer|--fast-fs|--freesurfer)
+      EXTRA+=("$1"); shift ;;
+    --fastsurfer-lesion-mask|--lesion-mask|--no-fastsurfer-lesion-mask|--no-lesion-mask|--post-hoc-fs|--no-post-hoc-fs)
       EXTRA+=("$1"); shift ;;
     --no-recon|--no-connectome|--no-dk|--no-inpaint|--inpaint|--no-disconnectome|--disconnection|--disconnectome)
       EXTRA+=("$1"); shift ;;
@@ -174,20 +203,34 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+PY="${PIPELINE_PYTHON:-python3.12}"
+
+# Expand named --profile into concrete flags (does not override explicit flags already parsed).
+if [[ -n "${PROFILE}" ]]; then
+  # shellcheck disable=SC2207
+  PROFILE_FLAGS=($(python3 "${SCRIPT_DIR}/scripts/dkt_cli.py" expand-profile "${PROFILE}"))
+  if [[ ${#PROFILE_FLAGS[@]} -gt 0 ]]; then
+    echo "[run] profile=${PROFILE} → ${PROFILE_FLAGS[*]}"
+    EXTRA=("${PROFILE_FLAGS[@]}" "${EXTRA[@]}")
+  else
+    echo "[run] profile=${PROFILE} (pipeline defaults)"
+  fi
+fi
+
 if [[ "${ANALYSIS_LEVEL}" == "group" ]]; then
   echo "[run] group-level: building cohort QC indexes"
-  python3 "${SCRIPT_DIR}/scripts/render_cohort_qc.py" \
+  "${PY}" "${SCRIPT_DIR}/scripts/render_cohort_qc.py" \
     --results-root "${OUTPUT_DIR}" \
     --write-subject-reports || exit 1
-  python3 "${SCRIPT_DIR}/scripts/render_disconnectome_cohort_qc.py" \
+  "${PY}" "${SCRIPT_DIR}/scripts/render_disconnectome_cohort_qc.py" \
     --results-root "${OUTPUT_DIR}" \
     --write-subject-reports || exit 1
-  python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
+  "${PY}" "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
     --results-root "${OUTPUT_DIR}" \
     --bids-dir "${BIDS_DIR}" || exit 1
   export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
   ((EXPORT_COPY)) && export_args+=(--copy)
-  python3 "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit 1
+  "${PY}" "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit 1
   echo "[run] cohort QC: ${OUTPUT_DIR}/cohort_qc.html"
   echo "[run] disconnectome cohort QC: ${OUTPUT_DIR}/disconnectome_cohort_qc.html"
   echo "[run] BIDS Derivatives export: ${OUTPUT_DIR}/derivatives/"
@@ -219,6 +262,9 @@ export STOP_ON_FIRST_CRASH="${STOP_ON_FIRST_CRASH}"
 [[ -n "${RANDOM_SEED}" ]] && echo "[run] random-seed: ${RANDOM_SEED}"
 
 PREFLIGHT=(bash "${SCRIPT_DIR}/workflow/preflight.sh" --mode "${MODE}" --quick)
+if [[ ${#PARTICIPANTS[@]} -eq 1 ]]; then
+  PREFLIGHT+=(--subject "${PARTICIPANTS[0]}")
+fi
 ((BIDS_VALIDATE)) && PREFLIGHT+=(--bids-validation)
 ((BIDS_IGNORE_WARNINGS)) && PREFLIGHT+=(--ignore-warnings)
 export BIDS_VALIDATE
@@ -231,10 +277,16 @@ DRY_FLAG=()
 [[ "${DRY_RUN}" -eq 1 ]] && DRY_FLAG=(--dry-run)
 
 exit_code=0
+PROCESSED=()
 for sub in "${PARTICIPANTS[@]}"; do
   echo "[run] subject=sub-${sub} mode=${MODE} session=${SESSIONS[0]:-auto}"
+  PROCESSED+=("${sub}")
   if ! bash "${RUN_SUBJECT}" "${MODE}" "${sub}" "${SESSION_ARG[@]}" "${EXTRA[@]}" "${DRY_FLAG[@]}"; then
     exit_code=1
+    echo "[run] FAILED sub-${sub}" >&2
+    echo "Next:" >&2
+    echo "  1. ./dkt log --results-root ${OUTPUT_DIR} --subject ${sub}" >&2
+    echo "  2. ./dkt status --results-root ${OUTPUT_DIR}" >&2
     if [[ "${STOP_ON_FIRST_CRASH}" == "1" ]]; then
       echo "[run] stop-on-first-crash: aborting after sub-${sub}" >&2
       break
@@ -246,12 +298,12 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
   exit "${exit_code}"
 fi
 
-python3 "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
+"${PY}" "${SCRIPT_DIR}/scripts/write_derivatives_description.py" \
   --results-root "${OUTPUT_DIR}" \
   --bids-dir "${BIDS_DIR}" || exit_code=1
 
-for sub in "${PARTICIPANTS[@]}"; do
-  python3 "${SCRIPT_DIR}/scripts/render_subject_qc.py" \
+for sub in "${PROCESSED[@]}"; do
+  "${PY}" "${SCRIPT_DIR}/scripts/render_subject_qc.py" \
     --results-root "${OUTPUT_DIR}" \
     --subject "${sub}" || exit_code=1
 done
@@ -259,7 +311,17 @@ done
 if ((EXPORT_BIDS_DERIVATIVES)); then
   export_args=(--results-root "${OUTPUT_DIR}" --bids-dir "${BIDS_DIR}")
   ((EXPORT_COPY)) && export_args+=(--copy)
-  python3 "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit_code=1
+  "${PY}" "${SCRIPT_DIR}/scripts/export_bids_derivatives.py" "${export_args[@]}" || exit_code=1
+fi
+
+# Lightweight status snapshot (does not change derivatives layout).
+"${PY}" "${SCRIPT_DIR}/scripts/dkt_cli.py" status \
+  --results-root "${OUTPUT_DIR}" --write >/dev/null 2>&1 || true
+
+if [[ "${exit_code}" -eq 0 ]]; then
+  echo "[run] OK — next: ./dkt status --results-root ${OUTPUT_DIR}"
+else
+  echo "[run] finished with errors — next: ./dkt status --results-root ${OUTPUT_DIR}" >&2
 fi
 
 exit "${exit_code}"
