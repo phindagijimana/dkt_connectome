@@ -166,9 +166,7 @@ Cohort index: `./run BIDS OUT group` → `disconnectome_cohort_qc.html`.
 
 ---
 
-## Implementation substeps
-
-Full specification: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md) · Developer notes: [pipeline_science.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md).
+Steps and file layout: [Disconnectome](../disconnectome.md).
 
 | Substep | Action | Output |
 |---------|--------|--------|
@@ -192,7 +190,7 @@ The primary `dkt_connectome.csv` from Step 4 is **never modified**.
 | Network modification / virtual lesion | Kuceyeski R, et al. *NeuroImage: Clinical* 2013 | [10.1016/j.nicl.2012.10.003](https://doi.org/10.1016/j.nicl.2012.10.003) |
 | TBI connectivity review | Hayes JP, et al. *JINS* 2016 | [10.1017/S1355617715000740](https://doi.org/10.1017/S1355617715000740) |
 
-Full table: [References § Step 4.1](../references.md#step-41-disconnectome-optional) · Implementation spec: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md).
+Full table: [References § Step 4.1](../references.md#step-41-disconnectome-optional).
 
 ---
 

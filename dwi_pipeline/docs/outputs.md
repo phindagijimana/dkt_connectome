@@ -135,7 +135,7 @@ Under `connectomes/sub-<ID>/disconnectome/`:
 | `lesion_roi_metrics.csv` | Per-node lesion overlap |
 | `disconnectome.json` | Provenance and summary stats |
 
-Full file list: [Inpainting/disconnection.md §Outputs](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md).
+Layout and QC: [Disconnectome](disconnectome.md).
 
 ---
 

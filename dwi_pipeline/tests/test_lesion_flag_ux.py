@@ -14,7 +14,6 @@ RUN_SUBJECT = DWI / "workflow" / "run_subject.sh"
 SUBMIT = DWI / "submit.sh"
 USAGE = DWI / "docs" / "usage.md"
 DECISION = DWI / "docs" / "decision_tables.md"
-FLAG_MD = DWI / "flag.md"
 RUN = DWI / "run"
 
 
@@ -89,8 +88,6 @@ def test_docs_prefer_long_flag_names():
     assert "--disconnection" in usage
     # Alias demoted
     assert "prefer `--disconnection`" in usage or "Prefer long names" in usage
-    flag = FLAG_MD.read_text()
-    assert "Prefer long names over aliases" in flag or "**Aliases:**" in flag
     decision = DECISION.read_text()
     assert "Don't mix" in decision
     assert "CLI **exits with an error**" in decision
@@ -103,14 +100,11 @@ def test_anchor_slugs_referenced_consistently():
     assert "#lesion--recon-paths-start-here" not in usage
     assert "standalone-fill-vs-native-fastsurfer-lesion-mask" in usage
     assert "standalone-fill-vs-native-fastsurfer---lesion_mask" not in usage
-    flag = FLAG_MD.read_text()
-    assert "lesion-recon-paths-start-here" in flag
-    assert "lesion--recon-paths-start-here" not in flag
 
 
 def test_no_lesion_mask_help_is_not_global():
     """--no-fastsurfer-lesion-mask must not claim to skip Step 1.1."""
-    for path in (USAGE, FLAG_MD, RUN):
+    for path in (USAGE, RUN):
         text = path.read_text()
         # Find the no-fastsurfer / no-lesion help vicinity
         if "--no-fastsurfer-lesion-mask" not in text:

@@ -144,7 +144,6 @@ Layout follows the [QSIPrep citing guide](https://qsiprep.readthedocs.io/en/0.22
 |-------|-----------|------------|
 | **Structural disconnectome (primary)** | Griffis JC, et al. Structural disconnectome mapping in patients with brain injury. *Cell Reports* 2019;29(9):2667–2678.e5. | [10.1016/j.celrep.2019.10.058](https://doi.org/10.1016/j.celrep.2019.10.058) |
 | Virtual lesion / disconnection index | Kuceyeski R, et al. The Network Modification (NeMo) Tool: a structural connectivity-based tool for lesion localization. *NeuroImage: Clinical* 2013;2:1–8. | [10.1016/j.nicl.2012.10.003](https://doi.org/10.1016/j.nicl.2012.10.003) |
-| Connectome excision literature | Internal synthesis | [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md) |
 
 **Docs:** [Step 4.1 theory](methods/step4_1_disconnectome.md) · [Disconnectome](disconnectome.md)
 
@@ -201,8 +200,3 @@ These resources informed cohort design and QC; cite separately when discussing T
 | Maas et al. 2022 Lancet Neurology TRACK-TBI review | [10.1016/S1474-4422(22)00309-X](https://doi.org/10.1016/S1474-4422(22)00309-X) |
 | Hayes et al. 2016 TBI connectivity review | [10.1017/S1355617715000740](https://doi.org/10.1017/S1355617715000740) |
 
----
-
-## Internal deep-dive
-
-For implementation-level method notes (warp chains, QC thresholds, container pins), see [pipeline_science.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md) in the repository.

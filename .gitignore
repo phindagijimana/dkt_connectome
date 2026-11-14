@@ -187,6 +187,18 @@ dwi_pipeline/docs/maintainer/
 dwi_pipeline/docs/publication_strategy.md
 dwi_pipeline/workflow/LEGACY.md
 
+# Long notes and older copies (local only; the public guide is dwi_pipeline/docs/)
+DWI_Connectivity_Pipeline_Documentation.md
+USER_GUIDE.md
+bids.md
+fmaps.md
+dwi_pipeline/CHANGELOG.md
+dwi_pipeline/flag.md
+dwi_pipeline/pipeline_science.md
+dwi_pipeline/brain.md
+dwi_pipeline/acquisition.md
+dwi_pipeline/basic_tools/
+
 # --- Study exports and local cohort data (never public) ------------------------
 dwi_pipeline/networks_URMC/
 dwi_pipeline/networks_URMC2/

@@ -8,7 +8,7 @@ Workflow (per subject/session/fmap group):
   3. Case-2 phasediff: EchoTime1/2 from magnitude1/2 EchoTime; drop phasediff EchoTime
   4. IntendedFor on default fmap set -> target DWI; strip IntendedFor on excluded acq fmaps
 
-See bids.md and dwi_pipeline/config/bids_repair_defaults.json.
+See dwi_pipeline/docs/preparing_data.md and dwi_pipeline/config/bids_repair_defaults.json.
 """
 
 from __future__ import annotations

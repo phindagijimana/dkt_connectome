@@ -39,7 +39,7 @@ python3 scripts/repair_siemens_pe_metadata.py --help
 bash scripts/run_bids_repair.sh BIDS_DIR SUBJECT
 ```
 
-Reference: [bids.md](https://github.com/phindagijimana/dkt_connectome/blob/main/bids.md) (repo root) · deeper repair notes: [BIDS metadata](bids_metadata.md).
+Field list: [BIDS metadata](bids_metadata.md).
 
 ---
 
@@ -88,8 +88,6 @@ Fieldmap in dwi-select filter with IntendedFor?
             --fmap-retry   Ignore bad fmaps, force SyN
             --no-sdc       Skip SDC (legacy no-fieldmap compatibility only)
 ```
-
-Details: [fmaps.md](https://github.com/phindagijimana/dkt_connectome/blob/main/fmaps.md) (repo root).
 
 ### BIDS fieldmap cases (QSIPrep)
 

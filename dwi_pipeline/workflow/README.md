@@ -282,8 +282,7 @@ Both groups run through Snakemake via `submit.sh`.
   `nodestrength_0.1.0.sif` container end-to-end and regenerated
   `<subject>_strength.csv` and `report.pdf` with fresh timestamps (same
   known cosmetic VTK/enigmatoolbox subcortical-render warning as the
-  `subject.sh` path — see `pipeline_science.md` §13.5 — everything else
-  clean).
+  `subject.sh` path; everything else clean).
 - Real execution, real Slurm job, real lesion mask: `sbatch` +
   `run_subject.sh inpaint SUBJECT001 --recon-session 2WK` (`BIDS_DIR` pointed
   at a BIDS tree with an actual `*_T1w_label-lesion_roi.nii.gz` for this

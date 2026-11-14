@@ -35,4 +35,3 @@ This section follows [QSIPrep](https://qsiprep.readthedocs.io/) — one methods 
 - [Pipeline steps](../pipeline_steps.md) — operational reference
 - [Disconnectome](../disconnectome.md) — CLI defaults and QC (Step 4.1 user guide)
 - [Comparisons](../comparisons.md) — vs other pipelines
-- Developer deep-dive: [pipeline_science.md on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/pipeline_science.md)

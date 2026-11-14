@@ -196,9 +196,8 @@ for that subject/session.
 
 Build the container once: `bash dwi_pipeline/containers/lit/build_lit.sh`.
 
-See `workflow/run_subject.sh` and [`workflow/config/config.yaml`](workflow/config/config.yaml) for the full `INPAINT_*` variable list,
-and [`pipeline_science.md` §Inpaint](pipeline_science.md) for the science (DDPM, VINN
-layers, QC methodology).
+See `workflow/run_subject.sh` and [`workflow/config/config.yaml`](workflow/config/config.yaml) for the full `INPAINT_*` variable list.
+Methods: [docs/methods/step1_1_inpaint.md](docs/methods/step1_1_inpaint.md).
 
 ---
 
@@ -413,9 +412,9 @@ logs/
 
 ## BIDS preparation (run before pipeline)
 
-1. Fix PE / TRT / `IntendedFor` sidecars — [`bids.md`](../bids.md), [`fmaps.md`](../fmaps.md)
+1. Fix PE / TRT / `IntendedFor` sidecars — [docs/preparing_data.md](docs/preparing_data.md), [docs/bids_metadata.md](docs/bids_metadata.md)
 2. Run repair: `./dwi_pipeline/scripts/run_bids_repair.sh BIDS_DIR SUBJECT`
-3. Verify dwi-select filter (dry-run in `bids.md` §9)
+3. Dry-run `./dkt run` and check the dwi-select log
 4. Submit pipeline
 
 Repair is **not** invoked automatically by `submit.sh`.
@@ -486,10 +485,4 @@ T1w/DWI grid.
 
 ## Further reading
 
-- **[docs/home.md](docs/home.md)** — BIDS App documentation hub (installation, usage, outputs)
-- [`DWI_Connectivity_Pipeline_Documentation.md`](../DWI_Connectivity_Pipeline_Documentation.md) — step-by-step technical reference (warp chain, QC)
-- [`pipeline_science.md`](pipeline_science.md) — the science behind each step
-- [`acquisition.md`](acquisition.md) — how the images are acquired, and why they need the corrections this pipeline applies
-- [`brain.md`](brain.md) — brain anatomy, physiology and pathology for pipeline engineers
-- [`bids.md`](../bids.md) — phase-encoding metadata and dwi-select
-- [`fmaps.md`](../fmaps.md) — SDC behavior
+- **[docs/home.md](docs/home.md)** — documentation site (installation, usage, methods, outputs)

@@ -2,7 +2,7 @@
 
 Defaults live in [`workflow/config/config.yaml`](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/workflow/config/config.yaml). Override locally with **`workflow/config/config.local.yaml`** (gitignored) or environment variables.
 
-Full CLI + env table: [`flag.md` on GitHub](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/flag.md).
+Full CLI and environment table: [Usage](usage.md).
 
 ---
 

@@ -22,7 +22,7 @@ Default labels (Step 1.1 / 4.1):
 | 1 | Core |
 | 2 | Oedema / FLAIR hyperintensity |
 
-Format details: [Inpainting/bids_mask_format.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/bids_mask_format.md).
+The mask is a NIfTI on the T1w grid. Values above are the labels Steps 1.1 and 4.1 read.
 
 ---
 
@@ -34,7 +34,7 @@ Format details: [Inpainting/bids_mask_format.md](https://github.com/phindagijima
 | **1.1 — Inpaint** | Auto when mask found | neuroLIT fills lesion on T1w before recon |
 | **4.1 — Disconnectome** | Manual post-hoc | Binary union excision + disconnection matrix |
 
-Subjects **without** a mask skip Steps 1.1 and 4.1. Step 4.1 additionally requires **`--disconnection`**. See [Inpainting/no_mask_behavior.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/no_mask_behavior.md).
+Subjects **without** a mask skip Steps 1.1 and 4.1. Step 4.1 additionally requires **`--disconnection`**.
 
 ---
 
@@ -49,7 +49,7 @@ bash workflow/run_subject.sh inpaint 009
 bash workflow/run_subject.sh all 009 --no-inpaint   # force skip
 ```
 
-QC: `scripts/check_inpainting.py` — see [Inpainting/pipeline_usage.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/pipeline_usage.md).
+QC: `scripts/check_inpainting.py`. Method: [Step 1.1](methods/step1_1_inpaint.md).
 
 ---
 
@@ -65,25 +65,18 @@ python3 dwi_pipeline/scripts/run_disconnectome.py \
   --subject 009
 ```
 
-Method: [Disconnectome](disconnectome.md) · Full spec: [Inpainting/disconnection.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/disconnection.md).
+Method: [Disconnectome](disconnectome.md) · [Step 4.1](methods/step4_1_disconnectome.md).
 
 ---
 
-## Documentation index
+## See also
 
-All lesion / excision docs live under [`Inpainting/`](https://github.com/phindagijimana/dkt_connectome/tree/main/dwi_pipeline/Inpainting):
-
-| Doc | Topic |
-|-----|--------|
-| [lesion_masks.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/lesion_masks.md) | Master index |
-| [connectome_excision_overview.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_overview.md) | Why excise after connectome |
-| [connectome_excision_option_a.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_option_a.md) | Parc excision |
-| [connectome_excision_option_b.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_option_b.md) | Streamline exclusion |
-| [connectome_excision_option_c.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_option_c.md) | Both A and B |
-| [connectome_excision_recommendations.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_recommendations.md) | Reporting guidance |
+- [Step 1.1 — Inpaint](methods/step1_1_inpaint.md)
+- [Step 4.1 — Disconnectome](methods/step4_1_disconnectome.md)
+- [Disconnectome](disconnectome.md) — outputs and QC
 
 ---
 
 ## Automated segmentation (future / external)
 
-This pipeline expects **manual** BIDS ROI masks today. For automated alternatives (LINDA, AutoDDPM, etc.), generate a compatible `*_label-lesion_roi.nii.gz` on the T1w grid before running Step 1.1. Literature: [Inpainting/connectome_excision_literature.md](https://github.com/phindagijimana/dkt_connectome/blob/main/dwi_pipeline/Inpainting/connectome_excision_literature.md).
+This pipeline expects **manual** BIDS ROI masks today. For automated alternatives (LINDA, AutoDDPM, etc.), generate a compatible `*_label-lesion_roi.nii.gz` on the T1w grid before running Step 1.1.
