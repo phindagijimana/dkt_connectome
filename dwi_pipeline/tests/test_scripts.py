@@ -248,3 +248,28 @@ def test_ideas_dwi_select_keeps_no_acq_multishell(tmp_path):
     assert out["dwi"]["suffix"] == "dwi"
     assert out["dwi"]["session"] == "1"
     assert "acquisition" not in out["dwi"]
+
+
+def test_no_match_names_shells_and_filter(tmp_path):
+    bf = _load_module("build_bids_filter", DWI / "scripts" / "build_bids_filter.py")
+    dwi_dir = tmp_path / "sub-1" / "ses-1" / "dwi"
+    dwi_dir.mkdir(parents=True)
+    (dwi_dir / "sub-1_ses-1_dwi.bval").write_text("0 1000\n")
+    (dwi_dir / "sub-1_ses-1_dwi.nii.gz").write_bytes(b"\x1f\x8b")
+    cfg = json.loads((DWI / "config" / "dwi_select_ideas_b2500.json").read_text())
+    cfg["_select_json"] = "config/dwi_select_ideas_b2500.json"
+    with pytest.raises(SystemExit) as exc:
+        bf.build_from_select(tmp_path, "1", cfg)
+    msg = str(exc.value)
+    assert "target_shell_b=2500" in msg
+    assert "nonzero b=[1000]" in msg
+    assert "config/dwi_select_ideas_b2500.json" in msg
+
+    (dwi_dir / "sub-1_ses-1_dwi.bval").write_text("0 300\n")
+    cfg["target_shell_b"] = 1000
+    with pytest.raises(SystemExit) as exc:
+        bf.build_from_select(tmp_path, "1", cfg)
+    msg = str(exc.value)
+    assert "targets b=1000" in msg
+    assert "nonzero b=[300]" in msg
+    assert "dwi_select_ideas_b2500.json" in msg

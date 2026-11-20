@@ -7,6 +7,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 ## [Unreleased]
 
 ### Added
+- **`scripts/check_repro.sh`** — `./dkt check` runs it every time: session label, empty `SBATCH_GRES`, noexec temp dirs, orchestrator vs Step 4 image, FastSurfer tested build `2.4.2+7e53343`.
+- **`scripts/first_run_demo.sh`** — IDEAS II shell check and the tutorial `./dkt run` line. Does not start Snakemake until `--dry-run` or `--run`, and does not request a GPU.
 - **One-pull Docker path** — [Installation § One-pull](installation.md#one-pull-docker--cloud): published GHCR/Hub orchestrator + `DKT_AUTO_INSTALL=1`. CI pulls `ghcr.io/phindagijimana/dkt-connectome` and checks `--version` (weekly QSIPrep install on schedule). Docker auto-install smoke installs `nibabel` before regenerating the BIDS fixture.
 - **[Sample results](sample_results.md)** — QSIPrep / QSIRecon-style reportlets and a QC table for public IDEAS II `sub-1` / `sub-6` and BTC glioma PAT20. Full derivatives stay local.
 - **[What DKT Connectome does](what_it_does.md)** — short introduction (abstract plus one paragraph per step, including the disconnectome and other atlases). Linked from the docs home page.
@@ -14,6 +16,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning align
 - **Preferred software citation** — Ndagijimana, Sinha, Brennan, and Gugger (2026) in `CITATION.cff` and [Citation](citation.md). Zenodo DOI [10.5281/zenodo.23354391](https://doi.org/10.5281/zenodo.23354391).
 
 ### Changed
+- **Preflight placeholders** name `./dkt install`, `config.local.yaml`, and `FS_LICENSE` when a path is still `/path/to/...`.
+- **dwi-select miss** lists the shells that were scanned and the filter file. A b=1000 miss also names `config/dwi_select_ideas_b2500.json`.
+- **FastSurfer pin** records tested build `2.4.2+7e53343` next to the SIF file hash. The uri stays `deepmi/fastsurfer:latest` because the 2025-08-30 SIF has no OCI digest.
 - **Daniel Brennan acknowledgement** points to Google Scholar (public research profile). Gugger and Sinha already use faculty pages.
 - **Docs first hour** — sidebar is home → what it does → install → tutorial → outputs (plus usage, preparing data, QC, methods index). Environment variables live on Installation only. `bids_metadata` is a QSIPrep-sidecar reference, not a getting-started page. Tutorial no longer mentions a local `dwi_test_TBI` folder.
 - **IDEAS dwi-select** — `contains_target` now keeps a DWI if any nonzero shell is near the target (IDEAS 0/300/700/2500). Dropped `dwi_acquisition: ideas_b2500`; sample files have no `acq-` entity.

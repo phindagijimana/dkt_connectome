@@ -40,6 +40,9 @@ RESULTS_ROOT="${RESULTS_ROOT:-/path/to/dwi_pipeline/dwi_test_TBI}"
 CONFIG="${WORKFLOW_DIR}/config/config.yaml"
 LOCAL_CONFIG="${DKT_LOCAL_CONFIG:-${WORKFLOW_DIR}/config/config.local.yaml}"
 
+# shellcheck source=lib/repro_checks.sh
+source "${WORKFLOW_DIR}/lib/repro_checks.sh"
+
 read_config() {
   python3 - "${CONFIG}" "${LOCAL_CONFIG}" "$1" <<'PY'
 import sys, yaml
@@ -79,21 +82,34 @@ case "${ENGINE}" in
     source "${WORKFLOW_DIR}/lib/orchestrator.sh"
     orch="$(resolve_orchestrator_sif 2>/dev/null || true)"
     [[ -n "${orch}" && -f "${orch}" ]] || fail \
-      "orchestrator SIF missing (run: bash dwi_pipeline/scripts/build_orchestrator_sif.sh)"
+      "orchestrator SIF missing. The orchestrator is ghcr.io/phindagijimana/dkt-connectome:0.3.1 (dkt_connectome_orchestrator_0.3.1.sif). dkt_connectome.sif is the Step 4 connectome image. Run ./dkt install or set CONTAINER_ORCHESTRATOR."
+    _orchestrator_reject_step_image "${orch}" || exit 1
     echo "preflight: orchestrator=${orch}"
     ;;
   *)
     command -v snakemake >/dev/null 2>&1 || fail "snakemake not found (pip install snakemake or module load)"
     snakemake --version >/dev/null 2>&1 || fail "snakemake found but not runnable (check HOME/PYTHONPATH on compute nodes)"
     command -v python3 >/dev/null 2>&1 || fail "python3 not found"
+    if ! _arg_msg="$(dkt_check_stdlib_argparse)"; then
+      fail "${_arg_msg}"
+    fi
+    [[ -n "${_arg_msg}" ]] && echo "${_arg_msg}"
     ;;
 esac
+
+if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
+  if ! _tmp_msg="$(dkt_tmp_error)"; then
+    fail "${_tmp_msg}"
+  fi
+fi
 
 if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
   command -v apptainer >/dev/null 2>&1 || fail "apptainer not found"
 fi
 
-[[ -d "${BIDS_DIR}" ]] || fail "BIDS_DIR missing: ${BIDS_DIR}"
+if ! _bids_msg="$(dkt_bids_error "${BIDS_DIR}")"; then
+  fail "${_bids_msg}"
+fi
 [[ -f "${BIDS_DIR}/dataset_description.json" ]] || warn "BIDS root missing dataset_description.json"
 
 if [[ "${BIDS_VALIDATE}" == "1" ]] || [[ "$(read_config bids.validate)" =~ ^([Tt]rue|1|yes|on)$ ]]; then
@@ -161,13 +177,17 @@ esac
 FS_LICENSE="${FS_LICENSE:-$(read_config fs_license)}"
 FS_LICENSE="${FS_LICENSE:-/path/to/others/data_mining/freesurfer/license.txt}"
 if [[ "${BIDS_APP_CI:-0}" != "1" ]]; then
-  [[ -f "${FS_LICENSE}" ]] || fail "FreeSurfer license missing: ${FS_LICENSE}"
+  if ! _lic_msg="$(dkt_license_error "${FS_LICENSE}")"; then
+    fail "${_lic_msg}"
+  fi
 fi
 
 check_sif() {
-  local label="$1" path="$2"
+  local label="$1" path="$2" msg
   [[ "${BIDS_APP_CI:-0}" == "1" ]] && return 0
-  [[ -n "${path}" && -f "${path}" ]] || fail "container missing (${label}): ${path}"
+  [[ -n "${path}" && -f "${path}" ]] && return 0
+  msg="$(dkt_container_missing_message "${label}" "${path}" || true)"
+  fail "${msg}"
 }
 
 container_path() {

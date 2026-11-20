@@ -101,8 +101,8 @@ bash submit.sh --syn \
   --fast-fs
 ```
 
-`submit.sh` auto-requests `SBATCH_GRES=gpu:l40s.24g:1` when Step 1.1 inpaint
-is enabled. Override with `SBATCH_GRES=` or a different slice if needed.
+`submit.sh` does not request a GPU. Set `SBATCH_GRES` to a name your site
+accepts when Step 1.1 inpaint or FastSurfer cuda needs one.
 
 If you still need the bash engine or dual-container connectome, see **[LEGACY.md](LEGACY.md)**.
 

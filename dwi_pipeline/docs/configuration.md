@@ -193,6 +193,6 @@ When `arm` is set, the workflow applies the anatomy + ACT mapping from [Usage â€
 |----------|---------|-------------|
 | `ARRAY_CONCURRENCY` | `5` | Slurm `%K` throttle |
 | `NTHREADS` | `8` | CPU threads per job |
-| `SBATCH_GRES` | auto | GPU when inpaint / FastSurfer cuda |
+| `SBATCH_GRES` | empty | Passed to `sbatch --gres` only if you set it |
 
 See [Usage](usage.md) for examples.

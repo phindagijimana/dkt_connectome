@@ -21,7 +21,9 @@
     },
     "fastsurfer": {
       "uri": "deepmi/fastsurfer:latest",
-      "sha256": "1baa5d51866df1980f779922f01526ac4e4167d66054af9ba59c3c34e55f6136"
+      "sha256": "1baa5d51866df1980f779922f01526ac4e4167d66054af9ba59c3c34e55f6136",
+      "version": "2.4.2+7e53343",
+      "pin_note": "sha256 is the Apptainer SIF file hash of the image pulled 2025-08-30. That SIF has no OCI digest. A newer pull of :latest is a different image and fails ./dkt check --strict."
     },
     "connectome": {
       "uri": "ghcr.io/phindagijimana/dk-connectome:0.3.0",

@@ -26,7 +26,15 @@ Two subjects (`sub-1`, `sub-6`) from [OpenNeuro ds007401](https://openneuro.org/
 
 IDEAS DWI shells are 0, 300, 700, and **2500** s/mm² — pass `--dwi-select config/dwi_select_ideas_b2500.json` (not the default b=1000 filter). Use `--syn` (no fieldmaps in this sample).
 
-`./dkt run` is the same command as `./run`.
+`bash scripts/first_run_demo.sh` checks those shells and prints the command. It does not start the pipeline until you add `--dry-run` or `--run`, and it does not request a GPU.
+
+```bash
+bash scripts/first_run_demo.sh \
+  --bids "$(pwd)/sample_data/ideas/bids" \
+  --results "$(pwd)/sample_data/ideas/results/sub-1_tutorial"
+```
+
+The same command by hand (`./dkt run` is the same command as `./run`):
 
 ```bash
 ./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \

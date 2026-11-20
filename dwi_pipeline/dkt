@@ -185,7 +185,7 @@ cmd_check() {
         cat <<'EOF'
 Usage: dkt check [options]
 
-Verify install and runtime readiness (wraps ./run doctor + optional checks).
+Verify install and runtime readiness (repro checks, ./run doctor, optional checks).
 
 Options:
   --mode MODE           Pipeline mode for container checks (default: all)
@@ -196,6 +196,9 @@ Options:
   --results-root PATH   Results root for --outputs (default: \$RESULTS_ROOT)
   --outputs             Check expected artifacts for --subject
   --strict              Verify release_manifest.json and cached .sif digests
+
+Every check runs scripts/check_repro.sh (session label, GPU line, temp dir,
+orchestrator image identity, FastSurfer tested build). It does not pull images.
 
 Examples:
   ./dkt check
@@ -215,6 +218,11 @@ EOF
   [[ -n "${cache}" ]] && doctor_args+=(--cache "${cache}")
   doctor_args+=(--mode "${mode}")
   ((with_dry_run)) && doctor_args+=(--with-dry-run)
+
+  echo "[dkt check] repro ..."
+  if ! bash "${SCRIPTS}/check_repro.sh"; then
+    exit_code=1
+  fi
 
   echo "[dkt check] doctor ..."
   if ! bash "${SCRIPTS}/doctor.sh" "${doctor_args[@]}"; then

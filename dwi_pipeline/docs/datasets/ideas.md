@@ -49,6 +49,14 @@ Requires AWS CLI (public read-only S3 — no credentials needed). Do not run thi
 From `dwi_pipeline/` (`./dkt run` is the same as `./run`):
 
 ```bash
+bash scripts/first_run_demo.sh \
+  --bids "$(pwd)/sample_data/ideas/bids" \
+  --results "$(pwd)/sample_data/ideas/results/sub-1_tutorial"
+```
+
+That checks the shells and prints the command. Add `--dry-run` or `--run` to execute. Direct form:
+
+```bash
 export FS_LICENSE=/path/to/license.txt
 
 ./dkt run "$(pwd)/sample_data/ideas/bids" "$(pwd)/sample_data/ideas/results/sub-1_tutorial" participant \
