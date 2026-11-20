@@ -122,6 +122,7 @@ def build_from_select(bids_dir: Path, subject: str, cfg: dict) -> dict:
 
     kept_dwi: list[Path] = []
     kept_rel: set[str] = set()
+    scanned: list[str] = []
 
     for bval in sorted(subj_root.rglob("*.bval")):
         if "/dwi/" not in bval.as_posix():
@@ -133,12 +134,17 @@ def build_from_select(bids_dir: Path, subject: str, cfg: dict) -> dict:
             continue
         ent, _ = parse_entities(dwi.name)
         if include_sessions and ent.get("session") not in include_sessions:
+            scanned.append(
+                f"{dwi.name} session={ent.get('session')} "
+                f"(skipped; filter sessions={list(include_sessions)})"
+            )
             continue
         if ent.get("acquisition") in exclude_acq:
             continue
         if dwi_acq and ent.get("acquisition") != dwi_acq:
             continue
         nonzero = read_nonzero_shells(bval, b0_max)
+        scanned.append(f"{dwi.name} nonzero b={nonzero}")
         if shell_matches(nonzero, target, tolerance, allow_multi, match_mode):
             kept_dwi.append(dwi)
             kept_rel.add(rel_subject_path(dwi, subj_root))
@@ -148,7 +154,18 @@ def build_from_select(bids_dir: Path, subject: str, cfg: dict) -> dict:
             )
 
     if not kept_dwi:
-        raise SystemExit(f"[dwi-select] sub-{subject}: no DWI matched target_shell_b={target}")
+        found = "; ".join(scanned) if scanned else "no DWI .bval files under the subject"
+        select_path = cfg.get("_select_json") or "(select JSON not recorded)"
+        hint = ""
+        if int(target) == 1000:
+            hint = (
+                " The default filter targets b=1000."
+                " IDEAS II shells are 0/300/700/2500; use config/dwi_select_ideas_b2500.json."
+            )
+        raise SystemExit(
+            f"[dwi-select] sub-{subject}: no DWI matched target_shell_b={target} "
+            f"(tolerance {tolerance}). Scanned: {found}. Filter file: {select_path}.{hint}"
+        )
 
     if not allow_multiple_dwi and len(kept_dwi) > 1:
         names = ", ".join(p.name for p in kept_dwi)
@@ -218,6 +235,7 @@ def main() -> None:
                 data["fmap"]["session"] = args.session.removeprefix("ses-")
     elif args.select_json:
         select = json.loads(args.select_json.read_text())
+        select["_select_json"] = str(args.select_json)
         if args.session:
             select["include_sessions"] = [args.session.removeprefix("ses-")]
         data = build_from_select(args.bids_dir, subject, select)

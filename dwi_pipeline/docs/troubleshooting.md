@@ -12,7 +12,15 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | `FS_LICENSE` missing | No FreeSurfer license on your machine | Register at [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/registration.html); `export FS_LICENSE=/path/to/your/license.txt` — [Installation](installation.md#freesurfer-license-you-must-obtain-this) |
 | Container not found | Wrong `.sif` path | Set `CONTAINER_*` or `config.local.yaml` → [Configuration](configuration.md) |
 | `snakemake not found` | Missing on PATH | `pip install snakemake` or `module load` |
-| `apptainer pull` / proot: `/tmp` has no execution permission | Cluster mounts `/tmp` `noexec` | `export PROOT_TMP_DIR=$HOME/.cache/dkt-connectome/apptainer_tmp` (same as `APPTAINER_TMPDIR`); `./dkt install` sets this when unset — [Installation § HPC](installation.md#hpc--ood-login-nodes) |
+| `apptainer pull` / proot: `/tmp` has no execution permission | Cluster mounts `/tmp` `noexec` | `export TMPDIR=$HOME/.cache/dkt-connectome/tmp`; `export APPTAINER_TMPDIR=$HOME/.cache/dkt-connectome/apptainer_tmp`; `export PROOT_TMP_DIR=$APPTAINER_TMPDIR`; `./dkt install` sets the Apptainer vars when unset — [Installation § HPC](installation.md#hpc--ood-login-nodes) |
+| `container missing (qsiprep): /path/to/others/containers/qsiprep.sif` | Fresh clone still has placeholder paths | `./dkt install` writes `workflow/config/config.local.yaml` (do not commit it), or set `CONTAINER_QSIPREP` |
+| `FreeSurfer license missing: /path/to/...` | `fs_license` in `config.yaml` is a placeholder | `export FS_LICENSE=$HOME/.freesurfer/license.txt` |
+| `BooleanOptionalAction` / `module 'argparse' has no attribute` | A pip `argparse` package is ahead of the standard library | Unset `PYTHONPATH`. `slurm_env.sh` must not point it at `~/.local/lib`. Or use `PIPELINE_ENGINE=bids_app` |
+| `expected exactly 1 T1w for sub-1 ses-ses-1, found 0` | Session label was prefixed twice | Pass `1` or `ses-1`. The pipeline stores the label without `ses-` and adds it on paths |
+| Slurm log empty, exit code 1 | A `[[ -d ... ]] && bind` test failed under `set -e` with no message | Update to a checkout that prints the failing command. A missing `/etc/singularity` must not end the script |
+| `libsubid.so.3` and Snakemake prints the whole shell (exit 127) | Host `apptainer` was mounted over `/usr/bin/apptainer` inside the orchestrator | Use the Apptainer binary shipped in the orchestrator image (1.3.4) |
+| `dkt_connectome.sif` used as `CONTAINER_ORCHESTRATOR` | That file is the Step 4 connectome image | Set `CONTAINER_ORCHESTRATOR` to `dkt_connectome_orchestrator_0.3.1.sif` from `ghcr.io/phindagijimana/dkt-connectome:0.3.1` |
+| `[dwi-select] ... no DWI matched target_shell_b=1000` | Default filter looks for b=1000 | The message lists the shells it scanned and the filter file. IDEAS II uses `config/dwi_select_ideas_b2500.json` (0/300/700/2500) |
 | `apptainer run …/orchestrator.sif`: `stat …/docker-entrypoint.sh` | Relative entrypoint + host cwd | Pull `dkt-connectome:0.3.1` rebuilt after the absolute-entrypoint fix, or `apptainer exec --pwd /opt/dkt-connectome/dwi_pipeline IMAGE --version` |
 | `podman pull` `lchown /etc/gshadow` | Rootless podman UID/GID map too small | Use Apptainer or Docker; do not require podman on the login node |
 
@@ -25,6 +33,8 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | `KeyError: 'TotalReadoutTime'` | Repair DWI JSON sidecars — [Preparing your data](preparing_data.md) |
 | SDC failure, no fieldmap | Add `--syn`, `--fmap-retry`, or `--no-sdc` |
 | Wrong DWI series processed | Check `--dwi-shell` / `--dwi-select`; use `--session-filter` |
+| `[dwi-select] no DWI matched` | Read the scanned shell list and the filter file in that line. IDEAS II: `config/dwi_select_ideas_b2500.json` |
+| `TypeError: not all arguments converted during string formatting` during `raw_gqi` | Printed from inside the QSIPrep 0.23.1 image. If the `raw_gqi` node finishes and the log continues into eddy, the step is still running |
 | Multiple sessions ambiguous | Pass `--session-filter ses-X` |
 
 ---
@@ -47,6 +57,8 @@ Common failures and fixes. The pipeline **fails loudly** rather than silently sk
 | recon-all very slow | Use `--fastsurfer` (~1–2 h vs ~10 h) |
 | Missing `aparc+aseg.mgz` | Check `logs/sub-*_recon.log`; verify license |
 | FastSurfer cuda fails | Set `RECON_FASTSURFER_DEVICE=cpu` |
+| FastSurfer: `--parallel` is obsolete | Expected on FastSurfer 2.4.2 with the current flags. The run continues |
+| `libsubid.so.3` during recon inside the orchestrator | Host `apptainer` was mounted into the image. Use the Apptainer 1.3.4 binary shipped in the orchestrator |
 
 ---
 

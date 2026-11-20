@@ -29,7 +29,7 @@ container_pins:
   qsiprep: pennlinc/qsiprep:1.0.0
   qsirecon: pennlinc/qsirecon:1.2.1
   freesurfer: freesurfer/freesurfer:7.4.1
-  fastsurfer: deepmi/fastsurfer:latest
+  fastsurfer: deepmi/fastsurfer:latest  # reproducible pin is the SIF sha256 + FastSurfer 2.4.2+7e53343 in release_manifest.json
   connectome: ghcr.io/phindagijimana/dk-connectome:0.3.0
   vbt: ghcr.io/phindagijimana/dkt-vbt:0.3.0
   lesion_act: ghcr.io/phindagijimana/dkt-lesion-act:0.3.0

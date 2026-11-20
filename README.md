@@ -50,7 +50,8 @@ export FS_LICENSE=/path/to/your/license.txt
 export DKT_CONTAINER_CACHE=${DKT_CONTAINER_CACHE:-$HOME/.cache/dkt-connectome/containers}
 export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-$HOME/.cache/dkt-connectome/apptainer_tmp}
 export PROOT_TMP_DIR=${PROOT_TMP_DIR:-$APPTAINER_TMPDIR}
-mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
+export TMPDIR=${TMPDIR:-$HOME/.cache/dkt-connectome/tmp}
+mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR" "$TMPDIR"
 ./dkt install
 ./dkt check --strict
 bash scripts/download_ideas_sample.sh

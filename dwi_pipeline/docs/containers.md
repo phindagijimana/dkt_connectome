@@ -15,7 +15,7 @@ The DKT Connectome uses **one `.sif` image per step** (QSIPrep, recon, QSIRecon,
 
 The Step 4 registry name **`dk-connectome`** is leftover from the older DK (84-node) atlas. The pipeline default is **DKT (78 nodes)**. The orchestrator does **not** contain QSIPrep or the connectome step; those are separate `.sif` files.
 
-Set `CONTAINER_*` only if you need to override a path (see [Installation](installation.md)). FastSurfer is referenced as `deepmi/fastsurfer:latest` but is **pinned by digest** in the manifest — `check --strict` fails if the pulled image does not match. Step scripts are **baked** into DKT-owned images; see [Architecture](architecture.md).
+Set `CONTAINER_*` only if you need to override a path (see [Installation](installation.md)). FastSurfer is recorded as the SIF file hash of `deepmi/fastsurfer:latest` pulled on 2025-08-30 (FastSurfer `2.4.2+7e53343`). That SIF contains no OCI digest, so the uri stays on the tag. `./dkt check --strict` accepts only that file hash. Step scripts are **baked** into DKT-owned images; see [Architecture](architecture.md).
 
 ---
 

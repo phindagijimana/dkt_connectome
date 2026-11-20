@@ -157,7 +157,7 @@ Without a fieldmap in the filter, the pipeline **requires** one of `--syn`, `--f
 | Flag | Env | Description |
 |------|-----|-------------|
 | `--fastsurfer` | `RECON_TOOL=fastsurfer` | FastSurfer instead of `recon-all` |
-| `--fastsurfer-device cpu\|cuda` | `RECON_FASTSURFER_DEVICE` | FastSurfer device (default `cpu`). `cuda` also auto-requests a GPU in `submit.sh` |
+| `--fastsurfer-device cpu\|cuda` | `RECON_FASTSURFER_DEVICE` | FastSurfer device (default `cpu`). For `cuda` on Slurm, set `SBATCH_GRES` yourself. |
 | `--freesurfer` | `RECON_TOOL=freesurfer` | FreeSurfer `recon-all` (default) |
 | `--fast-fs` | `RECON_FSAPARC=1` | FastSurfer + classic DK aparc |
 

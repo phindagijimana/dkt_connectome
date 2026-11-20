@@ -62,7 +62,7 @@
 #   DWI_SHELL_B=1000             # b-value for default dwi-select config
 #   QSIPREP_NO_DWI_FILTER=1      # same as --no-dwi-filter
 #   EXCLUDE_NODES=node05         # comma-list passed to sbatch --exclude
-#   SBATCH_GRES=gpu:l40s.24g:1   # GPU for Step 1.1 inpainting (auto-set when inpaint on)
+#   SBATCH_GRES=                 # empty unless you set a GPU your site accepts
 #   SBATCH_DEPENDENCY=afterok:JOBID
 #                                # chain this submission after another Slurm job
 #                                # (e.g. PIPELINE_MODE=qsirecon SBATCH_DEPENDENCY=afterok:44600)
@@ -424,19 +424,10 @@ if [[ "${PIPELINE_MODE}" == "all" || "${PIPELINE_MODE}" == "connectome" || "${PI
 fi
 [[ -n "${EXCLUDE_NODES}" ]] && echo "  Exclude nodes: ${EXCLUDE_NODES}"
 
-# Auto-request a GPU slice when inpainting may run (Step 1.1 needs >=12g MIG).
-if [[ -z "${SBATCH_GRES:-}" ]]; then
-  case "${PIPELINE_MODE}" in
-    all|inpaint|recon)
-      if [[ "${RUN_INPAINT:-1}" == "1" && "${ANAT_MITIGATION}" == "neurolit" ]]; then
-        SBATCH_GRES="gpu:l40s.24g:1"
-        echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: Step 1.1 inpaint may need GPU)"
-      elif [[ "${RECON_TOOL}" == "fastsurfer" && "${RECON_FASTSURFER_DEVICE}" == "cuda" ]]; then
-        SBATCH_GRES="gpu:l40s.24g:1"
-        echo "  SBATCH_GRES: ${SBATCH_GRES} (auto: FastSurfer cuda)"
-      fi
-      ;;
-  esac
+# Leave the GPU line empty unless the user set SBATCH_GRES. A site-specific
+# name such as gpu:l40s.24g:1 is not valid on every cluster.
+if [[ -n "${SBATCH_GRES:-}" ]]; then
+  echo "  SBATCH_GRES: ${SBATCH_GRES}"
 fi
 
 if [[ "${PIPELINE_ENGINE}" != "bash" ]]; then

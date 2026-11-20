@@ -39,19 +39,10 @@ _slurm_fix_user_env() {
   if ! command -v snakemake >/dev/null 2>&1 && [[ -n "${_inherited_path}" ]]; then
     export PATH="${PATH}:${_inherited_path}"
   fi
-  local py_site="${HOME}/.local/lib/python3.12/site-packages"
-  if [[ -d "${py_site}/snakemake" ]]; then
-    case ":${PYTHONPATH:-}:" in
-      *:"${py_site}":*) ;;
-      *)
-        if [[ -n "${PYTHONPATH:-}" ]]; then
-          export PYTHONPATH="${py_site}:${PYTHONPATH}"
-        else
-          export PYTHONPATH="${py_site}"
-        fi
-        ;;
-    esac
-  fi
+  # Do not put ~/.local/lib on PYTHONPATH. Those entries are searched before
+  # the standard library, so a pip "argparse" backport hides BooleanOptionalAction
+  # and Snakemake will not start. HOME is already the real home, so site.py
+  # finds the user site after the standard library.
 }
 
 _slurm_fix_user_env

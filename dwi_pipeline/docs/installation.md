@@ -41,6 +41,27 @@ mkdir -p "$DKT_CONTAINER_CACHE" "$APPTAINER_TMPDIR"
 | `--mode qsiprep` | all steps | Pull only what a mode needs |
 | `--missing-only` | off | Skip images already in cache |
 
+## Two ways to launch
+
+Both ways use the same step images. The orchestrator image supplies Snakemake and Python. Step images stay separate.
+
+| Launch | Command | What runs Snakemake |
+|--------|---------|---------------------|
+| Host | `./dkt run` or `bash submit.sh` | Snakemake on the host (`PIPELINE_ENGINE=snakemake`, the default) |
+| Orchestrator | `PIPELINE_ENGINE=bids_app bash submit.sh` | Snakemake inside `dkt_connectome_orchestrator_0.3.1.sif` (`ghcr.io/phindagijimana/dkt-connectome:0.3.1`) |
+
+`dkt_connectome.sif` is the Step 4 connectome image. Set `CONTAINER_ORCHESTRATOR` to `dkt_connectome_orchestrator_0.3.1.sif`. `submit.sh` adds `--gres` only when you set `SBATCH_GRES`.
+
+IDEAS II tutorial command (prints the line; add `--dry-run` or `--run` to execute):
+
+```bash
+bash scripts/first_run_demo.sh \
+  --bids sample_data/ideas/bids \
+  --results sample_data/ideas/results/sub-1_tutorial
+```
+
+`./dkt check` runs `scripts/check_repro.sh` before the container doctor: session label, empty GPU request, executable temp directories, and orchestrator identity.
+
 Many clusters mount **`/tmp` with `noexec`**. OCI→SIF uses proot, which ignores `APPTAINER_TMPDIR` unless **`PROOT_TMP_DIR`** is set (`install.sh` sets it). First QSIPrep / QSIRecon / FreeSurfer conversion can take 30–90 minutes — prefer local disk, not NFS. Do not use rootless **podman** for the orchestrator pull (`lchown /etc/gshadow`).
 
 Step images: [Containers](containers.md). If GHCR miss for VBT / lesion-ACT / Deep Atropos, `install.sh --mode act` builds them locally.

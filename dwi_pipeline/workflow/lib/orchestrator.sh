@@ -76,16 +76,33 @@ _orchestrator_bind_file() {
 }
 
 _orchestrator_bind_apptainer() {
-  local -n _binds=$1
-  local appt_bin libexec etc
-  appt_bin="$(command -v apptainer 2>/dev/null || command -v singularity 2>/dev/null || true)"
-  [[ -n "${appt_bin}" ]] || return 0
-  _binds+=(-B "${appt_bin}:${appt_bin}:ro")
-  libexec="$(dirname "${appt_bin}")/../libexec/apptainer"
-  [[ -d "${libexec}" ]] && _binds+=(-B "${libexec}:${libexec}:ro")
-  for etc in /etc/apptainer /etc/singularity; do
-    [[ -d "${etc}" ]] && _binds+=(-B "${etc}:${etc}:ro")
-  done
+  # The image ships Apptainer (1.3.4). Do not mount the host binary over
+  # /usr/bin/apptainer: that binary needs host libraries such as libsubid.so.3
+  # and exits 127 inside the image. Nested step containers work with the
+  # image's own binary.
+  return 0
+}
+
+# Step 4 is dkt_connectome.sif. The orchestrator is a different image
+# (dkt_connectome_orchestrator_<version>.sif) that only supplies Snakemake.
+_orchestrator_reject_step_image() {
+  local sif="$1" base reason="" a b
+  [[ -n "${sif}" ]] || return 0
+  base="$(basename "${sif}")"
+  if [[ "${base}" == "dkt_connectome.sif" ]]; then
+    reason="basename"
+  elif [[ -n "${CONTAINER_CONNECTOME:-}" && -e "${CONTAINER_CONNECTOME}" && -e "${sif}" ]]; then
+    a="$(readlink -f "${sif}" 2>/dev/null || echo "${sif}")"
+    b="$(readlink -f "${CONTAINER_CONNECTOME}" 2>/dev/null || echo "${CONTAINER_CONNECTOME}")"
+    if [[ "${a}" == "${b}" ]]; then
+      reason="same-file"
+    fi
+  fi
+  [[ -n "${reason}" ]] || return 0
+  echo "ERROR [orchestrator]: ${sif} is the Step 4 connectome image." >&2
+  echo "The orchestrator is dkt_connectome_orchestrator_0.3.1.sif from ghcr.io/phindagijimana/dkt-connectome:0.3.1." >&2
+  echo "Set CONTAINER_ORCHESTRATOR to that file. ./dkt install places it in \$HOME/.cache/dkt-connectome/containers/." >&2
+  return 1
 }
 
 _orchestrator_export_env() {
@@ -105,7 +122,8 @@ _orchestrator_export_env() {
     CONTAINER_QSIPREP CONTAINER_QSIRECON CONTAINER_FASTSURFER CONTAINER_FREESURFER \
     CONTAINER_CONNECTOME CONTAINER_VBT CONTAINER_LESION_ACT CONTAINER_LIT \
     CONTAINER_NODESTRENGTH FS_LICENSE TEMPLATEFLOW_HOME DKT_CONTAINER_CACHE \
-    XDG_CACHE_HOME SNAKEMAKE_WORKDIR RANDOM_SEED
+    XDG_CACHE_HOME SNAKEMAKE_WORKDIR RANDOM_SEED \
+    TMPDIR APPTAINER_TMPDIR APPTAINER_CACHEDIR PROOT_TMP_DIR SINGULARITY_TMPDIR
   do
     val="${!key:-}"
     [[ -n "${val}" ]] && _env+=(--env "${key}=${val}")
@@ -121,7 +139,8 @@ run_orchestrator_participant() {
 
   local sif dwi_root repo_root
   sif="$(resolve_orchestrator_sif)" || _orchestrator_fail \
-    "orchestrator SIF not found — optional; install via bash dwi_pipeline/scripts/install.sh (see dwi_pipeline/docs/installation.md)"
+    "orchestrator SIF not found. The orchestrator is ghcr.io/phindagijimana/dkt-connectome:0.3.1 (dkt_connectome_orchestrator_0.3.1.sif). dkt_connectome.sif is the Step 4 connectome image. Run ./dkt install or set CONTAINER_ORCHESTRATOR."
+  _orchestrator_reject_step_image "${sif}" || exit 1
   dwi_root="$(_orchestrator_repo_dwi)"
   repo_root="$(dirname "${dwi_root}")"
 
@@ -164,7 +183,17 @@ run_orchestrator_participant() {
     --n-cpus "${NTHREADS:-8}"
     --skip-bids-validation
   )
-  [[ -n "${RECON_SESSION:-}" ]] && run_args+=(--session-filter "${RECON_SESSION}")
+  # array.sh already appends --recon-session when RECON_SESSION is set.
+  # ./run rejects two session flags, so add one only when the caller did not.
+  local has_session=0 arg
+  for arg in "$@"; do
+    case "${arg}" in
+      --session-filter|--session-id|--recon-session) has_session=1 ;;
+    esac
+  done
+  if [[ -n "${RECON_SESSION:-}" && "${has_session}" == "0" ]]; then
+    run_args+=(--session-filter "${RECON_SESSION}")
+  fi
   run_args+=("$@")
 
   echo "BIDS App orchestrator: ${sif}"

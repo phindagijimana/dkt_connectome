@@ -50,7 +50,8 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.recon_session:
-        print(args.recon_session)
+        # subject.sh strips a leading "ses-" before paths add it back.
+        print(args.recon_session.removeprefix("ses-"))
         return
 
     filter_cache = Path(args.filter_cache)
